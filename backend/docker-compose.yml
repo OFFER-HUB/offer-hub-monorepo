@@ -42,5 +42,20 @@ services:
     ports:
       - "3001:3001"  
 
+  offer_hub_minio:
+    image: minio/minio
+    container_name: offer_hub_minio
+    restart: always
+    ports:
+      - "9000:9000"     # MinIO API
+      - "9001:9001"     # Web Console
+    environment:
+      MINIO_ROOT_USER: offerhub_minio
+      MINIO_ROOT_PASSWORD: offerhub_minio_secret
+    volumes:
+      - offer_hub_minio_data:/data
+    command: server --console-address ":9001" /data
+
 volumes:
   offer_hub_db_data: {}
+  offer_hub_minio_data: {}
