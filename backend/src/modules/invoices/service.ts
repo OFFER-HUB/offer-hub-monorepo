@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PdfService, InvoiceData } from '../pdf/service';
 import { TransactionsService } from '../transactions/service';
 import { UsersService } from '../users/service';
@@ -13,6 +13,7 @@ export class InvoiceService {
 
     constructor(
         private readonly pdfService: PdfService,
+        @Inject(forwardRef(() => TransactionsService))
         private readonly transactionsService: TransactionsService,
         private readonly usersService: UsersService,
         private readonly projectsService: ProjectsService,

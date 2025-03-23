@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateTransactionDto, UpdateTransactionDto } from "./dto";
@@ -13,7 +13,7 @@ export class TransactionsService {
     @InjectRepository(Transaction) private readonly repo: Repository<Transaction>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(Project) private readonly projectRepo: Repository<Project>,
-    private readonly invoiceService: InvoiceService
+    @Inject(forwardRef(() => InvoiceService)) private readonly invoiceService: InvoiceService
   ) {}
 
   async findAll(): Promise<Transaction[]> {
