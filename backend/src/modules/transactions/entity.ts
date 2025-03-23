@@ -53,4 +53,7 @@ export class Transaction {
 
   @Column({ type: "timestamp with time zone", nullable: true })
   completed_at?: Date;
+
+  @Column({ type: "varchar", length: 255, nullable: true })
+  invoice_path?: string;
 }
