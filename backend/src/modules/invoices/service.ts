@@ -1,9 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PdfService, InvoiceData } from '../pdf/service';
 import { TransactionsService } from '../transactions/service';
-import { UserProfileService } from '../user-profiles/service';
+import { UsersService } from '../users/service';
 import { ProjectsService } from '../projects/service';
 import { Transaction, TransactionStatus } from '../transactions/entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class InvoiceService {
@@ -12,14 +14,16 @@ export class InvoiceService {
     constructor(
         private readonly pdfService: PdfService,
         private readonly transactionsService: TransactionsService,
-        private readonly usersService: UserProfileService,
+        private readonly usersService: UsersService,
         private readonly projectsService: ProjectsService,
+        @InjectRepository(Transaction)
+        private readonly transactionRepository: Repository<Transaction>,
     ) {}
 
     /**
      * Generates an invoice for a completed transaction
      * @param transactionId ID of the transaction
-     * @returns Path of the generated PDF file
+     * @returns URL of the generated invoice in MinIO
      */
     async generateInvoiceForTransaction(transactionId: string): Promise<string> {
         try {
@@ -32,13 +36,26 @@ export class InvoiceService {
                 throw new Error('Invoices can only be generated for completed transactions');
             }
 
+            // Check if an invoice already exists for this transaction
+            if (transaction.invoice_path) {
+                this.logger.log(`Transaction ${transactionId} already has a generated invoice`);
+                return transaction.invoice_path;
+            }
+
             // Convert transaction data to invoice format
             const invoiceData = await this.mapTransactionToInvoiceData(transaction);
             
-            // Generate the invoice in PDF
-            const pdfPath = await this.pdfService.generateInvoice(invoiceData);
+            // Generate the invoice in PDF and store it in MinIO
+            const invoiceUrl = await this.pdfService.generateInvoice(invoiceData);
             
-            return pdfPath;
+            // Update the transaction with the invoice URL
+            await this.transactionRepository.update(
+                { transaction_id: transactionId },
+                { invoice_path: invoiceUrl }
+            );
+            
+            this.logger.log(`Invoice successfully generated for transaction ${transactionId}`);
+            return invoiceUrl;
         } catch (error) {
             this.logger.error(`Error generating invoice for transaction ${transactionId}: ${error.message}`);
             throw error;
@@ -46,9 +63,42 @@ export class InvoiceService {
     }
 
     /**
+     * Gets the URL of the invoice for a transaction
+     * @param transactionId ID of the transaction
+     * @param userId ID of the requesting user (for verification)
+     * @returns URL of the invoice
+     */
+    async getInvoiceUrl(transactionId: string, userId: string): Promise<string> {
+        try {
+            // Get the transaction
+            const transaction = await this.transactionsService.findById(transactionId);
+            
+            // Verify that the user has permission to access this invoice
+            if (transaction.fromUser.user_id !== userId && transaction.toUser.user_id !== userId) {
+                throw new Error('You do not have permission to access this invoice');
+            }
+            
+            // If the transaction already has a generated invoice, return its URL
+            if (transaction.invoice_path) {
+                return transaction.invoice_path;
+            }
+            
+            // If there is no invoice but the transaction is completed, generate it
+            if (transaction.status === TransactionStatus.COMPLETED) {
+                return await this.generateInvoiceForTransaction(transactionId);
+            }
+            
+            throw new NotFoundException('No invoice exists for this transaction');
+        } catch (error) {
+            this.logger.error(`Error getting invoice URL: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
      * Converts a transaction into invoice data
      * @param transaction Completed transaction
-     * @returns Formatted data for the invoice
+     * @returns Formatted invoice data
      */
     private async mapTransactionToInvoiceData(transaction: Transaction): Promise<InvoiceData> {
         // Extract users and project
@@ -59,7 +109,7 @@ export class InvoiceService {
         // In a payment transaction, the client is fromUser and the freelancer is toUser
         const isPayment = transaction.type === 'payment' || transaction.type === 'escrow_release';
         
-        // Map data according to the transaction type
+        // Map data according to the type of transaction
         const client = isPayment ? fromUser : toUser;
         const freelancer = isPayment ? toUser : fromUser;
 
@@ -80,7 +130,7 @@ export class InvoiceService {
             id: `INV-${transaction.transaction_id.substring(0, 8)}`,
             invoiceNumber: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${transaction.transaction_id.substring(0, 5)}`,
             createdAt: transaction.completed_at || transaction.created_at,
-            dueDate: undefined, // Completed payment invoices do not have a due date
+            dueDate: undefined, // Invoices for completed payments do not have a due date
             
             transactionId: transaction.transaction_id,
             transactionHash: transaction.transaction_hash,
@@ -92,6 +142,7 @@ export class InvoiceService {
                 id: client.user_id,
                 name: `${client.username}`,
                 email: client.email,
+                walletAddress: client?.wallet_address,
             },
             
             freelancer: {
