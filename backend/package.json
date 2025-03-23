@@ -12,8 +12,8 @@
     "docker:down": "docker-compose down"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/core": "^11.0.0",
+    "@nestjs/common": "^11.0.12",
+    "@nestjs/core": "^11.0.12",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",
     "chalk": "^5.4.1",
