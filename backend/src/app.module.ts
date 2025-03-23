@@ -51,6 +51,7 @@ import { UserProfileModule } from './modules/user-profiles/module';
 import { AchievementsModule } from './modules/achievements/module';
 import { ServicesModule } from './modules/services/module';
 import { ServiceCategoriesModule } from './modules/service-categories/module';
+import { InvoiceModule } from './modules/invoices/module';
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { ServiceCategoriesModule } from './modules/service-categories/module';
     AchievementsModule,
     ServicesModule,
     ServiceCategoriesModule,
+    InvoiceModule,
   ],
 })
 export class AppModule {}
