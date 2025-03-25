@@ -43,40 +43,24 @@ HASURA_GRAPHQL_ADMIN_SECRET=offerhub_secret
 
 ## 🛠 **Starting Backend & Database**
 
-### 1️⃣ **Start Database & Hasura**
+### 1️⃣ **Start Database, Hasura & Backend**
 ```sh
-docker-compose up --build -d  
+docker compose up --build
 ```
 
 ### 2️⃣ **Verify Database**
 ```sh
 docker logs offer_hub_database  
 ```
-
-### 3️⃣ **Run Backend**
-```sh
-npm run start:dev  
-```
-
-To run in production:
-```sh
-npm run start  
-```
-
 ---
 
 ## ✅ **Useful Commands**
 
 | Command                     | Description                     |
 |-----------------------------|---------------------------------|
-| `npm install`               | Install dependencies           |
-| `npm run start:dev`         | Start backend (dev mode)       |
-| `npm run start`             | Run backend (production)       |
-| `docker-compose up -d`      | Start database & Hasura        |
-| `docker logs offer_hub_database` | Check database logs |
-| `npm run docker:down`       | Stop all Docker containers     |
-| `npm run migrations:run`    | Apply database migrations      |
-| `npm run migrations:revert` | Revert last migration         |
+| `npm install`               | Install dependencies            |
+| `docker compose up --build`      | Start database, Hasura & Backend   |
+| `docker logs offer_hub_database` | Check database logs        |
 
 ---
 

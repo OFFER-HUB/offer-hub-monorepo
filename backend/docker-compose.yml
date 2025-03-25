@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   offer_hub_database:
@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: offerhub_pass
       POSTGRES_DB: offer_hub_database
     ports:
-      - "5432:5432"  
+      - "5432:5432"
     volumes:
       - offer_hub_db_data:/var/lib/postgresql/data
 
@@ -43,7 +43,7 @@ services:
       - offer_hub_database
       - offer_hub_redis
     ports:
-      - "3001:3001"  
+      - "3001:3001"
 
   offer_hub_redis:
     image: redis:6
