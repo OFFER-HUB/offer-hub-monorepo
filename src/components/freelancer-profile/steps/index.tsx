@@ -1,11 +1,12 @@
 'use client'
 
 import { useFreelancerSteps } from '@/hooks/use-freelancer-steps'
+import UserSelectInterestedCategory from './user-select-interested-category'
 
 const steps = [
   { key: 'user-choose-role', component: null }, // to be implemented
   { key: 'user-select-job-type', component: null }, // to be implemented
-  { key: 'user-select-interested-category', component: null },  // to be implemented
+  { key: 'user-select-interested-category', component: <UserSelectInterestedCategory /> },
   { key: 'user-add-work-experience', component: null },  // to be implemented
   { key: 'user-add-work-experience-active-state', component: null },  // to be implemented
   { key: 'user-add-work-experience-active-state-not-in-focus', component: null },  // to be implemented
