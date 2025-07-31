@@ -1,0 +1,86 @@
+### Project API Examples
+### Make sure to replace UUIDs with actual values from your database
+
+### 1. Create a new project
+POST http://localhost:4000/api/projects
+Content-Type: application/json
+
+{
+  "client_id": "12345678-1234-1234-1234-123456789012",
+  "title": "E-commerce Website Development",
+  "description": "Need a modern e-commerce website with payment integration",
+  "category": "Web Development",
+  "budget": 3500.00
+}
+
+###
+
+### 2. Get all projects (no filters)
+GET http://localhost:4000/api/projects
+
+###
+
+### 3. Get projects with filters
+GET http://localhost:4000/api/projects?category=Web Development&budget_min=1000&budget_max=5000&status=pending&page=1&limit=5
+
+###
+
+### 4. Get specific project by ID
+GET http://localhost:4000/api/projects/12345678-1234-1234-1234-123456789012
+
+###
+
+### 5. Update project details
+PATCH http://localhost:4000/api/projects/12345678-1234-1234-1234-123456789012
+Content-Type: application/json
+
+{
+  "title": "Updated E-commerce Website Development",
+  "budget": 4000.00,
+  "description": "Need a modern e-commerce website with payment integration and admin panel"
+}
+
+###
+
+### 6. Update project status
+PATCH http://localhost:4000/api/projects/12345678-1234-1234-1234-123456789012
+Content-Type: application/json
+
+{
+  "status": "in_progress"
+}
+
+###
+
+### 7. Delete project (soft delete)
+DELETE http://localhost:4000/api/projects/12345678-1234-1234-1234-123456789012
+
+###
+
+### Error Examples
+
+### 8. Try to create project with missing fields
+POST http://localhost:4000/api/projects
+Content-Type: application/json
+
+{
+  "client_id": "12345678-1234-1234-1234-123456789012",
+  "title": "Incomplete Project"
+}
+
+###
+
+### 9. Try to get project with invalid UUID
+GET http://localhost:4000/api/projects/invalid-uuid
+
+###
+
+### 10. Try to update with invalid status transition
+PATCH http://localhost:4000/api/projects/12345678-1234-1234-1234-123456789012
+Content-Type: application/json
+
+{
+  "status": "completed"
+}
+
+###
