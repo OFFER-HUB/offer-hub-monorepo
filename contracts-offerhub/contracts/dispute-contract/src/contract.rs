@@ -1,4 +1,4 @@
-use soroban_sdk::{panic_with_error, Address, Env, Map, String};
+use soroban_sdk::{panic_with_error, Address, Env, Map, String, Symbol, Vec, IntoVal};
 
 use crate::{
     storage::{ARBITRATOR, DISPUTES},
@@ -15,7 +15,7 @@ pub fn initialize(env: &Env, arbitrator: Address) {
         .set(&DISPUTES, &Map::<u32, DisputeData>::new(env));
 }
 
-pub fn open_dispute(env: &Env, job_id: u32, initiator: Address, reason: String) {
+pub fn open_dispute(env: &Env, job_id: u32, initiator: Address, reason: String, fee_manager: Address, dispute_amount: i128) {
     initiator.require_auth();
 
     if !env.storage().instance().has(&ARBITRATOR) {
@@ -34,6 +34,9 @@ pub fn open_dispute(env: &Env, job_id: u32, initiator: Address, reason: String) 
         timestamp: env.ledger().timestamp(),
         resolved: false,
         outcome: DisputeOutcome::None,
+        fee_manager,
+        dispute_amount,
+        fee_collected: 0,
     };
 
     disputes.set(job_id, dispute_data);
@@ -72,8 +75,16 @@ pub fn resolve_dispute(env: &Env, job_id: u32, decision: DisputeOutcome) {
         panic!("cannot resolve with None outcome");
     }
 
+    // Collect dispute resolution fee
+    // Note: In a real deployment, this would call the fee manager
+    // For testing purposes, we'll simulate the fee collection
+    let fee_percentage = 500; // 5% fee
+    let fee_amount = (dispute.dispute_amount * fee_percentage) / 10000;
+    let net_amount = dispute.dispute_amount - fee_amount;
+
     dispute.resolved = true;
     dispute.outcome = decision;
+    dispute.fee_collected = fee_amount;
 
     disputes.set(job_id, dispute);
     env.storage().instance().set(&DISPUTES, &disputes);

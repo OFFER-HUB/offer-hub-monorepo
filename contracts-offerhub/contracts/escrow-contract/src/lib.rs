@@ -11,8 +11,8 @@ pub struct EscrowContract;
 
 #[contractimpl]
 impl EscrowContract {
-    pub fn init_contract(env: Env, client: Address, freelancer: Address, amount: i128) {
-        contract::init_contract(&env, client, freelancer, amount);
+    pub fn init_contract(env: Env, client: Address, freelancer: Address, amount: i128, fee_manager: Address) {
+        contract::init_contract(&env, client, freelancer, amount, fee_manager);
     }
 
     pub fn deposit_funds(env: Env, client: Address) {

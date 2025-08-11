@@ -23,8 +23,10 @@ impl DisputeResolutionContract {
         job_id: u32,
         initiator: Address,
         reason: String,
+        fee_manager: Address,
+        dispute_amount: i128,
     ) -> Result<(), Error> {
-        contract::open_dispute(&env, job_id, initiator, reason);
+        contract::open_dispute(&env, job_id, initiator, reason, fee_manager, dispute_amount);
         Ok(())
     }
 

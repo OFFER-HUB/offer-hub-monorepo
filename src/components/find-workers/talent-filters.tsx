@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -15,8 +15,14 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Star, ChevronDown, ChevronUp, X, RefreshCw, Clock, DollarSign, Globe, Award, Briefcase } from "lucide-react"
+import { ServiceFilters } from "@/types/service.types"
 
-export default function TalentFilters() {
+interface TalentFiltersProps {
+  onFiltersChange?: (filters: ServiceFilters) => void;
+  currentFilters?: ServiceFilters;
+}
+
+export default function TalentFilters({ onFiltersChange, currentFilters }: TalentFiltersProps) {
   const [priceRange, setPriceRange] = useState([25, 75])
   const [experienceLevel, setExperienceLevel] = useState<string[]>([])
   const [availability, setAvailability] = useState<string[]>([])
@@ -36,6 +42,33 @@ export default function TalentFilters() {
     other: false,
   })
 
+  // Ref to track if we're updating from parent
+  const isUpdatingFromParent = useRef(false)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Initialize filters from currentFilters prop
+  useEffect(() => {
+    if (currentFilters && !isUpdatingFromParent.current) {
+      if (currentFilters.min_price !== undefined && currentFilters.max_price !== undefined) {
+        const newPriceRange = [currentFilters.min_price, currentFilters.max_price]
+        setPriceRange(newPriceRange)
+      }
+      
+      // Map category back to experience level if present
+      if (currentFilters.category) {
+        const categoryMap: Record<string, string> = {
+          'development': 'entry',
+          'design': 'intermediate',
+          'business': 'expert'
+        }
+        const experience = categoryMap[currentFilters.category]
+        if (experience) {
+          setExperienceLevel([experience])
+        }
+      }
+    }
+  }, [currentFilters])
+
   const toggleSection = (section: string) => {
     setCollapsedSections({
       ...collapsedSections,
@@ -43,12 +76,62 @@ export default function TalentFilters() {
     })
   }
 
+  // Function to notify parent of filter changes
+  const notifyParentOfChanges = useCallback(() => {
+    if (onFiltersChange && !isUpdatingFromParent.current) {
+      const filters: ServiceFilters = {
+        min_price: priceRange[0],
+        max_price: priceRange[1],
+        page: 1,
+        limit: 10
+      };
+      
+      // Add category filter if any experience level is selected
+      if (experienceLevel.length > 0) {
+        // Map experience levels to categories (this is a simplified mapping)
+        const categoryMap: Record<string, string> = {
+          'entry': 'development',
+          'intermediate': 'design',
+          'expert': 'business'
+        };
+        
+        // Use the first selected experience level to determine category
+        const category = categoryMap[experienceLevel[0]];
+        if (category) {
+          filters.category = category;
+        }
+      }
+      
+      isUpdatingFromParent.current = true
+      onFiltersChange(filters);
+      setTimeout(() => {
+        isUpdatingFromParent.current = false
+      }, 100)
+    }
+  }, [priceRange, experienceLevel, onFiltersChange])
+
+  // Debounced version for price range changes
+  const debouncedNotifyParent = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      notifyParentOfChanges()
+    }, 500) // 500ms debounce delay
+  }, [notifyParentOfChanges])
+
   const toggleExperienceLevel = (level: string) => {
     if (experienceLevel.includes(level)) {
       setExperienceLevel(experienceLevel.filter((l) => l !== level))
     } else {
       setExperienceLevel([...experienceLevel, level])
     }
+    
+    // Immediately notify parent of experience level change
+    setTimeout(() => {
+      notifyParentOfChanges()
+    }, 0)
   }
 
   const toggleAvailability = (option: string) => {
@@ -85,7 +168,7 @@ export default function TalentFilters() {
     }
   }
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setPriceRange([25, 75])
     setExperienceLevel([])
     setAvailability([])
@@ -94,7 +177,32 @@ export default function TalentFilters() {
     setIsOnlineNow(false)
     setHasVerifiedId(false)
     setTopRatedOnly(false)
-  }
+    
+    // Clear any existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    
+    // Notify parent of filter reset
+    if (onFiltersChange) {
+      isUpdatingFromParent.current = true
+      onFiltersChange({
+        min_price: 25,
+        max_price: 75,
+        page: 1,
+        limit: 10
+      });
+      setTimeout(() => {
+        isUpdatingFromParent.current = false
+      }, 100)
+    }
+  }, [onFiltersChange])
+
+  // Handle price range changes with debouncing
+  const handlePriceRangeChange = useCallback((newPriceRange: number[]) => {
+    setPriceRange(newPriceRange)
+    debouncedNotifyParent()
+  }, [debouncedNotifyParent])
 
   const SectionHeader = ({ title, section, icon }: { title: string; section: string; icon: React.ReactNode }) => (
     <div className="flex items-center justify-between cursor-pointer py-2" onClick={() => toggleSection(section)}>
@@ -148,7 +256,7 @@ export default function TalentFilters() {
                       min={5}
                       max={150}
                       step={5}
-                      onValueChange={setPriceRange}
+                      onValueChange={handlePriceRangeChange}
                       className="my-4"
                     />
                     <div className="flex justify-between items-center gap-4">
@@ -157,7 +265,7 @@ export default function TalentFilters() {
                         <Input
                           type="number"
                           value={priceRange[0]}
-                          onChange={(e) => setPriceRange([Number.parseInt(e.target.value), priceRange[1]])}
+                          onChange={(e) => handlePriceRangeChange([Number.parseInt(e.target.value) || 5, priceRange[1]])}
                           className="pl-8"
                         />
                       </div>
@@ -167,7 +275,7 @@ export default function TalentFilters() {
                         <Input
                           type="number"
                           value={priceRange[1]}
-                          onChange={(e) => setPriceRange([priceRange[0], Number.parseInt(e.target.value)])}
+                          onChange={(e) => handlePriceRangeChange([priceRange[0], Number.parseInt(e.target.value) || 150])}
                           className="pl-8"
                         />
                       </div>

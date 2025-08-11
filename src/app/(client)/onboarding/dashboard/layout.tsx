@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="w-64 border-r border-gray-200 bg-white flex flex-col justify-between">
           <ClientSidebar />
         </div>
-        <div className="flex-1 px-6 py-4 overflow-y-auto">{children}</div>
+        <div className="flex-1 overflow-hidden">{children}</div>
       </div>
     </div>
   );

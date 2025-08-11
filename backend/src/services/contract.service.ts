@@ -5,6 +5,7 @@ import {
   Contract,
   ContractWithUsers,
 } from "@/types/contract.types";
+import { UUID_REGEX } from "@/utils/validation";
 
 class ContractService {
   async createContract(contractData: CreateContractDTO): Promise<Contract> {
@@ -28,18 +29,16 @@ class ContractService {
     }
 
     // Validate UUID format
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-    if (!uuidRegex.test(freelancer_id) || !uuidRegex.test(client_id)) {
+    if (!UUID_REGEX.test(freelancer_id) || !UUID_REGEX.test(client_id)) {
       throw new Error("Invalid freelancer_id or client_id format");
     }
 
-    if (project_id && !uuidRegex.test(project_id)) {
+    if (project_id && !UUID_REGEX.test(project_id)) {
       throw new Error("Invalid project_id format");
     }
 
-    if (service_request_id && !uuidRegex.test(service_request_id)) {
+    if (service_request_id && !UUID_REGEX.test(service_request_id)) {
       throw new Error("Invalid service_request_id format");
     }
 
@@ -97,9 +96,7 @@ class ContractService {
 
   async getContractById(contractId: string): Promise<ContractWithUsers | null> {
     // Validate UUID format
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(contractId)) {
+    if (!UUID_REGEX.test(contractId)) {
       throw new Error("Invalid contract ID format");
     }
 
@@ -178,9 +175,7 @@ class ContractService {
     userId?: string
   ): Promise<Contract | null> {
     // Validate UUID format
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(contractId)) {
+    if (!UUID_REGEX.test(contractId)) {
       throw new Error("Invalid contract ID format");
     }
 
@@ -267,9 +262,7 @@ class ContractService {
   // Additional utility methods
   async getContractsByUser(userId: string): Promise<ContractWithUsers[]> {
     // Validate UUID format
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(userId)) {
+    if (!UUID_REGEX.test(userId)) {
       throw new Error("Invalid user ID format");
     }
 

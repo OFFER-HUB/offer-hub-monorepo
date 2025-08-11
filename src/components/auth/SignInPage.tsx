@@ -7,8 +7,16 @@ import { OAuthButton } from "./OAuthButton";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import { AuthHeader } from "@/components/auth/AuthHeader";
+import { useAuthApi } from "@/hooks/api-connections/use-auth-api";
+import { useCallback } from "react";
 
 export function SignInPage() {
+  const { registerUser, isLoading, error, clearError } = useAuthApi();
+
+  const handleRegister = useCallback(async (payload: Parameters<typeof registerUser>[0]) => {
+    await registerUser(payload);
+  }, [registerUser]);
+
   return (
     <div className="min-h-screen bg-muted flex flex-col">
       <AuthHeader />
@@ -21,12 +29,12 @@ export function SignInPage() {
             <OAuthButton
               icon={<FaApple />}
               label="Sign in with Apple"
-              onClick={() => {}}
+              onClick={() => { }}
             />
             <OAuthButton
               icon={<FcGoogle />}
               label="Sign in with Google"
-              onClick={() => {}}
+              onClick={() => { }}
             />
           </div>
           <div className="flex items-center my-6">
@@ -37,12 +45,10 @@ export function SignInPage() {
             <Separator className="flex-1" />
           </div>
           <SignInForm
-            onSignIn={function (
-              method: "apple" | "google" | "email",
-              data?: { email: string; password?: string }
-            ): void {
-              throw new Error("Function not implemented.");
-            }}
+            onSignIn={() => { }}
+            onRegister={handleRegister}
+            isRegistering={isLoading}
+            backendError={error?.message || null}
           />
           <div className="mt-8 text-center text-sm">
             Don&apos;t have an account?{" "}

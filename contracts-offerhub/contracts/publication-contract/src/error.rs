@@ -7,4 +7,5 @@ pub enum ContractError {
     InvalidPublicationType = 1,
     TitleTooShort = 2,
     InvalidAmount = 3,
+    ValidationError = 4,
 }

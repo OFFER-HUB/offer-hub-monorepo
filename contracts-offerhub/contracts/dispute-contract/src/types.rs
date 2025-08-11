@@ -18,6 +18,9 @@ pub struct DisputeData {
     pub timestamp: u64,
     pub resolved: bool,
     pub outcome: DisputeOutcome,
+    pub fee_manager: Address, // Fee manager contract address
+    pub dispute_amount: i128, // Amount in dispute
+    pub fee_collected: i128,  // Fee collected for dispute resolution
 }
 
 #[contracterror]

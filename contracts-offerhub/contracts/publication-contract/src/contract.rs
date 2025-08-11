@@ -3,6 +3,7 @@ use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol};
 use crate::error::ContractError;
 use crate::event;
 use crate::storage::{DataKey, PublicationData};
+use crate::utils::{ValidationHelpers, StorageOptimizer};
 
 #[contract]
 pub struct PublicationContract;
@@ -23,17 +24,18 @@ impl PublicationContract {
        
         user.require_auth();
 
-        // Validate input data.
-        if publication_type != Symbol::new(&env, "service")
-            && publication_type != Symbol::new(&env, "project")
-        {
+        // Validate input data using optimized validation helpers.
+        if !ValidationHelpers::validate_publication_type(&env, &publication_type) {
             return Err(ContractError::InvalidPublicationType);
         }
-        if title.len() < 3 {
+        if !ValidationHelpers::validate_title(&title) {
             return Err(ContractError::TitleTooShort);
         }
-        if amount < 0 {
+        if !ValidationHelpers::validate_amount(amount) {
             return Err(ContractError::InvalidAmount);
+        }
+        if !ValidationHelpers::validate_category(&category) {
+            return Err(ContractError::ValidationError);
         }
 
         // Get the next publication ID for this specific user.
@@ -45,11 +47,14 @@ impl PublicationContract {
             .unwrap_or(0)
             + 1;
 
-        // Create the publication data struct.
+        // Create the publication data struct with optimized storage.
+        let compressed_title = StorageOptimizer::compress_string(&env, &title);
+        let compressed_category = StorageOptimizer::compress_string(&env, &category);
+        
         let publication_data = PublicationData {
             publication_type: publication_type.clone(),
-            title,
-            category,
+            title: compressed_title,
+            category: compressed_category,
             amount,
             timestamp,
         };

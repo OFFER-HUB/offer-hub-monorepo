@@ -17,7 +17,11 @@ import TalentMarketInsights from "@/components/find-workers/talent-market-insigh
 import TalentCategories from "@/components/find-workers/talent-categories"
 import TalentFeatured from "@/components/find-workers/talent-featured"
 import TalentDetailDialog from "@/components/find-workers/talent-detail-dialog"
+import Pagination from "@/components/find-workers/pagination"
 import Link from "next/link"
+import { useServicesApi } from "@/hooks/api-connections/use-services-api"
+import { ServiceFilters, FreelancerDisplay } from "@/types/service.types"
+import { useSearchParams } from "next/navigation"
 import type { Freelancer } from "@/app/freelancer-search/page"
 
 // Simple Header component defined inline
@@ -105,18 +109,18 @@ function SimpleFooter() {
               </li>
               <li>
                 <a href="#" className="hover:text-white">
-                  Find Freelancers
+                  Find Talent
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white">
-                  Enterprise Solutions
+                  How It Works
                 </a>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-medium mb-4">Resources</h4>
+            <h4 className="font-medium mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
                 <a href="#" className="hover:text-white">
@@ -125,19 +129,19 @@ function SimpleFooter() {
               </li>
               <li>
                 <a href="#" className="hover:text-white">
-                  Blog
+                  Contact Us
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white">
-                  Community
+                  Privacy Policy
                 </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-700 mt-8 pt-8 text-sm text-gray-300">
-          <p>© {new Date().getFullYear()} Offer Hub. All rights reserved.</p>
+        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+          <p className="text-sm text-gray-300">&copy; 2024 Offer Hub. All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -147,19 +151,51 @@ function SimpleFooter() {
 export default function FindWorkersPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid")
   const [isFilterOpen, setIsFilterOpen] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
   const [selectedFreelancers, setSelectedFreelancers] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
-  const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [selectedFreelancer, setSelectedFreelancer] = useState<FreelancerDisplay | null>(null)
+  
+  // Get URL parameters for initial state
+  const searchParams = useSearchParams()
+  const initialSearchQuery = searchParams.get('q') || ""
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
+  
+  const [currentFilters, setCurrentFilters] = useState<ServiceFilters>({
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: 10,
+    keyword: initialSearchQuery || undefined,
+    category: searchParams.get('category') || undefined,
+    min_price: searchParams.get('min') ? parseFloat(searchParams.get('min')!) : undefined,
+    max_price: searchParams.get('max') ? parseFloat(searchParams.get('max')!) : undefined,
+  })
 
-  // Simulate loading
+  // Use the services API hook
+  const { services, isLoading, error, pagination, searchServices, clearError } = useServicesApi()
+
+  // Handle search query changes with debouncing
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [])
+    const filters = { ...currentFilters }
+    if (searchQuery.trim()) {
+      filters.keyword = searchQuery.trim()
+    } else {
+      delete filters.keyword
+    }
+    setCurrentFilters(filters)
+    searchServices(filters)
+  }, [searchQuery])
+
+  // Handle filter changes
+  const handleFiltersChange = (filters: ServiceFilters) => {
+    setCurrentFilters(filters)
+    searchServices(filters)
+  }
+
+  // Handle pagination
+  const handlePageChange = (page: number) => {
+    const newFilters = { ...currentFilters, page }
+    setCurrentFilters(newFilters)
+    searchServices(newFilters)
+  }
 
   const toggleFreelancerSelection = (id: string) => {
     if (selectedFreelancers.includes(id)) {
@@ -182,7 +218,7 @@ export default function FindWorkersPage() {
     }
   }
 
-  const openFreelancerDetail = (freelancer: Freelancer) => {
+  const openFreelancerDetail = (freelancer: FreelancerDisplay) => {
     setSelectedFreelancer(freelancer)
   }
 
@@ -283,7 +319,10 @@ export default function FindWorkersPage() {
                   transition={{ duration: 0.3 }}
                   className="lg:w-80 shrink-0"
                 >
-                  <TalentFilters />
+                  <TalentFilters 
+                    onFiltersChange={handleFiltersChange}
+                    currentFilters={currentFilters}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -297,7 +336,14 @@ export default function FindWorkersPage() {
                     {isFilterOpen ? "Hide Filters" : "Show Filters"}
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-2" />
-                  <span className="text-sm text-[#002333]/70">1,245 freelancers found</span>
+                  <span className="text-sm text-[#002333]/70">
+                    {isLoading ? "Loading..." : `${pagination?.total_services || services.length} freelancers found`}
+                  </span>
+                  {error && (
+                    <span className="text-sm text-red-500 ml-2">
+                      Error: {error}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -360,9 +406,11 @@ export default function FindWorkersPage() {
                     {viewMode === "grid" && (
                       <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                         <TalentGridView
+                          services={services}
                           selectedFreelancers={selectedFreelancers}
                           toggleFreelancerSelection={toggleFreelancerSelection}
                           openFreelancerDetail={openFreelancerDetail}
+                          isLoading={isLoading}
                         />
                       </motion.div>
                     )}
@@ -389,6 +437,18 @@ export default function FindWorkersPage() {
                   </>
                 )}
               </AnimatePresence>
+
+              {/* Pagination */}
+              {pagination && pagination.total_pages > 1 && (
+                <Pagination
+                  currentPage={pagination.current_page}
+                  totalPages={pagination.total_pages}
+                  totalItems={pagination.total_services}
+                  itemsPerPage={pagination.per_page}
+                  onPageChange={handlePageChange}
+                  isLoading={isLoading}
+                />
+              )}
             </div>
           </div>
 

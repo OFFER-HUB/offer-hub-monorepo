@@ -15,8 +15,6 @@ export default function ProfileSection({ className }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>("overview")
   const [userData, setUserData] = useState({
     name: "Aminu A.",
-    firstName: "Aminu",
-    lastName: "Abdulrasheed",
     email: "youremail@domain.com",
     phone: "",
     avatar: "/verificationImage.svg",
@@ -25,9 +23,7 @@ export default function ProfileSection({ className }: ProfileSectionProps) {
   const handleSaveProfile = (data: any) => {
     setUserData((prev) => ({
       ...prev,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      name: `${data.firstName} ${data.lastName}`,
+      name: data.name,
       email: data.email,
       phone: data.phone,
     }))
@@ -48,10 +44,11 @@ export default function ProfileSection({ className }: ProfileSectionProps) {
         return (
           <EditProfileForm
             user={{
-              firstName: userData.firstName,
-              lastName: userData.lastName,
+              id: "temp-id",
+              wallet_address: "temp-wallet",
+              username: "temp-user",
+              name: userData.name,
               email: userData.email,
-              phone: userData.phone,
             }}
             onBack={() => setCurrentView("overview")}
             onSave={handleSaveProfile}

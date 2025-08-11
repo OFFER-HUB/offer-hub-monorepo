@@ -74,4 +74,8 @@
     font-weight: 400;
     font-family: var(--font-geist-sans);
   }
+
+  .no-scrollbar::-webkit-scrollbar{
+    display: none;
+  }
 }

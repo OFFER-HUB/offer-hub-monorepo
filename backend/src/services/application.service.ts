@@ -47,7 +47,7 @@ export const createApplication = async (input: ApplicationInput): Promise<Applic
 export const getApplicationsByProject = async (projectId: string): Promise<Application[]> => {
   const { data: applications, error } = await supabase
     .from('applications')
-    .select('id, freelancer_id, message, status, created_at')
+    .select('id, project_id, freelancer_id, message, status, created_at')
     .eq('project_id', projectId);
 
   if (error) throw error;

@@ -43,8 +43,11 @@ fn test_open_dispute() {
     });
     let (client, _) = create_contract(&env);
     let initiator = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
     let job_id = 1;
     let reason = String::from_str(&env, "Job not completed");
+    let dispute_amount = 1000000;
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -56,11 +59,14 @@ fn test_open_dispute() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     reason.clone().into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &reason);
+        .open_dispute(&job_id, &initiator, &reason, &fee_manager, &dispute_amount);
+    
     let dispute = client.get_dispute(&job_id);
     assert_eq!(
         dispute,
@@ -70,6 +76,9 @@ fn test_open_dispute() {
             timestamp: 12345,
             resolved: false,
             outcome: DisputeOutcome::None,
+            fee_manager,
+            dispute_amount,
+            fee_collected: 0,
         }
     );
 }
@@ -80,8 +89,11 @@ fn test_open_dispute_already_exists() {
     let env = Env::default();
     let (client, _) = create_contract(&env);
     let initiator = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
     let job_id = 1;
     let reason = String::from_str(&env, "reason 1");
+    let dispute_amount = 1000000;
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -93,11 +105,14 @@ fn test_open_dispute_already_exists() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     reason.clone().into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &reason);
+        .open_dispute(&job_id, &initiator, &reason, &fee_manager, &dispute_amount);
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -109,11 +124,13 @@ fn test_open_dispute_already_exists() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     String::from_str(&env, "reason 2").into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &String::from_str(&env, "reason 2"));
+        .open_dispute(&job_id, &initiator, &String::from_str(&env, "reason 2"), &fee_manager, &dispute_amount);
 }
 
 #[test]
@@ -121,8 +138,11 @@ fn test_resolve_dispute() {
     let env = Env::default();
     let (client, arbitrator) = create_contract(&env);
     let initiator = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
     let job_id = 1;
     let reason = String::from_str(&env, "reason 1");
+    let dispute_amount = 1000000;
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -134,11 +154,14 @@ fn test_resolve_dispute() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     reason.clone().into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &reason);
+        .open_dispute(&job_id, &initiator, &reason, &fee_manager, &dispute_amount);
+    
     client
         .mock_auths(&[MockAuth {
             address: &arbitrator,
@@ -154,6 +177,7 @@ fn test_resolve_dispute() {
             },
         }])
         .resolve_dispute(&job_id, &DisputeOutcome::FavorClient);
+    
     let dispute = client.get_dispute(&job_id);
     assert_eq!(dispute.resolved, true);
     assert_eq!(dispute.outcome, DisputeOutcome::FavorClient);
@@ -165,9 +189,12 @@ fn test_resolve_dispute_unauthorized() {
     let env = Env::default();
     let (client, _) = create_contract(&env);
     let initiator = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
     let job_id = 1;
     let reason = String::from_str(&env, "reason 1");
+    let dispute_amount = 1000000;
     let random_user = Address::generate(&env);
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -179,11 +206,14 @@ fn test_resolve_dispute_unauthorized() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     reason.clone().into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &reason);
+        .open_dispute(&job_id, &initiator, &reason, &fee_manager, &dispute_amount);
+    
     client
         .mock_auths(&[MockAuth {
             address: &random_user,
@@ -215,8 +245,11 @@ fn test_resolve_dispute_already_resolved() {
     let env = Env::default();
     let (client, arbitrator) = create_contract(&env);
     let initiator = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
     let job_id = 1;
     let reason = String::from_str(&env, "reason 1");
+    let dispute_amount = 1000000;
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -228,11 +261,14 @@ fn test_resolve_dispute_already_resolved() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     reason.clone().into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &reason);
+        .open_dispute(&job_id, &initiator, &reason, &fee_manager, &dispute_amount);
+    
     client
         .mock_auths(&[MockAuth {
             address: &arbitrator,
@@ -248,6 +284,7 @@ fn test_resolve_dispute_already_resolved() {
             },
         }])
         .resolve_dispute(&job_id, &DisputeOutcome::FavorClient);
+    
     client
         .mock_auths(&[MockAuth {
             address: &arbitrator,
@@ -271,8 +308,11 @@ fn test_resolve_dispute_with_none() {
     let env = Env::default();
     let (client, arbitrator) = create_contract(&env);
     let initiator = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
     let job_id = 1;
     let reason = String::from_str(&env, "reason 1");
+    let dispute_amount = 1000000;
+    
     client
         .mock_auths(&[MockAuth {
             address: &initiator,
@@ -284,11 +324,14 @@ fn test_resolve_dispute_with_none() {
                     job_id.into_val(&env),
                     initiator.clone().into_val(&env),
                     reason.clone().into_val(&env),
+                    fee_manager.clone().into_val(&env),
+                    dispute_amount.into_val(&env),
                 ],
                 sub_invokes: &[],
             },
         }])
-        .open_dispute(&job_id, &initiator, &reason);
+        .open_dispute(&job_id, &initiator, &reason, &fee_manager, &dispute_amount);
+    
     client
         .mock_auths(&[MockAuth {
             address: &arbitrator,
