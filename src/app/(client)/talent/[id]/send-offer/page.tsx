@@ -12,7 +12,7 @@ export default function SendOfferRedirect() {
   }, [id, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex h-screen items-center justify-center bg-[#F6F6F6] ">
       <p>Loading offer form...</p>
     </div>
   );
