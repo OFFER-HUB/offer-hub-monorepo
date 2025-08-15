@@ -444,14 +444,10 @@ export const getContractsByStatusHandler = async (
   try {
     const { status } = req.params;
 
-    if (
-      !status ||
-      !["pending", "funded", "released", "disputed"].includes(status)
-    ) {
+    if (!status || !["pending", "funded", "released", "disputed"].includes(status)) {
       res.status(400).json({
         success: false,
-        message:
-          "Valid status is required: pending, funded, released, or disputed",
+        message: "Valid status is required: pending, funded, released, or disputed",
       });
       return;
     }
