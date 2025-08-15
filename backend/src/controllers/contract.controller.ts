@@ -9,7 +9,7 @@ import { CreateContractDTO, UpdateContractDTO } from "@/types/contract.types";
  * @param {Response} res - Express response object
  * @param {NextFunction} next - Express next function for error handling
  * @returns {Promise<void>} - Returns void, sends JSON response with created contract data
- * 
+ *
  * @example
  * POST /api/contracts
  * {
@@ -20,7 +20,7 @@ import { CreateContractDTO, UpdateContractDTO } from "@/types/contract.types";
  *   "contract_on_chain_id": "0x1234567890abcdef",
  *   "amount_locked": 1000
  * }
- * 
+ *
  * @throws {400} - Missing required fields (contract_type, freelancer_id, client_id, contract_on_chain_id, amount_locked)
  * @throws {400} - Invalid contract type (must be 'project' or 'service')
  * @throws {400} - Invalid amount_locked (must be greater than 0)
@@ -142,10 +142,10 @@ export const createContractHandler = async (
  * @param {Response} res - Express response object
  * @param {NextFunction} next - Express next function for error handling
  * @returns {Promise<void>} - Returns void, sends JSON response with contract data including freelancer and client information
- * 
+ *
  * @example
  * GET /api/contracts/550e8400-e29b-41d4-a716-446655440000
- * 
+ *
  * Response:
  * {
  *   "success": true,
@@ -161,7 +161,7 @@ export const createContractHandler = async (
  *     "client": { "id": "...", "name": "Jane Smith" }
  *   }
  * }
- * 
+ *
  * @throws {400} - Invalid contract ID format (must be valid UUID)
  * @throws {404} - Contract not found
  * @throws {500} - Internal server error
@@ -223,21 +223,21 @@ export const getContractByIdHandler = async (
  * @param {Response} res - Express response object
  * @param {NextFunction} next - Express next function for error handling
  * @returns {Promise<void>} - Returns void, sends JSON response with updated contract data
- * 
+ *
  * @example
  * PUT /api/contracts/550e8400-e29b-41d4-a716-446655440000/status
  * {
  *   "escrow_status": "funded",
  *   "user_id": "550e8400-e29b-41d4-a716-446655440002"
  * }
- * 
+ *
  * Response:
  * {
  *   "success": true,
  *   "message": "Contract status updated successfully",
  *   "data": { "id": "...", "escrow_status": "funded", ... }
  * }
- * 
+ *
  * @throws {400} - Invalid contract ID format (must be valid UUID)
  * @throws {400} - Missing escrow_status field
  * @throws {400} - Invalid escrow_status (must be 'funded', 'released', or 'disputed')
@@ -342,10 +342,10 @@ export const updateContractStatusHandler = async (
  * @param {Response} res - Express response object
  * @param {NextFunction} next - Express next function for error handling
  * @returns {Promise<void>} - Returns void, sends JSON response with array of contracts including user information
- * 
+ *
  * @example
  * GET /api/contracts/user/550e8400-e29b-41d4-a716-446655440001
- * 
+ *
  * Response:
  * {
  *   "success": true,
@@ -363,7 +363,7 @@ export const updateContractStatusHandler = async (
  *     }
  *   ]
  * }
- * 
+ *
  * @throws {400} - Invalid user ID format (must be valid UUID)
  * @throws {500} - Internal server error
  */
@@ -413,10 +413,10 @@ export const getContractsByUserHandler = async (
  * @param {Response} res - Express response object
  * @param {NextFunction} next - Express next function for error handling
  * @returns {Promise<void>} - Returns void, sends JSON response with array of contracts matching the specified status
- * 
+ *
  * @example
  * GET /api/contracts/status/pending
- * 
+ *
  * Response:
  * {
  *   "success": true,
@@ -432,7 +432,7 @@ export const getContractsByUserHandler = async (
  *     }
  *   ]
  * }
- * 
+ *
  * @throws {400} - Invalid or missing status (must be 'pending', 'funded', 'released', or 'disputed')
  * @throws {500} - Internal server error
  */
@@ -444,10 +444,14 @@ export const getContractsByStatusHandler = async (
   try {
     const { status } = req.params;
 
-    if (!status || !["pending", "funded", "released", "disputed"].includes(status)) {
+    if (
+      !status ||
+      !["pending", "funded", "released", "disputed"].includes(status)
+    ) {
       res.status(400).json({
         success: false,
-        message: "Valid status is required: pending, funded, released, or disputed",
+        message:
+          "Valid status is required: pending, funded, released, or disputed",
       });
       return;
     }
@@ -462,4 +466,4 @@ export const getContractsByStatusHandler = async (
   } catch (error) {
     next(error);
   }
-}; 
+};
