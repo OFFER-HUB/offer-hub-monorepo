@@ -2,10 +2,11 @@ use crate::access::{
     add_minter as add_minter_impl, check_minter, check_owner, remove_minter as remove_minter_impl,
     transfer_admin as transfer_admin_impl,
 };
-use crate::events::{emit_minted, emit_transferred, emit_achievement_minted};
+use crate::events::{emit_minted, emit_transferred, emit_achievement_minted, emit_burned};
 use crate::metadata::{get_metadata as get_token_metadata, store_metadata};
 use crate::storage::{
     get_admin, get_token_owner, is_minter, save_admin, save_token_owner, token_exists, next_token_id,
+    index_user_achievement, get_user_achievements, remove_user_achievement_index, burn_token,
 };
 use crate::{Error, Metadata, TokenId};
 use soroban_sdk::{Address, Env, String, Symbol, Vec, symbol_short};
@@ -31,9 +32,11 @@ impl ReputationNFTContract {
         if token_exists(&env, &token_id) {
             return Err(Error::TokenAlreadyExists);
         }
-        save_token_owner(&env, &token_id, &to);
-        store_metadata(&env, &token_id, name, description, uri)?;
-        emit_minted(&env, &to, &token_id);
+    save_token_owner(&env, &token_id, &to);
+    store_metadata(&env, &token_id, name, description, uri)?;
+    // index achievement for user if this is an achievement token (heuristic could vary)
+    index_user_achievement(&env, &to, &token_id);
+    emit_minted(&env, &to, &token_id);
         Ok(())
     }
 
@@ -64,6 +67,7 @@ impl ReputationNFTContract {
         };
         save_token_owner(&env, &token_id, &to);
         store_metadata(&env, &token_id, name, description, uri)?;
+    index_user_achievement(&env, &to, &token_id);
         emit_achievement_minted(&env, &to, &nft_type, &token_id);
         Ok(())
     }
@@ -171,16 +175,55 @@ impl ReputationNFTContract {
         store_metadata(&env, &token_id, name, description, uri)?;
         
         // Index by user for easy retrieval
-        Self::index_user_achievement(&env, &to, &token_id);
+        index_user_achievement(&env, &to, &token_id);
         
         emit_achievement_minted(&env, &to, &Symbol::new(&env, "achievement"), &token_id);
         Ok(())
     }
 
     pub fn get_user_achievements(env: Env, _user: Address) -> Result<Vec<TokenId>, Error> {
-        // In production, this would retrieve all achievements for a user
-        // For now, return empty vector - would need proper indexing implementation
-        Ok(Vec::new(&env))
+        Ok(get_user_achievements(&env, &_user))
+    }
+
+    pub fn burn(env: Env, caller: Address, token_id: TokenId) -> Result<(), Error> {
+        // Only admin or minter can burn
+        check_minter(&env, &caller)?;
+        // get owner to remove index
+        let owner = get_token_owner(&env, &token_id)?;
+        remove_user_achievement_index(&env, &owner, &token_id);
+        burn_token(&env, &token_id);
+    emit_burned(&env, &token_id, &owner);
+        Ok(())
+    }
+
+    pub fn batch_mint(
+        env: Env,
+        caller: Address,
+        tos: Vec<Address>,
+        names: Vec<String>,
+        descriptions: Vec<String>,
+        uris: Vec<String>,
+    ) -> Result<(), Error> {
+        check_minter(&env, &caller)?;
+        let len = tos.len();
+        if names.len() != len || descriptions.len() != len || uris.len() != len {
+            return Err(Error::Unauthorized);
+        }
+        let mut i = 0u32;
+        while i < len {
+            let to = tos.get(i).ok_or(Error::TokenDoesNotExist)?;
+            let name = names.get(i).ok_or(Error::TokenDoesNotExist)?;
+            let description = descriptions.get(i).ok_or(Error::TokenDoesNotExist)?;
+            let uri = uris.get(i).ok_or(Error::TokenDoesNotExist)?;
+            let token_id = next_token_id(&env);
+            save_token_owner(&env, &token_id, &to);
+            store_metadata(&env, &token_id, name, description, uri)?;
+            index_user_achievement(&env, &to, &token_id);
+            emit_minted(&env, &to, &token_id);
+            i += 1;
+        }
+    // Optionally emit a batch event - build simple owners/token_ids lists is expensive, skip for now
+    Ok(())
     }
 
     pub fn update_reputation_score(
@@ -202,10 +245,7 @@ impl ReputationNFTContract {
     }
 
     // Helper functions
-    fn index_user_achievement(_env: &Env, _user: &Address, _token_id: &TokenId) {
-        // In production, maintain an index of user achievements
-        // This would use a storage pattern like (USER_ACHIEVEMENTS, user, token_id) -> true
-    }
+    // index_user_achievement is provided by storage helpers
 
     fn store_reputation_score(env: &Env, user: &Address, rating_average: u32, total_ratings: u32) {
         // Store the user's current reputation score
@@ -269,6 +309,8 @@ impl ReputationNFTContract {
         
         save_token_owner(env, token_id, user);
         store_metadata(env, token_id, name, description, uri)?;
+        // Index the achievement for the user
+        index_user_achievement(env, user, token_id);
         emit_minted(env, user, token_id);
         
         Ok(())
