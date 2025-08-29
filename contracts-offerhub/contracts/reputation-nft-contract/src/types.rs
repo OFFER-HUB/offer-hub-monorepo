@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, contracttype, Address, Env, String, Map};
+use soroban_sdk::{contracterror, contracttype, Address, Env, Map, String};
 
 pub type TokenId = u64;
 
@@ -14,11 +14,11 @@ pub struct Metadata {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AchievementType {
-    Standard,             // Regular NFT, can be transferred
-    Reputation,          // Reputation-based achievements, non-transferable
-    ProjectMilestone,    // Project-based milestones, non-transferable
-    RatingMilestone,     // Rating-based milestones, non-transferable
-    CustomAchievement,   // Custom achievements, transferable with restrictions
+    Standard,          // Regular NFT, can be transferred
+    Reputation,        // Reputation-based achievements, non-transferable
+    ProjectMilestone,  // Project-based milestones, non-transferable
+    RatingMilestone,   // Rating-based milestones, non-transferable
+    CustomAchievement, // Custom achievements, transferable with restrictions
 }
 
 #[contracterror]

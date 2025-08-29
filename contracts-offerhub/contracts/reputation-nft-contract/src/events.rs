@@ -32,7 +32,8 @@ pub fn emit_minter_removed(env: &Env, admin: &Address, minter: &Address) {
 
 pub fn emit_achievement_minted(env: &Env, to: &Address, nft_type: &Symbol, token_id: &TokenId) {
     let topic = Symbol::new(env, "ACHIEVEMENT_MINTED");
-    env.events().publish((topic,), (to.clone(), nft_type.clone(), token_id));
+    env.events()
+        .publish((topic,), (to.clone(), nft_type.clone(), token_id));
 }
 
 pub fn emit_burned(env: &Env, token_id: &TokenId, owner: &Address) {

@@ -1,5 +1,5 @@
 use crate::storage::{get_token_metadata, save_token_metadata};
-use crate::types::{Error, Metadata, TokenId, AchievementType};
+use crate::types::{AchievementType, Error, Metadata, TokenId};
 use soroban_sdk::{Env, String};
 
 pub fn store_metadata(

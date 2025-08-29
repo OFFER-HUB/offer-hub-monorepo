@@ -2,17 +2,18 @@ use crate::access::{
     add_minter as add_minter_impl, check_minter, check_owner, remove_minter as remove_minter_impl,
     transfer_admin as transfer_admin_impl,
 };
-use crate::events::{emit_minted, emit_transferred, emit_achievement_minted, emit_burned};
+use crate::events::{emit_achievement_minted, emit_burned, emit_minted, emit_transferred};
 use crate::metadata::{get_metadata as get_token_metadata, store_metadata};
-use crate::types::AchievementType;
-use soroban_sdk::{Address, Env, Map, String, Symbol, Vec};
 use crate::storage::{
-    get_admin, get_token_owner, is_minter, save_admin, save_token_owner, token_exists, next_token_id,
-    index_user_achievement, get_user_achievements, remove_user_achievement_index, burn_token,
-    update_achievement_stats, update_leaderboard, get_achievement_stats, get_leaderboard, get_user_rank,
+    burn_token, get_achievement_stats, get_admin, get_leaderboard, get_token_owner,
+    get_user_achievements, get_user_rank, index_user_achievement, is_minter, next_token_id,
+    remove_user_achievement_index, save_admin, save_token_owner, token_exists,
+    update_achievement_stats, update_leaderboard,
 };
+use crate::types::AchievementType;
 use crate::{Error, Metadata, TokenId};
-use soroban_sdk::{symbol_short};
+use soroban_sdk::symbol_short;
+use soroban_sdk::{Address, Env, Map, String, Symbol, Vec};
 
 pub struct ReputationNFTContract;
 
@@ -35,16 +36,28 @@ impl ReputationNFTContract {
         if token_exists(&env, &token_id) {
             return Err(Error::TokenAlreadyExists);
         }
-    save_token_owner(&env, &token_id, &to);
-    store_metadata(&env, &token_id, name, description, uri, Some(AchievementType::Standard))?;
-    // index achievement for user if this is an achievement token
-    index_user_achievement(&env, &to, &token_id);
-    update_achievement_stats(&env, &AchievementType::Standard);
-    emit_minted(&env, &to, &token_id);
+        save_token_owner(&env, &token_id, &to);
+        store_metadata(
+            &env,
+            &token_id,
+            name,
+            description,
+            uri,
+            Some(AchievementType::Standard),
+        )?;
+        // index achievement for user if this is an achievement token
+        index_user_achievement(&env, &to, &token_id);
+        update_achievement_stats(&env, &AchievementType::Standard);
+        emit_minted(&env, &to, &token_id);
         Ok(())
     }
 
-    pub fn mint_achv(env: Env, caller: Address, to: Address, nft_type: Symbol) -> Result<(), Error> {
+    pub fn mint_achv(
+        env: Env,
+        caller: Address,
+        to: Address,
+        nft_type: Symbol,
+    ) -> Result<(), Error> {
         check_minter(&env, &caller)?;
         let token_id = next_token_id(&env);
         let (name, description, uri) = match &nft_type {
@@ -70,7 +83,14 @@ impl ReputationNFTContract {
             ),
         };
         save_token_owner(&env, &token_id, &to);
-        store_metadata(&env, &token_id, name, description, uri, Some(AchievementType::ProjectMilestone))?;
+        store_metadata(
+            &env,
+            &token_id,
+            name,
+            description,
+            uri,
+            Some(AchievementType::ProjectMilestone),
+        )?;
         index_user_achievement(&env, &to, &token_id);
         update_achievement_stats(&env, &AchievementType::ProjectMilestone);
         emit_achievement_minted(&env, &to, &nft_type, &token_id);
@@ -105,7 +125,7 @@ impl ReputationNFTContract {
         save_token_owner(&env, &token_id, &to);
         remove_user_achievement_index(&env, &from, &token_id);
         index_user_achievement(&env, &to, &token_id);
-        
+
         // Update leaderboard for both users
         update_leaderboard(&env, &from);
         update_leaderboard(&env, &to);
@@ -153,15 +173,15 @@ impl ReputationNFTContract {
         _rating_data: String,
     ) -> Result<(), Error> {
         check_minter(&env, &caller)?;
-        
+
         let token_id = next_token_id(&env);
-        
+
         // Since to_string() is not available in Soroban, we'll do direct string comparison
         let first_five_star = String::from_str(&env, "first_five_star");
         let ten_ratings = String::from_str(&env, "ten_ratings");
         let top_rated_professional = String::from_str(&env, "top_rated_professional");
         let rating_consistency = String::from_str(&env, "rating_consistency");
-        
+
         let (name, description, uri) = if achievement_type == first_five_star {
             (
                 String::from_str(&env, "First Five Star Rating"),
@@ -193,14 +213,21 @@ impl ReputationNFTContract {
                 String::from_str(&env, "ipfs://rating-achievement"),
             )
         };
-        
+
         save_token_owner(&env, &token_id, &to);
-        store_metadata(&env, &token_id, name, description, uri, Some(AchievementType::RatingMilestone))?;
-        
+        store_metadata(
+            &env,
+            &token_id,
+            name,
+            description,
+            uri,
+            Some(AchievementType::RatingMilestone),
+        )?;
+
         // Index by user for easy retrieval and update statistics
         index_user_achievement(&env, &to, &token_id);
         update_achievement_stats(&env, &AchievementType::RatingMilestone);
-        
+
         emit_achievement_minted(&env, &to, &Symbol::new(&env, "achievement"), &token_id);
         Ok(())
     }
@@ -216,7 +243,7 @@ impl ReputationNFTContract {
         let owner = get_token_owner(&env, &token_id)?;
         remove_user_achievement_index(&env, &owner, &token_id);
         burn_token(&env, &token_id);
-    emit_burned(&env, &token_id, &owner);
+        emit_burned(&env, &token_id, &owner);
         Ok(())
     }
 
@@ -241,14 +268,21 @@ impl ReputationNFTContract {
             let uri = uris.get(i).ok_or(Error::TokenDoesNotExist)?;
             let token_id = next_token_id(&env);
             save_token_owner(&env, &token_id, &to);
-            store_metadata(&env, &token_id, name, description, uri, Some(AchievementType::Standard))?;
+            store_metadata(
+                &env,
+                &token_id,
+                name,
+                description,
+                uri,
+                Some(AchievementType::Standard),
+            )?;
             index_user_achievement(&env, &to, &token_id);
             update_achievement_stats(&env, &AchievementType::Standard);
             emit_minted(&env, &to, &token_id);
             i += 1;
         }
-    // Optionally emit a batch event - build simple owners/token_ids lists is expensive, skip for now
-    Ok(())
+        // Optionally emit a batch event - build simple owners/token_ids lists is expensive, skip for now
+        Ok(())
     }
 
     pub fn update_reputation_score(
@@ -259,16 +293,16 @@ impl ReputationNFTContract {
         total_ratings: u32,
     ) -> Result<(), Error> {
         check_minter(&env, &caller)?;
-        
+
         // Store reputation score data
         Self::store_reputation_score(&env, &user, rating_average, total_ratings);
-        
+
         // Check for new achievements based on updated scores
         Self::check_rating_achievements(&env, &user, rating_average, total_ratings)?;
-        
+
         // Update leaderboard
         update_leaderboard(&env, &user);
-        
+
         Ok(())
     }
 
@@ -292,7 +326,9 @@ impl ReputationNFTContract {
         // Store the user's current reputation score
         let reputation_data = (rating_average, total_ratings, env.ledger().timestamp());
         let reputation_key = (String::from_str(env, "user_reputation"), user);
-        env.storage().persistent().set(&reputation_key, &reputation_data);
+        env.storage()
+            .persistent()
+            .set(&reputation_key, &reputation_data);
     }
 
     fn check_rating_achievements(
@@ -307,19 +343,19 @@ impl ReputationNFTContract {
             let token_id = next_token_id(env);
             Self::mint_milestone_nft(env, user, &token_id, "ten_excellent")?;
         }
-        
+
         if rating_average >= 480 && total_ratings >= 20 {
             // Award top-rated professional
             let token_id = next_token_id(env);
             Self::mint_milestone_nft(env, user, &token_id, "top_rated_pro")?;
         }
-        
+
         if total_ratings >= 50 && rating_average >= 450 {
             // Award veteran achievement
             let token_id = next_token_id(env);
             Self::mint_milestone_nft(env, user, &token_id, "veteran_pro")?;
         }
-        
+
         Ok(())
     }
 
@@ -347,14 +383,21 @@ impl ReputationNFTContract {
             ),
             _ => return Ok(()), // Skip unknown types
         };
-        
+
         save_token_owner(env, token_id, user);
-        store_metadata(env, token_id, name, description, uri, Some(AchievementType::RatingMilestone))?;
+        store_metadata(
+            env,
+            token_id,
+            name,
+            description,
+            uri,
+            Some(AchievementType::RatingMilestone),
+        )?;
         // Index the achievement and update statistics
         index_user_achievement(env, user, token_id);
         update_achievement_stats(env, &AchievementType::RatingMilestone);
         emit_minted(env, user, token_id);
-        
+
         Ok(())
     }
 }
