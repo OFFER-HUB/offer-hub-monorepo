@@ -2,8 +2,9 @@ use soroban_sdk::{panic_with_error, Address, Env, Map, String, Vec, Symbol, Into
 
 use crate::{
     access::{is_valid_arbitrator, is_valid_mediator},
-    storage::{ARBITRATOR, DISPUTES, DISPUTE_TIMEOUT, ESCROW_CONTRACT, FEE_MANAGER},
+    storage::{ARBITRATOR, DISPUTES, DISPUTE_TIMEOUT, ESCROW_CONTRACT, FEE_MANAGER, check_rate_limit},
     types::{DisputeData, DisputeLevel, DisputeOutcome, DisputeStatus, Error, Evidence},
+    validation::{validate_open_dispute, validate_add_evidence, validate_timeout_duration, validate_address},
 };
 
 // Escrow integration constants
@@ -24,6 +25,20 @@ pub fn initialize(
     }
     
     admin.require_auth();
+    
+    // Input validation
+    if let Err(_) = validate_address(&admin) {
+        panic_with_error!(env, Error::Unauthorized);
+    }
+    if let Err(_) = validate_address(&escrow_contract) {
+        panic_with_error!(env, Error::Unauthorized);
+    }
+    if let Err(_) = validate_address(&fee_manager) {
+        panic_with_error!(env, Error::Unauthorized);
+    }
+    if let Err(_) = validate_timeout_duration(default_timeout) {
+        panic_with_error!(env, Error::InvalidTimeout);
+    }
     
     env.storage().instance().set(&ARBITRATOR, &admin);
     env.storage().instance().set(&DISPUTE_TIMEOUT, &default_timeout);
@@ -51,6 +66,23 @@ pub fn open_dispute(
 
     if !env.storage().instance().has(&ARBITRATOR) {
         panic_with_error!(env, Error::NotInitialized);
+    }
+
+    // Rate limit: max 3 disputes per 24h per initiator
+    let limit_type = String::from_str(env, "open_dispute");
+    // 24h in seconds
+    let _ = check_rate_limit(env, &initiator, &limit_type, 3, 24 * 3600).map_err(|e| panic_with_error!(env, e));
+
+    // Input validation
+    if let Err(e) = validate_open_dispute(env, job_id, &initiator, &reason, dispute_amount) {
+        panic_with_error!(env, e);
+    }
+    
+    // Validate escrow contract address if provided
+    if let Some(ref escrow_addr) = escrow_contract {
+        if let Err(_) = validate_address(escrow_addr) {
+            panic_with_error!(env, Error::Unauthorized);
+        }
     }
 
     let mut disputes: Map<u32, DisputeData> = env.storage().instance().get(&DISPUTES).unwrap();
@@ -110,6 +142,11 @@ pub fn add_evidence(
     attachment_hash: Option<String>,
 ) {
     submitter.require_auth();
+    
+    // Input validation
+    if let Err(e) = validate_add_evidence(env, job_id, &submitter, &description) {
+        panic_with_error!(env, e);
+    }
 
     let mut disputes: Map<u32, DisputeData> = env.storage().instance().get(&DISPUTES).unwrap();
     let mut dispute = disputes
@@ -426,7 +463,11 @@ pub fn get_dispute_evidence(env: &Env, job_id: u32) -> Vec<Evidence> {
 pub fn set_dispute_timeout(env: &Env, admin: Address, timeout_seconds: u64) {
     admin.require_auth();
     
-    if timeout_seconds == 0 {
+    // Input validation
+    if let Err(_) = validate_address(&admin) {
+        panic_with_error!(env, Error::Unauthorized);
+    }
+    if let Err(_) = validate_timeout_duration(timeout_seconds) {
         panic_with_error!(env, Error::InvalidTimeout);
     }
 

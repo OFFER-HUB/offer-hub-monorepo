@@ -1,9 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Clock, CheckCircle, Award } from "lucide-react";
+import { Star, MapPin, Clock, CheckCircle, Award, Send } from "lucide-react";
 import { FreelancerProfile } from "@/lib/mockData/freelancer-profile-mock";
 
 interface ProfileHeaderProps {
@@ -11,6 +12,12 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ freelancer }: ProfileHeaderProps) {
+  const router = useRouter();
+  
+  const handleSendOffer = () => {
+    router.push(`/talent/${freelancer.id}/send-offer`);
+  };
+  
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -95,7 +102,11 @@ export default function ProfileHeader({ freelancer }: ProfileHeaderProps) {
           </div>
           
           <div className="flex flex-col gap-2">
-            <Button className="w-full bg-teal-600 hover:bg-teal-700">
+            <Button 
+              onClick={handleSendOffer}
+              className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              <Send className="w-4 h-4 mr-2" />
               Send Offer
             </Button>
             <Button variant="outline" className="w-full">

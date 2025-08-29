@@ -5,6 +5,10 @@ mod contract;
 mod error;
 mod storage;
 mod types;
+mod validation;
+
+// #[cfg(test)]
+// mod validation_test;
 
 #[contract]
 pub struct EscrowContract;
@@ -88,6 +92,15 @@ impl EscrowContract {
         let mut data = contract::get_escrow_data(&env);
         data.dispute_result = result;
         contract::set_escrow_data(&env, &data);
+    }
+
+    // ===== Rate limiting admin helpers =====
+    pub fn set_rate_limit_bypass(env: Env, caller: Address, user: Address, bypass: bool) {
+        contract::set_rate_limit_bypass(&env, caller, user, bypass);
+    }
+
+    pub fn reset_rate_limit(env: Env, caller: Address, user: Address, limit_type: String) {
+        contract::reset_rate_limit(&env, caller, user, limit_type);
     }
 }
 

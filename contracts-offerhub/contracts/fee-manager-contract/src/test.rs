@@ -2,8 +2,8 @@
 
 use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
-    Address, Env, Symbol, String, Vec,
+    testutils::Address as _,
+    Address, Env,
 };
 
 #[test]

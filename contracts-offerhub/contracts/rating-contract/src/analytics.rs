@@ -1,5 +1,5 @@
 use crate::storage::{get_platform_stat, get_user_rating_stats};
-use crate::types::{Error, UserRatingData, RatingStats};
+use crate::types::{Error, UserRatingData};
 use soroban_sdk::{Address, Env, String, Vec};
 
 pub fn calculate_rating_trend(env: &Env, user: &Address) -> i32 {
@@ -121,8 +121,4 @@ pub fn generate_user_rating_data(env: &Env, user: &Address) -> Result<UserRating
     })
 }
 
-pub fn calculate_work_category_stats(env: &Env, user: &Address, _category: &String) -> Result<RatingStats, Error> {
-    // In production, this would filter ratings by work category
-    // For now, return the general stats
-    get_user_rating_stats(env, user)
-}
+

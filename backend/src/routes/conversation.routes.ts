@@ -1,13 +1,21 @@
-import { Router } from 'express';
-import { ConversationController } from '@/controllers/conversation.controller';
+import { Router } from "express";
+import { ConversationController } from "@/controllers/conversation.controller";
+import { verifyToken } from "@/middlewares/auth.middleware";
 
 const router = Router();
 
+router.post("/", verifyToken, ConversationController.createConversation);
 
-router.post('/', ConversationController.createConversation);
+router.get(
+  "/user/:userId",
+  verifyToken,
+  ConversationController.getConversationsByUserId
+);
 
-router.get('/user/:userId', ConversationController.getConversationsByUserId);
-
-router.get('/:conversationId', ConversationController.getConversationById);
+router.get(
+  "/:conversationId",
+  verifyToken,
+  ConversationController.getConversationById
+);
 
 export default router;

@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 3,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -27,13 +28,10 @@
                   "string": "Web Development"
                 },
                 {
-                  "i128": {
-                    "hi": 0,
-                    "lo": 1000
-                  }
+                  "i128": "1000"
                 },
                 {
-                  "u64": 1234567890
+                  "u64": "0"
                 }
               ]
             }
@@ -45,7 +43,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -98,10 +96,7 @@
                                 "symbol": "amount"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 1000
-                                }
+                                "i128": "1000"
                               }
                             },
                             {
@@ -125,7 +120,7 @@
                                 "symbol": "timestamp"
                               },
                               "val": {
-                                "u64": 1234567890
+                                "u64": "0"
                               }
                             },
                             {
@@ -170,7 +165,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 801925984706572462
+                "nonce": "801925984706572462"
               }
             },
             "durability": "temporary"
@@ -185,7 +180,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 801925984706572462
+                    "nonce": "801925984706572462"
                   }
                 },
                 "durability": "temporary",

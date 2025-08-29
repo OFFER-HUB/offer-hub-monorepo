@@ -88,4 +88,5 @@ pub enum Error {
     EscrowIntegrationFailed = 12,
     MediationRequired = 13,
     ArbitrationRequired = 14,
+    RateLimitExceeded = 15,
 }

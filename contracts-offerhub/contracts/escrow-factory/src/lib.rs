@@ -13,7 +13,7 @@ use types::{
 
 mod escrow_contract {
     soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/escrow_contract.wasm"
+        file = "../../target/wasm32v1-none/release/escrow_contract.wasm"
     );
 }
 

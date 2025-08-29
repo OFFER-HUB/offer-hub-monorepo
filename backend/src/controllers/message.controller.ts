@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { MessageService } from '@/services/message.service';
 import { CreateMessageDTO, MessageType } from '@/types/message.types';
 import { AppError } from '@/utils/AppError';
+import { buildSuccessResponse, buildErrorResponse } from '../utils/responseBuilder';
 
 const isUUID = (str: string): boolean => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -50,22 +51,18 @@ export class MessageController {
 
       const message = await MessageService.sendMessage(messageData);
 
-      res.status(201).json({
-        success: true,
-        message: 'Message_sent_successfully',
-        data: message
-      });
+      res.status(201).json(
+        buildSuccessResponse(message, 'Message sent successfully')
+      );
     } catch (error) {
       if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message
-        });
+        res.status(error.statusCode).json(
+          buildErrorResponse(error.message)
+        );
       } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error'
-        });
+        res.status(500).json(
+          buildErrorResponse('Internal server error')
+        );
       }
     }
   }
@@ -81,22 +78,18 @@ export class MessageController {
 
       const messages = await MessageService.getMessagesByConversationId(conversationId);
 
-      res.status(200).json({
-        success: true,
-        message: 'Messages_fetched_successfully',
-        data: messages
-      });
+      res.status(200).json(
+        buildSuccessResponse(messages, 'Messages fetched successfully')
+      );
     } catch (error) {
       if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message
-        });
+        res.status(error.statusCode).json(
+          buildErrorResponse(error.message)
+        );
       } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error'
-        });
+        res.status(500).json(
+          buildErrorResponse('Internal server error')
+        );
       }
     }
   }

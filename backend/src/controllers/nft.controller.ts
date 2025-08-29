@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { nftService } from "@/services/nft.service";
 import { CreateNFTAwardedDTO } from "@/types/nft.types";
+import { buildSuccessResponse, buildErrorResponse } from '../utils/responseBuilder';
 
 export const registerMintedNFTHandler = async (
   req: Request,
@@ -14,11 +15,9 @@ export const registerMintedNFTHandler = async (
     const { user_id, nft_type, token_id_on_chain } = nftData;
 
     if (!user_id || !nft_type || !token_id_on_chain) {
-      res.status(400).json({
-        success: false,
-        message:
-          "Missing required fields: user_id, nft_type, token_id_on_chain",
-      });
+      res.status(400).json(
+        buildErrorResponse("Missing required fields: user_id, nft_type, token_id_on_chain")
+      );
       return;
     }
 
@@ -26,29 +25,25 @@ export const registerMintedNFTHandler = async (
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(user_id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid user ID format",
-      });
+      res.status(400).json(
+        buildErrorResponse("Invalid user ID format")
+      );
       return;
     }
 
     // Validate string fields are not empty
     if (nft_type.trim().length === 0 || token_id_on_chain.trim().length === 0) {
-      res.status(400).json({
-        success: false,
-        message: "nft_type and token_id_on_chain cannot be empty",
-      });
+      res.status(400).json(
+        buildErrorResponse("nft_type and token_id_on_chain cannot be empty")
+      );
       return;
     }
 
     const newNFT = await nftService.registerMintedNFT(nftData);
 
-    res.status(201).json({
-      success: true,
-      message: "NFT minting recorded successfully",
-      data: newNFT,
-    });
+    res.status(201).json(
+      buildSuccessResponse(newNFT, "NFT minting recorded successfully")
+    );
   
 };
 
@@ -64,20 +59,17 @@ export const getNFTsByUserHandler = async (
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid user ID format",
-      });
+      res.status(400).json(
+        buildErrorResponse("Invalid user ID format")
+      );
       return;
     }
 
     const nfts = await nftService.getNFTsByUser(id);
 
-    res.status(200).json({
-      success: true,
-      message: "User NFTs retrieved successfully",
-      data: nfts,
-    });
+    res.status(200).json(
+      buildSuccessResponse(nfts, "User NFTs retrieved successfully")
+    );
   
 };
 
@@ -93,28 +85,24 @@ export const getNFTByIdHandler = async (
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid NFT ID format",
-      });
+      res.status(400).json(
+        buildErrorResponse("Invalid NFT ID format")
+      );
       return;
     }
 
     const nft = await nftService.getNFTById(id);
 
     if (!nft) {
-      res.status(404).json({
-        success: false,
-        message: "NFT not found",
-      });
+      res.status(404).json(
+        buildErrorResponse("NFT not found")
+      );
       return;
     }
 
-    res.status(200).json({
-      success: true,
-      message: "NFT retrieved successfully",
-      data: nft,
-    });
+    res.status(200).json(
+      buildSuccessResponse(nft, "NFT retrieved successfully")
+    );
   
 };
 

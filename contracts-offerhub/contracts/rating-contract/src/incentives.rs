@@ -149,24 +149,4 @@ fn check_improvement_award(_env: &Env, _user: &Address) -> bool {
     false
 }
 
-pub fn calculate_incentive_value(incentive_type: &String) -> u32 {
-    // Simplified value calculation for Soroban compatibility
-    if incentive_type == &String::from_str(&soroban_sdk::Env::default(), "first_five_star") {
-        100
-    } else if incentive_type == &String::from_str(&soroban_sdk::Env::default(), "ten_reviews") {
-        250
-    } else {
-        500 // default value
-    }
-}
 
-pub fn get_seasonal_incentives(env: &Env) -> Vec<String> {
-    // Return current seasonal or limited-time incentives
-    let mut seasonal = Vec::new(env);
-    
-    // This would be based on current date/season in production
-    seasonal.push_back(String::from_str(env, "winter_excellence"));
-    seasonal.push_back(String::from_str(env, "new_year_boost"));
-    
-    seasonal
-}

@@ -5,6 +5,10 @@ mod contract;
 mod storage;
 mod test;
 mod types;
+mod validation;
+
+// #[cfg(test)]
+// mod validation_test;
 
 use crate::types::{DisputeData, DisputeOutcome, Error, Evidence, ArbitratorData};
 use soroban_sdk::{contract, contractimpl, Address, Env, String, Vec};
@@ -140,5 +144,18 @@ impl DisputeResolutionContract {
 
     pub fn get_mediators(env: Env) -> Result<Vec<Address>, Error> {
         Ok(access::get_mediators(&env))
+    }
+
+    // ===== Rate limiting admin helpers =====
+    pub fn set_rate_limit_bypass(env: Env, admin: Address, user: Address, bypass: bool) -> Result<(), Error> {
+        storage::set_bypass(&env, &admin, &user, bypass)
+    }
+
+    pub fn reset_rate_limit(env: Env, admin: Address, user: Address, limit_type: String) -> Result<(), Error> {
+        // simple admin check against ARBITRATOR key
+        let stored_admin: Option<Address> = env.storage().instance().get(&storage::ARBITRATOR);
+        if stored_admin.as_ref() != Some(&admin) { return Err(Error::Unauthorized); }
+        storage::reset_rate_limit(&env, &user, &limit_type);
+        Ok(())
     }
 }

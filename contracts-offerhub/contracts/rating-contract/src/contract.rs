@@ -6,15 +6,15 @@ use crate::moderation::{report_feedback as report_feedback_impl, moderate_feedba
 use crate::restrictions::{check_and_apply_restrictions, get_user_privileges, check_restriction_status};
 use crate::storage::{
     save_admin, get_admin, save_rating, save_feedback, get_user_rating_stats, 
-    save_user_rating_stats, increment_platform_stat, save_rating_threshold, 
-    get_rating_threshold, add_user_feedback_id, get_user_feedback_ids, get_feedback,
-    get_user_rating_history, save_reputation_contract, get_reputation_contract
+    save_user_rating_stats, increment_platform_stat, save_rating_threshold, add_user_feedback_id, get_user_feedback_ids, get_feedback,
+    get_user_rating_history, save_reputation_contract, get_reputation_contract,
+    check_rate_limit, set_rate_limit_bypass, reset_rate_limit,
 };
 use crate::types::{
     Error, Rating, RatingStats, Feedback, UserRatingData, RatingThreshold,
-    require_auth, MIN_RATINGS_FOR_STATS
+    require_auth
 };
-use crate::validation::{validate_rating, validate_feedback, validate_rating_eligibility, check_spam_prevention};
+use crate::validation::{validate_submit_rating, validate_report_feedback};
 use soroban_sdk::{Address, Env, String, Vec, IntoVal};
 
 pub struct RatingContract;
@@ -55,12 +55,13 @@ impl RatingContract {
         work_category: String,
     ) -> Result<(), Error> {
         require_auth(&caller)?;
+    // Rate limit: max 5 per hour per user
+    let limit_type = String::from_str(&env, "submit_rating");
+    // 3600 seconds
+    check_rate_limit(&env, &caller, &limit_type, 5, 3600)?;
         
-        // Validate inputs
-        validate_rating(rating)?;
-        validate_feedback(&feedback)?;
-        validate_rating_eligibility(&env, &caller, &rated_user, &contract_id)?;
-        check_spam_prevention(&env, &caller)?;
+        // Comprehensive input validation
+        validate_submit_rating(&env, &caller, &rated_user, &contract_id, rating, &feedback, &work_category)?;
         
         // Generate unique IDs
         let rating_id = Self::generate_rating_id(&env, &caller, &rated_user, &contract_id);
@@ -116,6 +117,19 @@ impl RatingContract {
         Ok(())
     }
 
+    // Admin: toggle rate limit bypass for a user
+    pub fn set_rate_limit_bypass(env: Env, admin: Address, user: Address, bypass: bool) -> Result<(), Error> {
+        set_rate_limit_bypass(&env, &admin, &user, bypass)
+    }
+
+    // Admin: reset a user's rate limit window for a type
+    pub fn reset_rate_limit(env: Env, admin: Address, user: Address, limit_type: String) -> Result<(), Error> {
+        // simple admin auth
+        if get_admin(&env) != admin { return Err(Error::Unauthorized); }
+        reset_rate_limit(&env, &user, &limit_type);
+        Ok(())
+    }
+
     pub fn get_user_rating_stats(env: Env, user: Address) -> Result<RatingStats, Error> {
         get_user_rating_stats(&env, &user)
     }
@@ -167,6 +181,8 @@ impl RatingContract {
         feedback_id: String,
         reason: String,
     ) -> Result<(), Error> {
+        // Input validation
+        validate_report_feedback(&env, &caller, &feedback_id, &reason)?;
         report_feedback_impl(&env, &caller, &feedback_id, &reason)
     }
 

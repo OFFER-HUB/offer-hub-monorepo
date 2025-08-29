@@ -5,6 +5,7 @@ mod error;
 mod event;
 mod storage;
 mod utils;
+mod validation;
 #[cfg(test)]
 mod test;
 #[cfg(test)]

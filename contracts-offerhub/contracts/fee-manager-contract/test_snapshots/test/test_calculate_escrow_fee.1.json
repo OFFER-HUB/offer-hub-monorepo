@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 4,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -29,7 +30,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -80,10 +81,7 @@
                                 "symbol": "arbitrator_fee_percentage"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 300
-                                }
+                                "i128": "300"
                               }
                             },
                             {
@@ -91,10 +89,7 @@
                                 "symbol": "dispute_fee_percentage"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 500
-                                }
+                                "i128": "500"
                               }
                             },
                             {
@@ -102,10 +97,7 @@
                                 "symbol": "escrow_fee_percentage"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 250
-                                }
+                                "i128": "250"
                               }
                             },
                             {
@@ -146,10 +138,7 @@
                                 "symbol": "total_dispute_fees"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "i128": "0"
                               }
                             },
                             {
@@ -157,10 +146,7 @@
                                 "symbol": "total_escrow_fees"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "i128": "0"
                               }
                             },
                             {
@@ -168,10 +154,7 @@
                                 "symbol": "total_fees_collected"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "i128": "0"
                               }
                             },
                             {
@@ -179,10 +162,7 @@
                                 "symbol": "total_premium_exemptions"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "i128": "0"
                               }
                             },
                             {
@@ -217,7 +197,7 @@
                                     "symbol": "added_at"
                                   },
                                   "val": {
-                                    "u64": 0
+                                    "u64": "0"
                                   }
                                 },
                                 {
@@ -257,7 +237,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 801925984706572462
+                "nonce": "801925984706572462"
               }
             },
             "durability": "temporary"
@@ -272,7 +252,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 801925984706572462
+                    "nonce": "801925984706572462"
                   }
                 },
                 "durability": "temporary",

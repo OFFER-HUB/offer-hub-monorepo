@@ -4,15 +4,20 @@ use crate::{
     error::{handle_error, Error},
     storage::{
         DEFAULT_ARBITRATOR_FEE_PERCENTAGE, DEFAULT_DISPUTE_FEE_PERCENTAGE,
-        DEFAULT_ESCROW_FEE_PERCENTAGE, DISPUTE_FEE, ESCROW_FEE, FEE_CONFIG, FEE_HISTORY,
-        FEE_PRECISION, FEE_STATS, PLATFORM_BALANCE, PREMIUM_USERS,
+        DEFAULT_ESCROW_FEE_PERCENTAGE, FEE_CONFIG, FEE_HISTORY, FEE_STATS, PLATFORM_BALANCE, PREMIUM_USERS,
     },
-    types::{FeeCalculation, FeeConfig, FeeDistribution, FeeRecord, FeeStats, PremiumUser, FEE_TYPE_ESCROW, FEE_TYPE_DISPUTE},
+    types::{FeeCalculation, FeeConfig, FeeRecord, FeeStats, PremiumUser, FEE_TYPE_ESCROW, FEE_TYPE_DISPUTE},
+    validation::{validate_initialization, validate_fee_rates, validate_fee_calculation, validate_withdrawal_amount, validate_fee_type, validate_address},
 };
 
 pub fn initialize(env: &Env, admin: Address, platform_wallet: Address) {
     if env.storage().instance().has(&FEE_CONFIG) {
         handle_error(env, Error::AlreadyInitialized);
+    }
+    
+    // Input validation
+    if let Err(e) = validate_initialization(env, &admin, &platform_wallet) {
+        handle_error(env, e);
     }
 
     let fee_config = FeeConfig {
@@ -55,15 +60,9 @@ pub fn set_fee_rates(
     // Only admin can set fee rates
     fee_config.admin.require_auth();
 
-    // Validate fee percentages (0-1000 basis points = 0-10%)
-    if escrow_fee_percentage < 0 || escrow_fee_percentage > 1000 {
-        handle_error(env, Error::InvalidFeePercentage);
-    }
-    if dispute_fee_percentage < 0 || dispute_fee_percentage > 1000 {
-        handle_error(env, Error::InvalidFeePercentage);
-    }
-    if arbitrator_fee_percentage < 0 || arbitrator_fee_percentage > 1000 {
-        handle_error(env, Error::InvalidFeePercentage);
+    // Input validation
+    if let Err(e) = validate_fee_rates(escrow_fee_percentage, dispute_fee_percentage, arbitrator_fee_percentage) {
+        handle_error(env, e);
     }
 
     fee_config.escrow_fee_percentage = escrow_fee_percentage;
@@ -81,6 +80,11 @@ pub fn set_fee_rates(
 pub fn add_premium_user(env: &Env, user: Address) {
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
     fee_config.admin.require_auth();
+    
+    // Input validation
+    if let Err(_) = validate_address(&user) {
+        handle_error(env, Error::Unauthorized);
+    }
 
     let mut premium_users: Vec<PremiumUser> = env.storage().instance().get(&PREMIUM_USERS).unwrap();
 
@@ -134,8 +138,9 @@ pub fn remove_premium_user(env: &Env, user: Address) {
 }
 
 pub fn calculate_escrow_fee(env: &Env, amount: i128, user: Address) -> FeeCalculation {
-    if amount <= 0 {
-        handle_error(env, Error::InvalidAmount);
+    // Input validation
+    if let Err(e) = validate_fee_calculation(amount, &user) {
+        handle_error(env, e);
     }
 
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
@@ -155,8 +160,9 @@ pub fn calculate_escrow_fee(env: &Env, amount: i128, user: Address) -> FeeCalcul
 }
 
 pub fn calculate_dispute_fee(env: &Env, amount: i128, user: Address) -> FeeCalculation {
-    if amount <= 0 {
-        handle_error(env, Error::InvalidAmount);
+    // Input validation
+    if let Err(e) = validate_fee_calculation(amount, &user) {
+        handle_error(env, e);
     }
 
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
@@ -176,8 +182,12 @@ pub fn calculate_dispute_fee(env: &Env, amount: i128, user: Address) -> FeeCalcu
 }
 
 pub fn collect_fee(env: &Env, amount: i128, fee_type: u32, user: Address) -> i128 {
-    if amount <= 0 {
-        handle_error(env, Error::InvalidAmount);
+    // Input validation
+    if let Err(e) = validate_fee_calculation(amount, &user) {
+        handle_error(env, e);
+    }
+    if let Err(e) = validate_fee_type(fee_type) {
+        handle_error(env, e);
     }
 
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
@@ -242,8 +252,9 @@ pub fn withdraw_platform_fees(env: &Env, amount: i128) {
 
     let mut platform_balance: i128 = env.storage().instance().get(&PLATFORM_BALANCE).unwrap();
 
-    if amount <= 0 || amount > platform_balance {
-        handle_error(env, Error::InvalidAmount);
+    // Input validation
+    if let Err(e) = validate_withdrawal_amount(amount, platform_balance) {
+        handle_error(env, e);
     }
 
     platform_balance -= amount;
@@ -329,16 +340,4 @@ fn calculate_fee_amount(amount: i128, fee_percentage: i128) -> i128 {
     }
 }
 
-// Helper function to distribute fees between platform and arbitrator
-pub fn distribute_dispute_fee(env: &Env, total_fee: i128) -> FeeDistribution {
-    let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
-    
-    let arbitrator_fee = calculate_fee_amount(total_fee, fee_config.arbitrator_fee_percentage);
-    let platform_fee = total_fee - arbitrator_fee;
-
-    FeeDistribution {
-        platform_fee,
-        arbitrator_fee,
-        total_fee,
-    }
-} 
+ 

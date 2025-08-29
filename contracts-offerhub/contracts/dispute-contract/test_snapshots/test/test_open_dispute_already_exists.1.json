@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 6,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -18,7 +19,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
-                  "u64": 86400
+                  "u64": "86400"
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -33,44 +34,10 @@
         }
       ]
     ],
-    [
-      [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
-        {
-          "function": {
-            "contract_fn": {
-              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "open_dispute",
-              "args": [
-                {
-                  "u32": 1
-                },
-                {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
-                },
-                {
-                  "string": "reason 1"
-                },
-                {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
-                },
-                {
-                  "i128": {
-                    "hi": 0,
-                    "lo": 1000000
-                  }
-                }
-              ]
-            }
-          },
-          "sub_invocations": []
-        }
-      ]
-    ],
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 1000,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -115,157 +82,7 @@
                           "symbol": "DISPUTES"
                         },
                         "val": {
-                          "map": [
-                            {
-                              "key": {
-                                "u32": 1
-                              },
-                              "val": {
-                                "map": [
-                                  {
-                                    "key": {
-                                      "symbol": "arbitrator"
-                                    },
-                                    "val": "void"
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "dispute_amount"
-                                    },
-                                    "val": {
-                                      "i128": {
-                                        "hi": 0,
-                                        "lo": 1000000
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "escrow_contract"
-                                    },
-                                    "val": {
-                                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "evidence"
-                                    },
-                                    "val": {
-                                      "vec": []
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "fee_collected"
-                                    },
-                                    "val": {
-                                      "i128": {
-                                        "hi": 0,
-                                        "lo": 0
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "fee_manager"
-                                    },
-                                    "val": {
-                                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "initiator"
-                                    },
-                                    "val": {
-                                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "level"
-                                    },
-                                    "val": {
-                                      "vec": [
-                                        {
-                                          "symbol": "Mediation"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "mediator"
-                                    },
-                                    "val": "void"
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "outcome"
-                                    },
-                                    "val": {
-                                      "vec": [
-                                        {
-                                          "symbol": "None"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "reason"
-                                    },
-                                    "val": {
-                                      "string": "reason 1"
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "resolution_timestamp"
-                                    },
-                                    "val": "void"
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "resolved"
-                                    },
-                                    "val": {
-                                      "bool": false
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "status"
-                                    },
-                                    "val": {
-                                      "vec": [
-                                        {
-                                          "symbol": "Open"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "timeout_timestamp"
-                                    },
-                                    "val": {
-                                      "u64": 87400
-                                    }
-                                  },
-                                  {
-                                    "key": {
-                                      "symbol": "timestamp"
-                                    },
-                                    "val": {
-                                      "u64": 1000
-                                    }
-                                  }
-                                ]
-                              }
-                            }
-                          ]
+                          "map": []
                         }
                       },
                       {
@@ -289,7 +106,7 @@
                           "symbol": "TIMEOUT"
                         },
                         "val": {
-                          "u64": 86400
+                          "u64": "86400"
                         }
                       }
                     ]
@@ -308,7 +125,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 801925984706572462
+                "nonce": "801925984706572462"
               }
             },
             "durability": "temporary"
@@ -323,40 +140,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 801925984706572462
-                  }
-                },
-                "durability": "temporary",
-                "val": "void"
-              }
-            },
-            "ext": "v0"
-          },
-          6311999
-        ]
-      ],
-      [
-        {
-          "contract_data": {
-            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
-            "key": {
-              "ledger_key_nonce": {
-                "nonce": 5541220902715666415
-              }
-            },
-            "durability": "temporary"
-          }
-        },
-        [
-          {
-            "last_modified_ledger_seq": 0,
-            "data": {
-              "contract_data": {
-                "ext": "v0",
-                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
-                "key": {
-                  "ledger_key_nonce": {
-                    "nonce": 5541220902715666415
+                    "nonce": "801925984706572462"
                   }
                 },
                 "durability": "temporary",

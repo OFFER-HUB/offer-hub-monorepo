@@ -5,6 +5,8 @@ import AccountManagementTable from "@/components/user-management/account-managem
 import UserVerificationTable from "@/components/user-management/UserVerificationTable"
 import UserAnalyticsTable from "@/components/user-management/UserAnalyticsTable"
 import ProfileSection from "@/components/profile/profile-section"
+import { AdminAuth } from "@/components/admin/AdminAuth"
+import { useAdminUsersApi } from "@/hooks/api-connections/use-admin-users-api"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { useEffect, useState, Suspense } from "react"
 
@@ -14,6 +16,8 @@ function UserVerificationContent() {
   const router = useRouter()
   const pathname = usePathname()
   const [activeTab, setActiveTab] = useState("verification")
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { getAuthToken } = useAdminUsersApi()
 
   useEffect(() => {
     const tab = searchParams.get("tab")
@@ -24,6 +28,14 @@ function UserVerificationContent() {
     }
   }, [searchParams])
 
+  useEffect(() => {
+    // Check if user is already authenticated
+    const token = getAuthToken()
+    if (token) {
+      setIsAuthenticated(true)
+    }
+  }, [getAuthToken])
+
   const handleTabChange = (value: string) => {
     setActiveTab(value)
 
@@ -32,6 +44,15 @@ function UserVerificationContent() {
     } else {
       router.replace(`${pathname}?tab=${value}`, { scroll: false })
     }
+  }
+
+  const handleAuthenticated = () => {
+    setIsAuthenticated(true)
+  }
+
+  // Show authentication screen if not authenticated
+  if (!isAuthenticated) {
+    return <AdminAuth onAuthenticated={handleAuthenticated} />
   }
 
   return (

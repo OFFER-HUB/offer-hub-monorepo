@@ -2,6 +2,12 @@ export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data?: T;
+  pagination?: {
+    current_page: number;
+    total_pages: number;
+    total_items: number;
+    per_page: number;
+  };
 }
 
 export interface CreateResponse<T> extends ApiResponse<T> {

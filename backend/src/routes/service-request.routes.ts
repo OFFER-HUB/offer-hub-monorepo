@@ -4,11 +4,29 @@ import {
   getRequestsForFreelancerHandler,
   updateRequestStatusHandler,
 } from "@/controllers/service-request.controller";
+import { authorizeRoles, verifyToken } from "@/middlewares/auth.middleware";
 
 const router = Router();
 
-router.post("/", createServiceRequestHandler);
-router.get("/:freelancerId", getRequestsForFreelancerHandler);
-router.patch("/:id", updateRequestStatusHandler);
+router.post(
+  "/",
+  verifyToken,
+  authorizeRoles("client", "admin"),
+  createServiceRequestHandler
+);
+
+router.get(
+  "/:freelancerId",
+  verifyToken,
+  authorizeRoles("freelancer", "admin"),
+  getRequestsForFreelancerHandler
+);
+
+router.patch(
+  "/:id",
+  verifyToken,
+  authorizeRoles("freelancer", "admin"),
+  updateRequestStatusHandler
+);
 
 export default router;

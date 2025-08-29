@@ -17,6 +17,7 @@ pub enum Error {
     ReputationContractNotSet = 12,
     AlreadyModerator = 13,
     NotModerator = 14,
+    RateLimitExceeded = 15,
 }
 
 #[contracttype]
@@ -102,20 +103,21 @@ pub const MODERATOR: &[u8] = &[1];
 pub const RATING: &[u8] = &[2];
 pub const FEEDBACK: &[u8] = &[3];
 pub const USER_RATING_STATS: &[u8] = &[4];
-pub const USER_RATINGS: &[u8] = &[5];
-pub const CONTRACT_RATINGS: &[u8] = &[6];
+
 pub const FEEDBACK_REPORTS: &[u8] = &[7];
 pub const RATING_THRESHOLDS: &[u8] = &[8];
 pub const INCENTIVE_RECORDS: &[u8] = &[9];
 pub const REPUTATION_CONTRACT: &[u8] = &[10];
 pub const PLATFORM_STATS: &[u8] = &[11];
 pub const USER_RESTRICTIONS: &[u8] = &[12];
+pub const RATE_LIMITS: &[u8] = &[13];
+pub const RATE_LIMIT_BYPASS: &[u8] = &[14];
 
 // Rating validation constants
 pub const MIN_RATING: u32 = 1;
 pub const MAX_RATING: u32 = 5;
 pub const MAX_FEEDBACK_LENGTH: u32 = 1000;
-pub const MIN_RATINGS_FOR_STATS: u32 = 3;
+
 
 // Default thresholds
 pub const DEFAULT_RESTRICTION_THRESHOLD: u32 = 250; // 2.50 average rating
@@ -125,4 +127,11 @@ pub const DEFAULT_TOP_RATED_THRESHOLD: u32 = 480; // 4.80 average rating
 pub fn require_auth(address: &Address) -> Result<(), Error> {
     address.require_auth();
     Ok(())
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct RateLimitEntry {
+    pub current_calls: u32,
+    pub window_start: u64,
 }

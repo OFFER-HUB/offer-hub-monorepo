@@ -10,3 +10,5 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT NOW(),
   last_login_at TIMESTAMP
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS nonce TEXT;

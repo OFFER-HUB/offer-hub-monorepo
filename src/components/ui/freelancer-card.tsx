@@ -1,7 +1,12 @@
+
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StarRating from "@/components/ui/star-rating";
+import ServiceRequestModal from "@/components/modals/service-request-modal";
 import type { Freelancer } from "@/data/landing-data";
 
 export default function FreelancerCard({
@@ -12,7 +17,9 @@ export default function FreelancerCard({
   reviews,
   hourlyRate,
   verified,
-}: Freelancer) {
+  serviceId,
+}: Freelancer & { serviceId: string }) {
+  const [modalOpen, setModalOpen] = useState(false);
   return (
     <div className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
       <div className="h-32 bg-gradient-to-r from-[#002333] to-[#15949C] relative">
@@ -45,11 +52,17 @@ export default function FreelancerCard({
           <Button
             size="sm"
             className="bg-[#15949C] hover:bg-[#15949C]/90 text-white"
+            onClick={() => setModalOpen(true)}
           >
             Hire Me
           </Button>
         </div>
       </div>
+      <ServiceRequestModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        serviceId={serviceId}
+      />
     </div>
   );
 }

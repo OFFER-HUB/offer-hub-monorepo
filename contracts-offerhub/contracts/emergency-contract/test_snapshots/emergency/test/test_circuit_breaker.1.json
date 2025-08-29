@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 2,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -13,7 +14,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -82,7 +83,7 @@
                                     "symbol": "timestamp"
                                   },
                                   "val": {
-                                    "u64": 0
+                                    "u64": "0"
                                   }
                                 }
                               ]
@@ -129,10 +130,7 @@
                                 "symbol": "emergency_fund"
                               },
                               "val": {
-                                "u128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "u128": "0"
                               }
                             },
                             {
@@ -148,7 +146,7 @@
                                 "symbol": "last_emergency_check"
                               },
                               "val": {
-                                "u64": 0
+                                "u64": "0"
                               }
                             },
                             {

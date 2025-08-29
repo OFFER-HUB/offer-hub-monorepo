@@ -6,12 +6,13 @@ import {
   getNFTsByTypeHandler,
   getNFTTypesHandler,
 } from "@/controllers/nft.controller";
+import { verifyToken } from "@/middlewares/auth.middleware";
 
 const router = Router();
 
 // POST /api/nfts-awarded - Record NFT minting
 // Protected route - requires authentication
-router.post("/", registerMintedNFTHandler);
+router.post("/", verifyToken, registerMintedNFTHandler);
 
 // GET /api/nfts-awarded/user/:id - Get all NFTs earned by user
 // Public route - no authentication required
@@ -29,4 +30,4 @@ router.get("/type/:type", getNFTsByTypeHandler);
 // Public route - no authentication required
 router.get("/types/list", getNFTTypesHandler);
 
-export default router; 
+export default router;

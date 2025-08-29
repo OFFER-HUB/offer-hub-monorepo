@@ -1,5 +1,4 @@
 use crate::error::handle_error;
-use crate::escrow_contract;
 use crate::storage;
 use crate::types::{
     EscrowCreateParams, MilestoneCreateParams, MilestoneCreateResult, MilestoneParams,
@@ -41,7 +40,7 @@ pub fn deploy_new_escrow(env: Env, create_params: EscrowCreateParams) -> Address
         .deploy_v2(wasm_hash.unwrap(), ());
 
     // Initialize escrow
-    let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+    let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
     escrow_client.init_contract(
         &create_params.client,
         &create_params.freelancer,
@@ -82,7 +81,7 @@ pub fn batch_deposit_funds(env: Env, escrow_ids: Vec<u32>, client: Address) {
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         escrow_client.deposit_funds(&client);
     }
 }
@@ -99,7 +98,7 @@ pub fn batch_release_funds(env: Env, escrow_ids: Vec<u32>, freelancer: Address) 
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         escrow_client.release_funds(&freelancer);
     }
 }
@@ -116,7 +115,7 @@ pub fn batch_create_disputes(env: Env, escrow_ids: Vec<u32>, caller: Address) {
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         escrow_client.dispute(&caller);
     }
 }
@@ -133,7 +132,7 @@ pub fn batch_resolve_disputes(env: Env, caller: Address, dispute_params: Vec<Dis
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         escrow_client.resolve_dispute(&caller, &param.result);
     }
 }
@@ -156,7 +155,7 @@ pub fn batch_add_milestones(
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         let milestone_id = escrow_client.add_milestone(&client, &param.desc, &param.amount);
 
         let result = MilestoneCreateResult {
@@ -182,7 +181,7 @@ pub fn batch_approve_milestones(env: Env, milestone_params: Vec<MilestoneParams>
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         escrow_client.approve_milestone(&client, &param.milestone_id);
     }
 }
@@ -203,7 +202,7 @@ pub fn batch_release_milestones(
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         escrow_client.release_milestone(&freelancer, &param.milestone_id);
     }
 }
@@ -220,10 +219,10 @@ pub fn batch_archive_escrows(env: Env, escrow_ids: Vec<u32>) -> Vec<u32> {
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         let escrow_data = escrow_client.get_escrow_data();
 
-        if escrow_data.status == escrow_contract::EscrowStatus::Released {
+        if escrow_data.status == crate::escrow_contract::EscrowStatus::Released {
             archived_escrows.push_back(escrow_id.clone());
             storage::archive_escrow(&env, escrow_id, escrow_address);
         }
@@ -235,7 +234,7 @@ pub fn batch_archive_escrows(env: Env, escrow_ids: Vec<u32>) -> Vec<u32> {
 pub fn batch_check_escrow_status(
     env: Env,
     escrow_ids: Vec<u32>,
-) -> Vec<escrow_contract::EscrowStatus> {
+) -> Vec<crate::escrow_contract::EscrowStatus> {
     let mut escrow_statuses = Vec::new(&env);
 
     for escrow_id in escrow_ids.iter() {
@@ -247,7 +246,7 @@ pub fn batch_check_escrow_status(
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         let escrow_data = escrow_client.get_escrow_data();
         escrow_statuses.push_back(escrow_data.status);
     }
@@ -258,7 +257,7 @@ pub fn batch_check_escrow_status(
 pub fn batch_get_escrow_information(
     env: Env,
     escrow_ids: Vec<u32>,
-) -> Vec<escrow_contract::EscrowData> {
+) -> Vec<crate::escrow_contract::EscrowData> {
     let mut escrows = Vec::new(&env);
 
     for escrow_id in escrow_ids.iter() {
@@ -270,7 +269,7 @@ pub fn batch_get_escrow_information(
 
         let escrow_address = escrow_address.unwrap();
 
-        let escrow_client = escrow_contract::Client::new(&env, &escrow_address);
+        let escrow_client = crate::escrow_contract::Client::new(&env, &escrow_address);
         let escrow_data = escrow_client.get_escrow_data();
         escrows.push_back(escrow_data);
     }
@@ -291,8 +290,8 @@ pub fn is_archived(env: Env, escrow_id: Option<u32>, escrow_address: Option<Addr
         if let Some(id) = storage::escrow_id_by_addr(&env, &addr) {
             return storage::is_archived(&env, id);
         }
-        handle_error(&Env::default(), Error::EscrowIdNotFoundError);
+        handle_error(&env, Error::EscrowIdNotFoundError);
     }
 
-    handle_error(&Env::default(), Error::EscrowInfoNotSet)
+    handle_error(&env, Error::EscrowInfoNotSet)
 }

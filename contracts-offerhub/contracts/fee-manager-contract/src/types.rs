@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, String, Symbol, Vec};
+use soroban_sdk::{contracttype, Address, String};
 
 // Fee type constants
 pub const FEE_TYPE_ESCROW: u32 = 1;

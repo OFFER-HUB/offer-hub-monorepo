@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, Env, Symbol};
+use soroban_sdk::{contracterror, Env};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]

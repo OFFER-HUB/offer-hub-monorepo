@@ -110,14 +110,4 @@ pub fn emit_achievement_earned(
     );
 }
 
-pub fn emit_reputation_updated(
-    env: &Env,
-    user: &Address,
-    old_rating: u32,
-    new_rating: u32,
-) {
-    env.events().publish(
-        (symbol_short!("repute"), symbol_short!("update")),
-        (user, old_rating, new_rating),
-    );
-}
+

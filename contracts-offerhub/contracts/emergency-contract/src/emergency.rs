@@ -37,13 +37,13 @@ pub struct RecoveryRequest {
 const EMERGENCY_PAUSE: Symbol = symbol_short!("PAUSE");
 const EMERGENCY_UNPAUSE: Symbol = symbol_short!("UNPAUSE");
 const CIRCUIT_BREAKER: Symbol = symbol_short!("CIRCUIT");
-const RECOVERY_REQUEST: Symbol = symbol_short!("RECOVERY");
+
 const EMERGENCY_WITHDRAWAL: Symbol = symbol_short!("WITHDRAW");
 
 // Status constants
 const STATUS_PENDING: Symbol = symbol_short!("PENDING");
 const STATUS_APPROVED: Symbol = symbol_short!("APPROVED");
-const STATUS_REJECTED: Symbol = symbol_short!("REJECTED");
+
 
 // Error types
 #[contracterror]
@@ -193,7 +193,7 @@ impl EmergencyContract {
     }
 
     // Emergency fund withdrawal
-    pub fn emergency_fund_withdrawal(env: &Env, amount: u128, recipient: Address) {
+    pub fn emergency_fund_withdrawal(env: &Env, amount: u128, _recipient: Address) {
         Self::check_admin_authorization(env);
         
         let mut state: EmergencyState = env.storage().instance().get(&symbol_short!("STATE"))

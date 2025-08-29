@@ -3,7 +3,8 @@ use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol};
 use crate::error::ContractError;
 use crate::event;
 use crate::storage::{DataKey, PublicationData};
-use crate::utils::{ValidationHelpers, StorageOptimizer};
+use crate::utils::StorageOptimizer;
+use crate::validation::validate_publication;
 
 #[contract]
 pub struct PublicationContract;
@@ -24,19 +25,8 @@ impl PublicationContract {
        
         user.require_auth();
 
-        // Validate input data using optimized validation helpers.
-        if !ValidationHelpers::validate_publication_type(&env, &publication_type) {
-            return Err(ContractError::InvalidPublicationType);
-        }
-        if !ValidationHelpers::validate_title(&title) {
-            return Err(ContractError::TitleTooShort);
-        }
-        if !ValidationHelpers::validate_amount(amount) {
-            return Err(ContractError::InvalidAmount);
-        }
-        if !ValidationHelpers::validate_category(&category) {
-            return Err(ContractError::ValidationError);
-        }
+        // Comprehensive input validation
+        validate_publication(&env, &user, &publication_type, &title, &category, amount, timestamp)?;
 
         // Get the next publication ID for this specific user.
         let user_post_count_key = DataKey::UserPostCount(user.clone());

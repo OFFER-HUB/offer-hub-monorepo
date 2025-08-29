@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 5,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -10,7 +11,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 1000,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -53,10 +54,7 @@
                                 "symbol": "amount"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 500000000
-                                }
+                                "i128": "500000000"
                               }
                             },
                             {
@@ -80,7 +78,7 @@
                                 "symbol": "created_at"
                               },
                               "val": {
-                                "u64": 1000
+                                "u64": "1000"
                               }
                             },
                             {
@@ -102,10 +100,7 @@
                                 "symbol": "fee_collected"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "i128": "0"
                               }
                             },
                             {
@@ -151,10 +146,7 @@
                                 "symbol": "net_amount"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 500000000
-                                }
+                                "i128": "500000000"
                               }
                             },
                             {
@@ -162,10 +154,7 @@
                                 "symbol": "released_amount"
                               },
                               "val": {
-                                "i128": {
-                                  "hi": 0,
-                                  "lo": 0
-                                }
+                                "i128": "0"
                               }
                             },
                             {
@@ -197,7 +186,7 @@
                                 "symbol": "timeout_secs"
                               },
                               "val": {
-                                "u64": 100
+                                "u64": "3600"
                               }
                             },
                             {

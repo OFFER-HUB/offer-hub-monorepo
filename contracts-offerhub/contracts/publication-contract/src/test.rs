@@ -48,7 +48,7 @@ fn test_publish_service_success() {
     let title = String::from_str(&test.env, "Build a Website");
     let category = String::from_str(&test.env, "Web Development");
     let amount = 1000;
-    let timestamp = 1234567890;
+    let timestamp = test.env.ledger().timestamp();
 
     let id = test.contract.publish(
         &test.user1,
@@ -100,7 +100,7 @@ fn test_publish_project_and_user_counter() {
         &"First Service".into_val(&test.env),
         &"Cat A".into_val(&test.env),
         &100,
-        &1,
+        &test.env.ledger().timestamp(),
     );
 
     // Second publication by the same user should increment the ID
@@ -110,7 +110,7 @@ fn test_publish_project_and_user_counter() {
         &"Second Project".into_val(&test.env),
         &"Cat B".into_val(&test.env),
         &200,
-        &2,
+        &test.env.ledger().timestamp(),
     );
 
     assert_eq!(id, 2);
@@ -134,7 +134,7 @@ fn test_multiple_users_have_separate_counters() {
         &"User 1 Service".into_val(&test.env),
         &"Cat A".into_val(&test.env),
         &100,
-        &1,
+        &test.env.ledger().timestamp(),
     );
     assert_eq!(id1, 1);
 
@@ -145,7 +145,7 @@ fn test_multiple_users_have_separate_counters() {
         &"User 2 Project".into_val(&test.env),
         &"Cat B".into_val(&test.env),
         &200,
-        &2,
+        &test.env.ledger().timestamp(),
     );
     assert_eq!(id2, 1);
 }

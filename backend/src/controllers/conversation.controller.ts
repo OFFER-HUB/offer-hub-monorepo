@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { ConversationService } from '@/services/conversation.service';
 import { CreateConversationDTO } from '@/types/conversation.types';
 import { AppError } from '@/utils/AppError';
+import { buildSuccessResponse, buildErrorResponse } from '../utils/responseBuilder';
+
 const isUUID = (str: string): boolean => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(str);
@@ -41,22 +43,18 @@ export class ConversationController {
 
       const conversation = await ConversationService.createConversation(conversationData);
 
-      res.status(201).json({
-        success: true,
-        message: 'Conversation_created_successfully',
-        data: conversation
-      });
+      res.status(201).json(
+        buildSuccessResponse(conversation, 'Conversation created successfully')
+      );
     } catch (error) {
       if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message
-        });
+        res.status(error.statusCode).json(
+          buildErrorResponse(error.message)
+        );
       } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error'
-        });
+        res.status(500).json(
+          buildErrorResponse('Internal server error')
+        );
       }
     }
   }
@@ -72,22 +70,18 @@ export class ConversationController {
 
       const conversations = await ConversationService.getConversationsByUserId(userId);
 
-      res.status(200).json({
-        success: true,
-        message: 'Conversations_fetched_successfully',
-        data: conversations
-      });
+      res.status(200).json(
+        buildSuccessResponse(conversations, 'Conversations fetched successfully')
+      );
     } catch (error) {
       if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message
-        });
+        res.status(error.statusCode).json(
+          buildErrorResponse(error.message)
+        );
       } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error'
-        });
+        res.status(500).json(
+          buildErrorResponse('Internal server error')
+        );
       }
     }
   }
@@ -104,25 +98,24 @@ export class ConversationController {
       const conversation = await ConversationService.getConversationById(conversationId);
 
       if (!conversation) {
-        throw new AppError('Conversation not found', 404);
+        res.status(404).json(
+          buildErrorResponse('Conversation not found')
+        );
+        return;
       }
 
-      res.status(200).json({
-        success: true,
-        message: 'Conversation_fetched_successfully',
-        data: conversation
-      });
+      res.status(200).json(
+        buildSuccessResponse(conversation, 'Conversation fetched successfully')
+      );
     } catch (error) {
       if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message
-        });
+        res.status(error.statusCode).json(
+          buildErrorResponse(error.message)
+        );
       } else {
-        res.status(500).json({
-          success: false,
-          message: 'Internal server error'
-        });
+        res.status(500).json(
+          buildErrorResponse('Internal server error')
+        );
       }
     }
   }
