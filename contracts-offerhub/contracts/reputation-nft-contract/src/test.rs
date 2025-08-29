@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use crate::{Contract, Error, ReputationNFTContract, TokenId};
+use crate::{Contract, Error, ReputationNFTContract, TokenId, types::AchievementType};
 use soroban_sdk::{symbol_short, testutils::Address as _, vec, Address, Env, IntoVal, String};
 
 // For direct access to storage functions for testing
@@ -204,7 +204,7 @@ fn test_mock_mint_and_get_metadata() {
         let name = String::from_str(&env, "Test NFT");
         let description = String::from_str(&env, "Test Description");
         let uri = String::from_str(&env, "ipfs://test");
-        crate::metadata::store_metadata(&env, &1, name.clone(), description.clone(), uri.clone())
+        crate::metadata::store_metadata(&env, &1, name.clone(), description.clone(), uri.clone(), Some(AchievementType::Standard))
             .unwrap();
 
         // Verify ownership
@@ -356,6 +356,7 @@ fn test_metadata_functionality() {
             name.clone(),
             description.clone(),
             uri.clone(),
+            Some(AchievementType::Standard),
         )
         .unwrap();
 
@@ -393,6 +394,7 @@ fn test_token_uri_update() {
             name.clone(),
             description.clone(),
             uri.clone(),
+            Some(AchievementType::Standard),
         )
         .unwrap();
 
@@ -412,6 +414,7 @@ fn test_token_uri_update() {
             updated_name.clone(),
             updated_description.clone(),
             new_uri.clone(),
+            Some(AchievementType::Standard),
         )
         .unwrap();
 
@@ -486,7 +489,7 @@ fn test_batch_operations() {
                 _ => String::from_str(&env, "ipfs://token"),
             };
 
-            metadata::store_metadata(&env, &token_ids[i], name.clone(), description, uri).unwrap();
+            metadata::store_metadata(&env, &token_ids[i], name.clone(), description, uri, Some(AchievementType::Standard)).unwrap();
         }
 
         // Verify all tokens were minted correctly
@@ -773,6 +776,154 @@ fn test_burn_removes_user_index() {
     env.as_contract(&contract_id, || {
         let after = ReputationNFTContract::get_user_achievements(env.clone(), user.clone()).unwrap();
         assert_eq!(after.len(), 0);
+    });
+}
+
+#[test]
+fn test_achievement_statistics_and_leaderboard() {
+    let (env, admin, contract_id) = setup();
+    let user1 = Address::generate(&env);
+    let user2 = Address::generate(&env);
+
+    // Initialize contract
+    env.as_contract(&contract_id, || {
+        ReputationNFTContract::init(env.clone(), admin.clone()).unwrap();
+        storage::add_minter(&env, &admin);
+
+        // Simulate minting achievements of different types to users
+        // User 1 gets reputation and project milestone achievements
+        storage::save_token_owner(&env, &1, &user1);
+        metadata::store_metadata(
+            &env, 
+            &1, 
+            String::from_str(&env, "Excellence Milestone"),
+            String::from_str(&env, "Achievement for excellence"),
+            String::from_str(&env, "ipfs://milestone1"),
+            Some(AchievementType::ProjectMilestone),
+        ).unwrap();
+        storage::index_user_achievement(&env, &user1, &1);
+        storage::update_achievement_stats(&env, &AchievementType::ProjectMilestone);
+
+        storage::save_token_owner(&env, &2, &user1);
+        metadata::store_metadata(
+            &env,
+            &2,
+            String::from_str(&env, "5-Star Rating"),
+            String::from_str(&env, "Achievement for ratings"),
+            String::from_str(&env, "ipfs://rating1"),
+            Some(AchievementType::RatingMilestone),
+        ).unwrap();
+        storage::index_user_achievement(&env, &user1, &2);
+        storage::update_achievement_stats(&env, &AchievementType::RatingMilestone);
+
+        // User 2 gets a custom achievement
+        storage::save_token_owner(&env, &3, &user2);
+        metadata::store_metadata(
+            &env,
+            &3,
+            String::from_str(&env, "Custom Award"),
+            String::from_str(&env, "Special achievement"),
+            String::from_str(&env, "ipfs://custom1"),
+            Some(AchievementType::CustomAchievement),
+        ).unwrap();
+        storage::index_user_achievement(&env, &user2, &3);
+        storage::update_achievement_stats(&env, &AchievementType::CustomAchievement);
+
+        // Update leaderboard for both users
+        storage::update_leaderboard(&env, &user1);
+        storage::update_leaderboard(&env, &user2);
+
+        // Test achievement statistics
+        let stats = ReputationNFTContract::get_achievement_statistics(env.clone());
+        
+        assert_eq!(stats.get(AchievementType::ProjectMilestone).unwrap_or(0), 1, "Should have 1 project milestone");
+        assert_eq!(stats.get(AchievementType::RatingMilestone).unwrap_or(0), 1, "Should have 1 rating milestone");
+        assert_eq!(stats.get(AchievementType::CustomAchievement).unwrap_or(0), 1, "Should have 1 custom achievement");
+
+        // Test user achievement counts
+        let user1_achievements = ReputationNFTContract::get_user_achievements(env.clone(), user1.clone()).unwrap();
+        assert_eq!(user1_achievements.len(), 2, "User1 should have 2 achievements");
+
+        let user2_achievements = ReputationNFTContract::get_user_achievements(env.clone(), user2.clone()).unwrap();
+        assert_eq!(user2_achievements.len(), 1, "User2 should have 1 achievement");
+
+        // Test leaderboard
+        let leaderboard = ReputationNFTContract::get_achievement_leaderboard(env.clone());
+        
+        // Check if users are in leaderboard with correct counts
+        assert_eq!(leaderboard.get(user1.clone()).unwrap_or(0), 2, "User1 should have 2 achievements in leaderboard");
+        assert_eq!(leaderboard.get(user2.clone()).unwrap_or(0), 1, "User2 should have 1 achievement in leaderboard");
+    });
+}
+
+#[test]
+fn test_achievement_transfer_restrictions() {
+    let (env, admin, contract_id) = setup();
+    let original_owner = Address::generate(&env);
+    let new_owner = Address::generate(&env);
+    
+    // Initialize contract and set up users
+    env.as_contract(&contract_id, || {
+        ReputationNFTContract::init(env.clone(), admin.clone()).unwrap();
+        storage::add_minter(&env, &admin);
+
+        // Mint a non-transferable reputation achievement
+        storage::save_token_owner(&env, &1, &original_owner);
+        metadata::store_metadata(
+            &env,
+            &1,
+            String::from_str(&env, "Reputation Award"),
+            String::from_str(&env, "Non-transferable reputation achievement"),
+            String::from_str(&env, "ipfs://reputation"),
+            Some(AchievementType::Reputation),
+        ).unwrap();
+
+        // Mint a transferable standard achievement
+        storage::save_token_owner(&env, &2, &original_owner);
+        metadata::store_metadata(
+            &env,
+            &2,
+            String::from_str(&env, "Standard Badge"),
+            String::from_str(&env, "Transferable achievement"),
+            String::from_str(&env, "ipfs://standard"),
+            Some(AchievementType::Standard),
+        ).unwrap();
+    });
+
+    // Mock authorization for the original owner
+    env.mock_all_auths();
+
+    // Verify that reputation achievement is non-transferable by checking its metadata
+    env.as_contract(&contract_id, || {
+        let reputation_metadata = ReputationNFTContract::get_metadata(env.clone(), 1).unwrap();
+        assert_eq!(reputation_metadata.achievement_type, AchievementType::Reputation, "Reputation achievement should be non-transferable");
+        
+        let standard_metadata = ReputationNFTContract::get_metadata(env.clone(), 2).unwrap();
+        assert_eq!(standard_metadata.achievement_type, AchievementType::Standard, "Standard achievement should be transferable");
+    });
+
+    // Try to transfer the standard achievement (should succeed)
+    let standard_transfer: Result<(), Error> = env.invoke_contract(
+        &contract_id,
+        &soroban_sdk::Symbol::new(&env, "transfer"),
+        vec![
+            &env,
+            original_owner.clone().into_val(&env),
+            new_owner.clone().into_val(&env),
+            2u64.into_val(&env), // standard token id
+        ],
+    );
+    assert!(standard_transfer.is_ok());
+
+    // Verify ownerships after transfer attempts
+    env.as_contract(&contract_id, || {
+        // Reputation achievement should still belong to original owner
+        let reputation_owner = ReputationNFTContract::get_owner(env.clone(), 1).unwrap();
+        assert_eq!(reputation_owner, original_owner, "Reputation achievement should not be transferred");
+
+        // Standard achievement should belong to new owner
+        let standard_owner = ReputationNFTContract::get_owner(env.clone(), 2).unwrap();
+        assert_eq!(standard_owner, new_owner, "Standard achievement should be transferred");
     });
 }
 
