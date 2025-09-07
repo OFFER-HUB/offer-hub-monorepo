@@ -1,7 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
-import express from "express";
+import express, { Application } from "express";
 import cors from "cors";
+import { ApolloServer } from 'apollo-server-express';
+import { schema, rootValue } from './graphql/schema';
 import serviceRequestRoutes from "@/routes/service-request.routes";
 import { reviewRoutes } from "./routes/review.routes";
 import serviceRoutes from "@/routes/service.routes";
@@ -19,11 +21,22 @@ import messageRoutes from "@/routes/message.routes";
 // Setup global error handlers for uncaught exceptions and unhandled rejections
 setupGlobalErrorHandlers();
 
-const app = express();
+const app: Application = express();
 const port = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
+
+// Create Apollo Server instance
+const server = new ApolloServer({
+  schema: schema,
+  rootValue: rootValue,
+  introspection: true, // Enable introspection for GraphQL Playground
+  context: ({ req }) => {
+    // Add any context you need here (auth, etc.)
+    return { req };
+  },
+});
 
 // Routes
 app.use("/api/service-requests", serviceRequestRoutes);
@@ -46,8 +59,21 @@ app.get("/", (_req, res) => {
 // Use the new error handling middleware
 app.use(errorHandlerMiddleware);
 
-app.listen(port, () => {
-  console.log(`🚀 OFFER-HUB server is live at http://localhost:${port}`);
-  console.log("🌐 Connecting freelancers and clients around the world...");
-  console.log("�� Working...");
+// Start Apollo Server and Express server
+async function startServer() {
+  await server.start();
+  server.applyMiddleware({ app: app as any, path: '/graphql' });
+
+  app.listen(port, () => {
+    console.log(`🚀 OFFER-HUB server is live at http://localhost:${port}`);
+    console.log(`📊 GraphQL endpoint available at http://localhost:${port}${server.graphqlPath}`);
+    console.log(`🎮 GraphQL Playground available at http://localhost:${port}${server.graphqlPath}`);
+    console.log("🌐 Connecting freelancers and clients around the world...");
+    console.log("⚡ Working...");
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Error starting server:', error);
+  process.exit(1);
 });
