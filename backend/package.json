@@ -19,8 +19,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@nestjs/apollo": "^13.1.0",
-    "@nestjs/graphql": "^13.1.0",
     "@supabase/supabase-js": "^2.51.0",
     "apollo-server-express": "^3.13.0",
     "bcryptjs": "^3.0.2",
