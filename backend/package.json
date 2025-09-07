@@ -19,13 +19,17 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@nestjs/apollo": "^13.1.0",
+    "@nestjs/graphql": "^13.1.0",
     "@supabase/supabase-js": "^2.51.0",
+    "apollo-server-express": "^3.13.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "ethers": "^5.7.2",
     "express": "^5.1.0",
     "express-rate-limit": "^6.11.2",
+    "graphql": "^16.11.0",
     "jsonwebtoken": "^9.0.2",
     "supabase": "^2.34.3"
   },
