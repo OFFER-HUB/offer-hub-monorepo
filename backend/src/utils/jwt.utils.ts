@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { JWTPayload } from "@/types/auth.types";
 import { createHash } from "crypto";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
 const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN as any) || "24h";
 const JWT_REFRESH_EXPIRES_IN =
   (process.env.JWT_REFRESH_EXPIRES_IN as any) || "7d";
