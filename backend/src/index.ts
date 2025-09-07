@@ -3,7 +3,7 @@ dotenv.config();
 import express, { Application } from "express";
 import cors from "cors";
 import { ApolloServer } from 'apollo-server-express';
-import { schema, rootValue } from './graphql/schema';
+import { typeDefs, resolvers } from './graphql/schema';
 import serviceRequestRoutes from "@/routes/service-request.routes";
 import { reviewRoutes } from "./routes/review.routes";
 import serviceRoutes from "@/routes/service.routes";
@@ -27,15 +27,12 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-// Create Apollo Server instance
+const isProd = process.env.NODE_ENV === 'production';
 const server = new ApolloServer({
-  schema: schema,
-  rootValue: rootValue,
-  introspection: true, // Enable introspection for GraphQL Playground
-  context: ({ req }) => {
-    // Add any context you need here (auth, etc.)
-    return { req };
-  },
+  typeDefs,
+  resolvers,
+  introspection: !isProd,
+  context: ({ req }) => ({ req }),
 });
 
 // Routes
@@ -66,8 +63,8 @@ async function startServer() {
 
   app.listen(port, () => {
     console.log(`🚀 OFFER-HUB server is live at http://localhost:${port}`);
-    console.log(`📊 GraphQL endpoint available at http://localhost:${port}${server.graphqlPath}`);
-    console.log(`🎮 GraphQL Playground available at http://localhost:${port}${server.graphqlPath}`);
+    console.log(`GraphQL endpoint available at http://localhost:${port}${server.graphqlPath}`);
+    console.log(`GraphQL Playground available at http://localhost:${port}${server.graphqlPath}`);
     console.log("🌐 Connecting freelancers and clients around the world...");
     console.log("⚡ Working...");
   });
