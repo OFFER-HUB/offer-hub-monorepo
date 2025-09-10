@@ -2,7 +2,20 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Bold, Italic, Link, Image, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Code, Eye } from "lucide-react";
+import {
+  X,
+  Bold,
+  Italic,
+  Link,
+  Image,
+  List,
+  ListOrdered,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Code,
+  Eye,
+} from "lucide-react";
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -10,16 +23,23 @@ interface NotificationModalProps {
   user: any; // You should replace 'any' with a proper user type interface
 }
 
-export default function NotificationModal({ isOpen, onClose, user }: NotificationModalProps) {
+export default function NotificationModal({
+  isOpen,
+  onClose,
+  user,
+}: NotificationModalProps) {
   const [message, setMessage] = useState(
-    `Hi [Customer name]\n\nCongratulations! Your KYC upgrade request has been approved, you can start transacting without limit.\n\nXYZ team`
+    `Hi [Customer name]\n\nCongratulations! Your KYC upgrade request has been approved, you can start transacting without limit.\n\nXYZ team`,
   );
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
@@ -67,15 +87,15 @@ export default function NotificationModal({ isOpen, onClose, user }: Notificatio
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div 
+      <div
         ref={modalRef}
-        className="bg-white rounded-md w-full max-w-xl mx-4 shadow-lg" 
+        className="bg-white rounded-md w-full max-w-xl mx-4 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b p-4">
           <h3 className="text-lg font-medium">Send notification</h3>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 focus:outline-none"
           >
@@ -132,7 +152,7 @@ export default function NotificationModal({ isOpen, onClose, user }: Notificatio
               <Eye size={18} />
             </button>
           </div>
-          
+
           {/* Text editor area */}
           <textarea
             value={message}
@@ -144,14 +164,14 @@ export default function NotificationModal({ isOpen, onClose, user }: Notificatio
 
         {/* Modal Footer */}
         <div className="flex items-center justify-end gap-3 p-4 border-t">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onClose}
             className="border-gray-300 text-gray-700"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             className="bg-blue-600 hover:bg-blue-700 text-white"
             onClick={onClose}
           >

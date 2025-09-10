@@ -11,7 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useState } from "react";
 import { format } from "date-fns";
 
@@ -21,7 +25,11 @@ interface ToolbarProps {
   onExport?: () => void;
 }
 
-export default function DisputeToolbar({ onSearch, onFilter, onExport }: ToolbarProps) {
+export default function DisputeToolbar({
+  onSearch,
+  onFilter,
+  onExport,
+}: ToolbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState<Date | undefined>();
   const [status, setStatus] = useState<string>("");

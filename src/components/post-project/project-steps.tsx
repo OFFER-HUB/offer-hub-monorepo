@@ -1,21 +1,24 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Check } from "lucide-react"
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 
 interface ProjectStepsProps {
-  currentStep: number
-  totalSteps: number
+  currentStep: number;
+  totalSteps: number;
 }
 
-export default function ProjectSteps({ currentStep, totalSteps }: ProjectStepsProps) {
+export default function ProjectSteps({
+  currentStep,
+  totalSteps,
+}: ProjectStepsProps) {
   const steps = [
     { id: 1, label: "Basic Info" },
     { id: 2, label: "Requirements" },
     { id: 3, label: "Budget" },
     { id: 4, label: "Attachments" },
     { id: 5, label: "Review" },
-  ]
+  ];
 
   return (
     <div className="relative">
@@ -32,11 +35,17 @@ export default function ProjectSteps({ currentStep, totalSteps }: ProjectStepsPr
                       : "bg-gray-100 text-gray-400"
                 }`}
               >
-                {currentStep > step.id ? <Check className="h-5 w-5" /> : step.id}
+                {currentStep > step.id ? (
+                  <Check className="h-5 w-5" />
+                ) : (
+                  step.id
+                )}
               </div>
             </div>
             <div className="text-center mt-2">
-              <p className={`text-sm ${currentStep >= step.id ? "text-[#002333] font-medium" : "text-gray-400"}`}>
+              <p
+                className={`text-sm ${currentStep >= step.id ? "text-[#002333] font-medium" : "text-gray-400"}`}
+              >
                 {step.label}
               </p>
             </div>
@@ -55,7 +64,8 @@ export default function ProjectSteps({ currentStep, totalSteps }: ProjectStepsPr
       <div className="sm:hidden">
         <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
           <p className="text-sm font-medium text-[#002333]">
-            Step {currentStep} of {totalSteps}: {steps.find((step) => step.id === currentStep)?.label}
+            Step {currentStep} of {totalSteps}:{" "}
+            {steps.find((step) => step.id === currentStep)?.label}
           </p>
           <div className="text-xs font-medium text-[#15949C]">
             {Math.round((currentStep / totalSteps) * 100)}% Complete
@@ -71,6 +81,5 @@ export default function ProjectSteps({ currentStep, totalSteps }: ProjectStepsPr
         </div>
       </div>
     </div>
-  )
+  );
 }
-

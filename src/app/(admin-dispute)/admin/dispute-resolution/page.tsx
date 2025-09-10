@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import ActiveDispute from '@/components/dispute-resolution/views/active-dispute';
-import DisputeTabs from '@/components/dispute-resolution/Tabs';
-import React from 'react';
-import ResolvedDispute from '@/components/dispute-resolution/views/resolved-dispute';
-import UnassignedDispute from '@/components/dispute-resolution/views/unassigned-dispute';
+import ActiveDispute from "@/components/dispute-resolution/views/active-dispute";
+import DisputeTabs from "@/components/dispute-resolution/Tabs";
+import React from "react";
+import ResolvedDispute from "@/components/dispute-resolution/views/resolved-dispute";
+import UnassignedDispute from "@/components/dispute-resolution/views/unassigned-dispute";
 
 export default function DisputeResolutionPage() {
   return (
@@ -14,18 +14,18 @@ export default function DisputeResolutionPage() {
         tabsListclassName="!bg-white !rounded-none !p-4 !h-auto border-b"
         tabs={[
           {
-            label: 'Unassigned dispute',
-            value: 'unassigned',
+            label: "Unassigned dispute",
+            value: "unassigned",
             component: <UnassignedDispute />,
           },
           {
-            label: 'Active',
-            value: 'active',
+            label: "Active",
+            value: "active",
             component: <ActiveDispute />,
           },
           {
-            label: 'Resolved dispute',
-            value: 'resolved',
+            label: "Resolved dispute",
+            value: "resolved",
             component: <ResolvedDispute />,
           },
         ]}

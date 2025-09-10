@@ -28,8 +28,8 @@ const eslintConfig = [
       "@next/next/no-async-client-component": "warn", // Temporarily changed to warn
       "react-hooks/rules-of-hooks": "error", // Keep this as error since it's critical
       "@next/next/no-html-link-for-pages": "error", // Keep this as error since it's important
-    }
-  }
+    },
+  },
 ];
 
 export default eslintConfig;

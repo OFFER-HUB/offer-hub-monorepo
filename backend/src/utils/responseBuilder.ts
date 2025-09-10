@@ -2,7 +2,7 @@ import { CreateResponse, ListResponse, ApiResponse } from "../types/api.type";
 
 export const buildSuccessResponse = <T>(
   data: T,
-  message: string
+  message: string,
 ): CreateResponse<T> => ({
   success: true,
   message,
@@ -11,7 +11,7 @@ export const buildSuccessResponse = <T>(
 
 export const buildListResponse = <T>(
   data: T[],
-  message: string
+  message: string,
 ): ListResponse<T> => ({
   success: true,
   message,
@@ -20,7 +20,7 @@ export const buildListResponse = <T>(
 
 export const buildErrorResponse = (
   message: string,
-  data?: any
+  data?: any,
 ): ApiResponse => ({
   success: false,
   message,
@@ -28,7 +28,7 @@ export const buildErrorResponse = (
 });
 
 export const buildSuccessResponseWithoutData = (
-  message: string
+  message: string,
 ): ApiResponse => ({
   success: true,
   message,
@@ -42,7 +42,7 @@ export const buildPaginatedResponse = <T>(
     total_pages: number;
     total_items: number;
     per_page: number;
-  }
+  },
 ): ApiResponse<T[]> => ({
   success: true,
   message,

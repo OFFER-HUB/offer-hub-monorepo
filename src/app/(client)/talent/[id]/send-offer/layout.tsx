@@ -7,9 +7,5 @@ export default function SendOfferLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <OfferFormProvider>
-      {children}
-    </OfferFormProvider>
-  );
+  return <OfferFormProvider>{children}</OfferFormProvider>;
 }

@@ -39,7 +39,7 @@ export interface FreelancerInfo {
   username?: string; // Add username
   email?: string;
   bio?: string;
-  reputation_score?: number
+  reputation_score?: number;
 }
 
 // Service with freelancer information

@@ -78,8 +78,8 @@ export function UserTable({
                       user.status === "Approved"
                         ? "border border-[#B7EB8F] rounded-sm bg-[#F6FFED] text-[#52C41A]"
                         : user.status === "Rejected"
-                        ? "border border-[#FFA39E] rounded-sm bg-[#FFF1F0] text-[#FF4D4F]"
-                        : "border border-[#FFC000] rounded-sm bg-[#FFF7E6] text-[#FA8C16]"
+                          ? "border border-[#FFA39E] rounded-sm bg-[#FFF1F0] text-[#FF4D4F]"
+                          : "border border-[#FFC000] rounded-sm bg-[#FFF7E6] text-[#FA8C16]"
                     }`}
                   >
                     {user.status}
@@ -108,9 +108,7 @@ export function UserTable({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() =>
-                            handleOverflowAction("view", user.id)
-                          }
+                          onClick={() => handleOverflowAction("view", user.id)}
                         >
                           View Details
                         </DropdownMenuItem>

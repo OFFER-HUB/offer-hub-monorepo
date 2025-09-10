@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useMessages } from "@/hooks/useMessages";
 import { useState } from "react";
 import { Header } from "@/components/account-settings/header";
@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/account-settings/sidebar";
 import { MessagesSidebar } from "@/components/messages/messages-sidebar";
 import { MessagesMain } from "@/components/messages/messages-main";
 
-const currentUserId = 'user-1';
+const currentUserId = "user-1";
 
 export default function MessagesPage() {
   const {
@@ -29,7 +29,10 @@ export default function MessagesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+      <Header
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+      />
       <div className="flex">
         <Sidebar
           isSidebarOpen={isSidebarOpen}

@@ -144,7 +144,7 @@ export interface AuthAttemptLog {
 export type MiddlewareFunction = (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => void | Promise<void>;
 
 /**

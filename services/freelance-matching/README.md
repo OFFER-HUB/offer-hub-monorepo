@@ -1,9 +1,9 @@
-
 # Freelance Matching Service - OfferHub
 
 The **Freelance Matching Service** is a standalone API designed to provide intelligent matching between freelance projects and freelancers, integrated with an existing freelance application. It leverages two AI models—a low-cost model (Hugging Face Sentence Transformers) for initial filtering and a high-quality model (OpenAI GPT-4 with LangChain) for refined matching—to deliver accurate, scalable, and cost-efficient results. The service uses NestJS, PostgreSQL with `pgvector`, Redis, and GraphQL for a modern, performant architecture.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Features](#features)
 - [Architecture](#architecture)
@@ -19,16 +19,16 @@ The **Freelance Matching Service** is a standalone API designed to provide intel
 
 This service provides a robust API for matching freelance projects with suitable freelancers based on project descriptions, skills, and other criteria. It is designed to integrate seamlessly with a freelance application, receiving project and freelancer data via API payloads and returning ranked matches. The service prioritizes performance, scalability, and cost-efficiency while ensuring security and quality through JWT authentication, rate limiting, and comprehensive monitoring.
 
-| **Attribute**         | **Details**                                                                 |
-|-----------------------|-----------------------------------------------------------------------------|
-| **Language**          | TypeScript with NestJS                                                     |
-| **Database**          | PostgreSQL with `pgvector` for vector storage                               |
-| **Cache/Queue**       | Redis with BullMQ for caching and async job processing                      |
-| **AI Models**         | Low-cost: Hugging Face `all-MiniLM-L6-v2`; High-quality: OpenAI GPT-4      |
-| **API**               | GraphQL (Apollo Server) with REST fallback                                  |
-| **Monitoring**        | Prometheus and Grafana for metrics and dashboards                           |
-| **CI/CD**             | GitHub Actions for linting, testing, and Docker builds                      |
-| **Deployment**        | Dockerized, Kubernetes-compatible                                           |
+| **Attribute**   | **Details**                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| **Language**    | TypeScript with NestJS                                                |
+| **Database**    | PostgreSQL with `pgvector` for vector storage                         |
+| **Cache/Queue** | Redis with BullMQ for caching and async job processing                |
+| **AI Models**   | Low-cost: Hugging Face `all-MiniLM-L6-v2`; High-quality: OpenAI GPT-4 |
+| **API**         | GraphQL (Apollo Server) with REST fallback                            |
+| **Monitoring**  | Prometheus and Grafana for metrics and dashboards                     |
+| **CI/CD**       | GitHub Actions for linting, testing, and Docker builds                |
+| **Deployment**  | Dockerized, Kubernetes-compatible                                     |
 
 ## Features
 
@@ -79,6 +79,7 @@ Monitoring --> App: View Dashboards
 ```
 
 **Key Components**:
+
 - **API Gateway**: Handles incoming requests with JWT auth and rate limiting.
 - **Match Controller/Service**: Orchestrates matching logic, integrating AI models.
 - **Low-Cost Model**: Hugging Face for embedding generation and pre-filtering.
@@ -90,28 +91,33 @@ Monitoring --> App: View Dashboards
 ## Installation
 
 ### Prerequisites
-| **Tool**         | **Version** | **Purpose**                     |
-|------------------|-------------|---------------------------------|
-| Node.js          | 18.x        | Runtime for NestJS             |
-| PostgreSQL       | 15.x        | Database with `pgvector`       |
-| Redis            | 7.x         | Caching and queue management   |
-| Docker           | Latest      | Containerized services         |
-| npm              | 8.x         | Package management             |
+
+| **Tool**   | **Version** | **Purpose**                  |
+| ---------- | ----------- | ---------------------------- |
+| Node.js    | 18.x        | Runtime for NestJS           |
+| PostgreSQL | 15.x        | Database with `pgvector`     |
+| Redis      | 7.x         | Caching and queue management |
+| Docker     | Latest      | Containerized services       |
+| npm        | 8.x         | Package management           |
 
 ### Setup
+
 1. **Clone the Repository**:
+
    ```bash
    git clone <repository-url>
    cd services/freelance-matching
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    npm install
    ```
 
 3. **Configure Environment Variables**:
    Create a `.env` file based on `.env.example`:
+
    ```env
    DATABASE_URL=postgresql://user:pass@localhost:5432/freelance?schema=public
    REDIS_HOST=localhost
@@ -137,11 +143,13 @@ Monitoring --> App: View Dashboards
      ```
 
 5. **Start Redis**:
+
    ```bash
    docker run -d -p 6379:6379 redis:7
    ```
 
 6. **Run the Service**:
+
    ```bash
    npm run start:dev
    ```
@@ -152,24 +160,31 @@ Monitoring --> App: View Dashboards
 ## Usage
 
 ### Running Locally
+
 Use Docker Compose for a complete local environment (Postgres, Redis, Grafana):
+
 ```bash
 docker-compose up
 ```
 
 ### Testing
+
 Run unit and integration tests:
+
 ```bash
 npm run test
 ```
 
 Generate coverage report:
+
 ```bash
 npm run test:cov
 ```
 
 ### API Examples
+
 #### REST: Get Matches
+
 ```bash
 curl -X POST http://localhost:3000/match/get-matches \
   -H "Authorization: Bearer <jwt-token>" \
@@ -183,6 +198,7 @@ curl -X POST http://localhost:3000/match/get-matches \
 ```
 
 **Response**:
+
 ```json
 {
   "matches": [
@@ -196,6 +212,7 @@ curl -X POST http://localhost:3000/match/get-matches \
 ```
 
 #### GraphQL: Get Matches
+
 ```graphql
 query {
   getMatches(projectId: "proj123", usePremium: false) {
@@ -207,6 +224,7 @@ query {
 ```
 
 ### Queuing Embeddings
+
 ```bash
 curl -X POST http://localhost:3000/match/queue-embeddings \
   -H "Authorization: Bearer <jwt-token>" \
@@ -217,6 +235,7 @@ curl -X POST http://localhost:3000/match/queue-embeddings \
 ```
 
 **Response**:
+
 ```json
 {
   "jobId": "job123"
@@ -225,32 +244,38 @@ curl -X POST http://localhost:3000/match/queue-embeddings \
 
 ## API Endpoints
 
-| **Endpoint**                     | **Method** | **Auth** | **Description**                         |
-|----------------------------------|------------|----------|-----------------------------------------|
-| `/match/get-matches`             | POST       | JWT      | Returns ranked matches for a project    |
-| `/match/queue-embeddings`        | POST       | JWT      | Queues embedding generation jobs        |
-| `/graphql`                       | POST       | JWT      | GraphQL endpoint for flexible queries   |
-| `/metrics`                       | GET        | None     | Prometheus metrics for monitoring       |
+| **Endpoint**              | **Method** | **Auth** | **Description**                       |
+| ------------------------- | ---------- | -------- | ------------------------------------- |
+| `/match/get-matches`      | POST       | JWT      | Returns ranked matches for a project  |
+| `/match/queue-embeddings` | POST       | JWT      | Queues embedding generation jobs      |
+| `/graphql`                | POST       | JWT      | GraphQL endpoint for flexible queries |
+| `/metrics`                | GET        | None     | Prometheus metrics for monitoring     |
 
 **GraphQL Queries**:
+
 - `getMatches(projectId: String!, usePremium: Boolean): [Match!]!`
 - `queueEmbeddings(data: [EmbeddingInput!]!): JobResponse!`
 
 ## Deployment
 
 ### Local Deployment
+
 Use Docker Compose:
+
 ```bash
 docker-compose -f docker-compose.yml up
 ```
 
 ### Production Deployment
+
 1. **Build Docker Image**:
+
    ```bash
    docker build -t freelance-matching-service .
    ```
 
 2. **Push to Registry**:
+
    ```bash
    docker push <registry>/freelance-matching-service
    ```
@@ -275,6 +300,7 @@ docker-compose -f docker-compose.yml up
   - Cache hit rate
 
 To set up Grafana:
+
 1. Add Prometheus as a data source.
 2. Import or create dashboards for the above metrics.
 
@@ -294,18 +320,12 @@ To set up Grafana:
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-
-
 <h2 align="center">OfferHub with nestjs</h2>
-
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
   <img src="https://github.com/user-attachments/assets/7799a3c4-ccec-42fc-80d0-226309b8169b" alt="O-H" width="200">
 </p>
 
-
-
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
-

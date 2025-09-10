@@ -12,21 +12,21 @@ router.post(
   "/",
   verifyToken,
   authorizeRoles("freelancer"),
-  createApplicationHandler
+  createApplicationHandler,
 );
 
 router.get(
   "/project/:id",
   verifyToken,
   authorizeRoles("client", "admin"),
-  getApplicationsByProjectHandler
+  getApplicationsByProjectHandler,
 );
 
 router.patch(
   "/:id",
   verifyToken,
   authorizeRoles("client", "admin"),
-  updateApplicationStatusHandler
+  updateApplicationStatusHandler,
 );
 
 export default router;

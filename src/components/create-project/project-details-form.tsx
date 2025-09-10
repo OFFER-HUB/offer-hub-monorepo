@@ -9,15 +9,18 @@ interface ProjectDetailsFormProps {
   onBack: () => void;
 }
 
-export function ProjectDetailsForm({ onNext, onBack }: ProjectDetailsFormProps) {
+export function ProjectDetailsForm({
+  onNext,
+  onBack,
+}: ProjectDetailsFormProps) {
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [addedSkills, setAddedSkills] = useState([
     "Writing",
-    "Design", 
+    "Design",
     "Frontend",
     "Backend",
-    "Research"
+    "Research",
   ]);
 
   const canProceed = jobTitle.trim() !== "" && jobDescription.trim() !== "";
@@ -61,32 +64,32 @@ export function ProjectDetailsForm({ onNext, onBack }: ProjectDetailsFormProps) 
 
         {/* Navigation Buttons */}
         <div className="flex flex-col gap-4 pt-6 items-center">
-          <Button 
+          <Button
             className="bg-gray-800 hover:bg-gray-900 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              width: '361px',
-              height: '44px',
-              borderRadius: '32px',
-              padding: '16px',
-              gap: '10px',
-              color: '#FFFFFF'
+              width: "361px",
+              height: "44px",
+              borderRadius: "32px",
+              padding: "16px",
+              gap: "10px",
+              color: "#FFFFFF",
             }}
             onClick={onNext}
             disabled={!canProceed}
           >
             Next
           </Button>
-          
-          <Button 
+
+          <Button
             className="text-white font-medium hover:bg-opacity-90"
             style={{
-              width: '361px',
-              height: '44px',
-              borderRadius: '32px',
-              padding: '16px',
-              gap: '10px',
-              backgroundColor: '#149A9B',
-              color: '#FFFFFF'
+              width: "361px",
+              height: "44px",
+              borderRadius: "32px",
+              padding: "16px",
+              gap: "10px",
+              backgroundColor: "#149A9B",
+              color: "#FFFFFF",
             }}
             onClick={onBack}
           >
@@ -96,4 +99,4 @@ export function ProjectDetailsForm({ onNext, onBack }: ProjectDetailsFormProps) 
       </CardContent>
     </Card>
   );
-} 
+}

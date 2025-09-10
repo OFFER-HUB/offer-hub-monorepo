@@ -1,23 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Send, Share, Camera, Smile } from 'lucide-react';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Send, Share, Camera, Smile } from "lucide-react";
 
 interface DisputeMessageInputProps {
   onSendMessage: (content: string, file?: File) => void;
 }
 
-export function DisputeMessageInput({ onSendMessage }: DisputeMessageInputProps) {
-  const [message, setMessage] = useState('');
+export function DisputeMessageInput({
+  onSendMessage,
+}: DisputeMessageInputProps) {
+  const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
       onSendMessage(message.trim());
-      setMessage('');
+      setMessage("");
     }
   };
 
@@ -26,15 +28,15 @@ export function DisputeMessageInput({ onSendMessage }: DisputeMessageInputProps)
     if (file) {
       setIsUploading(true);
       // Simulate file upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       onSendMessage(`Shared file: ${file.name}`, file);
       setIsUploading(false);
-      e.target.value = ''; // Reset file input
+      e.target.value = ""; // Reset file input
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
@@ -64,7 +66,7 @@ export function DisputeMessageInput({ onSendMessage }: DisputeMessageInputProps)
             className="w-full bg-gray-100 border-gray-200 rounded-2xl px-4 py-3 pr-20 text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             disabled={isUploading}
           />
-          
+
           {/* Right side icons inside input */}
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
             <label className="cursor-pointer">

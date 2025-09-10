@@ -11,3 +11,4 @@ flowchart TD
   D -->|approve_recovery_request()| D
   D -->|emergency_fund_withdrawal()| A
   D -->|fail| C
+```

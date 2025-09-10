@@ -1,9 +1,9 @@
 import { NextFunction, Response } from "express";
 import { AppError } from "@/utils/AppError";
-import { 
-  AuthenticatedRequest, 
+import {
+  AuthenticatedRequest,
   RoleMiddlewareOptions,
-  AuthAttemptLog 
+  AuthAttemptLog,
 } from "@/types/middleware.types";
 import { UserRole } from "@/types/auth.types";
 import { authConfig, getRequiredRole } from "@/config/auth.config";
@@ -25,17 +25,17 @@ export const requireRole = (options: RoleMiddlewareOptions) => {
     const allowAny = options.allowAny ?? true; // Default to allowing any of the required roles
 
     // Check if user has required role(s)
-    const hasRequiredRole = allowAny 
+    const hasRequiredRole = allowAny
       ? requiredRoles.includes(userRole)
-      : requiredRoles.every(role => userRole === role);
+      : requiredRoles.every((role) => userRole === role);
 
     if (!hasRequiredRole) {
       // Log unauthorized access attempt
       if (options.logAccess !== false && authConfig.logging.logRoleAccess) {
         logRoleAccessAttempt({
           requestId: req.securityContext?.requestId || uuidv4(),
-          ipAddress: req.ip || 'unknown',
-          userAgent: req.get('User-Agent') || 'unknown',
+          ipAddress: req.ip || "unknown",
+          userAgent: req.get("User-Agent") || "unknown",
           timestamp: Date.now(),
           endpoint: req.url,
           method: req.method,
@@ -43,12 +43,17 @@ export const requireRole = (options: RoleMiddlewareOptions) => {
           userId: req.user.id,
           userRole: userRole,
           success: false,
-          errorMessage: `Insufficient permissions. Required roles: ${requiredRoles.join(', ')}`,
+          errorMessage: `Insufficient permissions. Required roles: ${requiredRoles.join(
+            ", ",
+          )}`,
         });
       }
 
-      const errorMessage = options.errorMessage || 
-        `Access denied. Required role${requiredRoles.length > 1 ? 's' : ''}: ${requiredRoles.join(', ')}`;
+      const errorMessage =
+        options.errorMessage ||
+        `Access denied. Required role${
+          requiredRoles.length > 1 ? "s" : ""
+        }: ${requiredRoles.join(", ")}`;
 
       return next(new AppError(errorMessage, 403));
     }
@@ -57,8 +62,8 @@ export const requireRole = (options: RoleMiddlewareOptions) => {
     if (options.logAccess !== false && authConfig.logging.logRoleAccess) {
       logRoleAccessAttempt({
         requestId: req.securityContext?.requestId || uuidv4(),
-        ipAddress: req.ip || 'unknown',
-        userAgent: req.get('User-Agent') || 'unknown',
+        ipAddress: req.ip || "unknown",
+        userAgent: req.get("User-Agent") || "unknown",
         timestamp: Date.now(),
         endpoint: req.url,
         method: req.method,
@@ -79,7 +84,7 @@ export const requireRole = (options: RoleMiddlewareOptions) => {
  */
 export const requireAdmin = (options: Partial<RoleMiddlewareOptions> = {}) => {
   return requireRole({
-    requiredRoles: ['admin'],
+    requiredRoles: ["admin"],
     allowAny: true,
     ...options,
   });
@@ -89,9 +94,11 @@ export const requireAdmin = (options: Partial<RoleMiddlewareOptions> = {}) => {
  * Moderator or Admin access middleware
  * Allows access to moderators and admins
  */
-export const requireModerator = (options: Partial<RoleMiddlewareOptions> = {}) => {
+export const requireModerator = (
+  options: Partial<RoleMiddlewareOptions> = {},
+) => {
   return requireRole({
-    requiredRoles: ['admin', 'moderator'],
+    requiredRoles: ["admin", "moderator"],
     allowAny: true,
     ...options,
   });
@@ -101,9 +108,11 @@ export const requireModerator = (options: Partial<RoleMiddlewareOptions> = {}) =
  * Freelancer access middleware
  * Allows access to freelancers and admins
  */
-export const requireFreelancer = (options: Partial<RoleMiddlewareOptions> = {}) => {
+export const requireFreelancer = (
+  options: Partial<RoleMiddlewareOptions> = {},
+) => {
   return requireRole({
-    requiredRoles: ['freelancer', 'admin'],
+    requiredRoles: ["freelancer", "admin"],
     allowAny: true,
     ...options,
   });
@@ -115,7 +124,7 @@ export const requireFreelancer = (options: Partial<RoleMiddlewareOptions> = {}) 
  */
 export const requireClient = (options: Partial<RoleMiddlewareOptions> = {}) => {
   return requireRole({
-    requiredRoles: ['client', 'admin'],
+    requiredRoles: ["client", "admin"],
     allowAny: true,
     ...options,
   });
@@ -129,34 +138,46 @@ export const requireClient = (options: Partial<RoleMiddlewareOptions> = {}) => {
  * @param options - Additional options
  */
 export const requireOwnership = (
-  resourceIdParam: string = 'id',
-  resourceType: string = 'resource',
+  resourceIdParam: string = "id",
+  resourceType: string = "resource",
   options: {
     allowAdmin?: boolean;
     allowModerator?: boolean;
-    customCheck?: (req: AuthenticatedRequest, resourceId: string) => Promise<boolean>;
-  } = {}
+    customCheck?: (
+      req: AuthenticatedRequest,
+      resourceId: string,
+    ) => Promise<boolean>;
+  } = {},
 ) => {
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     if (!req.user) {
       return next(new AppError("Authentication required", 401));
     }
 
     const resourceId = req.params[resourceIdParam];
     if (!resourceId) {
-      return next(new AppError(`Resource ID not found in parameter: ${resourceIdParam}`, 400));
+      return next(
+        new AppError(
+          `Resource ID not found in parameter: ${resourceIdParam}`,
+          400,
+        ),
+      );
     }
 
     const userRole = req.user.role;
     const userId = req.user.id;
 
     // Allow admins to access any resource
-    if (options.allowAdmin && userRole === 'admin') {
+    if (options.allowAdmin && userRole === "admin") {
       return next();
     }
 
     // Allow moderators to access any resource if configured
-    if (options.allowModerator && userRole === 'moderator') {
+    if (options.allowModerator && userRole === "moderator") {
       return next();
     }
 
@@ -171,7 +192,9 @@ export const requireOwnership = (
           return next();
         }
       } catch (error) {
-        return next(new AppError(`Failed to verify ${resourceType} ownership`, 500));
+        return next(
+          new AppError(`Failed to verify ${resourceType} ownership`, 500),
+        );
       }
     }
 
@@ -180,8 +203,8 @@ export const requireOwnership = (
       if (authConfig.logging.logRoleAccess) {
         logRoleAccessAttempt({
           requestId: req.securityContext?.requestId || uuidv4(),
-          ipAddress: req.ip || 'unknown',
-          userAgent: req.get('User-Agent') || 'unknown',
+          ipAddress: req.ip || "unknown",
+          userAgent: req.get("User-Agent") || "unknown",
           timestamp: Date.now(),
           endpoint: req.url,
           method: req.method,
@@ -193,10 +216,12 @@ export const requireOwnership = (
         });
       }
 
-      return next(new AppError(
-        `Access denied. You don't have permission to access this ${resourceType}`,
-        403
-      ));
+      return next(
+        new AppError(
+          `Access denied. You don't have permission to access this ${resourceType}`,
+          403,
+        ),
+      );
     }
 
     next();
@@ -207,7 +232,9 @@ export const requireOwnership = (
  * Dynamic role-based middleware that checks route configuration
  * Automatically determines required role based on route path
  */
-export const requireRouteRole = (options: Partial<RoleMiddlewareOptions> = {}) => {
+export const requireRouteRole = (
+  options: Partial<RoleMiddlewareOptions> = {},
+) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(new AppError("Authentication required", 401));
@@ -215,7 +242,7 @@ export const requireRouteRole = (options: Partial<RoleMiddlewareOptions> = {}) =
 
     // Get required role for the current route
     const requiredRole = getRequiredRole(req.url);
-    
+
     if (!requiredRole) {
       // No specific role required for this route
       return next();
@@ -241,15 +268,17 @@ async function logRoleAccessAttempt(logEntry: AuthAttemptLog): Promise<void> {
 
   try {
     // In a production environment, you would send this to a logging service
-    console.log(JSON.stringify({
-      type: 'ROLE_ACCESS_ATTEMPT',
-      ...logEntry,
-    }));
-    
+    console.log(
+      JSON.stringify({
+        type: "ROLE_ACCESS_ATTEMPT",
+        ...logEntry,
+      }),
+    );
+
     // You could also store in database for audit trail
     // await supabase.from('role_access_logs').insert(logEntry);
   } catch (error) {
-    console.error('Failed to log role access attempt:', error);
+    console.error("Failed to log role access attempt:", error);
   }
 }
 
@@ -269,8 +298,11 @@ export function hasRole(userRole: UserRole, allowedRoles: UserRole[]): boolean {
  * @param requiredRoles - Array of required roles
  * @returns boolean indicating if user has all permissions
  */
-export function hasAllRoles(userRole: UserRole, requiredRoles: UserRole[]): boolean {
-  return requiredRoles.every(role => userRole === role);
+export function hasAllRoles(
+  userRole: UserRole,
+  requiredRoles: UserRole[],
+): boolean {
+  return requiredRoles.every((role) => userRole === role);
 }
 
 /**
@@ -280,12 +312,12 @@ export function hasAllRoles(userRole: UserRole, requiredRoles: UserRole[]): bool
  */
 export function getPermissionLevel(role: UserRole): number {
   const levels = {
-    'client': 1,
-    'freelancer': 2,
-    'moderator': 3,
-    'admin': 4,
+    client: 1,
+    freelancer: 2,
+    moderator: 3,
+    admin: 4,
   };
-  
+
   return levels[role] || 0;
 }
 
@@ -295,6 +327,9 @@ export function getPermissionLevel(role: UserRole): number {
  * @param requiredLevel - Required permission level
  * @returns boolean indicating if user has sufficient permissions
  */
-export function hasPermissionLevel(userRole: UserRole, requiredLevel: number): boolean {
+export function hasPermissionLevel(
+  userRole: UserRole,
+  requiredLevel: number,
+): boolean {
   return getPermissionLevel(userRole) >= requiredLevel;
 }

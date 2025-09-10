@@ -11,12 +11,12 @@ import {
   getTokenExpiration,
 } from "@/utils/jwt.utils";
 import { NextFunction, Request, Response } from "express";
-import { 
-  AuthenticatedRequest, 
-  AuthMiddlewareOptions, 
+import {
+  AuthenticatedRequest,
+  AuthMiddlewareOptions,
   SecurityContext,
   AuthAttemptLog,
-  TokenValidationResult 
+  TokenValidationResult,
 } from "@/types/middleware.types";
 import { authConfig, isPublicRoute } from "@/config/auth.config";
 import { UserRole, AuthUser } from "@/types/auth.types";
@@ -30,16 +30,16 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
   return async (
     req: AuthenticatedRequest,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     const startTime = Date.now();
     const requestId = uuidv4();
-    
+
     // Create security context for logging
     const securityContext: SecurityContext = {
       requestId,
-      ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
-      userAgent: req.get('User-Agent') || 'unknown',
+      ipAddress: req.ip || req.connection.remoteAddress || "unknown",
+      userAgent: req.get("User-Agent") || "unknown",
       timestamp: startTime,
       endpoint: req.url,
       method: req.method,
@@ -56,18 +56,21 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
 
       // Extract token from Authorization header
       const token = extractTokenFromHeader(req.headers.authorization);
-      
+
       if (!token) {
         await logAuthAttempt({
           ...securityContext,
           success: false,
           errorMessage: "No token provided",
         });
-        
-        return next(new AppError(
-          options.authErrorMessage || "Authentication required. Please provide a valid token.",
-          401
-        ));
+
+        return next(
+          new AppError(
+            options.authErrorMessage ||
+              "Authentication required. Please provide a valid token.",
+            401,
+          ),
+        );
       }
 
       // Validate token format
@@ -77,7 +80,7 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
           success: false,
           errorMessage: "Invalid token format",
         });
-        
+
         return next(new AppError("Invalid token format", 401));
       }
 
@@ -92,8 +95,10 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
             needsRefresh: false,
           },
         });
-        
-        return next(new AppError("Token has expired. Please login again.", 401));
+
+        return next(
+          new AppError("Token has expired. Please login again.", 401),
+        );
       }
 
       // Verify token signature and decode payload
@@ -106,7 +111,7 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
           success: false,
           errorMessage: "Invalid token signature",
         });
-        
+
         return next(new AppError("Invalid token signature", 401));
       }
 
@@ -124,8 +129,10 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
           success: false,
           errorMessage: "User not found",
         });
-        
-        return next(new AppError("User associated with this token does not exist", 401));
+
+        return next(
+          new AppError("User associated with this token does not exist", 401),
+        );
       }
 
       // Check if token needs refresh
@@ -144,7 +151,7 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
         nonce: user.nonce,
         created_at: user.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        role: user.role || 'client',
+        role: user.role || "client",
       };
 
       // Attach user and token info to request
@@ -183,7 +190,7 @@ export const authenticateToken = (options: AuthMiddlewareOptions = {}) => {
         success: false,
         errorMessage: error instanceof Error ? error.message : "Unknown error",
       });
-      
+
       return next(new AppError("Authentication failed", 401));
     }
   };
@@ -211,8 +218,8 @@ export function authorizeRoles(...roles: UserRole[]) {
       if (authConfig.logging.logRoleAccess) {
         logAuthAttempt({
           requestId: req.securityContext?.requestId || uuidv4(),
-          ipAddress: req.ip || 'unknown',
-          userAgent: req.get('User-Agent') || 'unknown',
+          ipAddress: req.ip || "unknown",
+          userAgent: req.get("User-Agent") || "unknown",
           timestamp: Date.now(),
           endpoint: req.url,
           method: req.method,
@@ -220,14 +227,15 @@ export function authorizeRoles(...roles: UserRole[]) {
           userId: req.user.id,
           userRole: req.user.role,
           success: false,
-          errorMessage: `Insufficient permissions. Required roles: ${roles.join(', ')}`,
+          errorMessage: `Insufficient permissions. Required roles: ${roles.join(
+            ", ",
+          )}`,
         });
       }
-      
-      return next(new AppError(
-        `Access denied. Required roles: ${roles.join(', ')}`,
-        403
-      ));
+
+      return next(
+        new AppError(`Access denied. Required roles: ${roles.join(", ")}`, 403),
+      );
     }
 
     next();
@@ -240,12 +248,12 @@ export function authorizeRoles(...roles: UserRole[]) {
  */
 function setSecurityHeaders(res: Response): void {
   const headers = authConfig.securityHeaders;
-  
-  res.setHeader('X-Frame-Options', headers.xFrameOptions);
-  res.setHeader('X-Content-Type-Options', headers.xContentTypeOptions);
-  res.setHeader('X-XSS-Protection', headers.xXSSProtection);
-  res.setHeader('Strict-Transport-Security', headers.strictTransportSecurity);
-  res.setHeader('Content-Security-Policy', headers.contentSecurityPolicy);
+
+  res.setHeader("X-Frame-Options", headers.xFrameOptions);
+  res.setHeader("X-Content-Type-Options", headers.xContentTypeOptions);
+  res.setHeader("X-XSS-Protection", headers.xXSSProtection);
+  res.setHeader("Strict-Transport-Security", headers.strictTransportSecurity);
+  res.setHeader("Content-Security-Policy", headers.contentSecurityPolicy);
 }
 
 /**
@@ -258,15 +266,17 @@ async function logAuthAttempt(logEntry: AuthAttemptLog): Promise<void> {
   try {
     // In a production environment, you would send this to a logging service
     // For now, we'll use console.log with structured format
-    console.log(JSON.stringify({
-      type: 'AUTH_ATTEMPT',
-      ...logEntry,
-    }));
-    
+    console.log(
+      JSON.stringify({
+        type: "AUTH_ATTEMPT",
+        ...logEntry,
+      }),
+    );
+
     // You could also store in database for audit trail
     // await supabase.from('auth_logs').insert(logEntry);
   } catch (error) {
-    console.error('Failed to log auth attempt:', error);
+    console.error("Failed to log auth attempt:", error);
   }
 }
 
@@ -299,7 +309,7 @@ export function validateToken(token: string): TokenValidationResult {
     }
 
     const payload = verifyAccessToken(token);
-    
+
     return {
       isValid: true,
       isExpired: false,
@@ -323,7 +333,7 @@ export function validateToken(token: string): TokenValidationResult {
 export const validateRefreshToken = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { refreshToken } = req.body;
 
@@ -344,7 +354,7 @@ export const validateRefreshToken = async (
 
     if (error || !tokenRecord) {
       return next(
-        new AppError("Invalid refresh token. Please log in again", 403)
+        new AppError("Invalid refresh token. Please log in again", 403),
       );
     }
 

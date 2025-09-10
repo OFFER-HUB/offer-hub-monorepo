@@ -1,18 +1,18 @@
 "use client";
 
-import { Search, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { Search, X } from "lucide-react";
+import React, { useState } from "react";
 
 interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
   placeholder?: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ 
-  onSearch, 
-  placeholder = "Search..." 
+const SearchBar: React.FC<SearchBarProps> = ({
+  onSearch,
+  placeholder = "Search...",
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -21,12 +21,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const clearSearch = () => {
-    setSearchTerm('');
-    onSearch('');
+    setSearchTerm("");
+    onSearch("");
   };
 
   return (
-    <div className='relative'>
+    <div className="relative">
       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
       <input
         type="text"

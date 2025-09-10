@@ -12,21 +12,21 @@ router.post(
   "/",
   verifyToken,
   authorizeRoles("client", "admin"),
-  createServiceRequestHandler
+  createServiceRequestHandler,
 );
 
 router.get(
   "/:freelancerId",
   verifyToken,
   authorizeRoles("freelancer", "admin"),
-  getRequestsForFreelancerHandler
+  getRequestsForFreelancerHandler,
 );
 
 router.patch(
   "/:id",
   verifyToken,
   authorizeRoles("freelancer", "admin"),
-  updateRequestStatusHandler
+  updateRequestStatusHandler,
 );
 
 export default router;

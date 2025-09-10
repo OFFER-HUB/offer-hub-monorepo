@@ -5,6 +5,7 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 ## Features
 
 ### Core Rating System
+
 - ⭐ Submit ratings (1-5 stars) for completed work contracts
 - 📝 Provide detailed feedback with each rating
 - 🔒 Prevent duplicate ratings per contract
@@ -12,6 +13,7 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 - 📊 Real-time rating statistics and analytics
 
 ### User Reputation Management
+
 - 📈 Automatic calculation of average ratings
 - 📋 Detailed rating breakdowns (5-star, 4-star, etc.)
 - 🎯 Rating trends and performance analysis
@@ -19,6 +21,7 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 - 🔗 Integration with reputation NFT contract
 
 ### Feedback Moderation System
+
 - 🚨 Community-driven feedback reporting
 - 👮 Moderator approval/removal system
 - 🤖 Automated content moderation
@@ -26,6 +29,7 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 - ⚖️ Fair dispute resolution processes
 
 ### Rating-Based Restrictions and Privileges
+
 - 🚫 Automatic restrictions for poor performers
 - ⚠️ Warning system for declining ratings
 - 🌟 Premium privileges for top-rated users
@@ -33,6 +37,7 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 - 📱 Enhanced visibility for excellent performers
 
 ### Incentive and Rewards System
+
 - 🎁 Achievement-based NFT rewards
 - 🏅 Milestone recognition (10, 50, 100+ ratings)
 - 💎 Special badges for top performers
@@ -40,6 +45,7 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 - 🔄 Cross-contract reputation building
 
 ### Analytics and Insights
+
 - 📊 Platform-wide rating analytics
 - 📈 User performance trends
 - 🎲 Category-specific rating analysis
@@ -51,42 +57,53 @@ A comprehensive rating and feedback system for the Offer Hub platform that integ
 ### Core Functions
 
 #### `init(admin: Address)`
+
 Initialize the rating contract with an administrator.
 
 #### `submit_rating(caller, rated_user, contract_id, rating, feedback, work_category)`
+
 Submit a rating and feedback for completed work.
+
 - `rating`: 1-5 star rating
 - `feedback`: Text feedback (max 1000 characters)
 - `work_category`: Category of work performed
 
 #### `get_user_rating_stats(user: Address) -> RatingStats`
+
 Get comprehensive rating statistics for a user.
 
 #### `get_user_rating_data(user: Address) -> UserRatingData`
+
 Get detailed rating data including trends and achievements.
 
 ### Moderation Functions
 
 #### `report_feedback(caller, feedback_id, reason)`
+
 Report inappropriate feedback for moderation.
 
 #### `moderate_feedback(caller, feedback_id, action, reason)`
+
 Moderate reported feedback (admin/moderator only).
 
 ### Incentive Functions
 
 #### `check_rating_incentives(user: Address) -> Vec<String>`
+
 Check available incentives for a user.
 
 #### `claim_incentive_reward(caller, incentive_type)`
+
 Claim available incentive rewards.
 
 ### Admin Functions
 
 #### `add_moderator(admin, moderator)`
+
 Add a new moderator (admin only).
 
 #### `set_rating_threshold(admin, threshold_type, value)`
+
 Set rating thresholds for restrictions/privileges.
 
 ## Rating Statistics
@@ -112,19 +129,23 @@ struct RatingStats {
 Users earn privileges based on their rating performance:
 
 ### Basic (All users with ratings)
+
 - Basic platform access
 - Standard support
 
 ### Good Performers (3.5+ average, 5+ ratings)
+
 - Priority support
 - Enhanced profile visibility
 
 ### Excellent Performers (4.0+ average, 10+ ratings)
+
 - Featured listings
 - Badge display
 - Reduced platform fees
 
 ### Top Rated (4.8+ average, 20+ ratings)
+
 - Top-rated badge
 - Premium visibility boost
 - Lowest platform fees
@@ -135,11 +156,13 @@ Users earn privileges based on their rating performance:
 Users with poor ratings face restrictions:
 
 ### Warning Level (Below 3.0 average)
+
 - Warning badges displayed
 - Limited bidding capabilities
 - Reduced search visibility
 
 ### Restricted Level (Below 2.5 average)
+
 - Cannot post new work
 - Cannot bid on premium projects
 - Increased platform fees
@@ -176,6 +199,7 @@ The rating contract integrates seamlessly with the reputation NFT contract:
 ## Events
 
 The contract emits events for all major operations:
+
 - `RatingSubmitted`
 - `FeedbackSubmitted`
 - `StatsUpdated`
@@ -189,6 +213,7 @@ The contract emits events for all major operations:
 ## Usage Examples
 
 ### Submit a Rating
+
 ```rust
 let rating = 5u8;
 let feedback = String::from_str(&env, "Excellent work, delivered on time!");
@@ -205,12 +230,14 @@ contract.submit_rating(
 ```
 
 ### Check User Statistics
+
 ```rust
 let stats = contract.get_user_rating_stats(&user_address);
 let average = stats.average_rating as f64 / 100.0; // Convert back to decimal
 ```
 
 ### Claim Incentives
+
 ```rust
 let incentives = contract.check_rating_incentives(&user_address);
 if !incentives.is_empty() {
@@ -221,6 +248,7 @@ if !incentives.is_empty() {
 ## Testing
 
 The contract includes comprehensive tests covering:
+
 - Rating submission and validation
 - Statistical calculations and updates
 - Privilege and restriction system
@@ -230,6 +258,7 @@ The contract includes comprehensive tests covering:
 - Edge cases and error conditions
 
 Run tests with:
+
 ```bash
 cargo test
 ```
@@ -237,16 +266,19 @@ cargo test
 ## Deployment
 
 1. Build the contract:
+
 ```bash
 cargo build --target wasm32-unknown-unknown --release
 ```
 
 2. Deploy to Stellar network:
+
 ```bash
 soroban contract deploy --wasm target/wasm32-unknown-unknown/release/rating_contract.wasm
 ```
 
 3. Initialize with admin:
+
 ```bash
 soroban contract invoke --id CONTRACT_ID -- init --admin ADMIN_ADDRESS
 ```

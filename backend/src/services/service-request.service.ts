@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/supabase";
 import { ForbiddenError, NotFoundError } from "@/utils/AppError";
-import { ConflictError ,InternalServerError} from "@/utils/AppError";
+import { ConflictError, InternalServerError } from "@/utils/AppError";
 export interface ServiceRequest {
   id: string;
   service_id: string;
@@ -32,7 +32,7 @@ export interface ServiceRequestWithDetails extends ServiceRequest {
 
 export class ServiceRequestService {
   async createServiceRequest(
-    data: CreateServiceRequestData
+    data: CreateServiceRequestData,
   ): Promise<ServiceRequest> {
     // Check if the client is trying to request their own service
     const { data: service, error: serviceError } = await supabase
@@ -59,7 +59,9 @@ export class ServiceRequestService {
       .single();
 
     if (existingRequest) {
-      throw new ConflictError("You already have a pending request for this service");
+      throw new ConflictError(
+        "You already have a pending request for this service",
+      );
     }
 
     // Create the service request
@@ -75,14 +77,16 @@ export class ServiceRequestService {
       .single();
 
     if (error) {
-      throw new InternalServerError(`Failed to create service request: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to create service request: ${error.message}`,
+      );
     }
 
     return newRequest;
   }
 
   async getRequestsForFreelancer(
-    freelancerId: string
+    freelancerId: string,
   ): Promise<ServiceRequestWithDetails[]> {
     const { data, error } = await supabase
       .from("service_requests")
@@ -100,13 +104,15 @@ export class ServiceRequestService {
           title,
           user_id
         )
-      `
+      `,
       )
       .eq("service.user_id", freelancerId)
       .order("created_at", { ascending: false });
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch service requests: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch service requests: ${error.message}`,
+      );
     }
 
     return data || [];
@@ -115,7 +121,7 @@ export class ServiceRequestService {
   async updateRequestStatus(
     requestId: string,
     status: "accepted" | "rejected",
-    freelancerId: string
+    freelancerId: string,
   ): Promise<ServiceRequest> {
     // First, verify that the freelancer owns the service
     const { data: request, error: requestError } = await supabase
@@ -126,7 +132,7 @@ export class ServiceRequestService {
         service:services!service_requests_service_id_fkey(
           user_id
         )
-      `
+      `,
       )
       .eq("id", requestId)
       .single();
@@ -136,7 +142,9 @@ export class ServiceRequestService {
     }
 
     if (request.service.user_id !== freelancerId) {
-      throw new ForbiddenError("You can only update requests for your own services");
+      throw new ForbiddenError(
+        "You can only update requests for your own services",
+      );
     }
 
     if (request.status !== "pending") {
@@ -152,7 +160,9 @@ export class ServiceRequestService {
       .single();
 
     if (error) {
-      throw new InternalServerError(`Failed to update service request: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to update service request: ${error.message}`,
+      );
     }
 
     return updatedRequest;

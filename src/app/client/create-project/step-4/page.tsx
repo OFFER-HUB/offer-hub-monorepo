@@ -20,4 +20,4 @@ export default function CreateProjectStep4() {
       <SuccessConfirmation onGoToDashboard={handleGoToDashboard} />
     </CreateProjectLayout>
   );
-} 
+}

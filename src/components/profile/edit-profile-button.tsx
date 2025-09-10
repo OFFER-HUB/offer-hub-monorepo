@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import EditProfileForm from "./edit-profile-form";
-import { User } from '@/types/user.types';
+import { User } from "@/types/user.types";
 
 interface EditProfileButtonProps {
   user: User | null;
@@ -10,7 +10,11 @@ interface EditProfileButtonProps {
   disabled?: boolean;
 }
 
-export default function EditProfileButton({ user, onProfileUpdate, disabled }: EditProfileButtonProps) {
+export default function EditProfileButton({
+  user,
+  onProfileUpdate,
+  disabled,
+}: EditProfileButtonProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   if (!user) {
@@ -31,7 +35,7 @@ export default function EditProfileButton({ user, onProfileUpdate, disabled }: E
   }
 
   return (
-    <button 
+    <button
       onClick={() => setIsEditing(true)}
       disabled={disabled}
       className="inline-flex items-center justify-center h-9 px-3 py-1.5 bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"

@@ -9,7 +9,7 @@ router.post("/", verifyToken, MessageController.sendMessage);
 router.get(
   "/conversation/:conversationId",
   verifyToken,
-  MessageController.getMessagesByConversationId
+  MessageController.getMessagesByConversationId,
 );
 
 router.get("/:messageId", verifyToken, MessageController.getMessageById);
@@ -17,7 +17,7 @@ router.get("/:messageId", verifyToken, MessageController.getMessageById);
 router.put(
   "/:conversationId/mark-read",
   verifyToken,
-  MessageController.markMessagesAsRead
+  MessageController.markMessagesAsRead,
 );
 
 export default router;

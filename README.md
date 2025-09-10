@@ -4,11 +4,9 @@
 
 # 🌟 OFFER-HUB | Decentralized Freelance Platform
 
-
 [![Backend CI/CD](https://github.com/OFFER-HUB/offer-hub/workflows/Backend%20CI%20CD/badge.svg)](https://github.com/OFFER-HUB/offer-hub/actions/workflows/backend-ci.yml)
 
 [![Frontend CI/CD](https://github.com/OFFER-HUB/offer-hub/workflows/Frontend%20CI%20CD/badge.svg)](https://github.com/OFFER-HUB/offer-hub/actions/workflows/frontend-ci.yml)
-
 
 Welcome to **OFFER-HUB**! This platform aims to revolutionize the freelance marketplace by leveraging **blockchain technology**, **cryptocurrency payments**, and **smart contracts** to create a secure and efficient environment for freelancers and clients worldwide.
 
@@ -20,7 +18,7 @@ Our mission is to remove intermediaries, reduce fees, and empower users with too
 
 Please read carefully and follow our contribution guide step by step — this will allow everything to flow in the best way:
 
-👉 [CONTRIBUTORS\_GUIDELINE.md](https://github.com/OFFER-HUB/offer-hub/blob/main/docs/CONTRIBUTORS_GUIDELINE.md)
+👉 [CONTRIBUTORS_GUIDELINE.md](https://github.com/OFFER-HUB/offer-hub/blob/main/docs/CONTRIBUTORS_GUIDELINE.md)
 
 ---
 
@@ -28,8 +26,8 @@ Please read carefully and follow our contribution guide step by step — this wi
 
 Before contributing, ensure your system meets these requirements:
 
-* **Node.js**: v23.3.0
-* **npm**: v10+
+- **Node.js**: v23.3.0
+- **npm**: v10+
 
 ---
 
@@ -85,20 +83,24 @@ The Offer Hub platform is powered by a comprehensive suite of Soroban smart cont
 ### 📚 Contract Documentation
 
 #### Core Infrastructure
+
 - **[Contracts Overview](./docs/CONTRACTS_OVERVIEW.md)** - Complete system architecture and contract interactions
 - **[User Registry Contract](./docs/USER_REGISTRY_CONTRACT.md)** - User verification and access control system
 - **[Emergency Contract](./docs/EMERGENCY_CONTRACT.md)** - Platform safety and crisis management
 
 #### Payment System
+
 - **[Escrow Contract](./docs/ESCROW_CONTRACT.md)** - Secure payment management with milestone support
 - **[Escrow Factory](./docs/ESCROW_FACTORY.md)** - Standardized deployment and batch management
 - **[Fee Manager Contract](./docs/FEE_MANAGER_CONTRACT.md)** - Centralized fee calculation and collection
 
 #### Dispute & Content
+
 - **[Dispute Resolution Contract](./docs/DISPUTE_CONTRACT.md)** - Two-tier mediation and arbitration system
 - **[Publication Contract](./docs/PUBLICATION_CONTRACT.md)** - On-chain registry for services and projects
 
 #### Reputation System
+
 - **[Rating System Integration](./docs/RATING_SYSTEM_INTEGRATION.md)** - User rating and feedback system
 - **[Reputation NFT Contract](./docs/REPUTATION_NFT_CONTRACT.md)** - Achievement-based NFT rewards
 
@@ -107,7 +109,7 @@ The Offer Hub platform is powered by a comprehensive suite of Soroban smart cont
 The contracts work together to create a seamless platform experience:
 
 ```
-User Registration → Service/Project Publication → Escrow Creation → 
+User Registration → Service/Project Publication → Escrow Creation →
 Payment Processing → Work Completion → Rating & Reputation → NFT Rewards
 ```
 
@@ -128,5 +130,5 @@ If you get stuck or want to discuss implementation ideas, open an issue or start
 
 ## 🧠 Maintained by
 
-**[@Josué](https://github.com/Josue1908)** 
-**[@Kevin](https://github.com/KevinMB0220)** 
+**[@Josué](https://github.com/Josue1908)**
+**[@Kevin](https://github.com/KevinMB0220)**

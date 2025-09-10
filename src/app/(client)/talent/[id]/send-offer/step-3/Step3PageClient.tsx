@@ -47,7 +47,9 @@ export default function Step3PageClient({ id }: Step3PageClientProps) {
       <TalentLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Freelancer Not Found</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Freelancer Not Found
+            </h1>
             <button
               onClick={() => router.back()}
               className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
@@ -63,8 +65,8 @@ export default function Step3PageClient({ id }: Step3PageClientProps) {
   return (
     <TalentLayout>
       <div className="min-h-screen bg-gray-50">
-        <OfferFormStep3 
-          onSubmit={handleSubmit} 
+        <OfferFormStep3
+          onSubmit={handleSubmit}
           onBack={handleBack}
           freelancerId={id}
         />

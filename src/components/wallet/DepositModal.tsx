@@ -1,120 +1,132 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Copy, Check } from 'lucide-react'
-import { toast } from 'sonner'
-import QRCodeDisplay from './QRCodeDisplay'
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Copy, Check } from "lucide-react";
+import { toast } from "sonner";
+import QRCodeDisplay from "./QRCodeDisplay";
 
 interface DepositModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 interface NetworkOption {
-  id: string
-  name: string
-  displayName: string
+  id: string;
+  name: string;
+  displayName: string;
 }
 
 interface CoinOption {
-  id: string
-  name: string
-  symbol: string
-  networks: NetworkOption[]
+  id: string;
+  name: string;
+  symbol: string;
+  networks: NetworkOption[];
 }
 
 const coinOptions: CoinOption[] = [
   {
-    id: 'usdt',
-    name: 'Tether',
-    symbol: 'USDT',
+    id: "usdt",
+    name: "Tether",
+    symbol: "USDT",
     networks: [
-      { id: 'bep20', name: 'bep20', displayName: 'BEP 20' },
-      { id: 'erc20', name: 'erc20', displayName: 'ERC 20' },
-      { id: 'trc20', name: 'trc20', displayName: 'TRC 20' }
-    ]
+      { id: "bep20", name: "bep20", displayName: "BEP 20" },
+      { id: "erc20", name: "erc20", displayName: "ERC 20" },
+      { id: "trc20", name: "trc20", displayName: "TRC 20" },
+    ],
   },
   {
-    id: 'usdc',
-    name: 'USD Coin',
-    symbol: 'USDC',
+    id: "usdc",
+    name: "USD Coin",
+    symbol: "USDC",
     networks: [
-      { id: 'erc20', name: 'erc20', displayName: 'ERC 20' },
-      { id: 'bep20', name: 'bep20', displayName: 'BEP 20' }
-    ]
-  }
-]
+      { id: "erc20", name: "erc20", displayName: "ERC 20" },
+      { id: "bep20", name: "bep20", displayName: "BEP 20" },
+    ],
+  },
+];
 
 // Mock wallet addresses for different networks
 const walletAddresses: Record<string, string> = {
-  'usdt-bep20': '0xec784217852bb71f30523bcce4c10adc7e1cec4',
-  'usdt-erc20': '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d4d4',
-  'usdt-trc20': 'TQn9Y2khEsLJW1ChVWFMSMeRDow5CNYJ7g',
-  'usdc-erc20': '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d4d4',
-  'usdc-bep20': '0xec784217852bb71f30523bcce4c10adc7e1cec4'
-}
+  "usdt-bep20": "0xec784217852bb71f30523bcce4c10adc7e1cec4",
+  "usdt-erc20": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d4d4",
+  "usdt-trc20": "TQn9Y2khEsLJW1ChVWFMSMeRDow5CNYJ7g",
+  "usdc-erc20": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d4d4",
+  "usdc-bep20": "0xec784217852bb71f30523bcce4c10adc7e1cec4",
+};
 
 function DepositModal({ isOpen, onClose }: DepositModalProps) {
-  const [selectedCoin, setSelectedCoin] = useState<string>('usdt')
-  const [selectedNetwork, setSelectedNetwork] = useState<string>('bep20')
-  const [copied, setCopied] = useState(false)
-  const [deposited, setDeposited] = useState(false)
+  const [selectedCoin, setSelectedCoin] = useState<string>("usdt");
+  const [selectedNetwork, setSelectedNetwork] = useState<string>("bep20");
+  const [copied, setCopied] = useState(false);
+  const [deposited, setDeposited] = useState(false);
 
-  const currentCoin = coinOptions.find(coin => coin.id === selectedCoin)
-  const availableNetworks = currentCoin?.networks || []
-  const walletAddress = walletAddresses[`${selectedCoin}-${selectedNetwork}`] || ''
+  const currentCoin = coinOptions.find((coin) => coin.id === selectedCoin);
+  const availableNetworks = currentCoin?.networks || [];
+  const walletAddress =
+    walletAddresses[`${selectedCoin}-${selectedNetwork}`] || "";
 
   const handleCoinChange = (coinId: string) => {
-    setSelectedCoin(coinId)
-    const newCoin = coinOptions.find(coin => coin.id === coinId)
+    setSelectedCoin(coinId);
+    const newCoin = coinOptions.find((coin) => coin.id === coinId);
     if (newCoin && newCoin.networks.length > 0) {
-      setSelectedNetwork(newCoin.networks[0].id)
+      setSelectedNetwork(newCoin.networks[0].id);
     }
-  }
+  };
 
   const handleCopyAddress = async () => {
     try {
-      await navigator.clipboard.writeText(walletAddress)
-      setCopied(true)
-      toast.success('Address copied to clipboard!')
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      toast.success("Address copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error('Failed to copy address')
+      toast.error("Failed to copy address");
     }
-  }
+  };
 
   const handleDeposited = () => {
-    setDeposited(true)
-    toast.success('Deposit confirmed!')
+    setDeposited(true);
+    toast.success("Deposit confirmed!");
     setTimeout(() => {
-      setDeposited(false)
-      onClose()
-    }, 1500)
-  }
+      setDeposited(false);
+      onClose();
+    }, 1500);
+  };
 
   const getNetworkDisplayName = (networkId: string) => {
-    const network = availableNetworks.find(net => net.id === networkId)
-    return network?.displayName || networkId.toUpperCase()
-  }
+    const network = availableNetworks.find((net) => net.id === networkId);
+    return network?.displayName || networkId.toUpperCase();
+  };
 
   const getNetworkWarning = () => {
-    const networkName = getNetworkDisplayName(selectedNetwork)
-    const coinSymbol = currentCoin?.symbol || selectedCoin.toUpperCase()
-    
+    const networkName = getNetworkDisplayName(selectedNetwork);
+    const coinSymbol = currentCoin?.symbol || selectedCoin.toUpperCase();
+
     switch (selectedNetwork) {
-      case 'bep20':
-        return `Send only ${coinSymbol} to this address. Ensure the network is Binance Smart Chain (BEP20).`
-      case 'erc20':
-        return `Send only ${coinSymbol} to this address. Ensure the network is Ethereum (ERC20).`
-      case 'trc20':
-        return `Send only ${coinSymbol} to this address. Ensure the network is TRON (TRC20).`
+      case "bep20":
+        return `Send only ${coinSymbol} to this address. Ensure the network is Binance Smart Chain (BEP20).`;
+      case "erc20":
+        return `Send only ${coinSymbol} to this address. Ensure the network is Ethereum (ERC20).`;
+      case "trc20":
+        return `Send only ${coinSymbol} to this address. Ensure the network is TRON (TRC20).`;
       default:
-        return `Send only ${coinSymbol} to this address. Ensure the network is ${networkName}.`
+        return `Send only ${coinSymbol} to this address. Ensure the network is ${networkName}.`;
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -124,7 +136,7 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
             Select coin
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Coin Selection */}
           <div className="space-y-2">
@@ -144,9 +156,7 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
           {/* Network Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Network
-            </label>
+            <label className="text-sm font-medium text-gray-700">Network</label>
             <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -163,9 +173,9 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
           {/* QR Code */}
           {walletAddress && (
-            <QRCodeDisplay 
-              value={walletAddress} 
-              size={160} 
+            <QRCodeDisplay
+              value={walletAddress}
+              size={160}
               coinId={selectedCoin}
               showLogo={true}
             />
@@ -205,7 +215,10 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
           {/* Warning Text */}
           <div className="text-center">
             <p className="text-base text-gray-600 font-bold">
-              {getNetworkWarning().split(" is ")[0]} is <span className='text-[#516AE4]'>{getNetworkWarning().split(" is ")[1]}</span>
+              {getNetworkWarning().split(" is ")[0]} is{" "}
+              <span className="text-[#516AE4]">
+                {getNetworkWarning().split(" is ")[1]}
+              </span>
             </p>
           </div>
 
@@ -215,12 +228,12 @@ function DepositModal({ isOpen, onClose }: DepositModalProps) {
             disabled={deposited}
             className="w-full bg-[#19213D] hover:bg-[#101527] text-white rounded-[2rem] h-[2.75rem] flex items-center justify-center"
           >
-            {deposited ? 'Confirmed!' : 'Deposited'}
+            {deposited ? "Confirmed!" : "Deposited"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export default DepositModal
+export default DepositModal;

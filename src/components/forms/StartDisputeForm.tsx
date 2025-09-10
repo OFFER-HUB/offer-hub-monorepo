@@ -26,10 +26,7 @@ export function StartDisputeForm() {
               <FormItem>
                 <FormLabel>Contract / Escrow ID</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="CAZ6UQX7..."
-                    {...field}
-                  />
+                  <Input placeholder="CAZ6UQX7..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -57,7 +54,10 @@ export function StartDisputeForm() {
               <FormItem>
                 <FormLabel>Reason for Dispute</FormLabel>
                 <FormControl>
-                  <Input placeholder="Describe the reason for the dispute..." {...field} />
+                  <Input
+                    placeholder="Describe the reason for the dispute..."
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

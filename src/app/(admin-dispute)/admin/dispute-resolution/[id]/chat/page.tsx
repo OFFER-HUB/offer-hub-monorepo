@@ -1,52 +1,63 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import CloseConflictModal from '@/components/dispute-resolution/close-conflict-modal';
-import { DisputeRow, Conversation as MessagesMainConversation, Message as MessagesMainMessage } from '@/types';
-import { FaChevronLeft } from 'react-icons/fa';
-import Link from 'next/link';
-import { MdGavel } from 'react-icons/md';
-import { MessagesMainPlus } from '@/components/messaging/messages-main-plus';
-import { useMessages } from '@/hooks/useMessages';
-import { useMockDisputes } from '@/data/generic-mock-data';
-import { useState } from 'react';
-import type { Conversation as MessagesConversation, Message as MessagesMessage } from '@/types/messages.types';
+import { Button } from "@/components/ui/button";
+import CloseConflictModal from "@/components/dispute-resolution/close-conflict-modal";
+import {
+  DisputeRow,
+  Conversation as MessagesMainConversation,
+  Message as MessagesMainMessage,
+} from "@/types";
+import { FaChevronLeft } from "react-icons/fa";
+import Link from "next/link";
+import { MdGavel } from "react-icons/md";
+import { MessagesMainPlus } from "@/components/messaging/messages-main-plus";
+import { useMessages } from "@/hooks/useMessages";
+import { useMockDisputes } from "@/data/generic-mock-data";
+import { useState } from "react";
+import type {
+  Conversation as MessagesConversation,
+  Message as MessagesMessage,
+} from "@/types/messages.types";
 
-const types: { [key in NonNullable<DisputeRow['status']>]: string } = {
-  active: 'Active Dispute',
-  resolved: 'Resolved Dispute',
-  unassigned: 'Unassigned Dispute',
+const types: { [key in NonNullable<DisputeRow["status"]>]: string } = {
+  active: "Active Dispute",
+  resolved: "Resolved Dispute",
+  unassigned: "Unassigned Dispute",
 };
 
 // Convert MessagesConversation to MessagesMainConversation
-const convertConversation = (conv: MessagesConversation | null): MessagesMainConversation | undefined => {
+const convertConversation = (
+  conv: MessagesConversation | null,
+): MessagesMainConversation | undefined => {
   if (!conv) return undefined;
-  
+
   return {
     id: parseInt(conv.id),
-    name: conv.participants?.map(p => p.name).join(', ') || 'Unknown',
-    avatar: conv.participants?.[0]?.avatar_url || '/placeholder.svg',
-    lastMessage: conv.last_message?.content || 'No messages yet',
+    name: conv.participants?.map((p) => p.name).join(", ") || "Unknown",
+    avatar: conv.participants?.[0]?.avatar_url || "/placeholder.svg",
+    lastMessage: conv.last_message?.content || "No messages yet",
     timestamp: conv.last_message_at,
-    isOnline: conv.participants?.some(p => p.online) || false,
-    unreadCount: conv.unread_count
+    isOnline: conv.participants?.some((p) => p.online) || false,
+    unreadCount: conv.unread_count,
   };
 };
 
 // Convert MessagesMessage to MessagesMainMessage
 const convertMessages = (msgs: MessagesMessage[]): MessagesMainMessage[] => {
-  return msgs.map(msg => ({
+  return msgs.map((msg) => ({
     id: parseInt(msg.id),
     content: msg.content,
     timestamp: msg.created_at,
-    isOutgoing: msg.sender_id === 'current-user-id', // This should be dynamic based on current user
-    type: msg.message_type === 'file' ? 'file' : 'text',
-    fileData: msg.file_url ? {
-      name: msg.file_name || 'File',
-      size: msg.file_size?.toString() || '0',
-      uploadDate: msg.created_at,
-      status: 'uploaded'
-    } : undefined
+    isOutgoing: msg.sender_id === "current-user-id", // This should be dynamic based on current user
+    type: msg.message_type === "file" ? "file" : "text",
+    fileData: msg.file_url
+      ? {
+          name: msg.file_name || "File",
+          size: msg.file_size?.toString() || "0",
+          uploadDate: msg.created_at,
+          status: "uploaded",
+        }
+      : undefined,
   }));
 };
 
@@ -67,7 +78,7 @@ export default function DisputeChat() {
   const closeDisputeButton = (
     <Button
       className="py-5 text-white rounded-full bg-secondary-500"
-      disabled={dispute.status === 'resolved'}
+      disabled={dispute.status === "resolved"}
       onClick={handleOpenModal}
     >
       <MdGavel /> Close conflict

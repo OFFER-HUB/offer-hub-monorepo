@@ -4,7 +4,11 @@ import { AuthHeader } from "@/components/auth/AuthHeader";
 import { ClientSidebar } from "@/components/client-dashboard/Sidebar";
 import { ReactNode } from "react";
 
-export default function ClientCreateProjectLayout({ children }: { children: ReactNode }) {
+export default function ClientCreateProjectLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="w-full border-b border-gray-200 bg-white relative z-10">
@@ -18,4 +22,4 @@ export default function ClientCreateProjectLayout({ children }: { children: Reac
       </div>
     </div>
   );
-} 
+}

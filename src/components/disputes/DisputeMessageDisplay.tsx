@@ -1,17 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { DisputeMessage } from '@/lib/mockData/dispute-messages-mock';
+import { useEffect, useRef } from "react";
+import { DisputeMessage } from "@/lib/mockData/dispute-messages-mock";
 
 interface DisputeMessageDisplayProps {
   messages: DisputeMessage[];
 }
 
-export function DisputeMessageDisplay({ messages }: DisputeMessageDisplayProps) {
+export function DisputeMessageDisplay({
+  messages,
+}: DisputeMessageDisplayProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -34,21 +36,21 @@ export function DisputeMessageDisplay({ messages }: DisputeMessageDisplayProps) 
       {messages.map((message) => (
         <div
           key={message.id}
-          className={`flex ${message.isOutgoing ? 'justify-end' : 'justify-start'}`}
+          className={`flex ${message.isOutgoing ? "justify-end" : "justify-start"}`}
         >
           <div
             className={`max-w-[70%] px-3 py-3 rounded-2xl relative ${
               message.isOutgoing
-                ? 'bg-[#2862FF] text-white'
-                : 'bg-[#F2F2F2] text-gray-900'
+                ? "bg-[#2862FF] text-white"
+                : "bg-[#F2F2F2] text-gray-900"
             }`}
           >
             <p className="text-sm leading-relaxed mb-1">{message.content}</p>
             <p
               className={`text-xs ${
-                message.isOutgoing 
-                  ? 'text-white/80 text-right' 
-                  : 'text-gray-600 text-left'
+                message.isOutgoing
+                  ? "text-white/80 text-right"
+                  : "text-gray-600 text-left"
               }`}
             >
               {message.timestamp}

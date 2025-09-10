@@ -20,4 +20,4 @@ export default function CreateProjectStep1() {
       <ProjectDetailsForm onNext={handleNext} onBack={handleBack} />
     </CreateProjectLayout>
   );
-} 
+}

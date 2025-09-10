@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Star, Heart, MessageSquare, Check, Award } from "lucide-react"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star, Heart, MessageSquare, Check, Award } from "lucide-react";
 
 // Sample featured freelancers
 const featuredFreelancers = [
@@ -61,12 +61,12 @@ const featuredFreelancers = [
     featured: "Expert Vetted",
     isVerified: true,
   },
-]
+];
 
 interface TalentFeaturedProps {
-  selectedFreelancers: string[]
-  toggleFreelancerSelection: (id: string) => void
-  openFreelancerDetail: (freelancer: any) => void
+  selectedFreelancers: string[];
+  toggleFreelancerSelection: (id: string) => void;
+  openFreelancerDetail: (freelancer: any) => void;
 }
 
 export default function TalentFeatured({
@@ -82,8 +82,8 @@ export default function TalentFeatured({
           key={i}
           className={`h-4 w-4 ${i < Math.floor(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
         />
-      ))
-  }
+      ));
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -121,7 +121,10 @@ export default function TalentFeatured({
                 </Button>
                 <div className="absolute -bottom-12">
                   <Avatar className="h-24 w-24 border-4 border-white">
-                    <AvatarImage src={freelancer.avatar} alt={freelancer.name} />
+                    <AvatarImage
+                      src={freelancer.avatar}
+                      alt={freelancer.name}
+                    />
                     <AvatarFallback className="bg-[#15949C]/20 text-[#15949C] text-xl">
                       {freelancer.name
                         .split(" ")
@@ -133,16 +136,26 @@ export default function TalentFeatured({
               </div>
 
               <div className="pt-16 p-6 text-center">
-                <h3 className="font-bold text-lg text-[#002333]">{freelancer.name}</h3>
+                <h3 className="font-bold text-lg text-[#002333]">
+                  {freelancer.name}
+                </h3>
                 <p className="text-[#002333]/70 mt-1">{freelancer.title}</p>
 
                 <div className="flex justify-center mt-2">
-                  <div className="flex mr-2">{renderStars(freelancer.rating)}</div>
-                  <span className="text-[#002333] font-medium">{freelancer.rating}</span>
-                  <span className="text-[#002333]/70 ml-1">({freelancer.reviewCount})</span>
+                  <div className="flex mr-2">
+                    {renderStars(freelancer.rating)}
+                  </div>
+                  <span className="text-[#002333] font-medium">
+                    {freelancer.rating}
+                  </span>
+                  <span className="text-[#002333]/70 ml-1">
+                    ({freelancer.reviewCount})
+                  </span>
                 </div>
 
-                <p className="font-bold text-[#002333] mt-3">${freelancer.hourlyRate}/hr</p>
+                <p className="font-bold text-[#002333] mt-3">
+                  ${freelancer.hourlyRate}/hr
+                </p>
 
                 <div className="flex flex-wrap justify-center gap-2 mt-4">
                   {freelancer.skills.map((skill) => (
@@ -159,7 +172,11 @@ export default function TalentFeatured({
                   >
                     View Profile
                   </Button>
-                  <Button variant="outline" size="icon" className="border-[#15949C] text-[#15949C]">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-[#15949C] text-[#15949C]"
+                  >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                 </div>
@@ -169,6 +186,5 @@ export default function TalentFeatured({
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
-

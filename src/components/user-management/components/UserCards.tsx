@@ -35,8 +35,8 @@ export function UserCards({
                 user.status === "Approved"
                   ? "border border-[#B7EB8F] bg-[#F6FFED] text-[#52C41A]"
                   : user.status === "Rejected"
-                  ? "border border-[#FFA39E] bg-[#FFF1F0] text-[#FF4D4F]"
-                  : "border border-[#FFC000] bg-[#FFF7E6] text-[#FA8C16]"
+                    ? "border border-[#FFA39E] bg-[#FFF1F0] text-[#FF4D4F]"
+                    : "border border-[#FFC000] bg-[#FFF7E6] text-[#FA8C16]"
               }`}
             >
               {user.status}

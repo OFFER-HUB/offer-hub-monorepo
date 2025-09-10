@@ -77,8 +77,8 @@ function Asset({
             movementType === "up"
               ? "text-[#3ACC6C]"
               : movementType === "down"
-              ? "text-[#FF1212]"
-              : "text-[#42424299]"
+                ? "text-[#FF1212]"
+                : "text-[#42424299]"
           } text-sm font-medium`}
         >
           {movementType === "up" ? "+" : movementType === "down" ? "-" : ""}

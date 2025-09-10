@@ -1,99 +1,107 @@
-"use client"
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import TalentLayout from "@/components/talent/talents/TalentLayout"
-import { useOffer } from "@/lib/contexts/OfferContext"
-import { useNotification } from "@/lib/contexts/NotificatonContext"
-import { useTalentData } from "@/hooks/talent/useTalentData"
+"use client";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import TalentLayout from "@/components/talent/talents/TalentLayout";
+import { useOffer } from "@/lib/contexts/OfferContext";
+import { useNotification } from "@/lib/contexts/NotificatonContext";
+import { useTalentData } from "@/hooks/talent/useTalentData";
 
 export default function SendOfferPage() {
-  const params = useParams()
-  const router = useRouter()
-  const talentId = params.id as string
+  const params = useParams();
+  const router = useRouter();
+  const talentId = params.id as string;
 
-  const { state: offerState, actions: offerActions } = useOffer()
-  const { actions: notificationActions } = useNotification()
-  const { getTalentById } = useTalentData()
+  const { state: offerState, actions: offerActions } = useOffer();
+  const { actions: notificationActions } = useNotification();
+  const { getTalentById } = useTalentData();
 
   const [formData, setFormData] = useState({
     jobTitle: "",
     jobDescription: "",
     estimate: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const talent = getTalentById(Number(talentId))
+  const talent = getTalentById(Number(talentId));
 
   useEffect(() => {
-    const savedData = sessionStorage.getItem("offerFormData")
+    const savedData = sessionStorage.getItem("offerFormData");
     if (savedData) {
       try {
-        const parsed = JSON.parse(savedData)
-        setFormData(parsed)
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed);
       } catch (error) {
-        console.error("Failed to parse saved form data:", error)
+        console.error("Failed to parse saved form data:", error);
       }
     }
-  }, [])
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    const updatedData = { ...formData, [field]: value }
-    sessionStorage.setItem("offerFormData", JSON.stringify(updatedData))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    const updatedData = { ...formData, [field]: value };
+    sessionStorage.setItem("offerFormData", JSON.stringify(updatedData));
+  };
 
   const handleNext = async () => {
-    if (!formData.jobTitle.trim() || !formData.jobDescription.trim() || !formData.estimate.trim()) {
+    if (
+      !formData.jobTitle.trim() ||
+      !formData.jobDescription.trim() ||
+      !formData.estimate.trim()
+    ) {
       notificationActions.addNotification({
         type: "error",
         title: "Validation Error",
         message: "Please fill in all required fields",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
       if (!talent) {
-        throw new Error("Talent not found")
+        throw new Error("Talent not found");
       }
 
-      offerActions.createDraft(talentId, talent.name)
+      offerActions.createDraft(talentId, talent.name);
       offerActions.updateDraft({
         projectTitle: formData.jobTitle,
         projectDescription: formData.jobDescription,
         budget: Number(formData.estimate),
-      })
+      });
 
-      sessionStorage.setItem("offerFormData", JSON.stringify(formData))
+      sessionStorage.setItem("offerFormData", JSON.stringify(formData));
 
       notificationActions.addNotification({
         type: "success",
         title: "Offer Draft Created",
         message: "Your offer details have been saved",
-      })
+      });
 
-      router.push(`/talent/${talentId}/send-offer/project-type`)
+      router.push(`/talent/${talentId}/send-offer/project-type`);
     } catch (error) {
       notificationActions.addNotification({
         type: "error",
         title: "Error",
         message: "Failed to save offer details. Please try again.",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white px-6 py-2">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => router.back()} className="text-gray-600 hover:text-gray-900">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="text-gray-600 hover:text-gray-900"
+          >
             ← Back
           </Button>
           <div className="flex-1 text-center">
@@ -106,9 +114,13 @@ export default function SendOfferPage() {
         <div className="max-w-md mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Send an offer</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Send an offer
+            </h1>
             <p className="text-teal-600 font-semibold">
-              {talent ? `Create and send offer to ${talent.name}` : "Create and send offer to hire"}
+              {talent
+                ? `Create and send offer to ${talent.name}`
+                : "Create and send offer to hire"}
             </p>
           </div>
 
@@ -136,7 +148,9 @@ export default function SendOfferPage() {
               <Textarea
                 placeholder="Enter a description..."
                 value={formData.jobDescription}
-                onChange={(e) => handleInputChange("jobDescription", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("jobDescription", e.target.value)
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent min-h-[120px] resize-none"
                 disabled={isSubmitting}
               />
@@ -145,7 +159,8 @@ export default function SendOfferPage() {
             {/* Estimate */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                What is your estimate for this project <span className="text-red-500">*</span>
+                What is your estimate for this project{" "}
+                <span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="$0"
@@ -180,5 +195,5 @@ export default function SendOfferPage() {
         </div>
       </TalentLayout>
     </div>
-  )
+  );
 }

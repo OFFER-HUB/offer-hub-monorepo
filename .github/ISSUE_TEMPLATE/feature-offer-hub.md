@@ -1,13 +1,12 @@
 ---
 name: Feature OFFER-HUB
 about: Feature
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
-## 🔧 Title: 
+## 🔧 Title:
 
 ## 📘 Description
 

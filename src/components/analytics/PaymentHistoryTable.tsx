@@ -14,9 +14,14 @@ export default function PaymentHistoryTable() {
       <CardContent className="pt-4">
         <div className="no-scrollbar pr-2 divide-y divide-[#EDF3F6]">
           {paymentHistoryMock.map((row) => (
-            <div key={row.id} className="flex items-center justify-between py-4">
+            <div
+              key={row.id}
+              className="flex items-center justify-between py-4"
+            >
               <div>
-                <div className="text-[#2A3C46] text-[14px] font-medium">{row.freelancer}</div>
+                <div className="text-[#2A3C46] text-[14px] font-medium">
+                  {row.freelancer}
+                </div>
                 <div className="text-[#8AA2AF] text-[12px]">{row.note}</div>
               </div>
               <div className="text-[#15949C] font-normal">${row.amount}</div>
@@ -27,5 +32,3 @@ export default function PaymentHistoryTable() {
     </Card>
   );
 }
-
-

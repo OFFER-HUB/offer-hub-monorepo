@@ -24,7 +24,7 @@ router.patch(
   "/:id",
   verifyToken,
   authorizeRoles("client", "admin"),
-  updateContractStatusHandler
+  updateContractStatusHandler,
 );
 
 // GET /api/contracts/user/:userId - Get contracts by user
@@ -37,7 +37,7 @@ router.get(
   "/status/:status",
   verifyToken,
   authorizeRoles("admin"),
-  getContractsByStatusHandler
+  getContractsByStatusHandler,
 );
 
 export default router;

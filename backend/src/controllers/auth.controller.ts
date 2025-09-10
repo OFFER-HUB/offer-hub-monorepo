@@ -4,7 +4,7 @@ import * as authService from "@/services/auth.service";
 export async function getNonce(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const { wallet_address } = req.body;
@@ -24,7 +24,7 @@ export async function getNonce(
 export async function register(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const { user, tokens } = await authService.signup(req.body);
@@ -54,7 +54,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
     const { accessToken, refreshToken } = await authService.refreshSession(
-      req.refreshTokenRecord
+      req.refreshTokenRecord,
     );
     res.status(200).json({
       status: "success",
@@ -83,7 +83,7 @@ export async function me(req: Request, res: Response, next: NextFunction) {
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     const { message } = await authService.logoutUser(
-      req.refreshTokenRecord.token_hash
+      req.refreshTokenRecord.token_hash,
     );
     res.status(200).json({ message });
   } catch (err) {

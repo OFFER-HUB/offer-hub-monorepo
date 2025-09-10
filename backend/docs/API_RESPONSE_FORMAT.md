@@ -7,6 +7,7 @@ All API endpoints in the offer-hub backend now use a standardized response forma
 ## Standard Response Format
 
 ### Success Response
+
 ```typescript
 {
   success: true,
@@ -16,6 +17,7 @@ All API endpoints in the offer-hub backend now use a standardized response forma
 ```
 
 ### Error Response
+
 ```typescript
 {
   success: false,
@@ -25,6 +27,7 @@ All API endpoints in the offer-hub backend now use a standardized response forma
 ```
 
 ### Paginated Response
+
 ```typescript
 {
   success: true,
@@ -66,30 +69,25 @@ The `responseBuilder.ts` utility provides helper functions to create standardize
 ### In Controllers
 
 ```typescript
-import { buildSuccessResponse, buildErrorResponse } from '../utils/responseBuilder';
+import {
+  buildSuccessResponse,
+  buildErrorResponse,
+} from "../utils/responseBuilder";
 
 // Success response
-res.status(200).json(
-  buildSuccessResponse(user, "User retrieved successfully")
-);
+res.status(200).json(buildSuccessResponse(user, "User retrieved successfully"));
 
 // Error response
-res.status(400).json(
-  buildErrorResponse("Missing required fields")
-);
+res.status(400).json(buildErrorResponse("Missing required fields"));
 
 // Paginated response
 res.status(200).json(
-  buildPaginatedResponse(
-    users,
-    "Users retrieved successfully",
-    {
-      current_page: 1,
-      total_pages: 5,
-      total_items: 100,
-      per_page: 20
-    }
-  )
+  buildPaginatedResponse(users, "Users retrieved successfully", {
+    current_page: 1,
+    total_pages: 5,
+    total_items: 100,
+    per_page: 20,
+  }),
 );
 ```
 
@@ -108,6 +106,7 @@ Maintain appropriate HTTP status codes while using the standardized format:
 ## Migration Notes
 
 ### Before (Inconsistent Formats)
+
 ```typescript
 // Format 1
 res.status(400).json({ error: "Missing fields" });
@@ -120,6 +119,7 @@ res.status(200).json({ success: true, message: "Success", data: result });
 ```
 
 ### After (Standardized Format)
+
 ```typescript
 // All error responses
 res.status(400).json(buildErrorResponse("Missing fields"));
@@ -168,7 +168,9 @@ return res.status(statusCode).json({
   success: false,
   status: statusCode,
   message,
-  ...(process.env.NODE_ENV === "development" && { stack: (err as Error).stack }),
+  ...(process.env.NODE_ENV === "development" && {
+    stack: (err as Error).stack,
+  }),
   timestamp: new Date().toISOString(),
 });
 ```

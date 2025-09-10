@@ -16,7 +16,7 @@ export interface Message {
   conversation_id: string;
   sender_id: string;
   content: string;
-  message_type: 'text' | 'file' | 'system';
+  message_type: "text" | "file" | "system";
   file_url?: string;
   file_name?: string;
   file_size?: number;
@@ -42,7 +42,7 @@ export interface CreateMessageDTO {
   conversation_id: string;
   sender_id: string;
   content: string;
-  message_type: 'text' | 'file' | 'system';
+  message_type: "text" | "file" | "system";
   file_url?: string;
   file_name?: string;
   file_size?: number;

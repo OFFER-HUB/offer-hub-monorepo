@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function ReviewsCarousel({
   const prev = () => setIndex((prev) => Math.max(prev - itemsPerPage, 0));
   const next = () =>
     setIndex((prev) =>
-      Math.min(prev + itemsPerPage, (totalPages - 1) * itemsPerPage)
+      Math.min(prev + itemsPerPage, (totalPages - 1) * itemsPerPage),
     );
 
   return (
@@ -61,8 +61,12 @@ export default function ReviewsCarousel({
                   {renderStars(review.rating)}
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mb-2">{review.date.slice(0,1).toUpperCase()+review.date.slice(1)}</p>
-              <p className="text-gray-700 leading-relaxed text-sm">"{review.comment}"</p>
+              <p className="text-sm text-gray-500 mb-2">
+                {review.date.slice(0, 1).toUpperCase() + review.date.slice(1)}
+              </p>
+              <p className="text-gray-700 leading-relaxed text-sm">
+                "{review.comment}"
+              </p>
             </div>
           ))}
         </div>

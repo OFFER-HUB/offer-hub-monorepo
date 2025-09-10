@@ -43,7 +43,7 @@ export default function AccountSettings() {
   const [newServiceMaxPrice, setNewServiceMaxPrice] = useState("");
   const [newServiceCurrency, setNewServiceCurrency] = useState("XLM");
   const [conversionRates, setConversionRates] = useState<ConversionRates>(
-    fallbackConversionRates
+    fallbackConversionRates,
   );
 
   const {
@@ -97,13 +97,13 @@ export default function AccountSettings() {
     const fetchConversionRates = async () => {
       try {
         const response = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd,eur"
+          "https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd,eur",
         );
         if (!response.ok) throw new Error("Failed to fetch conversion rates");
         const data = await response.json();
 
         const usdEurResponse = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=eur"
+          "https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=eur",
         );
         if (!usdEurResponse.ok) throw new Error("Failed to fetch USD-EUR rate");
         const usdEurData = await usdEurResponse.json();
@@ -134,7 +134,7 @@ export default function AccountSettings() {
       if (trimmedAddress.length >= 4) {
         const shortAddress = `${trimmedAddress.slice(
           0,
-          6
+          6,
         )}...${trimmedAddress.slice(-4)}`;
         setWalletPlaceholder(shortAddress);
         setWalletAddress("");
@@ -183,7 +183,7 @@ export default function AccountSettings() {
         max_price: maxPrice,
         currency: newServiceCurrency,
       },
-      user.id
+      user.id,
     );
 
     if (success) {

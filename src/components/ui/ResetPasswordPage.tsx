@@ -18,7 +18,7 @@ const ResetPasswordPage: React.FC = () => {
       hasUpperLowerOrNumber: /[A-Za-z0-9]/.test(password),
       hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     }),
-    [password]
+    [password],
   );
 
   const { isLengthValid, hasUpperLowerOrNumber, hasSpecialChar } =
@@ -78,7 +78,10 @@ const ResetPasswordPage: React.FC = () => {
             </div>
             <div className="mt-2">
               <p className="text-sm font-medium text-neutral-600">
-                Strength: <span className="text-gray-500 font-light">{getStrength()}</span>
+                Strength:{" "}
+                <span className="text-gray-500 font-light">
+                  {getStrength()}
+                </span>
               </p>
               <ul className="text-xs sm:text-sm mt-1 space-y-1">
                 <li
@@ -86,8 +89,8 @@ const ResetPasswordPage: React.FC = () => {
                     isLengthValid
                       ? "text-[#00ED27]"
                       : passwordsMatch
-                      ? "text-gray-600"
-                      : "text-red-500"
+                        ? "text-gray-600"
+                        : "text-red-500"
                   }`}
                 >
                   <span className="inline-flex items-center mr-2">
@@ -108,8 +111,8 @@ const ResetPasswordPage: React.FC = () => {
                     hasUpperLowerOrNumber
                       ? "text-[#00ED27]"
                       : passwordsMatch
-                      ? "text-gray-600"
-                      : "text-red-500"
+                        ? "text-gray-600"
+                        : "text-red-500"
                   }`}
                 >
                   <span className="inline-flex items-center mr-2">
@@ -123,15 +126,17 @@ const ResetPasswordPage: React.FC = () => {
                       <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
                     )}
                   </span>
-                  <span>At least one uppercase, lowercase characters or numbers.</span>
+                  <span>
+                    At least one uppercase, lowercase characters or numbers.
+                  </span>
                 </li>
                 <li
                   className={`flex items-center text-xs sm:text-xs ${
                     hasSpecialChar
                       ? "text-[#00ED27]"
                       : passwordsMatch
-                      ? "text-gray-600"
-                      : "text-red-500"
+                        ? "text-gray-600"
+                        : "text-red-500"
                   }`}
                 >
                   <span className="inline-flex items-center mr-2">
@@ -184,7 +189,9 @@ const ResetPasswordPage: React.FC = () => {
               </button>
             </div>
             {!passwordsMatch && confirmPassword && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">Password mis-match.</p>
+              <p className="text-red-500 text-xs sm:text-sm mt-1">
+                Password mis-match.
+              </p>
             )}
           </div>
           <Button

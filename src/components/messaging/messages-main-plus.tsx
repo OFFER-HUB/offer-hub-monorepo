@@ -1,20 +1,20 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, FileText, Send, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-import { Input } from '@/components/ui/input';
-import type { MessagesMainProps } from '@/types';
-import { cn } from '@/lib/utils';
-import { useMessages } from '@/hooks/use-message';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera, FileText, Send, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Input } from "@/components/ui/input";
+import type { MessagesMainProps } from "@/types";
+import { cn } from "@/lib/utils";
+import { useMessages } from "@/hooks/use-message";
 
-import { useEffect, useRef, useState } from 'react';
-import TypingIndicator from '@/components/messaging/TypingIndicator';
-import MessageStatus, { MsgStatus } from '@/components/messaging/MessageStatus';
+import { useEffect, useRef, useState } from "react";
+import TypingIndicator from "@/components/messaging/TypingIndicator";
+import MessageStatus, { MsgStatus } from "@/components/messaging/MessageStatus";
 
-const ICON_SRC = '/Icon.svg';
-const MASK_SRC = '/maskGroup.svg';
+const ICON_SRC = "/Icon.svg";
+const MASK_SRC = "/maskGroup.svg";
 
 export function MessagesMainPlus({
   activeConversation,
@@ -39,10 +39,19 @@ export function MessagesMainPlus({
     messages.forEach((m) => {
       const id = String(m.id);
       if (!id || !m.isOutgoing || statusById[id]) return;
-      setStatusById((s) => ({ ...s, [id]: 'sent' }));
-      const t1 = setTimeout(() => setStatusById((s) => ({ ...s, [id]: 'delivered' })), 600);
-      const t2 = setTimeout(() => setStatusById((s) => ({ ...s, [id]: 'read' })), 1400);
-      return () => { clearTimeout(t1); clearTimeout(t2); };
+      setStatusById((s) => ({ ...s, [id]: "sent" }));
+      const t1 = setTimeout(
+        () => setStatusById((s) => ({ ...s, [id]: "delivered" })),
+        600,
+      );
+      const t2 = setTimeout(
+        () => setStatusById((s) => ({ ...s, [id]: "read" })),
+        1400,
+      );
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     });
   }, [messages, statusById]);
 
@@ -56,13 +65,20 @@ export function MessagesMainPlus({
 
   const endRef = useRef<HTMLDivElement | null>(null);
   const scrollToBottom = (smooth = true) =>
-    endRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
-  useEffect(() => { scrollToBottom(); }, [messages, typing]);
+    endRef.current?.scrollIntoView({
+      behavior: smooth ? "smooth" : "auto",
+      block: "end",
+    });
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, typing]);
 
   if (!activeConversation) {
     return (
       <div className="flex items-center justify-center flex-1">
-        <p className="text-gray-500">Select a conversation to start messaging</p>
+        <p className="text-gray-500">
+          Select a conversation to start messaging
+        </p>
       </div>
     );
   }
@@ -73,20 +89,29 @@ export function MessagesMainPlus({
       <div className="bg-[#DEEFE7] rounded-lg px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="*:data-[slot=avatar]:ring-background flex -space-x-7 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-            {(dispute?.parties ?? [
-              { id: '1', avatarUrl: MASK_SRC },
-            ]).map((e) => (
-              <Avatar className="w-10 h-10 border border-white" key={e.id}>
-                <AvatarImage src={e.avatarUrl} alt={activeConversation.name} />
-                <AvatarFallback className="text-gray-600 bg-gray-200">
-                  {activeConversation.name.split(' ').map((n) => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-            ))}
+            {(dispute?.parties ?? [{ id: "1", avatarUrl: MASK_SRC }]).map(
+              (e) => (
+                <Avatar className="w-10 h-10 border border-white" key={e.id}>
+                  <AvatarImage
+                    src={e.avatarUrl}
+                    alt={activeConversation.name}
+                  />
+                  <AvatarFallback className="text-gray-600 bg-gray-200">
+                    {activeConversation.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+              ),
+            )}
           </div>
           <h2 className="font-medium text-gray-900">
             {dispute?.parties
-              ? dispute.parties.map((e) => e.name).join(', ').slice(0, 45) + '...'
+              ? dispute.parties
+                  .map((e) => e.name)
+                  .join(", ")
+                  .slice(0, 45) + "..."
               : activeConversation.name}
           </h2>
         </div>
@@ -97,28 +122,45 @@ export function MessagesMainPlus({
       <div className="flex items-center justify-center px-6 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <div className="flex items-center justify-center w-5 h-5 rounded">
-            <Image src={ICON_SRC} alt="icon" width={16} height={16} className="w-4 h-4" />
+            <Image
+              src={ICON_SRC}
+              alt="icon"
+              width={16}
+              height={16}
+              className="w-4 h-4"
+            />
           </div>
           <span>Pending: Milestone 1 - </span>
-          <span className="text-gray-900 underline cursor-pointer">NFTs Card Design</span>
+          <span className="text-gray-900 underline cursor-pointer">
+            NFTs Card Design
+          </span>
         </div>
       </div>
 
       {/* Mensajes */}
       <div className="flex-1 p-6 space-y-4 overflow-y-auto">
         {messages.map((message) => (
-          <div key={message.id} className={cn('flex', message.isOutgoing ? 'justify-end' : 'justify-start')}>
+          <div
+            key={message.id}
+            className={cn(
+              "flex",
+              message.isOutgoing ? "justify-end" : "justify-start",
+            )}
+          >
             <div className="max-w-xs lg:max-w-md">
-              {message.type === 'file' && message.fileData && (
+              {message.type === "file" && message.fileData && (
                 <div className="p-4 mb-2 border border-gray-200 rounded-lg bg-gray-50">
                   <div className="flex items-start gap-3">
                     <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 bg-red-100 rounded">
                       <FileText className="w-4 h-4 text-red-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{message.fileData.name}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {message.fileData.name}
+                      </p>
                       <p className="mt-1 text-xs text-gray-500">
-                        PDF • {message.fileData.size} • {message.fileData.uploadDate}
+                        PDF • {message.fileData.size} •{" "}
+                        {message.fileData.uploadDate}
                       </p>
                       <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                         <div className="flex items-center justify-center w-3 h-3 border border-gray-400 rounded-full">
@@ -134,8 +176,10 @@ export function MessagesMainPlus({
               <div className="relative">
                 <div
                   className={cn(
-                    'px-4 py-3 rounded-2xl relative',
-                    message.isOutgoing ? 'bg-blue-500 text-white rounded-br-md' : 'bg-gray-200 text-gray-900 rounded-bl-md'
+                    "px-4 py-3 rounded-2xl relative",
+                    message.isOutgoing
+                      ? "bg-blue-500 text-white rounded-br-md"
+                      : "bg-gray-200 text-gray-900 rounded-bl-md",
                   )}
                 >
                   <p className="text-sm">{message.content}</p>
@@ -147,11 +191,17 @@ export function MessagesMainPlus({
                 </div>
 
                 {/* timestamp + status para salientes */}
-                <div className={cn('text-xs mt-1 text-gray-500 flex items-center gap-1',
-                                    message.isOutgoing ? 'justify-end' : 'justify-start')}>
+                <div
+                  className={cn(
+                    "text-xs mt-1 text-gray-500 flex items-center gap-1",
+                    message.isOutgoing ? "justify-end" : "justify-start",
+                  )}
+                >
                   <span suppressHydrationWarning>{message.timestamp}</span>
                   {message.isOutgoing && (
-                    <MessageStatus status={statusById[String(message.id)] ?? 'sent'} />
+                    <MessageStatus
+                      status={statusById[String(message.id)] ?? "sent"}
+                    />
                   )}
                 </div>
               </div>

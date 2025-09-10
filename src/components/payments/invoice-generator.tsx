@@ -288,7 +288,7 @@ export default function InvoiceGenerator() {
                               handleItemChange(
                                 index,
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />
@@ -302,7 +302,7 @@ export default function InvoiceGenerator() {
                               handleItemChange(
                                 index,
                                 "quantity",
-                                Number.parseInt(e.target.value)
+                                Number.parseInt(e.target.value),
                               )
                             }
                           />
@@ -319,7 +319,7 @@ export default function InvoiceGenerator() {
                                 handleItemChange(
                                   index,
                                   "rate",
-                                  Number.parseFloat(e.target.value)
+                                  Number.parseFloat(e.target.value),
                                 )
                               }
                             />
@@ -468,7 +468,7 @@ export default function InvoiceGenerator() {
                                 year: "numeric",
                                 month: "short",
                                 day: "numeric",
-                              }
+                              },
                             )}
                           </td>
                           <td className="py-4 px-4 font-medium text-[#002333]">

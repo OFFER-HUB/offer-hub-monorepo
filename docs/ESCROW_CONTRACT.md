@@ -45,18 +45,22 @@ The escrow contract implements a secure payment flow with milestone support and 
 ## Payment Flow States
 
 ### 1. Initialized
+
 - Contract created but funds not yet deposited
 - Initial state after contract deployment
 
 ### 2. Funded
+
 - Client has deposited funds into escrow
 - Ready for work completion and release
 
 ### 3. Released
+
 - Funds released to freelancer
 - Final state for successful completion
 
 ### 4. Disputed
+
 - Dispute initiated by client or freelancer
 - Awaiting arbitrator resolution
 
@@ -65,21 +69,26 @@ The escrow contract implements a secure payment flow with milestone support and 
 ### Initialization Functions
 
 #### `init_contract(env: Env, client: Address, freelancer: Address, amount: i128, fee_manager: Address)`
+
 Basic contract initialization for simple escrow.
 
 **Parameters:**
+
 - `client`: Client address who will deposit funds
 - `freelancer`: Freelancer address who will receive funds
 - `amount`: Escrow amount in tokens
 - `fee_manager`: Fee manager contract address
 
 **Events Emitted:**
+
 - Contract initialization events
 
 #### `init_contract_full(env: Env, client: Address, freelancer: Address, arbitrator: Address, token: Address, amount: i128, timeout_secs: u64)`
+
 Advanced contract initialization with full configuration.
 
 **Parameters:**
+
 - `client`: Client address
 - `freelancer`: Freelancer address
 - `arbitrator`: Designated arbitrator address
@@ -90,6 +99,7 @@ Advanced contract initialization with full configuration.
 ### Fund Management
 
 #### `deposit_funds(env: Env, client: Address)`
+
 Deposits funds into the escrow contract.
 
 **Authorization:** Client only
@@ -97,9 +107,11 @@ Deposits funds into the escrow contract.
 **Token Transfer:** Transfers specified amount from client to contract
 
 **Events Emitted:**
+
 - `deposited_fund(client, amount, timestamp)`
 
 #### `release_funds(env: Env, freelancer: Address)`
+
 Releases escrowed funds to the freelancer.
 
 **Authorization:** Freelancer only
@@ -108,12 +120,15 @@ Releases escrowed funds to the freelancer.
 **Token Transfer:** Transfers net amount to freelancer
 
 **Events Emitted:**
+
 - `released_fund(freelancer, gross_amount, net_amount, fee_collected, client, timestamp)`
 
 #### `auto_release(env: Env)`
+
 Automatically releases funds after timeout period expires.
 
-**Preconditions:** 
+**Preconditions:**
+
 - Contract funded
 - Timeout period elapsed
 - No active disputes
@@ -123,6 +138,7 @@ Automatically releases funds after timeout period expires.
 ### Dispute Management
 
 #### `dispute(env: Env, caller: Address)`
+
 Initiates a dispute for the escrowed funds.
 
 **Authorization:** Client or Freelancer only
@@ -130,62 +146,76 @@ Initiates a dispute for the escrowed funds.
 **State Change:** Updates status to Disputed
 
 **Events Emitted:**
+
 - `escrow_disputed(caller, timestamp)`
 
 #### `resolve_dispute(env: Env, caller: Address, result: Symbol)`
+
 Resolves an active dispute with arbitrator decision.
 
 **Authorization:** Designated arbitrator only
 **Parameters:**
+
 - `result`: Dispute resolution ("client_wins", "freelancer_wins", "split")
 
 **Supported Results:**
+
 - `client_wins`: Returns all funds to client
 - `freelancer_wins`: Releases all funds to freelancer
 - `split`: Divides funds 50/50 between parties
 
 **Events Emitted:**
+
 - `escrow_resolved(result, timestamp)`
 
 ### Milestone System
 
 #### `add_milestone(env: Env, client: Address, desc: String, amount: i128) -> u32`
+
 Creates a new milestone for the project.
 
 **Authorization:** Client only
 **Returns:** Milestone ID
 
 **Parameters:**
+
 - `desc`: Milestone description
 - `amount`: Milestone payment amount
 
 **Events Emitted:**
+
 - `escrow_milestone_added(client, milestone_id, description, amount, timestamp)`
 
 #### `approve_milestone(env: Env, client: Address, milestone_id: u32)`
+
 Approves a milestone for payment release.
 
 **Authorization:** Client only
 **Preconditions:** Milestone must exist and not be approved
 
 **Events Emitted:**
+
 - `escrow_milestone_approved(client, milestone_id, timestamp)`
 
 #### `release_milestone(env: Env, freelancer: Address, milestone_id: u32)`
+
 Claims payment for an approved milestone.
 
 **Authorization:** Freelancer only
 **Preconditions:** Milestone must be approved and not released
 
 **Events Emitted:**
+
 - `escrow_milestone_released(freelancer, milestone_id, amount, timestamp)`
 
 ### Query Functions
 
 #### `get_escrow_data(env: Env) -> EscrowData`
+
 Returns complete escrow contract data.
 
 **Returns:**
+
 ```rust
 EscrowData {
     client: Address,
@@ -211,14 +241,17 @@ EscrowData {
 ```
 
 #### `get_milestones(env: Env) -> Vec<Milestone>`
+
 Returns all milestones for the contract.
 
 #### `get_milestone_history(env: Env) -> Vec<MilestoneHistory>`
+
 Returns complete milestone history with actions.
 
 ## Data Structures
 
 ### EscrowStatus
+
 ```rust
 enum EscrowStatus {
     Initialized,
@@ -230,6 +263,7 @@ enum EscrowStatus {
 ```
 
 ### Milestone
+
 ```rust
 struct Milestone {
     id: u32,
@@ -244,6 +278,7 @@ struct Milestone {
 ```
 
 ### DisputeResult
+
 ```rust
 enum DisputeResult {
     None = 0,
@@ -258,12 +293,13 @@ enum DisputeResult {
 ### Frontend Integration
 
 #### Create and Fund Escrow
+
 ```typescript
 const createAndFundEscrow = async (
   clientAddress: string,
   freelancerAddress: string,
   amount: string,
-  tokenAddress: string
+  tokenAddress: string,
 ) => {
   // Initialize escrow contract
   await escrowContract.init_contract_full({
@@ -272,71 +308,73 @@ const createAndFundEscrow = async (
     arbitrator: ARBITRATOR_ADDRESS,
     token: tokenAddress,
     amount: amount,
-    timeout_secs: 2592000 // 30 days
+    timeout_secs: 2592000, // 30 days
   });
-  
+
   // Deposit funds
   await escrowContract.deposit_funds({
-    client: clientAddress
+    client: clientAddress,
   });
-  
+
   return await escrowContract.get_escrow_data();
 };
 ```
 
 #### Milestone Management
+
 ```typescript
 const manageMilestones = async (
   clientAddress: string,
   freelancerAddress: string,
-  milestones: Array<{description: string, amount: string}>
+  milestones: Array<{ description: string; amount: string }>,
 ) => {
   const milestoneIds = [];
-  
+
   // Create milestones
   for (const milestone of milestones) {
     const id = await escrowContract.add_milestone({
       client: clientAddress,
       desc: milestone.description,
-      amount: milestone.amount
+      amount: milestone.amount,
     });
     milestoneIds.push(id);
   }
-  
+
   // Approve first milestone
   await escrowContract.approve_milestone({
     client: clientAddress,
-    milestone_id: milestoneIds[0]
+    milestone_id: milestoneIds[0],
   });
-  
+
   // Freelancer can now release first milestone
   await escrowContract.release_milestone({
     freelancer: freelancerAddress,
-    milestone_id: milestoneIds[0]
+    milestone_id: milestoneIds[0],
   });
-  
+
   return milestoneIds;
 };
 ```
 
 #### Dispute Handling
+
 ```typescript
 const handleDispute = async (
   disputeInitiator: string,
   arbitratorAddress: string,
-  resolution: 'client_wins' | 'freelancer_wins' | 'split'
+  resolution: "client_wins" | "freelancer_wins" | "split",
 ) => {
   // Initiate dispute
   await escrowContract.dispute({
-    caller: disputeInitiator
+    caller: disputeInitiator,
   });
-  
+
   // Arbitrator resolves dispute
   await escrowContract.resolve_dispute({
     caller: arbitratorAddress,
-    result: resolution
+    result: resolution,
   });
-  
+
   return await escrowContract.get_escrow_data();
 };
 ```
@@ -344,20 +382,21 @@ const handleDispute = async (
 ### Backend Integration
 
 #### Monitor Escrow Events
+
 ```typescript
 const monitorEscrowEvents = async (escrowContractAddress: string) => {
   // Listen for fund deposits
   escrowContract.events.deposited_fund.subscribe((event) => {
     console.log(`Funds deposited: ${event.amount} by ${event.client}`);
-    updateProjectStatus(event.client, 'funded');
+    updateProjectStatus(event.client, "funded");
   });
-  
+
   // Listen for milestone releases
   escrowContract.events.escrow_milestone_released.subscribe((event) => {
     console.log(`Milestone ${event.milestone_id} released: ${event.amount}`);
-    updateMilestoneStatus(event.milestone_id, 'completed');
+    updateMilestoneStatus(event.milestone_id, "completed");
   });
-  
+
   // Listen for disputes
   escrowContract.events.escrow_disputed.subscribe((event) => {
     console.log(`Dispute initiated by ${event.caller}`);
@@ -371,11 +410,13 @@ const monitorEscrowEvents = async (escrowContractAddress: string) => {
 The escrow contract implements a transparent fee system:
 
 ### Standard Fee Structure
+
 - **Platform Fee**: 2.5% of transaction amount
 - **Fee Calculation**: `(amount * 250) / 10000`
 - **Net Amount**: `amount - fee_amount`
 
 ### Fee Integration
+
 - Fees are automatically calculated during fund release
 - Fee collection is tracked in escrow data
 - Integration with fee manager contract for premium users
@@ -399,7 +440,9 @@ let net_amount = escrow_data.amount - fee_amount;
 ## Testing
 
 ### Unit Tests
+
 The contract includes comprehensive tests for:
+
 - Contract initialization and configuration
 - Fund deposit and release mechanisms
 - Milestone creation, approval, and release
@@ -409,6 +452,7 @@ The contract includes comprehensive tests for:
 - Event emission verification
 
 ### Test Examples
+
 ```rust
 #[test]
 fn test_escrow_flow() {
@@ -416,7 +460,7 @@ fn test_escrow_flow() {
     let client = Address::generate(&env);
     let freelancer = Address::generate(&env);
     let token = Address::generate(&env);
-    
+
     // Initialize contract
     EscrowContract::init_contract_full(
         env.clone(),
@@ -427,13 +471,13 @@ fn test_escrow_flow() {
         1000,
         3600 // 1 hour timeout
     );
-    
+
     // Test deposit
     EscrowContract::deposit_funds(env.clone(), client);
-    
+
     // Test release
     EscrowContract::release_funds(env.clone(), freelancer);
-    
+
     let data = EscrowContract::get_escrow_data(env);
     assert_eq!(data.status, EscrowStatus::Released);
 }
@@ -442,13 +486,16 @@ fn test_escrow_flow() {
 ## Deployment
 
 ### Contract Address
+
 After deployment, update the contract address in your frontend configuration:
 
 ```typescript
-const ESCROW_CONTRACT_ADDRESS = "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+const ESCROW_CONTRACT_ADDRESS =
+  "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 ```
 
 ### Factory Deployment
+
 Escrow contracts are typically deployed through the Escrow Factory contract for standardization and management.
 
 ## Error Handling
@@ -477,6 +524,7 @@ enum Error {
 ## Future Enhancements
 
 ### Planned Features
+
 1. **Multi-token support** for diverse payment options
 2. **Escrow templates** for common project types
 3. **Automated milestone triggers** based on external conditions
@@ -484,6 +532,7 @@ enum Error {
 5. **Cross-chain escrow** capabilities
 
 ### Integration Roadmap
+
 1. **DeFi protocol integration** for yield generation on escrowed funds
 2. **Oracle integration** for automated dispute resolution data
 3. **Governance token integration** for platform decision making

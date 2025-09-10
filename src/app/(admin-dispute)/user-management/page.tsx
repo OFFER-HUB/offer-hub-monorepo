@@ -1,64 +1,71 @@
-"use client"
+"use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import AccountManagementTable from "@/components/user-management/account-management"
-import UserVerificationTable from "@/components/user-management/UserVerificationTable"
-import UserAnalyticsTable from "@/components/user-management/UserAnalyticsTable"
-import ProfileSection from "@/components/profile/profile-section"
-import { AdminAuth } from "@/components/admin/AdminAuth"
-import { useAdminUsersApi } from "@/hooks/api-connections/use-admin-users-api"
-import { useSearchParams, useRouter, usePathname } from "next/navigation"
-import { useEffect, useState, Suspense } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AccountManagementTable from "@/components/user-management/account-management";
+import UserVerificationTable from "@/components/user-management/UserVerificationTable";
+import UserAnalyticsTable from "@/components/user-management/UserAnalyticsTable";
+import ProfileSection from "@/components/profile/profile-section";
+import { AdminAuth } from "@/components/admin/AdminAuth";
+import { useAdminUsersApi } from "@/hooks/api-connections/use-admin-users-api";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 
 // Component that uses useSearchParams - needs to be wrapped in Suspense
 function UserVerificationContent() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const [activeTab, setActiveTab] = useState("verification")
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const { getAuthToken } = useAdminUsersApi()
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("verification");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { getAuthToken } = useAdminUsersApi();
 
   useEffect(() => {
-    const tab = searchParams.get("tab")
-    if (tab && ["verification", "account", "analytics", "profile"].includes(tab)) {
-      setActiveTab(tab)
+    const tab = searchParams.get("tab");
+    if (
+      tab &&
+      ["verification", "account", "analytics", "profile"].includes(tab)
+    ) {
+      setActiveTab(tab);
     } else {
-      setActiveTab("verification")
+      setActiveTab("verification");
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   useEffect(() => {
     // Check if user is already authenticated
-    const token = getAuthToken()
+    const token = getAuthToken();
     if (token) {
-      setIsAuthenticated(true)
+      setIsAuthenticated(true);
     }
-  }, [getAuthToken])
+  }, [getAuthToken]);
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value)
+    setActiveTab(value);
 
     if (value === "verification") {
-      router.replace(pathname, { scroll: false })
+      router.replace(pathname, { scroll: false });
     } else {
-      router.replace(`${pathname}?tab=${value}`, { scroll: false })
+      router.replace(`${pathname}?tab=${value}`, { scroll: false });
     }
-  }
+  };
 
   const handleAuthenticated = () => {
-    setIsAuthenticated(true)
-  }
+    setIsAuthenticated(true);
+  };
 
   // Show authentication screen if not authenticated
   if (!isAuthenticated) {
-    return <AdminAuth onAuthenticated={handleAuthenticated} />
+    return <AdminAuth onAuthenticated={handleAuthenticated} />;
   }
 
   return (
     <div className="flex flex-col h-full">
       <div>
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <div className="overflow-x-auto">
             <TabsList className="w-full justify-start rounded-none bg-white h-auto p-2 md:p-3 min-w-max gap-1 md:gap-2">
               <TabsTrigger
@@ -104,14 +111,20 @@ function UserVerificationContent() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }
 
 // Main component that wraps UserVerificationContent in Suspense
 export default function UserVerificationPage() {
   return (
-    <Suspense fallback={<div className="flex flex-col h-full items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex flex-col h-full items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <UserVerificationContent />
     </Suspense>
-  )
+  );
 }

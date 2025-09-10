@@ -31,89 +31,104 @@ export function useAuthApi(): UseAuthApiReturn {
     setError(null);
   }, []);
 
-  const registerUser = useCallback(async (payload: CreateUserDTO): Promise<User | null> => {
-    const { wallet_address, username } = payload;
+  const registerUser = useCallback(
+    async (payload: CreateUserDTO): Promise<User | null> => {
+      const { wallet_address, username } = payload;
 
-    if (!wallet_address || !username) {
-      setError({ message: "Missing_required_fields", code: "VALIDATION_ERROR" });
-      return null;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data: ApiResponse<User> = await response.json().catch(() => ({
-        success: false,
-        message: `HTTP ${response.status}: ${response.statusText}`,
-        data: null as unknown as User,
-      }));
-
-      if (!response.ok || !data.success) {
-        const message = data?.message || `HTTP ${response.status}: ${response.statusText}`;
-        throw new Error(message);
+      if (!wallet_address || !username) {
+        setError({
+          message: "Missing_required_fields",
+          code: "VALIDATION_ERROR",
+        });
+        return null;
       }
 
-      setUser(data.data);
-      return data.data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Registration_failed";
-      setError({ message, code: message });
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      setIsLoading(true);
+      setError(null);
 
-  const fetchUserById = useCallback(async (userId: string): Promise<User | null> => {
-    if (!userId) {
-      setError({ message: "User_ID_is_required", code: "MISSING_USER_ID" });
-      return null;
-    }
+      try {
+        const response = await fetch(`${API_BASE_URL}/users`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-    if (!uuidRegex.test(userId)) {
-      setError({ message: "Invalid_user_ID_format", code: "INVALID_ID" });
-      return null;
-    }
+        const data: ApiResponse<User> = await response.json().catch(() => ({
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+          data: null as unknown as User,
+        }));
 
-    setIsLoading(true);
-    setError(null);
+        if (!response.ok || !data.success) {
+          const message =
+            data?.message || `HTTP ${response.status}: ${response.statusText}`;
+          throw new Error(message);
+        }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+        setUser(data.data);
+        return data.data;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Registration_failed";
+        setError({ message, code: message });
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
-      const data: ApiResponse<User> = await response.json().catch(() => ({
-        success: false,
-        message: `HTTP ${response.status}: ${response.statusText}`,
-        data: null as unknown as User,
-      }));
-
-      if (!response.ok || !data.success) {
-        const message = data?.message || `HTTP ${response.status}: ${response.statusText}`;
-        throw new Error(message);
+  const fetchUserById = useCallback(
+    async (userId: string): Promise<User | null> => {
+      if (!userId) {
+        setError({ message: "User_ID_is_required", code: "MISSING_USER_ID" });
+        return null;
       }
 
-      setUser(data.data);
-      return data.data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Fetch_failed";
-      setError({ message, code: message.includes("User_not_found") ? "USER_NOT_FOUND" : "FETCH_ERROR" });
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      if (!uuidRegex.test(userId)) {
+        setError({ message: "Invalid_user_ID_format", code: "INVALID_ID" });
+        return null;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data: ApiResponse<User> = await response.json().catch(() => ({
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+          data: null as unknown as User,
+        }));
+
+        if (!response.ok || !data.success) {
+          const message =
+            data?.message || `HTTP ${response.status}: ${response.statusText}`;
+          throw new Error(message);
+        }
+
+        setUser(data.data);
+        return data.data;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Fetch_failed";
+        setError({
+          message,
+          code: message.includes("User_not_found")
+            ? "USER_NOT_FOUND"
+            : "FETCH_ERROR",
+        });
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   return { user, isLoading, error, registerUser, fetchUserById, clearError };
 }
-
-

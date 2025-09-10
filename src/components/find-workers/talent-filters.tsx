@@ -1,38 +1,54 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Star, ChevronDown, ChevronUp, X, RefreshCw, Clock, DollarSign, Globe, Award, Briefcase } from "lucide-react"
-import { ServiceFilters } from "@/types/service.types"
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Star,
+  ChevronDown,
+  ChevronUp,
+  X,
+  RefreshCw,
+  Clock,
+  DollarSign,
+  Globe,
+  Award,
+  Briefcase,
+} from "lucide-react";
+import { ServiceFilters } from "@/types/service.types";
 
 interface TalentFiltersProps {
   onFiltersChange?: (filters: ServiceFilters) => void;
   currentFilters?: ServiceFilters;
 }
 
-export default function TalentFilters({ onFiltersChange, currentFilters }: TalentFiltersProps) {
-  const [priceRange, setPriceRange] = useState([25, 75])
-  const [experienceLevel, setExperienceLevel] = useState<string[]>([])
-  const [availability, setAvailability] = useState<string[]>([])
-  const [languages, setLanguages] = useState<string[]>([])
-  const [skills, setSkills] = useState<string[]>([])
-  const [skillInput, setSkillInput] = useState("")
-  const [isOnlineNow, setIsOnlineNow] = useState(false)
-  const [hasVerifiedId, setHasVerifiedId] = useState(false)
-  const [topRatedOnly, setTopRatedOnly] = useState(false)
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+export default function TalentFilters({
+  onFiltersChange,
+  currentFilters,
+}: TalentFiltersProps) {
+  const [priceRange, setPriceRange] = useState([25, 75]);
+  const [experienceLevel, setExperienceLevel] = useState<string[]>([]);
+  const [availability, setAvailability] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+  const [isOnlineNow, setIsOnlineNow] = useState(false);
+  const [hasVerifiedId, setHasVerifiedId] = useState(false);
+  const [topRatedOnly, setTopRatedOnly] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<
+    Record<string, boolean>
+  >({
     price: false,
     experience: false,
     availability: false,
@@ -40,41 +56,47 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
     skills: false,
     location: false,
     other: false,
-  })
+  });
 
   // Ref to track if we're updating from parent
-  const isUpdatingFromParent = useRef(false)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const isUpdatingFromParent = useRef(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize filters from currentFilters prop
   useEffect(() => {
     if (currentFilters && !isUpdatingFromParent.current) {
-      if (currentFilters.min_price !== undefined && currentFilters.max_price !== undefined) {
-        const newPriceRange = [currentFilters.min_price, currentFilters.max_price]
-        setPriceRange(newPriceRange)
+      if (
+        currentFilters.min_price !== undefined &&
+        currentFilters.max_price !== undefined
+      ) {
+        const newPriceRange = [
+          currentFilters.min_price,
+          currentFilters.max_price,
+        ];
+        setPriceRange(newPriceRange);
       }
-      
+
       // Map category back to experience level if present
       if (currentFilters.category) {
         const categoryMap: Record<string, string> = {
-          'development': 'entry',
-          'design': 'intermediate',
-          'business': 'expert'
-        }
-        const experience = categoryMap[currentFilters.category]
+          development: "entry",
+          design: "intermediate",
+          business: "expert",
+        };
+        const experience = categoryMap[currentFilters.category];
         if (experience) {
-          setExperienceLevel([experience])
+          setExperienceLevel([experience]);
         }
       }
     }
-  }, [currentFilters])
+  }, [currentFilters]);
 
   const toggleSection = (section: string) => {
     setCollapsedSections({
       ...collapsedSections,
       [section]: !collapsedSections[section],
-    })
-  }
+    });
+  };
 
   // Function to notify parent of filter changes
   const notifyParentOfChanges = useCallback(() => {
@@ -83,129 +105,143 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
         min_price: priceRange[0],
         max_price: priceRange[1],
         page: 1,
-        limit: 10
+        limit: 10,
       };
-      
+
       // Add category filter if any experience level is selected
       if (experienceLevel.length > 0) {
         // Map experience levels to categories (this is a simplified mapping)
         const categoryMap: Record<string, string> = {
-          'entry': 'development',
-          'intermediate': 'design',
-          'expert': 'business'
+          entry: "development",
+          intermediate: "design",
+          expert: "business",
         };
-        
+
         // Use the first selected experience level to determine category
         const category = categoryMap[experienceLevel[0]];
         if (category) {
           filters.category = category;
         }
       }
-      
-      isUpdatingFromParent.current = true
+
+      isUpdatingFromParent.current = true;
       onFiltersChange(filters);
       setTimeout(() => {
-        isUpdatingFromParent.current = false
-      }, 100)
+        isUpdatingFromParent.current = false;
+      }, 100);
     }
-  }, [priceRange, experienceLevel, onFiltersChange])
+  }, [priceRange, experienceLevel, onFiltersChange]);
 
   // Debounced version for price range changes
   const debouncedNotifyParent = useCallback(() => {
     if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
+      clearTimeout(debounceTimerRef.current);
     }
 
     debounceTimerRef.current = setTimeout(() => {
-      notifyParentOfChanges()
-    }, 500) // 500ms debounce delay
-  }, [notifyParentOfChanges])
+      notifyParentOfChanges();
+    }, 500); // 500ms debounce delay
+  }, [notifyParentOfChanges]);
 
   const toggleExperienceLevel = (level: string) => {
     if (experienceLevel.includes(level)) {
-      setExperienceLevel(experienceLevel.filter((l) => l !== level))
+      setExperienceLevel(experienceLevel.filter((l) => l !== level));
     } else {
-      setExperienceLevel([...experienceLevel, level])
+      setExperienceLevel([...experienceLevel, level]);
     }
-    
+
     // Immediately notify parent of experience level change
     setTimeout(() => {
-      notifyParentOfChanges()
-    }, 0)
-  }
+      notifyParentOfChanges();
+    }, 0);
+  };
 
   const toggleAvailability = (option: string) => {
     if (availability.includes(option)) {
-      setAvailability(availability.filter((a) => a !== option))
+      setAvailability(availability.filter((a) => a !== option));
     } else {
-      setAvailability([...availability, option])
+      setAvailability([...availability, option]);
     }
-  }
+  };
 
   const toggleLanguage = (language: string) => {
     if (languages.includes(language)) {
-      setLanguages(languages.filter((l) => l !== language))
+      setLanguages(languages.filter((l) => l !== language));
     } else {
-      setLanguages([...languages, language])
+      setLanguages([...languages, language]);
     }
-  }
+  };
 
   const addSkill = () => {
     if (skillInput.trim() && !skills.includes(skillInput.trim())) {
-      setSkills([...skills, skillInput.trim()])
-      setSkillInput("")
+      setSkills([...skills, skillInput.trim()]);
+      setSkillInput("");
     }
-  }
+  };
 
   const removeSkill = (skill: string) => {
-    setSkills(skills.filter((s) => s !== skill))
-  }
+    setSkills(skills.filter((s) => s !== skill));
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      e.preventDefault()
-      addSkill()
+      e.preventDefault();
+      addSkill();
     }
-  }
+  };
 
   const resetFilters = useCallback(() => {
-    setPriceRange([25, 75])
-    setExperienceLevel([])
-    setAvailability([])
-    setLanguages([])
-    setSkills([])
-    setIsOnlineNow(false)
-    setHasVerifiedId(false)
-    setTopRatedOnly(false)
-    
+    setPriceRange([25, 75]);
+    setExperienceLevel([]);
+    setAvailability([]);
+    setLanguages([]);
+    setSkills([]);
+    setIsOnlineNow(false);
+    setHasVerifiedId(false);
+    setTopRatedOnly(false);
+
     // Clear any existing debounce timer
     if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
+      clearTimeout(debounceTimerRef.current);
     }
-    
+
     // Notify parent of filter reset
     if (onFiltersChange) {
-      isUpdatingFromParent.current = true
+      isUpdatingFromParent.current = true;
       onFiltersChange({
         min_price: 25,
         max_price: 75,
         page: 1,
-        limit: 10
+        limit: 10,
       });
       setTimeout(() => {
-        isUpdatingFromParent.current = false
-      }, 100)
+        isUpdatingFromParent.current = false;
+      }, 100);
     }
-  }, [onFiltersChange])
+  }, [onFiltersChange]);
 
   // Handle price range changes with debouncing
-  const handlePriceRangeChange = useCallback((newPriceRange: number[]) => {
-    setPriceRange(newPriceRange)
-    debouncedNotifyParent()
-  }, [debouncedNotifyParent])
+  const handlePriceRangeChange = useCallback(
+    (newPriceRange: number[]) => {
+      setPriceRange(newPriceRange);
+      debouncedNotifyParent();
+    },
+    [debouncedNotifyParent],
+  );
 
-  const SectionHeader = ({ title, section, icon }: { title: string; section: string; icon: React.ReactNode }) => (
-    <div className="flex items-center justify-between cursor-pointer py-2" onClick={() => toggleSection(section)}>
+  const SectionHeader = ({
+    title,
+    section,
+    icon,
+  }: {
+    title: string;
+    section: string;
+    icon: React.ReactNode;
+  }) => (
+    <div
+      className="flex items-center justify-between cursor-pointer py-2"
+      onClick={() => toggleSection(section)}
+    >
       <div className="flex items-center">
         {icon}
         <h3 className="font-medium text-[#002333] ml-2">{title}</h3>
@@ -216,14 +252,19 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
         <ChevronDown className="h-4 w-4 text-[#002333]/70" />
       )}
     </div>
-  )
+  );
 
   return (
     <Card className="h-full">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-[#002333]">Filters</h2>
-          <Button variant="ghost" size="sm" onClick={resetFilters} className="h-8 text-[#15949C]">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="h-8 text-[#15949C]"
+          >
             <RefreshCw className="h-3 w-3 mr-2" />
             Reset
           </Button>
@@ -248,8 +289,12 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                 >
                   <div className="mt-4 px-2">
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm text-[#002333]/70">${priceRange[0]}</span>
-                      <span className="text-sm text-[#002333]/70">${priceRange[1]}+</span>
+                      <span className="text-sm text-[#002333]/70">
+                        ${priceRange[0]}
+                      </span>
+                      <span className="text-sm text-[#002333]/70">
+                        ${priceRange[1]}+
+                      </span>
                     </div>
                     <Slider
                       value={priceRange}
@@ -265,7 +310,12 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                         <Input
                           type="number"
                           value={priceRange[0]}
-                          onChange={(e) => handlePriceRangeChange([Number.parseInt(e.target.value) || 5, priceRange[1]])}
+                          onChange={(e) =>
+                            handlePriceRangeChange([
+                              Number.parseInt(e.target.value) || 5,
+                              priceRange[1],
+                            ])
+                          }
                           className="pl-8"
                         />
                       </div>
@@ -275,7 +325,12 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                         <Input
                           type="number"
                           value={priceRange[1]}
-                          onChange={(e) => handlePriceRangeChange([priceRange[0], Number.parseInt(e.target.value) || 150])}
+                          onChange={(e) =>
+                            handlePriceRangeChange([
+                              priceRange[0],
+                              Number.parseInt(e.target.value) || 150,
+                            ])
+                          }
                           className="pl-8"
                         />
                       </div>
@@ -317,7 +372,9 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                       <Checkbox
                         id="intermediate"
                         checked={experienceLevel.includes("intermediate")}
-                        onCheckedChange={() => toggleExperienceLevel("intermediate")}
+                        onCheckedChange={() =>
+                          toggleExperienceLevel("intermediate")
+                        }
                       />
                       <Label htmlFor="intermediate" className="cursor-pointer">
                         Intermediate
@@ -468,7 +525,11 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
 
             {/* Skills */}
             <div className="space-y-4">
-              <SectionHeader title="Skills" section="skills" icon={<Award className="h-4 w-4 text-[#15949C]" />} />
+              <SectionHeader
+                title="Skills"
+                section="skills"
+                icon={<Award className="h-4 w-4 text-[#15949C]" />}
+              />
 
               {!collapsedSections.skills && (
                 <motion.div
@@ -485,7 +546,11 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                         onChange={(e) => setSkillInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                       />
-                      <Button size="sm" onClick={addSkill} className="bg-[#15949C] hover:bg-[#15949C]/90">
+                      <Button
+                        size="sm"
+                        onClick={addSkill}
+                        className="bg-[#15949C] hover:bg-[#15949C]/90"
+                      >
                         Add
                       </Button>
                     </div>
@@ -493,7 +558,10 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                     {skills.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {skills.map((skill) => (
-                          <Badge key={skill} className="bg-[#DEEFE7] text-[#002333] hover:bg-[#DEEFE7]/80">
+                          <Badge
+                            key={skill}
+                            className="bg-[#DEEFE7] text-[#002333] hover:bg-[#DEEFE7]/80"
+                          >
                             {skill}
                             <button
                               type="button"
@@ -508,13 +576,15 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                     )}
 
                     <div className="mt-4">
-                      <p className="text-sm text-[#002333]/70 mb-2">Popular skills:</p>
+                      <p className="text-sm text-[#002333]/70 mb-2">
+                        Popular skills:
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         <Badge
                           className="bg-gray-100 text-[#002333] hover:bg-gray-200 cursor-pointer"
                           onClick={() => {
                             if (!skills.includes("React")) {
-                              setSkills([...skills, "React"])
+                              setSkills([...skills, "React"]);
                             }
                           }}
                         >
@@ -524,7 +594,7 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                           className="bg-gray-100 text-[#002333] hover:bg-gray-200 cursor-pointer"
                           onClick={() => {
                             if (!skills.includes("JavaScript")) {
-                              setSkills([...skills, "JavaScript"])
+                              setSkills([...skills, "JavaScript"]);
                             }
                           }}
                         >
@@ -534,7 +604,7 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                           className="bg-gray-100 text-[#002333] hover:bg-gray-200 cursor-pointer"
                           onClick={() => {
                             if (!skills.includes("UI/UX Design")) {
-                              setSkills([...skills, "UI/UX Design"])
+                              setSkills([...skills, "UI/UX Design"]);
                             }
                           }}
                         >
@@ -544,7 +614,7 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                           className="bg-gray-100 text-[#002333] hover:bg-gray-200 cursor-pointer"
                           onClick={() => {
                             if (!skills.includes("Python")) {
-                              setSkills([...skills, "Python"])
+                              setSkills([...skills, "Python"]);
                             }
                           }}
                         >
@@ -561,7 +631,11 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
 
             {/* Other Filters */}
             <div className="space-y-4">
-              <SectionHeader title="Other Filters" section="other" icon={<Star className="h-4 w-4 text-[#15949C]" />} />
+              <SectionHeader
+                title="Other Filters"
+                section="other"
+                icon={<Star className="h-4 w-4 text-[#15949C]" />}
+              />
 
               {!collapsedSections.other && (
                 <motion.div
@@ -575,21 +649,33 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
                       <Label htmlFor="online-now" className="cursor-pointer">
                         Online now
                       </Label>
-                      <Switch id="online-now" checked={isOnlineNow} onCheckedChange={setIsOnlineNow} />
+                      <Switch
+                        id="online-now"
+                        checked={isOnlineNow}
+                        onCheckedChange={setIsOnlineNow}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <Label htmlFor="verified-id" className="cursor-pointer">
                         Verified ID
                       </Label>
-                      <Switch id="verified-id" checked={hasVerifiedId} onCheckedChange={setHasVerifiedId} />
+                      <Switch
+                        id="verified-id"
+                        checked={hasVerifiedId}
+                        onCheckedChange={setHasVerifiedId}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <Label htmlFor="top-rated" className="cursor-pointer">
                         Top Rated Only
                       </Label>
-                      <Switch id="top-rated" checked={topRatedOnly} onCheckedChange={setTopRatedOnly} />
+                      <Switch
+                        id="top-rated"
+                        checked={topRatedOnly}
+                        onCheckedChange={setTopRatedOnly}
+                      />
                     </div>
                   </div>
                 </motion.div>
@@ -599,10 +685,11 @@ export default function TalentFilters({ onFiltersChange, currentFilters }: Talen
         </ScrollArea>
 
         <div className="mt-6 pt-4 border-t">
-          <Button className="w-full bg-[#15949C] hover:bg-[#15949C]/90">Apply Filters</Button>
+          <Button className="w-full bg-[#15949C] hover:bg-[#15949C]/90">
+            Apply Filters
+          </Button>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

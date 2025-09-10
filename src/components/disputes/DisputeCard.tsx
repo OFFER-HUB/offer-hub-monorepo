@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import React from 'react';
+import Image from "next/image";
+import React from "react";
 
 type DisputeCardProps = {
   title: string;
@@ -24,7 +24,9 @@ const DisputeCard = ({ title, name, date, avatarUrl }: DisputeCardProps) => {
         </div>
         <div className="flex flex-col">
           <h5 className="font-medium text-sm text-[#002333]">{name}</h5>
-          <p className="font-normal text-xs text-[#6D758F]">Date opened: {date}</p>
+          <p className="font-normal text-xs text-[#6D758F]">
+            Date opened: {date}
+          </p>
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { PillTabsProps } from '@/types';
-import React from 'react';
-import clsx from 'clsx';
-import { useRouter } from 'next/navigation';
+import { PillTabsProps } from "@/types";
+import React from "react";
+import clsx from "clsx";
+import { useRouter } from "next/navigation";
 
 export default function PillTabs({
   tabs,
@@ -23,11 +23,11 @@ export default function PillTabs({
       value={value}
       onValueChange={onValueChange}
       defaultValue={defaultValue || tabs[0]?.value}
-      className={className || 'w-full'}
+      className={className || "w-full"}
     >
       <TabsList
         className={
-          'flex w-full gap-2 p-1 bg-transparent rounded-full ' +
+          "flex w-full gap-2 p-1 bg-transparent rounded-full " +
           tabsListclassName
         }
       >
@@ -36,10 +36,12 @@ export default function PillTabs({
             key={tab.value}
             value={tab.value}
             className={clsx(
-              'rounded-[4px] px-4 py-2 text-sm font-medium transition-all flex-1',
-              activeTriggerClassName || 'data-[state=active]:bg-[#002333] data-[state=active]:text-white',
-              inactiveTriggerClassName || 'data-[state=inactive]:text-[#002333]',
-              triggerClassName
+              "rounded-[4px] px-4 py-2 text-sm font-medium transition-all flex-1",
+              activeTriggerClassName ||
+                "data-[state=active]:bg-[#002333] data-[state=active]:text-white",
+              inactiveTriggerClassName ||
+                "data-[state=inactive]:text-[#002333]",
+              triggerClassName,
             )}
             onClick={() => {
               // If the tab item provides an href, navigate to it

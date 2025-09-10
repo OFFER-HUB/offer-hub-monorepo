@@ -6,10 +6,10 @@ export interface DisputeMessage {
     id: string;
     name: string;
     avatar: string;
-    role: 'client' | 'freelancer' | 'admin';
+    role: "client" | "freelancer" | "admin";
   };
   isOutgoing: boolean;
-  type: 'text' | 'file';
+  type: "text" | "file";
   fileData?: {
     name: string;
     size: string;
@@ -20,31 +20,31 @@ export interface DisputeMessage {
 
 export const mockDisputeMessages: DisputeMessage[] = [
   {
-    id: 'msg-001',
-    content: 'The main text of the message sent out',
-    timestamp: '09:23 am',
+    id: "msg-001",
+    content: "The main text of the message sent out",
+    timestamp: "09:23 am",
     sender: {
-      id: 'client-001',
-      name: 'John Smith',
-      avatar: '/person2.png',
-      role: 'client'
+      id: "client-001",
+      name: "John Smith",
+      avatar: "/person2.png",
+      role: "client",
     },
     isOutgoing: false,
-    type: 'text'
+    type: "text",
   },
   {
-    id: 'msg-002',
-    content: 'The main text of the message sent out',
-    timestamp: '09:21 am',
+    id: "msg-002",
+    content: "The main text of the message sent out",
+    timestamp: "09:21 am",
     sender: {
-      id: 'freelancer-001',
-      name: 'Sarah Johnson',
-      avatar: '/person1.png',
-      role: 'freelancer'
+      id: "freelancer-001",
+      name: "Sarah Johnson",
+      avatar: "/person1.png",
+      role: "freelancer",
     },
     isOutgoing: true,
-    type: 'text'
-  }
+    type: "text",
+  },
 ];
 
 export const getMessagesByDisputeId = (disputeId: string): DisputeMessage[] => {
@@ -52,23 +52,27 @@ export const getMessagesByDisputeId = (disputeId: string): DisputeMessage[] => {
   return mockDisputeMessages;
 };
 
-export const addMessage = (disputeId: string, content: string, senderId: string): DisputeMessage => {
+export const addMessage = (
+  disputeId: string,
+  content: string,
+  senderId: string,
+): DisputeMessage => {
   const newMessage: DisputeMessage = {
     id: `msg-${Date.now()}`,
     content,
-    timestamp: new Date().toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
+    timestamp: new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     }),
     sender: {
       id: senderId,
-      name: 'Current User',
-      avatar: '/person1.png',
-      role: 'client'
+      name: "Current User",
+      avatar: "/person1.png",
+      role: "client",
     },
     isOutgoing: true,
-    type: 'text'
+    type: "text",
   };
 
   mockDisputeMessages.push(newMessage);

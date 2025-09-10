@@ -23,7 +23,7 @@ export interface FreelancerProfile {
 
 export interface Skill {
   name: string;
-  proficiency: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  proficiency: "beginner" | "intermediate" | "advanced" | "expert";
   category: string;
 }
 
@@ -49,7 +49,7 @@ export interface Education {
 
 export interface Language {
   name: string;
-  level: 'basic' | 'conversational' | 'fluent' | 'native';
+  level: "basic" | "conversational" | "fluent" | "native";
 }
 
 export interface Review {
@@ -88,7 +88,7 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
       { name: "AWS", proficiency: "advanced", category: "Cloud" },
       { name: "Docker", proficiency: "intermediate", category: "DevOps" },
       { name: "GraphQL", proficiency: "advanced", category: "API" },
-      { name: "Next.js", proficiency: "expert", category: "Framework" }
+      { name: "Next.js", proficiency: "expert", category: "Framework" },
     ],
     experience: [
       {
@@ -97,12 +97,13 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         position: "Senior Full Stack Developer",
         startDate: "2022-01",
         endDate: null,
-        description: "Lead development of enterprise web applications using React and Node.js",
+        description:
+          "Lead development of enterprise web applications using React and Node.js",
         achievements: [
           "Reduced application load time by 40% through optimization",
           "Mentored 3 junior developers",
-          "Implemented CI/CD pipeline reducing deployment time by 60%"
-        ]
+          "Implemented CI/CD pipeline reducing deployment time by 60%",
+        ],
       },
       {
         id: "2",
@@ -114,9 +115,9 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         achievements: [
           "Built 15+ client applications",
           "Achieved 100% client satisfaction rate",
-          "Reduced bug reports by 50%"
-        ]
-      }
+          "Reduced bug reports by 50%",
+        ],
+      },
     ],
     education: [
       {
@@ -126,12 +127,13 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         field: "Computer Science",
         startDate: "2016-09",
         endDate: "2020-06",
-        description: "Graduated with honors, specialized in software engineering"
-      }
+        description:
+          "Graduated with honors, specialized in software engineering",
+      },
     ],
     languages: [
       { name: "English", level: "native" },
-      { name: "Spanish", level: "conversational" }
+      { name: "Spanish", level: "conversational" },
     ],
     reviews: [
       {
@@ -142,7 +144,7 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         date: "2024-03-15",
         text: "Alex is an exceptional developer. He delivered our e-commerce platform ahead of schedule and exceeded all expectations. His attention to detail and communication skills are outstanding.",
         projectTitle: "E-commerce Platform Development",
-        projectValue: 8500
+        projectValue: 8500,
       },
       {
         id: "2",
@@ -152,7 +154,7 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         date: "2024-02-28",
         text: "Working with Alex was a pleasure. He understood our requirements perfectly and delivered a robust solution. Highly recommended for any web development project.",
         projectTitle: "CRM System Development",
-        projectValue: 12000
+        projectValue: 12000,
       },
       {
         id: "3",
@@ -162,9 +164,9 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         date: "2024-01-20",
         text: "Great developer with strong technical skills. The project was completed successfully and on time. Would definitely work with again.",
         projectTitle: "Mobile App Backend",
-        projectValue: 6500
-      }
-    ]
+        projectValue: 6500,
+      },
+    ],
   },
   {
     id: "2",
@@ -188,9 +190,17 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
       { name: "UI Design", proficiency: "expert", category: "Design" },
       { name: "Wireframing", proficiency: "expert", category: "Design" },
       { name: "Prototyping", proficiency: "advanced", category: "Design" },
-      { name: "User Research", proficiency: "intermediate", category: "Research" },
+      {
+        name: "User Research",
+        proficiency: "intermediate",
+        category: "Research",
+      },
       { name: "Brand Design", proficiency: "advanced", category: "Design" },
-      { name: "Design Systems", proficiency: "intermediate", category: "Design" }
+      {
+        name: "Design Systems",
+        proficiency: "intermediate",
+        category: "Design",
+      },
     ],
     experience: [
       {
@@ -199,12 +209,13 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         position: "Senior UI/UX Designer",
         startDate: "2021-06",
         endDate: null,
-        description: "Lead designer for multiple client projects across various industries",
+        description:
+          "Lead designer for multiple client projects across various industries",
         achievements: [
           "Designed 20+ successful mobile and web applications",
           "Improved user engagement by 35% through UX optimization",
-          "Created comprehensive design systems for 3 major brands"
-        ]
+          "Created comprehensive design systems for 3 major brands",
+        ],
       },
       {
         id: "2",
@@ -212,13 +223,14 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         position: "UI Designer",
         startDate: "2020-01",
         endDate: "2021-05",
-        description: "Focused on creating intuitive user interfaces for web applications",
+        description:
+          "Focused on creating intuitive user interfaces for web applications",
         achievements: [
           "Completed 30+ design projects",
           "Achieved 95% client satisfaction rate",
-          "Reduced user onboarding time by 25%"
-        ]
-      }
+          "Reduced user onboarding time by 25%",
+        ],
+      },
     ],
     education: [
       {
@@ -228,12 +240,12 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         field: "Design",
         startDate: "2018-09",
         endDate: "2020-06",
-        description: "Specialized in digital design and user experience"
-      }
+        description: "Specialized in digital design and user experience",
+      },
     ],
     languages: [
       { name: "English", level: "native" },
-      { name: "French", level: "fluent" }
+      { name: "French", level: "fluent" },
     ],
     reviews: [
       {
@@ -244,7 +256,7 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         date: "2024-03-10",
         text: "Sarah's design work is absolutely stunning. She transformed our app's user experience completely. The new design is both beautiful and functional.",
         projectTitle: "Mobile App Redesign",
-        projectValue: 7200
+        projectValue: 7200,
       },
       {
         id: "2",
@@ -254,12 +266,14 @@ export const mockFreelancerProfiles: FreelancerProfile[] = [
         date: "2024-02-15",
         text: "Great designer with excellent communication skills. The website design exceeded our expectations and helped increase our conversion rate.",
         projectTitle: "Website Design",
-        projectValue: 4800
-      }
-    ]
-  }
+        projectValue: 4800,
+      },
+    ],
+  },
 ];
 
-export const getFreelancerProfile = (id: string): FreelancerProfile | undefined => {
-  return mockFreelancerProfiles.find(profile => profile.id === id);
+export const getFreelancerProfile = (
+  id: string,
+): FreelancerProfile | undefined => {
+  return mockFreelancerProfiles.find((profile) => profile.id === id);
 };

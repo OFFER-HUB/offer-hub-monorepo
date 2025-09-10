@@ -18,7 +18,7 @@ export function FormField({
   value,
   onChange,
   type = "text",
-  textareaRows = 5
+  textareaRows = 5,
 }: FormFieldProps) {
   return (
     <div className="space-y-2">
@@ -46,4 +46,4 @@ export function FormField({
       )}
     </div>
   );
-} 
+}

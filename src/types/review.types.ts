@@ -3,16 +3,16 @@ export interface Review {
   from_id: string;
   to_id: string;
   contract_id: string;
-  rating: number;           // 1..5
+  rating: number; // 1..5
   comment?: string;
-  created_at: string;       // ISO
+  created_at: string; // ISO
 }
 
 export interface CreateReviewDTO {
   from_id: string;
   to_id: string;
   contract_id: string;
-  rating: number;           // 1..5
+  rating: number; // 1..5
   comment?: string;
 }
 
@@ -35,4 +35,7 @@ export type ReviewErrorResponse = {
   data?: unknown;
 };
 
-export type ReviewResponse = ReviewsFetchResponse | ReviewCreateResponse | ReviewErrorResponse;
+export type ReviewResponse =
+  | ReviewsFetchResponse
+  | ReviewCreateResponse
+  | ReviewErrorResponse;

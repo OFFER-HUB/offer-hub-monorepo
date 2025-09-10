@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import FreelancerProfile from '../FreelancerProfile';
-import { mockFreelancerProfiles } from '@/lib/mockData/freelancer-profile-mock';
+import { render, screen } from "@testing-library/react";
+import FreelancerProfile from "../FreelancerProfile";
+import { mockFreelancerProfiles } from "@/lib/mockData/freelancer-profile-mock";
 
 // Mock all the complex components to avoid import issues
-jest.mock('../ProfileHeader', () => {
+jest.mock("../ProfileHeader", () => {
   return function MockProfileHeader({ freelancer }: any) {
     return (
       <div data-testid="profile-header">
@@ -16,7 +16,7 @@ jest.mock('../ProfileHeader', () => {
   };
 });
 
-jest.mock('../SkillsSection', () => {
+jest.mock("../SkillsSection", () => {
   return function MockSkillsSection({ skills }: any) {
     return (
       <div data-testid="skills-section">
@@ -29,7 +29,7 @@ jest.mock('../SkillsSection', () => {
   };
 });
 
-jest.mock('../ExperienceSection', () => {
+jest.mock("../ExperienceSection", () => {
   return function MockExperienceSection({ experience }: any) {
     return (
       <div data-testid="experience-section">
@@ -45,7 +45,7 @@ jest.mock('../ExperienceSection', () => {
   };
 });
 
-jest.mock('../ReviewsSection', () => {
+jest.mock("../ReviewsSection", () => {
   return function MockReviewsSection({ reviews }: any) {
     return (
       <div data-testid="reviews-section">
@@ -58,7 +58,7 @@ jest.mock('../ReviewsSection', () => {
   };
 });
 
-jest.mock('../ProfileNavigation', () => {
+jest.mock("../ProfileNavigation", () => {
   return function MockProfileNavigation() {
     return (
       <div data-testid="profile-navigation">
@@ -69,90 +69,92 @@ jest.mock('../ProfileNavigation', () => {
   };
 });
 
-jest.mock('../PortfolioGallery', () => {
+jest.mock("../PortfolioGallery", () => {
   return function MockPortfolioGallery() {
     return <div data-testid="portfolio-gallery">Portfolio Gallery</div>;
   };
 });
 
-jest.mock('../PortfolioItem', () => {
+jest.mock("../PortfolioItem", () => {
   return function MockPortfolioItem() {
     return <div data-testid="portfolio-item">Portfolio Item</div>;
   };
 });
 
 // Mock the window.location for testing
-Object.defineProperty(window, 'location', {
+Object.defineProperty(window, "location", {
   value: {
-    pathname: '/talent/1/profile',
+    pathname: "/talent/1/profile",
   },
   writable: true,
 });
 
-describe('FreelancerProfile', () => {
+describe("FreelancerProfile", () => {
   const mockFreelancer = mockFreelancerProfiles[0];
 
-  it('renders freelancer profile with correct information', () => {
+  it("renders freelancer profile with correct information", () => {
     render(<FreelancerProfile freelancer={mockFreelancer} />);
-    
+
     // Check if the profile header is rendered
-    expect(screen.getByTestId('profile-header')).toBeInTheDocument();
-    
+    expect(screen.getByTestId("profile-header")).toBeInTheDocument();
+
     // Check if the freelancer name is displayed
     expect(screen.getByText(mockFreelancer.name)).toBeInTheDocument();
-    
+
     // Check if the title is displayed (use getAllByText since it appears in multiple places)
     expect(screen.getAllByText(mockFreelancer.title).length).toBeGreaterThan(0);
-    
+
     // Check if the location is displayed
     expect(screen.getByText(mockFreelancer.location)).toBeInTheDocument();
-    
+
     // Check if the hourly rate is displayed
-    expect(screen.getByText(`$${mockFreelancer.hourlyRate}/hr`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`$${mockFreelancer.hourlyRate}/hr`),
+    ).toBeInTheDocument();
   });
 
-  it('renders skills section', () => {
+  it("renders skills section", () => {
     render(<FreelancerProfile freelancer={mockFreelancer} />);
-    
-    expect(screen.getByTestId('skills-section')).toBeInTheDocument();
-    expect(screen.getByText('Skills')).toBeInTheDocument();
-    
+
+    expect(screen.getByTestId("skills-section")).toBeInTheDocument();
+    expect(screen.getByText("Skills")).toBeInTheDocument();
+
     // Check if some skills are displayed
-    mockFreelancer.skills.slice(0, 3).forEach(skill => {
+    mockFreelancer.skills.slice(0, 3).forEach((skill) => {
       expect(screen.getByText(skill.name)).toBeInTheDocument();
     });
   });
 
-  it('renders experience section', () => {
+  it("renders experience section", () => {
     render(<FreelancerProfile freelancer={mockFreelancer} />);
-    
-    expect(screen.getByTestId('experience-section')).toBeInTheDocument();
-    expect(screen.getByText('Work Experience')).toBeInTheDocument();
-    
+
+    expect(screen.getByTestId("experience-section")).toBeInTheDocument();
+    expect(screen.getByText("Work Experience")).toBeInTheDocument();
+
     // Check if experience items are displayed
-    mockFreelancer.experience.forEach(exp => {
+    mockFreelancer.experience.forEach((exp) => {
       expect(screen.getAllByText(exp.position).length).toBeGreaterThan(0);
       expect(screen.getByText(exp.company)).toBeInTheDocument();
     });
   });
 
-  it('renders reviews section', () => {
+  it("renders reviews section", () => {
     render(<FreelancerProfile freelancer={mockFreelancer} />);
-    
-    expect(screen.getByTestId('reviews-section')).toBeInTheDocument();
-    expect(screen.getByText('Client Reviews')).toBeInTheDocument();
-    
+
+    expect(screen.getByTestId("reviews-section")).toBeInTheDocument();
+    expect(screen.getByText("Client Reviews")).toBeInTheDocument();
+
     // Check if reviews are displayed
-    mockFreelancer.reviews.forEach(review => {
+    mockFreelancer.reviews.forEach((review) => {
       expect(screen.getByText(review.clientName)).toBeInTheDocument();
     });
   });
 
-  it('renders navigation tabs', () => {
+  it("renders navigation tabs", () => {
     render(<FreelancerProfile freelancer={mockFreelancer} />);
-    
-    expect(screen.getByTestId('profile-navigation')).toBeInTheDocument();
-    expect(screen.getByText('Profile')).toBeInTheDocument();
-    expect(screen.getByText('Portfolio')).toBeInTheDocument();
+
+    expect(screen.getByTestId("profile-navigation")).toBeInTheDocument();
+    expect(screen.getByText("Profile")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio")).toBeInTheDocument();
   });
 });

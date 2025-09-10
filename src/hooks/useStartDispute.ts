@@ -31,11 +31,11 @@ export const useStartDisputeForm = () => {
     try {
       // const { unsignedTransaction } = await startDispute(payload); // Temporarily commented
       // Temporary placeholder implementation
-      const unsignedTransaction = null;  
+      const unsignedTransaction = null;
 
       if (!unsignedTransaction) {
         throw new Error(
-          "Dispute functionality temporarily unavailable - escrow hooks not configured."
+          "Dispute functionality temporarily unavailable - escrow hooks not configured.",
         );
       }
 
@@ -44,7 +44,7 @@ export const useStartDisputeForm = () => {
       //   unsignedTransaction,
       //   address: payload.signer,
       // });
-      
+
       // Placeholder for now - implement wallet integration
       const signedXdr = "PLACEHOLDER_SIGNED_XDR";
 
@@ -56,7 +56,10 @@ export const useStartDisputeForm = () => {
       //   signedXdr,
       //   returnEscrowDataIsRequired: false,
       // });
-      const data: DisputeResponse = { status: "SUCCESS", message: "Temporary success" }; // Temporary placeholder
+      const data: DisputeResponse = {
+        status: "SUCCESS",
+        message: "Temporary success",
+      }; // Temporary placeholder
 
       if (isDisputeResponse(data) && data.status === "SUCCESS") {
         setResponse(data);
@@ -67,7 +70,9 @@ export const useStartDisputeForm = () => {
       }
     } catch (error) {
       console.error("Error starting dispute:", error);
-      const errorMessage = isErrorWithMessage(error) ? error.message : "An unknown error occurred";
+      const errorMessage = isErrorWithMessage(error)
+        ? error.message
+        : "An unknown error occurred";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

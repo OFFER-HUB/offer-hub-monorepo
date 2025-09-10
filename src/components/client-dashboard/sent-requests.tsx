@@ -14,26 +14,49 @@ const SentRequestsList: React.FC<SentRequestsListProps> = ({ clientId }) => {
   useEffect(() => {
     if (!clientId) return;
     setFetching(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "/api"}/service-requests/${clientId}`)
-      .then(res => res.json())
-      .then(result => setRequests(result.data || []))
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || "/api"}/service-requests/${clientId}`,
+    )
+      .then((res) => res.json())
+      .then((result) => setRequests(result.data || []))
       .catch(() => setRequests([]))
       .finally(() => setFetching(false));
   }, [clientId]);
 
-  if ((loading || fetching) && requests.length === 0) return <div>Loading sent requests...</div>;
+  if ((loading || fetching) && requests.length === 0)
+    return <div>Loading sent requests...</div>;
   if (error) return <div className="text-red-500">{error.message}</div>;
   if (!requests.length) return <div>No sent requests yet.</div>;
 
   return (
     <div className="space-y-4">
-      {requests.map(req => (
-        <div key={req.id} className="border rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white shadow-sm">
+      {requests.map((req) => (
+        <div
+          key={req.id}
+          className="border rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white shadow-sm"
+        >
           <div>
-            <div className="font-semibold text-[#002333]">Service: {req.service_id}</div>
-            <div className="text-sm text-[#002333]/70">Freelancer: {req.freelancer_id}</div>
+            <div className="font-semibold text-[#002333]">
+              Service: {req.service_id}
+            </div>
+            <div className="text-sm text-[#002333]/70">
+              Freelancer: {req.freelancer_id}
+            </div>
             <div className="mt-2 text-[#002333]">Message: {req.message}</div>
-            <div className="mt-1 text-xs text-gray-500">Status: <span className={req.status === 'pending' ? 'text-yellow-600' : req.status === 'accepted' ? 'text-green-600' : 'text-red-600'}>{req.status}</span></div>
+            <div className="mt-1 text-xs text-gray-500">
+              Status:{" "}
+              <span
+                className={
+                  req.status === "pending"
+                    ? "text-yellow-600"
+                    : req.status === "accepted"
+                      ? "text-green-600"
+                      : "text-red-600"
+                }
+              >
+                {req.status}
+              </span>
+            </div>
           </div>
         </div>
       ))}

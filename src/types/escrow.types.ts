@@ -5,7 +5,7 @@ export interface StartDisputePayload {
 }
 
 export interface DisputeResponse {
-  status: 'SUCCESS' | 'ERROR';
+  status: "SUCCESS" | "ERROR";
   message: string;
   transactionId?: string;
 }
@@ -24,11 +24,11 @@ export interface Milestone {
   description: string;
   amount: number;
   dueDate: string;
-  status: 'pending' | 'completed' | 'overdue';
+  status: "pending" | "completed" | "overdue";
 }
 
 export interface EscrowUpdateResponse {
-  status: 'SUCCESS' | 'ERROR';
+  status: "SUCCESS" | "ERROR";
   message: string;
   transactionId?: string;
   contractId?: string;
@@ -50,7 +50,7 @@ export interface ReleaseFundsPayload {
 }
 
 export interface TransactionResponse {
-  status: 'SUCCESS' | 'ERROR';
+  status: "SUCCESS" | "ERROR";
   message: string;
   transactionId?: string;
   data?: Record<string, unknown>;

@@ -4,7 +4,12 @@ import {
   NFTAwarded,
   NFTAwardedWithUser,
 } from "@/types/nft.types";
-import { InternalServerError,ConflictError, NotFoundError, ValidationError } from "@/utils/AppError";
+import {
+  InternalServerError,
+  ConflictError,
+  NotFoundError,
+  ValidationError,
+} from "@/utils/AppError";
 class NFTService {
   async registerMintedNFT(nftData: CreateNFTAwardedDTO): Promise<NFTAwarded> {
     const { user_id, nft_type, token_id_on_chain } = nftData;
@@ -31,11 +36,15 @@ class NFTService {
 
     if (checkError && checkError.code !== "PGRST116") {
       // PGRST116 is "not found" error, which is expected
-      throw new InternalServerError(`Failed to check existing NFT: ${checkError.message}`);
+      throw new InternalServerError(
+        `Failed to check existing NFT: ${checkError.message}`,
+      );
     }
 
     if (existingNFT) {
-      throw new ConflictError("This NFT has already been registered for this user");
+      throw new ConflictError(
+        "This NFT has already been registered for this user",
+      );
     }
 
     // Register the NFT
@@ -54,7 +63,7 @@ class NFTService {
         nft_type,
         token_id_on_chain,
         minted_at
-      `
+      `,
       )
       .single();
 
@@ -100,13 +109,15 @@ class NFTService {
           username,
           email
         )
-      `
+      `,
       )
       .eq("user_id", userId)
       .order("minted_at", { ascending: false });
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch user NFTs: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch user NFTs: ${error.message}`,
+      );
     }
 
     // Transform the data to include user info
@@ -155,7 +166,7 @@ class NFTService {
           username,
           email
         )
-      `
+      `,
       )
       .eq("id", nftId)
       .single();
@@ -199,13 +210,15 @@ class NFTService {
           username,
           email
         )
-      `
+      `,
       )
       .eq("nft_type", nftType)
       .order("minted_at", { ascending: false });
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch NFTs by type: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch NFTs by type: ${error.message}`,
+      );
     }
 
     // Transform the data to include user info
@@ -237,7 +250,9 @@ class NFTService {
       .select("nft_type");
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch NFT types: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch NFT types: ${error.message}`,
+      );
     }
 
     // Get unique NFT types
@@ -248,4 +263,4 @@ class NFTService {
   }
 }
 
-export const nftService = new NFTService(); 
+export const nftService = new NFTService();

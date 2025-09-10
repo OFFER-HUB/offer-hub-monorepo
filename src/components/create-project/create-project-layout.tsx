@@ -8,7 +8,10 @@ interface CreateProjectLayoutProps {
   onBack?: () => void;
 }
 
-export function CreateProjectLayout({ children, onBack }: CreateProjectLayoutProps) {
+export function CreateProjectLayout({
+  children,
+  onBack,
+}: CreateProjectLayoutProps) {
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header with white background */}
@@ -18,7 +21,7 @@ export function CreateProjectLayout({ children, onBack }: CreateProjectLayoutPro
             <button
               onClick={onBack}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-              style={{ fontSize: '28px' }}
+              style={{ fontSize: "28px" }}
             >
               <ChevronLeft size={28} />
               <span>Back</span>
@@ -26,7 +29,9 @@ export function CreateProjectLayout({ children, onBack }: CreateProjectLayoutPro
           ) : (
             <div className="w-20"></div>
           )}
-          <h1 className="text-base font-semibold text-gray-900">Create project</h1>
+          <h1 className="text-base font-semibold text-gray-900">
+            Create project
+          </h1>
           <div className="w-20"></div>
         </div>
       </div>
@@ -39,4 +44,4 @@ export function CreateProjectLayout({ children, onBack }: CreateProjectLayoutPro
       </div>
     </div>
   );
-} 
+}

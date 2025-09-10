@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Edit, ChevronLeft } from "lucide-react"
-import { FaEthereum } from "react-icons/fa"
-import type { ProfileStepProps } from "@/app/types/freelancer-profile"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { useState } from "react";
+import { Edit, ChevronLeft } from "lucide-react";
+import { FaEthereum } from "react-icons/fa";
+import type { ProfileStepProps } from "@/app/types/freelancer-profile";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 // Sample user data based on the image
 // const sampleUserData = {
@@ -80,35 +80,40 @@ import Image from "next/image"
 
 // Helper function to format dates
 const formatDate = (month?: string, year?: string) => {
-  if (!month || !year) return ""
-  return `${month} ${year}`
-}
+  if (!month || !year) return "";
+  return `${month} ${year}`;
+};
 
-
-export default function UserProfilePreviewActiveState({ userData, prevStep, nextStep }: ProfileStepProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function UserProfilePreviewActiveState({
+  userData,
+  prevStep,
+  nextStep,
+}: ProfileStepProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // const userData = sampleUserData;
 
   const handleSubmitProfile = () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     setTimeout(() => {
-      console.log("Profile submitted successfully!", userData)
-      setIsSubmitting(false)
-      nextStep() // Go to a final "success" screen
-    }, 1500)
-  }
+      console.log("Profile submitted successfully!", userData);
+      setIsSubmitting(false);
+      nextStep(); // Go to a final "success" screen
+    }, 1500);
+  };
 
-  const nftBadges = [1, 2, 3, 4, 5]
+  const nftBadges = [1, 2, 3, 4, 5];
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-gray-50 py-10">
       <div className="max-w-5xl mx-auto pb-10 w-full px-4">
-        <h1 className="text-3xl font-semibold text-gray-800 py-6">Preview Profile</h1>
+        <h1 className="text-3xl font-semibold text-gray-800 py-6">
+          Preview Profile
+        </h1>
         <div className="bg-white rounded-lg p-6 mb-8 shadow-md text-center">
           <div className="flex flex-col items-center gap-4">
             <p className="text-gray-700">
-              Looking good. Make any edits you want, then submit your profile. You can make more changes after it's
-              live.
+              Looking good. Make any edits you want, then submit your profile.
+              You can make more changes after it's live.
             </p>
             <Button
               onClick={handleSubmitProfile}
@@ -124,7 +129,9 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white shadow rounded-lg p-6 flex justify-between items-start">
               <div>
-                <h3 className="text-xl font-semibold">{userData.jobCategory}</h3>
+                <h3 className="text-xl font-semibold">
+                  {userData.jobCategory}
+                </h3>
                 <p className="text-gray-700 mt-4">{userData.bio}</p>
                 <div className="flex items-center gap-4 mt-4">
                   <div className="flex items-center shadow-md rounded-lg p-3 bg-gray-50">
@@ -132,7 +139,9 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
                       <FaEthereum />
                     </span>
                     <div>
-                      <span className="font-semibold">{userData.hourlyRate} ETH</span>
+                      <span className="font-semibold">
+                        {userData.hourlyRate} ETH
+                      </span>
                       <p className="text-xs text-gray-500">Hourly Rate</p>
                     </div>
                   </div>
@@ -152,7 +161,9 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
                     </h4>
                     <p className="text-sm text-gray-500">
                       {formatDate(exp.startDateMonth, exp.startDateYear)} -{" "}
-                      {exp.currentlyWorking ? "Present" : formatDate(exp.endDateMonth, exp.endDateYear)}
+                      {exp.currentlyWorking
+                        ? "Present"
+                        : formatDate(exp.endDateMonth, exp.endDateYear)}
                     </p>
                     <p className="text-gray-700 mt-2">{exp.description}</p>
                   </div>
@@ -193,9 +204,12 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
                   )}
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">{userData.name || "Your Name"}</h2>
+                  <h2 className="text-lg font-semibold">
+                    {userData.name || "Your Name"}
+                  </h2>
                   <p className="text-gray-500 text-sm flex items-center">
-                    {userData.profileDetails?.city}, {userData.profileDetails?.country}
+                    {userData.profileDetails?.city},{" "}
+                    {userData.profileDetails?.country}
                   </p>
                 </div>
               </div>
@@ -204,7 +218,10 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
               <h3 className="text-lg font-semibold mb-4">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {userData.skills?.map((skill, index) => (
-                  <span key={index} className="bg-gray-100 px-3 py-1 rounded-full text-sm border border-gray-200">
+                  <span
+                    key={index}
+                    className="bg-gray-100 px-3 py-1 rounded-full text-sm border border-gray-200"
+                  >
                     {skill}
                   </span>
                 ))}
@@ -225,7 +242,11 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
         </div>
 
         <div className="mt-8 w-full border-t border-gray-200 pt-4 flex items-center justify-between">
-          <Button variant="ghost" className="flex items-center text-gray-600 px-4 py-2" onClick={prevStep}>
+          <Button
+            variant="ghost"
+            className="flex items-center text-gray-600 px-4 py-2"
+            onClick={prevStep}
+          >
             <ChevronLeft size={16} className="mr-2" /> Back
           </Button>
           <Button
@@ -238,6 +259,5 @@ export default function UserProfilePreviewActiveState({ userData, prevStep, next
         </div>
       </div>
     </div>
-  )
+  );
 }
-

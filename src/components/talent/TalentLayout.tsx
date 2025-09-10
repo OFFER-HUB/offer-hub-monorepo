@@ -80,7 +80,7 @@ export default function TalentLayout({ children }: TalentLayoutProps) {
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
                         ? "text-teal-600 bg-teal-50"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
                     )}
                   >
                     <item.icon className="w-5 h-5" />
@@ -117,9 +117,7 @@ export default function TalentLayout({ children }: TalentLayoutProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

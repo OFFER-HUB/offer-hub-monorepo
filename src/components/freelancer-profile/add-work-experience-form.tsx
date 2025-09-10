@@ -1,42 +1,68 @@
-"use client"
+"use client";
 
-import { useForm } from "react-hook-form"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import type { WorkExperience } from "@/app/types/freelancer-profile"
-import { useEffect } from "react"
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import type { WorkExperience } from "@/app/types/freelancer-profile";
+import { useEffect } from "react";
 
 type Props = {
-  addExperience: (experience: WorkExperience) => void
-  initialData?: WorkExperience | null
-}
+  addExperience: (experience: WorkExperience) => void;
+  initialData?: WorkExperience | null;
+};
 
 const formSchema = z
   .object({
-    title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-    company: z.string().min(2, { message: "Company name must be at least 2 characters." }),
-    location: z.string().min(2, { message: "Location must be at least 2 characters." }),
+    title: z
+      .string()
+      .min(2, { message: "Title must be at least 2 characters." }),
+    company: z
+      .string()
+      .min(2, { message: "Company name must be at least 2 characters." }),
+    location: z
+      .string()
+      .min(2, { message: "Location must be at least 2 characters." }),
     country: z.string({ required_error: "Please select a country." }),
     currentlyWorking: z.boolean().default(false),
-    startDateMonth: z.string().nonempty({ message: "Start month is required." }),
+    startDateMonth: z
+      .string()
+      .nonempty({ message: "Start month is required." }),
     startDateYear: z.string().nonempty({ message: "Start year is required." }),
     endDateMonth: z.string().optional(),
     endDateYear: z.string().optional(),
     description: z
       .string()
       .min(10, { message: "Description must be at least 10 characters." })
-      .max(500, { message: "Description must not be longer than 500 characters." }),
+      .max(500, {
+        message: "Description must not be longer than 500 characters.",
+      }),
   })
-  .refine((data) => data.currentlyWorking || (data.endDateMonth && data.endDateYear), {
-    message: "End date is required if not currently working",
-    path: ["endDateMonth"],
-  })
+  .refine(
+    (data) => data.currentlyWorking || (data.endDateMonth && data.endDateYear),
+    {
+      message: "End date is required if not currently working",
+      path: ["endDateMonth"],
+    },
+  );
 
 const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,22 +79,26 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
       endDateYear: "",
       description: "",
     },
-  })
+  });
 
   useEffect(() => {
     if (initialData) {
-      form.reset(initialData)
+      form.reset(initialData);
     }
-  }, [initialData, form])
+  }, [initialData, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    addExperience({ ...values, id: initialData?.id || "" })
-    form.reset()
+    addExperience({ ...values, id: initialData?.id || "" });
+    form.reset();
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4" id="add-work-experience-form">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4 p-4"
+        id="add-work-experience-form"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -136,7 +166,10 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>I am currently working in this role.</FormLabel>
@@ -151,7 +184,10 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Start Date*</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Month" />
@@ -188,14 +224,20 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>&nbsp;</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Year" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                    {Array.from(
+                      { length: 50 },
+                      (_, i) => new Date().getFullYear() - i,
+                    ).map((y) => (
                       <SelectItem key={y} value={`${y}`}>
                         {y}
                       </SelectItem>
@@ -214,7 +256,10 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>End Date*</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Month" />
@@ -251,14 +296,20 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>&nbsp;</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Year" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                        {Array.from(
+                          { length: 50 },
+                          (_, i) => new Date().getFullYear() - i,
+                        ).map((y) => (
                           <SelectItem key={y} value={`${y}`}>
                             {y}
                           </SelectItem>
@@ -279,18 +330,25 @@ const AddWorkExperienceForm = ({ addExperience, initialData }: Props) => {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter a description..." className="resize-none" {...field} />
+                <Textarea
+                  placeholder="Enter a description..."
+                  className="resize-none"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full bg-[#149A9B] text-white rounded-full">
+        <Button
+          type="submit"
+          className="w-full bg-[#149A9B] text-white rounded-full"
+        >
           Save
         </Button>
       </form>
     </Form>
-  )
-}
+  );
+};
 
-export default AddWorkExperienceForm
+export default AddWorkExperienceForm;

@@ -9,22 +9,32 @@ import ProfileNavigation from "./ProfileNavigation";
 import PortfolioGallery from "./PortfolioGallery";
 import PortfolioItem from "./PortfolioItem";
 import { FreelancerProfile as FreelancerProfileType } from "@/lib/mockData/freelancer-profile-mock";
-import { PortfolioProject, getPortfolioProjects } from "@/lib/mockData/portfolio-mock-data";
+import {
+  PortfolioProject,
+  getPortfolioProjects,
+} from "@/lib/mockData/portfolio-mock-data";
 
 interface FreelancerProfileProps {
   freelancer: FreelancerProfileType;
 }
 
-export default function FreelancerProfile({ freelancer }: FreelancerProfileProps) {
+export default function FreelancerProfile({
+  freelancer,
+}: FreelancerProfileProps) {
   const [activeTab, setActiveTab] = useState<"profile" | "portfolio">(() => {
     // Check if we're on the portfolio route
-    if (typeof window !== 'undefined') {
-      return window.location.pathname.includes('/portfolio') ? "portfolio" : "profile";
+    if (typeof window !== "undefined") {
+      return window.location.pathname.includes("/portfolio")
+        ? "portfolio"
+        : "profile";
     }
     return "profile";
   });
-  const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null);
-  const [portfolioProjects] = useState(() => getPortfolioProjects(freelancer.id));
+  const [selectedProject, setSelectedProject] =
+    useState<PortfolioProject | null>(null);
+  const [portfolioProjects] = useState(() =>
+    getPortfolioProjects(freelancer.id),
+  );
 
   const handleProjectClick = (project: PortfolioProject) => {
     setSelectedProject(project);
@@ -43,10 +53,7 @@ export default function FreelancerProfile({ freelancer }: FreelancerProfileProps
 
       {/* Navigation Tabs */}
       <div className="mb-8">
-        <ProfileNavigation 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
+        <ProfileNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       {/* Content */}
@@ -66,12 +73,12 @@ export default function FreelancerProfile({ freelancer }: FreelancerProfileProps
           /* Portfolio Tab */
           <div>
             {selectedProject ? (
-              <PortfolioItem 
-                project={selectedProject} 
+              <PortfolioItem
+                project={selectedProject}
                 onBack={handleBackToGallery}
               />
             ) : (
-              <PortfolioGallery 
+              <PortfolioGallery
                 projects={portfolioProjects}
                 onProjectClick={handleProjectClick}
               />

@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Star, MapPin } from "lucide-react"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star, MapPin } from "lucide-react";
 
 // Sample freelancer data with coordinates
 const freelancers = [
@@ -82,12 +82,12 @@ const freelancers = [
     coordinates: { lat: 19.076, lng: 72.8777 },
     isTopRated: true,
   },
-]
+];
 
 interface TalentMapViewProps {
-  selectedFreelancers: string[]
-  toggleFreelancerSelection: (id: string) => void
-  openFreelancerDetail: (freelancer: any) => void
+  selectedFreelancers: string[];
+  toggleFreelancerSelection: (id: string) => void;
+  openFreelancerDetail: (freelancer: any) => void;
 }
 
 export default function TalentMapView({
@@ -95,7 +95,7 @@ export default function TalentMapView({
   toggleFreelancerSelection,
   openFreelancerDetail,
 }: TalentMapViewProps) {
-  const [selectedMarker, setSelectedMarker] = useState<string | null>(null)
+  const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
 
   const renderStars = (rating: number) => {
     return Array(5)
@@ -105,8 +105,8 @@ export default function TalentMapView({
           key={i}
           className={`h-3 w-3 ${i < Math.floor(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
         />
-      ))
-  }
+      ));
+  };
 
   return (
     <div className="relative h-[600px] rounded-lg overflow-hidden border">
@@ -115,15 +115,16 @@ export default function TalentMapView({
         <div className="text-center">
           <p className="text-[#002333]/70 mb-2">World Map Visualization</p>
           <p className="text-sm text-[#002333]/50">
-            In a real implementation, this would be an interactive map showing freelancer locations
+            In a real implementation, this would be an interactive map showing
+            freelancer locations
           </p>
         </div>
 
         {/* Simulated map markers */}
         {freelancers.map((freelancer) => {
           // These positions are just for demonstration
-          const top = `${20 + Math.random() * 60}%`
-          const left = `${20 + Math.random() * 60}%`
+          const top = `${20 + Math.random() * 60}%`;
+          const left = `${20 + Math.random() * 60}%`;
 
           return (
             <div key={freelancer.id} className="absolute" style={{ top, left }}>
@@ -134,7 +135,9 @@ export default function TalentMapView({
                 `}
                 onClick={() => setSelectedMarker(freelancer.id)}
               >
-                <span className="text-white font-medium text-sm">${freelancer.hourlyRate}</span>
+                <span className="text-white font-medium text-sm">
+                  ${freelancer.hourlyRate}
+                </span>
               </div>
 
               {selectedMarker === freelancer.id && (
@@ -147,7 +150,10 @@ export default function TalentMapView({
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={freelancer.avatar} alt={freelancer.name} />
+                          <AvatarImage
+                            src={freelancer.avatar}
+                            alt={freelancer.name}
+                          />
                           <AvatarFallback className="bg-[#15949C]/20 text-[#15949C]">
                             {freelancer.name
                               .split(" ")
@@ -158,15 +164,25 @@ export default function TalentMapView({
 
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-[#002333]">{freelancer.name}</h4>
-                            <span className="font-bold text-[#002333]">${freelancer.hourlyRate}/hr</span>
+                            <h4 className="font-medium text-[#002333]">
+                              {freelancer.name}
+                            </h4>
+                            <span className="font-bold text-[#002333]">
+                              ${freelancer.hourlyRate}/hr
+                            </span>
                           </div>
 
-                          <p className="text-xs text-[#002333]/70">{freelancer.title}</p>
+                          <p className="text-xs text-[#002333]/70">
+                            {freelancer.title}
+                          </p>
 
                           <div className="flex items-center mt-1">
-                            <div className="flex mr-1">{renderStars(freelancer.rating)}</div>
-                            <span className="text-xs text-[#002333]">{freelancer.rating}</span>
+                            <div className="flex mr-1">
+                              {renderStars(freelancer.rating)}
+                            </div>
+                            <span className="text-xs text-[#002333]">
+                              {freelancer.rating}
+                            </span>
                           </div>
 
                           <div className="flex items-center mt-1 text-xs text-[#002333]/70">
@@ -176,7 +192,11 @@ export default function TalentMapView({
 
                           <div className="mt-2 flex flex-wrap gap-1">
                             {freelancer.skills.map((skill) => (
-                              <Badge key={skill} variant="outline" className="text-xs py-0">
+                              <Badge
+                                key={skill}
+                                variant="outline"
+                                className="text-xs py-0"
+                              >
                                 {skill}
                               </Badge>
                             ))}
@@ -194,9 +214,13 @@ export default function TalentMapView({
                               size="sm"
                               variant="outline"
                               className="h-8 text-xs"
-                              onClick={() => toggleFreelancerSelection(freelancer.id)}
+                              onClick={() =>
+                                toggleFreelancerSelection(freelancer.id)
+                              }
                             >
-                              {selectedFreelancers.includes(freelancer.id) ? "Selected" : "Select"}
+                              {selectedFreelancers.includes(freelancer.id)
+                                ? "Selected"
+                                : "Select"}
                             </Button>
                           </div>
                         </div>
@@ -206,10 +230,9 @@ export default function TalentMapView({
                 </motion.div>
               )}
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
-

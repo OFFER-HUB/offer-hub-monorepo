@@ -39,23 +39,23 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   // Function to check if a path is active (exact match or is a subpath)
   const isActive = (path: string) => {
-    if (path === '/admin' && pathname === '/admin') {
+    if (path === "/admin" && pathname === "/admin") {
       return true;
     }
     // For other paths, check if the current pathname starts with the nav item path
     // but only if it's not the root admin path
-    return path !== '/admin' && pathname.startsWith(path);
+    return path !== "/admin" && pathname.startsWith(path);
   };
 
   return (
     <div className="w-64 border-r bg-gray-50">
-      <div 
-        className="flex items-center gap-2 p-6 cursor-pointer" 
+      <div
+        className="flex items-center gap-2 p-6 cursor-pointer"
         onClick={() => {
-          router.push('/admin');
+          router.push("/admin");
         }}
       >
         <Image src="/logo.svg" alt="Offer Hub Logo" width={32} height={32} />

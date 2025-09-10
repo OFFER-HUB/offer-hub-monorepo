@@ -6,13 +6,13 @@ This is the backend for **OFFER-HUB**, a freelance platform powered by Supabase 
 
 ## ⚙️ Technologies Used
 
-* **Node.js**
-* **Express**
-* **TypeScript**
-* **Supabase (PostgreSQL)**
-* **ts-node**
-* **dotenv**
-* **CORS**
+- **Node.js**
+- **Express**
+- **TypeScript**
+- **Supabase (PostgreSQL)**
+- **ts-node**
+- **dotenv**
+- **CORS**
 
 ---
 
@@ -62,9 +62,9 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 ### 1. Create a Supabase Project
 
-* Go to [https://supabase.com](https://supabase.com)
-* Create a new project
-* Save the project ref and password
+- Go to [https://supabase.com](https://supabase.com)
+- Create a new project
+- Save the project ref and password
 
 ### 2. Link Your Supabase Project
 
@@ -108,8 +108,8 @@ npm run start
 
 ## ✅ Notes
 
-* Do **not** commit your real `.env` file — it’s ignored via `.gitignore`.
-* Each migration is in its own file and auto-applies via `supabase db push`.
-* You must test each endpoint with the **Supabase DB** and provide **screenshots** before any pull request is approved.
+- Do **not** commit your real `.env` file — it’s ignored via `.gitignore`.
+- Each migration is in its own file and auto-applies via `supabase db push`.
+- You must test each endpoint with the **Supabase DB** and provide **screenshots** before any pull request is approved.
 
 ---

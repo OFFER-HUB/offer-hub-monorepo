@@ -1,8 +1,10 @@
-'use client'
-import type { ReactNode  } from "react";
+"use client";
+import type { ReactNode } from "react";
 
-export default function DisputeResolutionLayout({ children }: { children: ReactNode }) {
-  return <div className="min-h-screen  pt-5">
-      {children}
-  </div>;
-} 
+export default function DisputeResolutionLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return <div className="min-h-screen  pt-5">{children}</div>;
+}

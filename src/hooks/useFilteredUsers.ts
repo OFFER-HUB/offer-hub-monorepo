@@ -1,10 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { User, AdminUser, mapAdminUserToLegacy } from "@/interfaces/user.interface";
+import {
+  User,
+  AdminUser,
+  mapAdminUserToLegacy,
+} from "@/interfaces/user.interface";
 import { useAdminUsersApi } from "@/hooks/api-connections/use-admin-users-api";
 import { UserFilters as ApiUserFilters } from "@/types/admin.types";
 
 export function useFilteredUsers() {
-  const [userType, setUserType] = useState<"Freelancer" | "Customer">("Freelancer");
+  const [userType, setUserType] = useState<"Freelancer" | "Customer">(
+    "Freelancer",
+  );
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +42,10 @@ export function useFilteredUsers() {
     if (roleFilter !== "All") {
       if (roleFilter.toLowerCase() === "freelancer") {
         filters.is_freelancer = true;
-      } else if (roleFilter.toLowerCase() === "customer" || roleFilter.toLowerCase() === "client") {
+      } else if (
+        roleFilter.toLowerCase() === "customer" ||
+        roleFilter.toLowerCase() === "client"
+      ) {
         filters.is_freelancer = false;
       }
     }

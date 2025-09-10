@@ -165,7 +165,7 @@ export const users: User[] = [
       paymentsChange: -5.3,
       profileViews: 134,
       viewsChange: -5.3,
-    }
+    },
   },
   {
     id: 668373,
@@ -186,7 +186,7 @@ export const users: User[] = [
       paymentsChange: 15.8,
       profileViews: 98,
       viewsChange: 22.1,
-    }
+    },
   },
   {
     id: 793858,
@@ -207,7 +207,7 @@ export const users: User[] = [
       paymentsChange: 8.9,
       profileViews: 187,
       viewsChange: -1.2,
-    }
+    },
   },
   {
     id: 167844,
@@ -228,7 +228,7 @@ export const users: User[] = [
       paymentsChange: 32.1,
       profileViews: 156,
       viewsChange: 14.7,
-    }
+    },
   },
   {
     id: 956546,
@@ -249,7 +249,7 @@ export const users: User[] = [
       paymentsChange: 12.4,
       profileViews: 234,
       viewsChange: 9.8,
-    }
+    },
   },
   {
     id: 744765,
@@ -270,7 +270,7 @@ export const users: User[] = [
       paymentsChange: -8.1,
       profileViews: 203,
       viewsChange: 11.3,
-    }
+    },
   },
   {
     id: 834673,
@@ -291,7 +291,7 @@ export const users: User[] = [
       paymentsChange: 19.6,
       profileViews: 178,
       viewsChange: -6.4,
-    }
+    },
   },
   {
     id: 845724,
@@ -312,7 +312,7 @@ export const users: User[] = [
       paymentsChange: 6.3,
       profileViews: 142,
       viewsChange: 18.9,
-    }
+    },
   },
   {
     id: 845776,
@@ -333,7 +333,7 @@ export const users: User[] = [
       paymentsChange: -3.7,
       profileViews: 289,
       viewsChange: 8.1,
-    }
+    },
   },
   {
     id: 168536,
@@ -354,7 +354,7 @@ export const users: User[] = [
       paymentsChange: 24.8,
       profileViews: 167,
       viewsChange: -12.6,
-    }
+    },
   },
   {
     id: 184587,
@@ -375,8 +375,7 @@ export const users: User[] = [
       paymentsChange: 11.9,
       profileViews: 312,
       viewsChange: 15.2,
-    }
-    
+    },
   },
   {
     id: 737952,

@@ -52,7 +52,7 @@ export function ConversationList({
       <ScrollArea
         className={cn(
           "rounded-xl border bg-white overflow-x-hidden",
-          dense ? "h-[55vh]" : "h-[65vh]"
+          dense ? "h-[55vh]" : "h-[65vh]",
         )}
       >
         <ul className="divide-y">
@@ -66,7 +66,7 @@ export function ConversationList({
                 key={c.id}
                 className={cn(
                   "transition-colors",
-                  active ? "bg-muted/60" : "hover:bg-muted/40"
+                  active ? "bg-muted/60" : "hover:bg-muted/40",
                 )}
               >
                 <button

@@ -11,7 +11,10 @@ interface BudgetConfigurationFormProps {
   onBack: () => void;
 }
 
-export function BudgetConfigurationForm({ onNext, onBack }: BudgetConfigurationFormProps) {
+export function BudgetConfigurationForm({
+  onNext,
+  onBack,
+}: BudgetConfigurationFormProps) {
   const [budget, setBudget] = useState<number>(0);
 
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,32 +66,32 @@ export function BudgetConfigurationForm({ onNext, onBack }: BudgetConfigurationF
 
         {/* Navigation Buttons */}
         <div className="flex flex-col gap-4 pt-8 items-center">
-          <Button 
+          <Button
             className="bg-gray-800 hover:bg-gray-900 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              width: '361px',
-              height: '44px',
-              borderRadius: '32px',
-              padding: '16px',
-              gap: '10px',
-              color: '#FFFFFF'
+              width: "361px",
+              height: "44px",
+              borderRadius: "32px",
+              padding: "16px",
+              gap: "10px",
+              color: "#FFFFFF",
             }}
             onClick={handleNext}
             disabled={!canProceed}
           >
             Next
           </Button>
-          
-          <Button 
+
+          <Button
             className="text-white font-medium hover:bg-opacity-90"
             style={{
-              width: '361px',
-              height: '44px',
-              borderRadius: '32px',
-              padding: '16px',
-              gap: '10px',
-              backgroundColor: '#149A9B',
-              color: '#FFFFFF'
+              width: "361px",
+              height: "44px",
+              borderRadius: "32px",
+              padding: "16px",
+              gap: "10px",
+              backgroundColor: "#149A9B",
+              color: "#FFFFFF",
             }}
             onClick={onBack}
           >
@@ -98,4 +101,4 @@ export function BudgetConfigurationForm({ onNext, onBack }: BudgetConfigurationF
       </CardContent>
     </Card>
   );
-} 
+}

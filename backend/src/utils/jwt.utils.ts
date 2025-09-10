@@ -51,11 +51,11 @@ export function isTokenNearExpiration(token: string): boolean {
   try {
     const decoded = jwt.decode(token) as JWTPayload;
     if (!decoded || !decoded.exp) return true;
-    
+
     const expirationTime = decoded.exp * 1000; // Convert to milliseconds
     const currentTime = Date.now();
     const timeUntilExpiration = expirationTime - currentTime;
-    
+
     return timeUntilExpiration <= JWT_REFRESH_THRESHOLD;
   } catch {
     return true; // If we can't decode, consider it expired
@@ -67,7 +67,9 @@ export function isTokenNearExpiration(token: string): boolean {
  * @param authHeader - Authorization header value
  * @returns token string or null if invalid format
  */
-export function extractTokenFromHeader(authHeader: string | undefined): string | null {
+export function extractTokenFromHeader(
+  authHeader: string | undefined,
+): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }
@@ -80,10 +82,10 @@ export function extractTokenFromHeader(authHeader: string | undefined): string |
  * @returns boolean indicating if token has valid format
  */
 export function isValidTokenFormat(token: string): boolean {
-  if (!token || typeof token !== 'string') return false;
-  
+  if (!token || typeof token !== "string") return false;
+
   // JWT should have 3 parts separated by dots
-  const parts = token.split('.');
+  const parts = token.split(".");
   return parts.length === 3;
 }
 
@@ -109,6 +111,6 @@ export function getTokenExpiration(token: string): number | null {
 export function isTokenExpired(token: string): boolean {
   const expirationTime = getTokenExpiration(token);
   if (!expirationTime) return true;
-  
+
   return Date.now() >= expirationTime;
 }

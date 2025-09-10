@@ -11,7 +11,11 @@ interface OfferSuccessProps {
   onSendAnother: () => void;
 }
 
-export function OfferSuccess({ freelancer, onViewOffer, onSendAnother }: OfferSuccessProps) {
+export function OfferSuccess({
+  freelancer,
+  onViewOffer,
+  onSendAnother,
+}: OfferSuccessProps) {
   const offerData = getMockOfferSentData(freelancer.name);
 
   return (
@@ -51,4 +55,3 @@ export function OfferSuccess({ freelancer, onViewOffer, onSendAnother }: OfferSu
     </div>
   );
 }
-

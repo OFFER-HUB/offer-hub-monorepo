@@ -4,9 +4,9 @@ This canvas documents the step-by-step recovery workflow derived from `emergency
 
 ## Actors
 
-* **Operator**: calls `create_recovery_request`
-* **Approvers**: call `approve_recovery_request` (on-chain unique approvals)
-* **Executor**: calls `emergency_fund_withdrawal` to move emergency funds to a safe recipient
+- **Operator**: calls `create_recovery_request`
+- **Approvers**: call `approve_recovery_request` (on-chain unique approvals)
+- **Executor**: calls `emergency_fund_withdrawal` to move emergency funds to a safe recipient
 
 ## Steps
 
@@ -18,10 +18,10 @@ This canvas documents the step-by-step recovery workflow derived from `emergency
 
 ## Checks before withdrawal
 
-* `request_id` exists & status appropriate
-* `emergency_fund >= amount`
-* caller authorized (admin/multisig)
-* no double execution
+- `request_id` exists & status appropriate
+- `emergency_fund >= amount`
+- caller authorized (admin/multisig)
+- no double execution
 
 ---
 

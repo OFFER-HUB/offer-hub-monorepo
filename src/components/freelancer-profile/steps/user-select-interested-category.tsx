@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { Search, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import type { ProfileStepProps } from "@/app/types/freelancer-profile"
-import { useFreelancerSkills } from "@/hooks/use-freelancer-skills"
+import { Search, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { ProfileStepProps } from "@/app/types/freelancer-profile";
+import { useFreelancerSkills } from "@/hooks/use-freelancer-skills";
 
 const SUGGESTED_SKILLS = [
   "Solidity",
@@ -14,18 +14,28 @@ const SUGGESTED_SKILLS = [
   "Product Design",
   "Branding & Marketing",
   "Brand Development",
-]
+];
 
 export default function UserSelectInterestedCategory(props: ProfileStepProps) {
-  const { nextStep, prevStep } = props
-  const { skills, searchInput, setSearchInput, handleAddSkill, handleRemoveSkill, handleSearchSubmit } =
-    useFreelancerSkills(props)
+  const { nextStep, prevStep } = props;
+  const {
+    skills,
+    searchInput,
+    setSearchInput,
+    handleAddSkill,
+    handleRemoveSkill,
+    handleSearchSubmit,
+  } = useFreelancerSkills(props);
 
   return (
     <div className="space-y-6 bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
       <p className="text-neutral-500 font-semibold">3/11</p>
-      <h2 className="text-2xl font-semibold">You're close! What work are you here to do?</h2>
-      <p className="text-[#149A9B]">Don't worry you can change these choices later on.</p>
+      <h2 className="text-2xl font-semibold">
+        You're close! What work are you here to do?
+      </h2>
+      <p className="text-[#149A9B]">
+        Don't worry you can change these choices later on.
+      </p>
 
       <div className="space-y-6 mt-8">
         <form onSubmit={handleSearchSubmit} className="relative">
@@ -36,7 +46,10 @@ export default function UserSelectInterestedCategory(props: ProfileStepProps) {
             placeholder="Enter skill here"
             className="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#149A9B]"
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
         </form>
 
         {skills.length > 0 && (
@@ -81,7 +94,11 @@ export default function UserSelectInterestedCategory(props: ProfileStepProps) {
       </div>
 
       <div className="flex justify-between mt-8 pt-6 border-t">
-        <Button onClick={prevStep} variant="ghost" className="gap-1 rounded-full">
+        <Button
+          onClick={prevStep}
+          variant="ghost"
+          className="gap-1 rounded-full"
+        >
           <ArrowLeft size={18} /> Back
         </Button>
         <Button
@@ -93,5 +110,5 @@ export default function UserSelectInterestedCategory(props: ProfileStepProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }

@@ -49,7 +49,7 @@ describe("useFreelancerServicesApi", () => {
 
       await act(async () => {
         await result.current.fetchUserServices(
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
@@ -71,7 +71,7 @@ describe("useFreelancerServicesApi", () => {
 
       await act(async () => {
         await result.current.fetchUserServices(
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
@@ -112,7 +112,7 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         success = await result.current.createService(
           serviceData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
@@ -131,7 +131,7 @@ describe("useFreelancerServicesApi", () => {
             min_price: 50,
             max_price: 100,
           }),
-        })
+        }),
       );
     });
 
@@ -156,7 +156,7 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         success = await result.current.createService(
           serviceData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
@@ -179,13 +179,13 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         success = await result.current.createService(
           serviceData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
       expect(success).toBe(false);
       expect(result.current.error).toBe(
-        "Title, description, and category are required"
+        "Title, description, and category are required",
       );
     });
 
@@ -204,13 +204,13 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         success = await result.current.createService(
           serviceData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
       expect(success).toBe(false);
       expect(result.current.error).toBe(
-        "Invalid price range. Min price must be less than or equal to max price, and both must be positive."
+        "Invalid price range. Min price must be less than or equal to max price, and both must be positive.",
       );
     });
   });
@@ -234,7 +234,7 @@ describe("useFreelancerServicesApi", () => {
         success = await result.current.updateService(
           "123e4567-e89b-12d3-a456-426614174000",
           updateData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
@@ -249,7 +249,7 @@ describe("useFreelancerServicesApi", () => {
             title: "Updated Web Development",
             description: "Updated description",
           }),
-        })
+        }),
       );
     });
 
@@ -273,13 +273,13 @@ describe("useFreelancerServicesApi", () => {
         success = await result.current.updateService(
           "123e4567-e89b-12d3-a456-426614174000",
           updateData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
       expect(success).toBe(false);
       expect(result.current.error).toBe(
-        "You can only update your own services"
+        "You can only update your own services",
       );
     });
   });
@@ -300,7 +300,7 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         success = await result.current.deleteService(
           "123e4567-e89b-12d3-a456-426614174000",
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
@@ -311,7 +311,7 @@ describe("useFreelancerServicesApi", () => {
         expect.objectContaining({
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-        })
+        }),
       );
     });
 
@@ -330,13 +330,13 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         success = await result.current.deleteService(
           "123e4567-e89b-12d3-a456-426614174000",
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 
       expect(success).toBe(false);
       expect(result.current.error).toBe(
-        "You can only delete your own services"
+        "You can only delete your own services",
       );
     });
   });
@@ -381,9 +381,9 @@ describe("useFreelancerServicesApi", () => {
                   ok: true,
                   json: async () => mockApiResponse,
                 }),
-              100
-            )
-          )
+              100,
+            ),
+          ),
       );
 
       const serviceData = {
@@ -398,7 +398,7 @@ describe("useFreelancerServicesApi", () => {
       await act(async () => {
         await result.current.createService(
           serviceData,
-          "550e8400-e29b-41d4-a716-446655440000"
+          "550e8400-e29b-41d4-a716-446655440000",
         );
       });
 

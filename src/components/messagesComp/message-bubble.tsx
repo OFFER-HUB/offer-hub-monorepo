@@ -19,7 +19,7 @@ function FileChip({
     <div
       className={cn(
         "flex items-center gap-2 rounded-lg border px-2 py-1 text-xs",
-        sent ? "border-white/20 bg-white/15 text-white" : "bg-background"
+        sent ? "border-white/20 bg-white/15 text-white" : "bg-background",
       )}
     >
       <FileText className="size-4 opacity-80" />
@@ -91,7 +91,7 @@ export function MessageBubble({
       className={cn(
         "group/message flex w-full select-text overflow-x-hidden",
         isSent ? "justify-end" : "justify-start",
-        className
+        className,
       )}
       role="article"
       onTouchStart={handleTouchStart}
@@ -126,7 +126,7 @@ export function MessageBubble({
                   "mx-3.5 mt-2 flex items-start gap-2 rounded-md p-2 ring-1 transition hover:opacity-90",
                   isSent
                     ? "bg-white/20 ring-white/25"
-                    : "bg-foreground/5 ring-foreground/10"
+                    : "bg-foreground/5 ring-foreground/10",
                 )}
                 aria-label="Show replied message"
                 title="Show replied message"
@@ -148,7 +148,7 @@ export function MessageBubble({
                     "min-w-0 flex-1 border-l-2 pl-2 text-left",
                     isSent
                       ? "border-white/60 text-white/90"
-                      : "border-foreground/20 text-foreground/80"
+                      : "border-foreground/20 text-foreground/80",
                   )}
                 >
                   <span className="block max-w-full break-words break-all">
@@ -164,7 +164,7 @@ export function MessageBubble({
               <div
                 className={cn(
                   "grid gap-1 p-1",
-                  imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1"
+                  imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1",
                 )}
               >
                 {imageAttachments.map((att) => (
@@ -192,7 +192,7 @@ export function MessageBubble({
               <div
                 className={cn(
                   "flex flex-wrap gap-2 px-3.5 pt-2",
-                  text ? "" : "pb-2"
+                  text ? "" : "pb-2",
                 )}
               >
                 {fileAttachments.map((att) => (
@@ -217,7 +217,7 @@ export function MessageBubble({
           <div
             className={cn(
               "mt-1 flex items-center gap-1 text-[11px] leading-none text-muted-foreground",
-              isSent ? "justify-end pr-1.5" : "pl-1.5"
+              isSent ? "justify-end pr-1.5" : "pl-1.5",
             )}
           >
             <span>{time}</span>

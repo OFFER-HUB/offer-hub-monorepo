@@ -1,13 +1,14 @@
-
 ## Product Requirements Document (PRD) for Freelance Matching Service
 
 ### 1. Overview
+
 **Product Name**: Freelance Matching Service  
 **Version**: 1.0  
 **Date**: August 30, 2025  
 **Objective**: Build a standalone API service that provides intelligent matching between freelance projects and freelancers, integrating with an existing freelance application. The service uses two AI models (low-cost for pre-filtering, high-quality for refinement) to deliver accurate, scalable, and cost-efficient matches.
 
 ### 2. Goals
+
 - **Primary Goal**: Enable the freelance app to match projects with freelancers based on skills, project requirements, and other criteria, improving user satisfaction and conversion rates.
 - **Secondary Goals**:
   - Optimize cost by using a low-cost AI model for initial filtering and a high-quality model for premium users.
@@ -16,13 +17,16 @@
   - Achieve scalability for 10k+ daily matches with minimal infrastructure cost.
 
 ### 3. Stakeholders
+
 - **Freelance App Team**: Provides project/freelancer data via API payloads and consumes match results.
 - **End Users**: Clients (project posters) and freelancers using the app, indirectly benefiting from matches.
 - **Development Team**: Builds and maintains the service.
 - **xAI (if applicable)**: Provides AI model access (e.g., Grok free-tier for low-cost model).
 
 ### 4. Functional Requirements
+
 #### 4.1 Core Features
+
 - **Match Generation**:
   - Endpoint: `POST /match/get-matches` (REST) or GraphQL query `getMatches`.
   - Input: `{ projectId, projectDesc, freelancers: [{ userId, description, skills, rating }], usePremium: boolean }`.
@@ -38,6 +42,7 @@
   - Mutation: `queueEmbeddings(data: [EmbeddingInput])` for async processing.
 
 #### 4.2 Non-Functional Requirements
+
 - **Performance**:
   - Low-cost matches: <500ms latency.
   - High-quality matches: <2s latency.
@@ -57,6 +62,7 @@
   - Grafana dashboards for real-time visualization.
 
 ### 5. Technical Requirements
+
 - **Stack**:
   - **Backend**: NestJS (TypeScript) for modular API.
   - **Database**: PostgreSQL with pgvector for vector storage and searches.
@@ -76,6 +82,7 @@
   - `@nestjs/*`, `prisma`, `pgvector`, `@nestjs/bullmq`, `ioredis`, `@langchain/core`, `@huggingface/inference`, `@nestjs/graphql`, `@nestjs/jwt`, `@nestjs/throttler`, `@nestjs/prometheus`.
 
 ### 6. Integration with Freelance App
+
 - **Data Flow**:
   - Freelance app sends project/freelancer data via API (e.g., `{ projectId, description, freelancers }`).
   - Service processes matches and returns results.
@@ -87,6 +94,7 @@
   - App responsible for user profiles, project details, and sensitive data.
 
 ### 7. Success Metrics
+
 - **User Metrics**:
   - Match acceptance rate: >70% of matches lead to freelancer engagement.
   - API latency: <500ms (low-cost), <2s (high-quality) for 95% of requests.
@@ -98,6 +106,7 @@
   - Vector search performance: <100ms for 10k records.
 
 ### 8. Risks and Mitigations
+
 - **Risk**: High API costs for high-quality model.
   - **Mitigation**: Limit high-quality to premium users; cache results in Redis.
 - **Risk**: Slow vector searches at scale.
@@ -108,13 +117,14 @@
   - **Mitigation**: Enforce rate limiting, validate tokens, and audit logs.
 
 ### 9. Timeline
+
 - **Milestone 1 (Setup + Initial Code)**
 - **Milestone 2 (High-Quality + GraphQL)**
 - **Milestone 3 (CI/CD + Monitoring)**
 - **Milestone 4 (Optimization + Prod)**
 
-
 ### 10. Future Enhancements
+
 - Fine-tune low-cost model with app-specific data.
 - Add support for multilingual embeddings (e.g., mBERT).
 - Implement real-time feedback endpoint for match quality.

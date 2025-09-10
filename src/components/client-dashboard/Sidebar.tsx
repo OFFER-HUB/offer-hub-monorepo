@@ -63,7 +63,7 @@ export function ClientSidebar() {
                     "flex items-center gap-4 px-4 py-1 text-base font-medium transition-colors",
                     isActive
                       ? "text-teal-600"
-                      : "text-gray-700 hover:text-gray-900"
+                      : "text-gray-700 hover:text-gray-900",
                   )}
                 >
                   <item.icon className="w-5 h-5" />

@@ -39,18 +39,21 @@ export default function SkillsSection({ skills }: SkillsSectionProps) {
     }
   };
 
-  const groupedSkills = skills.reduce((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
-    }
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
+  const groupedSkills = skills.reduce(
+    (acc, skill) => {
+      if (!acc[skill.category]) {
+        acc[skill.category] = [];
+      }
+      acc[skill.category].push(skill);
+      return acc;
+    },
+    {} as Record<string, Skill[]>,
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">Skills</h2>
-      
+
       <div className="space-y-6">
         {Object.entries(groupedSkills).map(([category, categorySkills]) => (
           <div key={category} className="space-y-3">
@@ -62,15 +65,16 @@ export default function SkillsSection({ skills }: SkillsSectionProps) {
                     <span className="text-sm font-medium text-gray-700">
                       {skill.name}
                     </span>
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={`text-xs ${getProficiencyColor(skill.proficiency)}`}
                     >
-                      {skill.proficiency.charAt(0).toUpperCase() + skill.proficiency.slice(1)}
+                      {skill.proficiency.charAt(0).toUpperCase() +
+                        skill.proficiency.slice(1)}
                     </Badge>
                   </div>
-                  <Progress 
-                    value={getProficiencyPercentage(skill.proficiency)} 
+                  <Progress
+                    value={getProficiencyPercentage(skill.proficiency)}
                     className="h-2"
                   />
                 </div>
@@ -79,15 +83,15 @@ export default function SkillsSection({ skills }: SkillsSectionProps) {
           </div>
         ))}
       </div>
-      
+
       {/* Skills Tags */}
       <div className="mt-6 pt-6 border-t border-gray-200">
         <h3 className="text-lg font-medium text-gray-800 mb-3">All Skills</h3>
         <div className="flex flex-wrap gap-2">
           {skills.map((skill) => (
-            <Badge 
+            <Badge
               key={skill.name}
-              variant="outline" 
+              variant="outline"
               className={`${getProficiencyColor(skill.proficiency)}`}
             >
               {skill.name}

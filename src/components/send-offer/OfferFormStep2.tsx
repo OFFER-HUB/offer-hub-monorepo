@@ -10,11 +10,15 @@ interface OfferFormStep2Props {
   freelancerId: string;
 }
 
-export function OfferFormStep2({ onNext, onBack, freelancerId }: OfferFormStep2Props) {
+export function OfferFormStep2({
+  onNext,
+  onBack,
+  freelancerId,
+}: OfferFormStep2Props) {
   const { state, updateField, setError, clearError } = useOfferForm();
   const { formData, errors } = state;
 
-  const handleProjectDurationChange = (duration: 'long' | 'short') => {
+  const handleProjectDurationChange = (duration: "long" | "short") => {
     updateField("projectDuration", duration);
     clearError("projectDuration");
   };
@@ -42,35 +46,38 @@ export function OfferFormStep2({ onNext, onBack, freelancerId }: OfferFormStep2P
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
             Send an offer
           </h1>
-          <p className="text-teal-600 text-sm">
-            Create and send offer to hire
-          </p>
+          <p className="text-teal-600 text-sm">Create and send offer to hire</p>
         </div>
 
         {/* Project Duration Selection */}
         <div className="space-y-4">
           {/* Long term project option */}
-          <div 
-            onClick={() => handleProjectDurationChange('long')}
+          <div
+            onClick={() => handleProjectDurationChange("long")}
             className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-              formData.projectDuration === 'long' 
-                ? 'border-teal-500 bg-teal-50' 
-                : 'border-gray-200 hover:border-gray-300'
+              formData.projectDuration === "long"
+                ? "border-teal-500 bg-teal-50"
+                : "border-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Long term project</h3>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Long term project
+                </h3>
                 <p className="text-sm text-gray-600">
-                  More than thirty hours a week and/or will be longer than three months.
+                  More than thirty hours a week and/or will be longer than three
+                  months.
                 </p>
               </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                formData.projectDuration === 'long'
-                  ? 'border-teal-500 bg-teal-500'
-                  : 'border-gray-300'
-              }`}>
-                {formData.projectDuration === 'long' && (
+              <div
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                  formData.projectDuration === "long"
+                    ? "border-teal-500 bg-teal-500"
+                    : "border-gray-300"
+                }`}
+              >
+                {formData.projectDuration === "long" && (
                   <CheckCircle className="w-4 h-4 text-white" />
                 )}
               </div>
@@ -78,27 +85,32 @@ export function OfferFormStep2({ onNext, onBack, freelancerId }: OfferFormStep2P
           </div>
 
           {/* Short term project option */}
-          <div 
-            onClick={() => handleProjectDurationChange('short')}
+          <div
+            onClick={() => handleProjectDurationChange("short")}
             className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-              formData.projectDuration === 'short' 
-                ? 'border-teal-500 bg-teal-50' 
-                : 'border-gray-200 hover:border-gray-300'
+              formData.projectDuration === "short"
+                ? "border-teal-500 bg-teal-50"
+                : "border-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Short term project</h3>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Short term project
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Less than thirty hours a week and/or will be shorter than three months.
+                  Less than thirty hours a week and/or will be shorter than
+                  three months.
                 </p>
               </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                formData.projectDuration === 'short'
-                  ? 'border-teal-500 bg-white'
-                  : 'border-gray-300'
-              }`}>
-                {formData.projectDuration === 'short' && (
+              <div
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                  formData.projectDuration === "short"
+                    ? "border-teal-500 bg-white"
+                    : "border-gray-300"
+                }`}
+              >
+                {formData.projectDuration === "short" && (
                   <div className="w-3 h-3 rounded-full bg-teal-500"></div>
                 )}
               </div>
@@ -119,7 +131,7 @@ export function OfferFormStep2({ onNext, onBack, freelancerId }: OfferFormStep2P
           >
             Post job
           </Button>
-          
+
           <Button
             onClick={onBack}
             className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-md font-medium border-0"

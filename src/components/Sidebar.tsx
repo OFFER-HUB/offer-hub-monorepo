@@ -42,13 +42,17 @@ export default function Sidebar({ onClose }: SidebarProps) {
       name: "Dispute resolution",
       href: "/dispute-resolution",
       icon: FileText,
-      active: pathname.includes("/dispute-resolution") && !pathname.includes("resolved"),
+      active:
+        pathname.includes("/dispute-resolution") &&
+        !pathname.includes("resolved"),
     },
     {
       name: "Resolved dispute",
       href: "/dispute-resolution?tab=resolved",
       icon: FileText,
-      active: pathname.includes("/dispute-resolution") && pathname.includes("resolved"),
+      active:
+        pathname.includes("/dispute-resolution") &&
+        pathname.includes("resolved"),
     },
   ];
 
@@ -75,7 +79,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                   "flex items-center px-2 py-2 text-sm font-medium rounded-md",
                   item.active
                     ? " text-[#149A9B] hover:bg-gray-100"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
                 )}
               >
                 {item.icon && (

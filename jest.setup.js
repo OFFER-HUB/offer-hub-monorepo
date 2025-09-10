@@ -1,7 +1,7 @@
-import '@testing-library/jest-dom'
+import "@testing-library/jest-dom";
 
 // Mock Next.js router (App Router)
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter() {
     return {
       push: jest.fn(),
@@ -10,24 +10,24 @@ jest.mock('next/navigation', () => ({
       back: jest.fn(),
       forward: jest.fn(),
       refresh: jest.fn(),
-    }
+    };
   },
   usePathname() {
-    return '/'
+    return "/";
   },
   useSearchParams() {
-    return new URLSearchParams()
+    return new URLSearchParams();
   },
-}))
+}));
 
 // Mock Next.js router (Pages Router - for backward compatibility)
-jest.mock('next/router', () => ({
+jest.mock("next/router", () => ({
   useRouter() {
     return {
-      route: '/',
-      pathname: '/',
+      route: "/",
+      pathname: "/",
       query: {},
-      asPath: '/',
+      asPath: "/",
       push: jest.fn(),
       pop: jest.fn(),
       reload: jest.fn(),
@@ -40,15 +40,15 @@ jest.mock('next/router', () => ({
         off: jest.fn(),
         emit: jest.fn(),
       },
-    }
+    };
   },
-}))
+}));
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api'
+process.env.NEXT_PUBLIC_API_URL = "http://localhost:3000/api";
 
 // Mock Radix UI components
-jest.mock('@radix-ui/react-progress', () => ({
+jest.mock("@radix-ui/react-progress", () => ({
   Root: ({ children, className, ...props }) => (
     <div className={className} {...props}>
       {children}
@@ -59,15 +59,13 @@ jest.mock('@radix-ui/react-progress', () => ({
   ),
 }));
 
-jest.mock('@radix-ui/react-avatar', () => ({
+jest.mock("@radix-ui/react-avatar", () => ({
   Root: ({ children, className, ...props }) => (
     <div className={className} {...props}>
       {children}
     </div>
   ),
-  Image: ({ className, ...props }) => (
-    <img className={className} {...props} />
-  ),
+  Image: ({ className, ...props }) => <img className={className} {...props} />,
   Fallback: ({ children, className, ...props }) => (
     <div className={className} {...props}>
       {children}
@@ -76,7 +74,7 @@ jest.mock('@radix-ui/react-avatar', () => ({
 }));
 
 // Mock the UI components that use Radix UI
-jest.mock('@/components/ui/avatar', () => ({
+jest.mock("@/components/ui/avatar", () => ({
   Avatar: ({ children, className, ...props }) => (
     <div className={className} {...props}>
       {children}
@@ -92,7 +90,7 @@ jest.mock('@/components/ui/avatar', () => ({
   ),
 }));
 
-jest.mock('@/components/ui/progress', () => ({
+jest.mock("@/components/ui/progress", () => ({
   Progress: ({ className, value, ...props }) => (
     <div className={className} {...props}>
       <div style={{ width: `${value || 0}%` }} />

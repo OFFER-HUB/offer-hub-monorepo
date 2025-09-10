@@ -1,18 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Star, Heart, MessageSquare, Check, MapPin, Clock, Briefcase } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Star,
+  Heart,
+  MessageSquare,
+  Check,
+  MapPin,
+  Clock,
+  Briefcase,
+} from "lucide-react";
 
 interface TalentCardProps {
-  freelancer: any
-  isSelected: boolean
-  onToggleSelect: () => void
-  onViewProfile: () => void
-  layout?: "grid" | "list"
+  freelancer: any;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  onViewProfile: () => void;
+  layout?: "grid" | "list";
 }
 
 export default function TalentCard({
@@ -22,7 +30,7 @@ export default function TalentCard({
   onViewProfile,
   layout = "grid",
 }: TalentCardProps) {
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, setIsHovered] = useState(false);
 
   const renderStars = (rating: number) => {
     return Array(5)
@@ -32,8 +40,8 @@ export default function TalentCard({
           key={i}
           className={`h-4 w-4 ${i < Math.floor(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
         />
-      ))
-  }
+      ));
+  };
 
   if (layout === "list") {
     return (
@@ -62,11 +70,15 @@ export default function TalentCard({
                 size="icon"
                 className={`absolute top-4 left-4 h-8 w-8 rounded-full ${isSelected ? "bg-[#15949C] text-white" : "bg-white/80 text-[#002333]"}`}
                 onClick={(e) => {
-                  e.stopPropagation()
-                  onToggleSelect()
+                  e.stopPropagation();
+                  onToggleSelect();
                 }}
               >
-                {isSelected ? <Check className="h-4 w-4" /> : <Heart className="h-4 w-4" />}
+                {isSelected ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Heart className="h-4 w-4" />
+                )}
               </Button>
             </div>
 
@@ -74,24 +86,44 @@ export default function TalentCard({
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-lg text-[#002333]">{freelancer.name}</h3>
-                    {freelancer.isVerified && <Badge className="bg-blue-100 text-blue-800">Verified</Badge>}
-                    {freelancer.isTopRated && <Badge className="bg-yellow-100 text-yellow-800">Top Rated</Badge>}
+                    <h3 className="font-bold text-lg text-[#002333]">
+                      {freelancer.name}
+                    </h3>
+                    {freelancer.isVerified && (
+                      <Badge className="bg-blue-100 text-blue-800">
+                        Verified
+                      </Badge>
+                    )}
+                    {freelancer.isTopRated && (
+                      <Badge className="bg-yellow-100 text-yellow-800">
+                        Top Rated
+                      </Badge>
+                    )}
                   </div>
 
                   <p className="text-[#002333]/70 mt-1">{freelancer.title}</p>
 
                   <div className="flex items-center mt-2">
-                    <div className="flex mr-2">{renderStars(freelancer.rating)}</div>
-                    <span className="text-[#002333] font-medium">{freelancer.rating.toFixed(1)}</span>
-                    <span className="text-[#002333]/70 ml-1">({freelancer.reviewCount})</span>
+                    <div className="flex mr-2">
+                      {renderStars(freelancer.rating)}
+                    </div>
+                    <span className="text-[#002333] font-medium">
+                      {freelancer.rating.toFixed(1)}
+                    </span>
+                    <span className="text-[#002333]/70 ml-1">
+                      ({freelancer.reviewCount})
+                    </span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div className="text-[#002333] font-bold">${freelancer.hourlyRate}/hr</div>
+                  <div className="text-[#002333] font-bold">
+                    ${freelancer.hourlyRate}/hr
+                  </div>
                   <div className="text-[#002333]/70 text-sm">
-                    {freelancer.totalEarned ? `$${freelancer.totalEarned}+ earned` : "New freelancer"}
+                    {freelancer.totalEarned
+                      ? `$${freelancer.totalEarned}+ earned`
+                      : "New freelancer"}
                   </div>
                 </div>
               </div>
@@ -102,7 +134,11 @@ export default function TalentCard({
                     {skill}
                   </Badge>
                 ))}
-                {freelancer.skills.length > 5 && <Badge variant="outline">+{freelancer.skills.length - 5} more</Badge>}
+                {freelancer.skills.length > 5 && (
+                  <Badge variant="outline">
+                    +{freelancer.skills.length - 5} more
+                  </Badge>
+                )}
               </div>
 
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#002333]/70">
@@ -121,10 +157,16 @@ export default function TalentCard({
               </div>
 
               <div className="mt-4 flex flex-col xs:flex-row gap-2">
-                <Button className="bg-[#15949C] hover:bg-[#15949C]/90" onClick={onViewProfile}>
+                <Button
+                  className="bg-[#15949C] hover:bg-[#15949C]/90"
+                  onClick={onViewProfile}
+                >
                   View Profile
                 </Button>
-                <Button variant="outline" className="border-[#15949C] text-[#15949C]">
+                <Button
+                  variant="outline"
+                  className="border-[#15949C] text-[#15949C]"
+                >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Contact
                 </Button>
@@ -133,7 +175,7 @@ export default function TalentCard({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -161,27 +203,39 @@ export default function TalentCard({
             size="icon"
             className={`absolute top-4 left-4 h-8 w-8 rounded-full ${isSelected ? "bg-[#15949C] text-white" : "bg-white/80 text-[#002333]"}`}
             onClick={(e) => {
-              e.stopPropagation()
-              onToggleSelect()
+              e.stopPropagation();
+              onToggleSelect();
             }}
           >
-            {isSelected ? <Check className="h-4 w-4" /> : <Heart className="h-4 w-4" />}
+            {isSelected ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Heart className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
         <div className="p-6">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-bold text-lg text-[#002333]">{freelancer.name}</h3>
+              <h3 className="font-bold text-lg text-[#002333]">
+                {freelancer.name}
+              </h3>
               <p className="text-[#002333]/70 mt-1">{freelancer.title}</p>
             </div>
-            <div className="text-[#002333] font-bold">${freelancer.hourlyRate}/hr</div>
+            <div className="text-[#002333] font-bold">
+              ${freelancer.hourlyRate}/hr
+            </div>
           </div>
 
           <div className="flex items-center mt-2">
             <div className="flex mr-2">{renderStars(freelancer.rating)}</div>
-            <span className="text-[#002333] font-medium">{freelancer.rating.toFixed(1)}</span>
-            <span className="text-[#002333]/70 ml-1">({freelancer.reviewCount})</span>
+            <span className="text-[#002333] font-medium">
+              {freelancer.rating.toFixed(1)}
+            </span>
+            <span className="text-[#002333]/70 ml-1">
+              ({freelancer.reviewCount})
+            </span>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-1">
@@ -190,7 +244,11 @@ export default function TalentCard({
                 {skill}
               </Badge>
             ))}
-            {freelancer.skills.length > 3 && <Badge variant="outline">+{freelancer.skills.length - 3} more</Badge>}
+            {freelancer.skills.length > 3 && (
+              <Badge variant="outline">
+                +{freelancer.skills.length - 3} more
+              </Badge>
+            )}
           </div>
 
           <div className="mt-4 flex items-center text-sm text-[#002333]/70">
@@ -199,16 +257,22 @@ export default function TalentCard({
           </div>
 
           <div className="mt-4 flex gap-2">
-            <Button className="flex-1 bg-[#15949C] hover:bg-[#15949C]/90" onClick={onViewProfile}>
+            <Button
+              className="flex-1 bg-[#15949C] hover:bg-[#15949C]/90"
+              onClick={onViewProfile}
+            >
               View Profile
             </Button>
-            <Button variant="outline" size="icon" className="border-[#15949C] text-[#15949C]">
+            <Button
+              variant="outline"
+              size="icon"
+              className="border-[#15949C] text-[#15949C]"
+            >
               <MessageSquare className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

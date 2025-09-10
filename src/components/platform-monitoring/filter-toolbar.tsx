@@ -17,7 +17,7 @@ import { format } from "date-fns";
 
 export default function FilterToolbar() {
   const [userType, setUserType] = useState<"Freelancer" | "Customer">(
-    "Freelancer"
+    "Freelancer",
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [date, setDate] = useState<Date | undefined>();

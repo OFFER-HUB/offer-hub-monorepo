@@ -1,13 +1,13 @@
 // Datos mock para la lista de proyectos
 
 export type Project = {
-  id: string
-  title: string
-  person: string
-  date: string
-  status: "active" | "completed" | "dispute"
-  avatarSrc?: string
-}
+  id: string;
+  title: string;
+  person: string;
+  date: string;
+  status: "active" | "completed" | "dispute";
+  avatarSrc?: string;
+};
 
 export const mockProjects: Project[] = [
   {
@@ -50,9 +50,8 @@ export const mockProjects: Project[] = [
     status: "dispute",
     avatarSrc: "/placeholder.svg?height=40&width=40",
   },
-]
+];
 
 export function getMockProjects(): Project[] {
-  return mockProjects
+  return mockProjects;
 }
-

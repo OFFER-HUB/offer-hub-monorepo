@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
-import Footer from "@/components/freelancer-profile/footer"
-import StepsController from "@/components/freelancer-profile/steps"
-import { Button } from "@/components/ui/button"
-import { useFreelancerOnboarding } from "@/hooks/use-freelancer-steps"
-import { ArrowLeft } from "lucide-react"
+import Footer from "@/components/freelancer-profile/footer";
+import StepsController from "@/components/freelancer-profile/steps";
+import { Button } from "@/components/ui/button";
+import { useFreelancerOnboarding } from "@/hooks/use-freelancer-steps";
+import { ArrowLeft } from "lucide-react";
 
 export default function FreelancerProfilePage() {
-  const { currentStep, userData, nextStep, prevStep, updateUserData } = useFreelancerOnboarding()
+  const { currentStep, userData, nextStep, prevStep, updateUserData } =
+    useFreelancerOnboarding();
 
   return (
     <div className="relative">
@@ -46,7 +47,7 @@ export default function FreelancerProfilePage() {
             </div>
           </div>
         </Footer>
-      </div> 
+      </div>
     </div>
-  )
+  );
 }

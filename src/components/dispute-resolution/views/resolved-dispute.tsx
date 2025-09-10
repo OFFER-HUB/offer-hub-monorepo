@@ -1,20 +1,20 @@
 import DisputeTable, {
   DisputeTableColumn,
-} from '@/components/table/DisputeTable';
-import { FaCaretDown, FaRegCopy } from 'react-icons/fa';
-import React, { useState } from 'react';
+} from "@/components/table/DisputeTable";
+import { FaCaretDown, FaRegCopy } from "react-icons/fa";
+import React, { useState } from "react";
 
-import { DisputeRow } from '@/types';
-import Link from 'next/link';
-import { SlMagnifier } from 'react-icons/sl';
-import { useMockDisputes } from '@/data/generic-mock-data';
+import { DisputeRow } from "@/types";
+import Link from "next/link";
+import { SlMagnifier } from "react-icons/sl";
+import { useMockDisputes } from "@/data/generic-mock-data";
 
 const columns: DisputeTableColumn<DisputeRow>[] = [
-  { key: 'createdAt', label: 'Date Initiated' },
-  { key: 'name', label: 'Customer Name' },
+  { key: "createdAt", label: "Date Initiated" },
+  { key: "name", label: "Customer Name" },
   {
-    key: 'ticket',
-    label: 'Ticket ID',
+    key: "ticket",
+    label: "Ticket ID",
     render: (row) => (
       <span className="flex items-center gap-2 text-blue-600">
         <span className="underline cursor-pointer">{row.ticket}</span>
@@ -26,14 +26,14 @@ const columns: DisputeTableColumn<DisputeRow>[] = [
     ),
   },
   {
-    key: 'email',
-    label: 'Email address',
+    key: "email",
+    label: "Email address",
     render: (row) =>
-      row.email.length > 25 ? row.email.slice(0, 25) + '...' : row.email,
+      row.email.length > 25 ? row.email.slice(0, 25) + "..." : row.email,
   },
   {
-    key: 'action',
-    label: 'Action',
+    key: "action",
+    label: "Action",
     render: (row) => (
       <Link
         href={`/admin/dispute-resolution/${row.ticket}/chat`}
@@ -47,8 +47,8 @@ const columns: DisputeTableColumn<DisputeRow>[] = [
 
 export default function ResolvedDispute() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [activeTab, setActiveTab] = useState('all');
-  const [selectedRole, setSelectedRole] = useState('freelancer');
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedRole, setSelectedRole] = useState("freelancer");
   const {
     loading,
     filtering,
@@ -62,26 +62,26 @@ export default function ResolvedDispute() {
     <div
       className="p-6 space-y-6"
       style={{
-        minHeight: '100vh',
+        minHeight: "100vh",
       }}
     >
       {/* Header with All transaction button and Security Alerts */}
       <div
         className="flex items-center gap-4"
-        style={{ backgroundColor: '#FFFFFF', padding: '16px' }}
+        style={{ backgroundColor: "#FFFFFF", padding: "16px" }}
       >
         <button
-          onClick={() => setActiveTab('all')}
+          onClick={() => setActiveTab("all")}
           className="bg-[#002333] text-white text-sm font-medium transition-colors hover:bg-[#003344]"
           style={{
-            width: '131px',
-            height: '40px',
-            borderRadius: '24px',
-            padding: '9px 12px 10px 12px',
-            gap: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: "131px",
+            height: "40px",
+            borderRadius: "24px",
+            padding: "9px 12px 10px 12px",
+            gap: "10px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           All transaction
@@ -124,7 +124,7 @@ export default function ResolvedDispute() {
               onChange={(e) => search(e.target.value)}
               className="w-full px-3 py-1 text-sm border border-transparent border-gray-300 rounded-sm pr-7 focus:outline-none focus:ring-0"
               style={{
-                paddingRight: '40px',
+                paddingRight: "40px",
               }}
             />
             <button className="flex items-center justify-center px-2 border-l hover:bg-gray-100">
@@ -140,7 +140,7 @@ export default function ResolvedDispute() {
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => search(e.target.value, 'date')}
+              onChange={(e) => search(e.target.value, "date")}
               className="px-4 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Select date"
             />
@@ -155,10 +155,10 @@ export default function ResolvedDispute() {
           <button
             className="bg-[#002333] hover:bg-[#003344] text-white text-sm font-medium transition-colors whitespace-nowrap"
             style={{
-              minWidth: '122px',
-              height: '32px',
-              borderRadius: '25px',
-              padding: '5px 16px 5px 16px',
+              minWidth: "122px",
+              height: "32px",
+              borderRadius: "25px",
+              padding: "5px 16px 5px 16px",
             }}
           >
             Export Report

@@ -1,10 +1,13 @@
-"use client"
+"use client";
 
-import { Search, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import type { ProfileStepProps } from "@/app/types/freelancer-profile"
+import { Search, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { ProfileStepProps } from "@/app/types/freelancer-profile";
 
-export default function UserAddWorkExperience({ nextStep, prevStep }: ProfileStepProps) {
+export default function UserAddWorkExperience({
+  nextStep,
+  prevStep,
+}: ProfileStepProps) {
   return (
     <main className="flex flex-col items-center px-4 py-10 w-full">
       <div className="w-full max-w-xl space-y-8 bg-white p-8 rounded-lg shadow-md">
@@ -14,8 +17,8 @@ export default function UserAddWorkExperience({ nextStep, prevStep }: ProfileSte
             Now, let's tell the world what you have been about.
           </h1>
           <p className="text-[12px] font-normal leading-none text-[#19213D]">
-            It’s the very first thing clients see, so make it count. Stand out by describing your expertise in your own
-            words.
+            It’s the very first thing clients see, so make it count. Stand out
+            by describing your expertise in your own words.
           </p>
         </div>
         <div className="relative">
@@ -30,14 +33,21 @@ export default function UserAddWorkExperience({ nextStep, prevStep }: ProfileSte
           />
         </div>
         <div className="flex justify-between mt-8 pt-6 border-t">
-          <Button onClick={prevStep} variant="ghost" className="gap-1 rounded-full">
+          <Button
+            onClick={prevStep}
+            variant="ghost"
+            className="gap-1 rounded-full"
+          >
             <ArrowLeft size={18} /> Back
           </Button>
-          <Button onClick={nextStep} className="bg-[#149A9B] text-white rounded-full md:min-w-36">
+          <Button
+            onClick={nextStep}
+            className="bg-[#149A9B] text-white rounded-full md:min-w-36"
+          >
             Add Work Experience
           </Button>
         </div>
       </div>
     </main>
-  )
+  );
 }

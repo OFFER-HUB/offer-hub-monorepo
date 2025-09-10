@@ -1,27 +1,26 @@
-
 export interface AdminUser {
-  id: string;                    
-  wallet_address: string;   
-  username: string;              
-  name?: string;                 
-  bio?: string;                  
-  email?: string;                
-  is_freelancer?: boolean;       
-  created_at?: string;           
+  id: string;
+  wallet_address: string;
+  username: string;
+  name?: string;
+  bio?: string;
+  email?: string;
+  is_freelancer?: boolean;
+  created_at?: string;
 }
 
 export interface UserFilters {
   page?: number;
-  limit?: number; 
-  search?: string;               
-  is_freelancer?: boolean;       
+  limit?: number;
+  search?: string;
+  is_freelancer?: boolean;
 }
 
 export interface PaginationInfo {
-  current_page: number;        
-  total_pages: number;         
-  total_users: number;         
-  per_page: number;            
+  current_page: number;
+  total_pages: number;
+  total_users: number;
+  per_page: number;
 }
 
 export interface AdminUsersResponse {
@@ -67,16 +66,18 @@ export const mapBackendUserToAdmin = (backendUser: BackendUser): AdminUser => ({
 });
 
 export const getUserRole = (user: AdminUser): string => {
-  if (user.is_freelancer === true) return 'Freelancer';
-  if (user.is_freelancer === false) return 'Client';
-  return 'Unknown';
+  if (user.is_freelancer === true) return "Freelancer";
+  if (user.is_freelancer === false) return "Client";
+  return "Unknown";
 };
 
 export const formatUserForDisplay = (user: AdminUser) => ({
   ...user,
   role: getUserRole(user),
   displayName: user.name || user.username,
-  joinDate: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown',
+  joinDate: user.created_at
+    ? new Date(user.created_at).toLocaleDateString()
+    : "Unknown",
 });
 
 // Error handling types
@@ -90,9 +91,9 @@ export type ApiResult<T> = T | ApiError;
 
 export const isApiError = (result: unknown): result is ApiError => {
   return (
-    typeof result === 'object' && 
-    result !== null && 
-    'success' in result && 
+    typeof result === "object" &&
+    result !== null &&
+    "success" in result &&
     result.success === false
   );
 };

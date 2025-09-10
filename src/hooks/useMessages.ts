@@ -1,12 +1,15 @@
-
-import { useState, useEffect, useCallback } from 'react';
-import type { Conversation, Message, CreateMessageDTO } from '@/types/messages.types';
+import { useState, useEffect, useCallback } from "react";
+import type {
+  Conversation,
+  Message,
+  CreateMessageDTO,
+} from "@/types/messages.types";
 import {
   getUserConversations,
   getConversationMessages,
   sendMessage,
   markAsRead,
-} from '@/services/api/messages.service';
+} from "@/services/api/messages.service";
 
 interface UseMessagesResult {
   conversations: Conversation[];
@@ -25,16 +28,20 @@ interface UseMessagesResult {
 
 export function useMessages(userId?: string): UseMessagesResult {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
+  const [activeConversation, setActiveConversation] =
+    useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [errorConversations, setErrorConversations] = useState<string | null>(null);
+  const [errorConversations, setErrorConversations] = useState<string | null>(
+    null,
+  );
   const [errorMessages, setErrorMessages] = useState<string | null>(null);
   const [errorSend, setErrorSend] = useState<string | null>(null);
-
 
   useEffect(() => {
     if (!userId) return;
@@ -48,17 +55,16 @@ export function useMessages(userId?: string): UseMessagesResult {
       .finally(() => setLoadingConversations(false));
   }, [userId]);
 
-
   useEffect(() => {
     if (!activeConversationId) {
       setActiveConversation(null);
       setMessages([]);
       return;
     }
-    const conv = conversations.find((c) => c.id === activeConversationId) || null;
+    const conv =
+      conversations.find((c) => c.id === activeConversationId) || null;
     setActiveConversation(conv);
   }, [activeConversationId, conversations]);
-
 
   useEffect(() => {
     if (!activeConversationId) return;
@@ -74,18 +80,26 @@ export function useMessages(userId?: string): UseMessagesResult {
           if (userId) {
             const readRes = await markAsRead(activeConversationId, userId);
             if (!readRes.success && readRes.error) {
-
               setErrorMessages((prev) => prev || readRes.error || null);
             } else {
-             
               setConversations((prev) =>
                 prev.map((c) =>
                   c.id === activeConversationId
-                    ? { ...c, unread_count: 0, last_message: c.last_message ? { ...c.last_message, is_read: true } : c.last_message }
-                    : c
-                )
+                    ? {
+                        ...c,
+                        unread_count: 0,
+                        last_message: c.last_message
+                          ? { ...c.last_message, is_read: true }
+                          : c.last_message,
+                      }
+                    : c,
+                ),
               );
-              setMessages((prev) => prev.map((m) => (m.sender_id !== userId ? { ...m, is_read: true } : m)));
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.sender_id !== userId ? { ...m, is_read: true } : m,
+                ),
+              );
             }
           }
         }
@@ -100,7 +114,6 @@ export function useMessages(userId?: string): UseMessagesResult {
   useEffect(() => {
     if (!userId) return;
     const interval = setInterval(() => {
-
       getUserConversations(userId).then((res) => {
         if (!res.error && res.data) setConversations(res.data);
       });
@@ -121,17 +134,16 @@ export function useMessages(userId?: string): UseMessagesResult {
       setErrorSend(null);
       let fileUrl, fileName, fileSize;
       if (file) {
-       
         fileUrl = URL.createObjectURL(file);
         fileName = file.name;
         fileSize = file.size;
       }
       const optimisticMsg: Message = {
-        id: 'optimistic-' + Date.now(),
+        id: "optimistic-" + Date.now(),
         conversation_id: activeConversationId,
         sender_id: userId,
         content,
-        message_type: file ? 'file' : 'text',
+        message_type: file ? "file" : "text",
         file_url: fileUrl,
         file_name: fileName,
         file_size: fileSize,
@@ -144,20 +156,19 @@ export function useMessages(userId?: string): UseMessagesResult {
           conversation_id: activeConversationId,
           sender_id: userId,
           content,
-          message_type: file ? 'file' : 'text',
+          message_type: file ? "file" : "text",
           file_url: fileUrl,
           file_name: fileName,
           file_size: fileSize,
         };
         const res = await sendMessage(dto);
         if (res.error || !res.data) {
-          setErrorSend(res.error || 'Failed to send message');
-          
+          setErrorSend(res.error || "Failed to send message");
+
           setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
         } else {
-          
           setMessages((prev) =>
-            prev.map((m) => (m.id === optimisticMsg.id ? res.data! : m))
+            prev.map((m) => (m.id === optimisticMsg.id ? res.data! : m)),
           );
         }
       } catch (e: any) {
@@ -167,7 +178,7 @@ export function useMessages(userId?: string): UseMessagesResult {
         setSendingMessage(false);
       }
     },
-    [activeConversationId, userId]
+    [activeConversationId, userId],
   );
 
   return {

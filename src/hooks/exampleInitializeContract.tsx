@@ -6,7 +6,7 @@ export const ExampleInitializeContract = () => {
   // Mock payload that matches InitializeContractPayload type
   const payload = {
     clientId: "client-123",
-    freelancerId: "freelancer-456", 
+    freelancerId: "freelancer-456",
     amount: 1500,
     description: "Develop a website for my company",
     milestones: [
@@ -19,7 +19,7 @@ export const ExampleInitializeContract = () => {
         status: "pending" as const,
       },
       {
-        id: "milestone-2", 
+        id: "milestone-2",
         title: "Website Development",
         description: "Build the website",
         amount: 1000,
@@ -28,7 +28,7 @@ export const ExampleInitializeContract = () => {
       },
       {
         id: "milestone-3",
-        title: "Testing and Deployment", 
+        title: "Testing and Deployment",
         description: "Test and deploy",
         amount: 300,
         dueDate: "2024-12-31",

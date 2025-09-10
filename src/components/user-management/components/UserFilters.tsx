@@ -45,10 +45,7 @@ export function UserFilters({
   return (
     <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4 bg-white p-3 rounded border-b">
       <div className="flex flex-col sm:flex-row w-full md:w-auto flex-wrap items-start sm:items-center gap-3 md:gap-4">
-        <Select
-          value={roleFilter}
-          onValueChange={setRoleFilter}
-        >
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
           <SelectTrigger className="w-full sm:w-[140px] rounded-sm h-10 border-[#B4B9C9]">
             <SelectValue placeholder="Select role" />
           </SelectTrigger>
@@ -65,10 +62,7 @@ export function UserFilters({
           </Button>
         </div>
 
-        <Select
-          value={statusFilter}
-          onValueChange={setStatusFilter}
-        >
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[140px] rounded-sm h-10 border-[#B4B9C9]">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>

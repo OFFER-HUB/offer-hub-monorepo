@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 // FileAttachmentButton: triggers native picker and returns selected files.
 // Kept reusable with variant/size props and accessible label.
 
-import { Button } from "@/components/ui/button"
-import { Paperclip } from 'lucide-react'
-import { useId, useRef } from "react"
+import { Button } from "@/components/ui/button";
+import { Paperclip } from "lucide-react";
+import { useId, useRef } from "react";
 
 export function FileAttachmentButton({
   onFilesSelected,
@@ -14,14 +14,14 @@ export function FileAttachmentButton({
   "aria-label": ariaLabel = "Attach files",
   accept,
 }: {
-  onFilesSelected?: (files: File[]) => void
-  variant?: React.ComponentProps<typeof Button>["variant"]
-  size?: React.ComponentProps<typeof Button>["size"]
-  "aria-label"?: string
-  accept?: string
+  onFilesSelected?: (files: File[]) => void;
+  variant?: React.ComponentProps<typeof Button>["variant"];
+  size?: React.ComponentProps<typeof Button>["size"];
+  "aria-label"?: string;
+  accept?: string;
 }) {
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const id = useId()
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const id = useId();
 
   return (
     <>
@@ -33,9 +33,9 @@ export function FileAttachmentButton({
         multiple
         accept={accept}
         onChange={(e) => {
-          const files = e.target.files ? Array.from(e.target.files) : []
-          onFilesSelected?.(files)
-          if (inputRef.current) inputRef.current.value = ""
+          const files = e.target.files ? Array.from(e.target.files) : [];
+          onFilesSelected?.(files);
+          if (inputRef.current) inputRef.current.value = "";
         }}
       />
       <Button
@@ -49,5 +49,5 @@ export function FileAttachmentButton({
         <Paperclip className="size-5" />
       </Button>
     </>
-  )
+  );
 }

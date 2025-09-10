@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { DisputeConversation } from '@/components/disputes/DisputeConversation';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useParams } from 'next/navigation';
+import { DisputeConversation } from "@/components/disputes/DisputeConversation";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 export default function DisputeConversationPage() {
   const router = useRouter();
@@ -29,11 +29,11 @@ export default function DisputeConversationPage() {
             <ChevronLeft className="h-5 w-5" />
             Back
           </Button>
-          
+
           <h1 className="absolute left-1/2 transform -translate-x-1/2 text-lg font-semibold text-gray-900">
             Mobile App UI/UX design
           </h1>
-          
+
           {/* Spacer for balance */}
           <div className="w-16"></div>
         </div>
@@ -43,7 +43,6 @@ export default function DisputeConversationPage() {
       <div className="p-4 md:p-6">
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden h-[calc(100vh-8rem)] md:h-[calc(100vh-9rem)]">
           {/* Conversation Header inside card */}
-          
 
           {/* Main Content */}
           <div className="h-[calc(100%-80px)]">

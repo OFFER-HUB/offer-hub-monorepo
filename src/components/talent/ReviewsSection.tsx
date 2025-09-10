@@ -15,9 +15,7 @@ export default function ReviewsSection({ reviews }: ReviewsSectionProps) {
       <Star
         key={i}
         className={`w-4 h-4 ${
-          i < rating
-            ? "fill-yellow-400 text-yellow-400"
-            : "text-gray-300"
+          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
         }`}
       />
     ));
@@ -25,10 +23,10 @@ export default function ReviewsSection({ reviews }: ReviewsSectionProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -40,22 +38,33 @@ export default function ReviewsSection({ reviews }: ReviewsSectionProps) {
           {reviews.length} reviews
         </Badge>
       </div>
-      
+
       <div className="space-y-6">
         {reviews.map((review) => (
-          <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0">
+          <div
+            key={review.id}
+            className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0"
+          >
             <div className="flex items-start gap-4">
               <Avatar className="w-12 h-12">
-                <AvatarImage src={review.clientAvatar} alt={review.clientName} />
+                <AvatarImage
+                  src={review.clientAvatar}
+                  alt={review.clientName}
+                />
                 <AvatarFallback className="text-sm font-semibold">
-                  {review.clientName.split(" ").map(n => n[0]).join("")}
+                  {review.clientName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{review.clientName}</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {review.clientName}
+                    </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         {renderStars(review.rating)}
@@ -71,21 +80,19 @@ export default function ReviewsSection({ reviews }: ReviewsSectionProps) {
                     ${review.projectValue.toLocaleString()}
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-gray-800">
                     {review.projectTitle}
                   </h4>
-                  <p className="text-gray-700 leading-relaxed">
-                    {review.text}
-                  </p>
+                  <p className="text-gray-700 leading-relaxed">{review.text}</p>
                 </div>
               </div>
             </div>
           </div>
         ))}
       </div>
-      
+
       {/* Review Summary */}
       <div className="mt-6 pt-6 border-t border-gray-200">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -97,19 +104,25 @@ export default function ReviewsSection({ reviews }: ReviewsSectionProps) {
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              {(reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)}
+              {(
+                reviews.reduce((acc, review) => acc + review.rating, 0) /
+                reviews.length
+              ).toFixed(1)}
             </div>
             <div className="text-sm text-gray-600">Average Rating</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              {reviews.filter(r => r.rating === 5).length}
+              {reviews.filter((r) => r.rating === 5).length}
             </div>
             <div className="text-sm text-gray-600">5-Star Reviews</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              ${reviews.reduce((acc, review) => acc + review.projectValue, 0).toLocaleString()}
+              $
+              {reviews
+                .reduce((acc, review) => acc + review.projectValue, 0)
+                .toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Total Project Value</div>
           </div>

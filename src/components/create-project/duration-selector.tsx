@@ -1,6 +1,12 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 interface DurationSelectorProps {
@@ -18,7 +24,11 @@ const durationOptions = [
   { value: "6-months-plus", label: "6+ months" },
 ];
 
-export function DurationSelector({ duration, onDurationChange, label = "Project Duration" }: DurationSelectorProps) {
+export function DurationSelector({
+  duration,
+  onDurationChange,
+  label = "Project Duration",
+}: DurationSelectorProps) {
   return (
     <div className="space-y-2">
       <Label htmlFor="duration" className="text-sm font-medium text-gray-700">
@@ -38,4 +48,4 @@ export function DurationSelector({ duration, onDurationChange, label = "Project 
       </Select>
     </div>
   );
-} 
+}

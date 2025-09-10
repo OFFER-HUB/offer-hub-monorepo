@@ -14,7 +14,7 @@ router.post(
   "/",
   verifyToken,
   authorizeRoles("client", "admin"),
-  createProjectHandler
+  createProjectHandler,
 );
 
 router.get("/", getAllProjectsHandler);
@@ -25,14 +25,14 @@ router.patch(
   "/:id",
   verifyToken,
   authorizeRoles("client", "admin"),
-  updateProjectHandler
+  updateProjectHandler,
 );
 
 router.delete(
   "/:id",
   verifyToken,
   authorizeRoles("client", "admin"),
-  deleteProjectHandler
+  deleteProjectHandler,
 );
 
 export default router;

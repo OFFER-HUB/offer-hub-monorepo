@@ -24,4 +24,4 @@ export default function CreateProjectStep3() {
       <TimelineConfigurationForm onNext={handleNext} onBack={handleBack} />
     </CreateProjectLayout>
   );
-} 
+}

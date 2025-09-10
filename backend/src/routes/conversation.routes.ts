@@ -9,13 +9,13 @@ router.post("/", verifyToken, ConversationController.createConversation);
 router.get(
   "/user/:userId",
   verifyToken,
-  ConversationController.getConversationsByUserId
+  ConversationController.getConversationsByUserId,
 );
 
 router.get(
   "/:conversationId",
   verifyToken,
-  ConversationController.getConversationById
+  ConversationController.getConversationById,
 );
 
 export default router;

@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from '@/components/ui/button';
-import { X, Star } from 'lucide-react';
-import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { X, Star } from "lucide-react";
+import React, { useState } from "react";
 
 interface Filters {
   categories: string[];
@@ -30,63 +30,61 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
 
   // Static data for filters
   const categories = [
-    'Design',
-    'Development', 
-    'Marketing',
-    'Writing',
-    'Consulting',
-    'Photography'
+    "Design",
+    "Development",
+    "Marketing",
+    "Writing",
+    "Consulting",
+    "Photography",
   ];
 
   const skills = [
-    'UI/UX',
-    'Figma',
-    'Adobe XD',
-    'Sketch',
-    'React',
-    'Vue',
-    'Angular',
-    'Node.js',
-    'Python',
-    'SEO',
-    'Content Writing',
-    'Social Media'
+    "UI/UX",
+    "Figma",
+    "Adobe XD",
+    "Sketch",
+    "React",
+    "Vue",
+    "Angular",
+    "Node.js",
+    "Python",
+    "SEO",
+    "Content Writing",
+    "Social Media",
   ];
 
   const locations = [
-    'United States',
-    'Canada',
-    'United Kingdom',
-    'Australia',
-    'Germany',
-    'France',
-    'Netherlands',
-    'New Zealand',
-    'Singapore',
-    'Remote'
+    "United States",
+    "Canada",
+    "United Kingdom",
+    "Australia",
+    "Germany",
+    "France",
+    "Netherlands",
+    "New Zealand",
+    "Singapore",
+    "Remote",
   ];
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
   };
 
   const toggleSkill = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill],
     );
   };
 
   const toggleLocation = (location: string) => {
-    setSelectedLocations(prev => 
-      prev.includes(location) 
-        ? prev.filter(l => l !== location)
-        : [...prev, location]
+    setSelectedLocations((prev) =>
+      prev.includes(location)
+        ? prev.filter((l) => l !== location)
+        : [...prev, location],
     );
   };
 
@@ -102,12 +100,13 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
     setPriceRange({ min: 0, max: 1000 });
   };
 
-  const hasActiveFilters = selectedCategories.length > 0 || 
-                          selectedSkills.length > 0 || 
-                          selectedLocations.length > 0 || 
-                          selectedRating !== null ||
-                          priceRange.min > 0 || 
-                          priceRange.max < 1000;
+  const hasActiveFilters =
+    selectedCategories.length > 0 ||
+    selectedSkills.length > 0 ||
+    selectedLocations.length > 0 ||
+    selectedRating !== null ||
+    priceRange.min > 0 ||
+    priceRange.max < 1000;
 
   const handleApply = () => {
     const filters = {
@@ -115,7 +114,7 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
       skills: selectedSkills,
       locations: selectedLocations,
       rating: selectedRating,
-      priceRange
+      priceRange,
     };
     onApply?.(filters);
     onClose();
@@ -141,7 +140,9 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
         <div className="p-6 space-y-8">
           {/* Categories */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Categories</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Categories
+            </h3>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
@@ -149,8 +150,8 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
                   onClick={() => toggleCategory(category)}
                   className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                     selectedCategories.includes(category)
-                      ? 'bg-teal-600 text-white border-teal-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-teal-300'
+                      ? "bg-teal-600 text-white border-teal-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-teal-300"
                   }`}
                 >
                   {category}
@@ -169,8 +170,8 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
                   onClick={() => toggleSkill(skill)}
                   className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                     selectedSkills.includes(skill)
-                      ? 'bg-purple-600 text-white border-purple-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-purple-300'
+                      ? "bg-purple-600 text-white border-purple-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-purple-300"
                   }`}
                 >
                   {skill}
@@ -189,8 +190,8 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
                   onClick={() => toggleLocation(location)}
                   className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                     selectedLocations.includes(location)
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
                   }`}
                 >
                   {location}
@@ -201,7 +202,9 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
 
           {/* Rating */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Minimum Rating</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Minimum Rating
+            </h3>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <button
@@ -209,11 +212,13 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
                   onClick={() => selectRating(rating)}
                   className={`flex items-center gap-1 px-4 py-2 rounded-lg border transition-colors ${
                     selectedRating === rating
-                      ? 'bg-yellow-500 text-white border-yellow-500'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-yellow-300'
+                      ? "bg-yellow-500 text-white border-yellow-500"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-yellow-300"
                   }`}
                 >
-                  <Star className={`w-4 h-4 ${selectedRating === rating ? 'fill-current' : ''}`} />
+                  <Star
+                    className={`w-4 h-4 ${selectedRating === rating ? "fill-current" : ""}`}
+                  />
                   <span>{rating}+</span>
                 </button>
               ))}
@@ -222,25 +227,41 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
 
           {/* Price Range */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Price Range ($/hour)</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Price Range ($/hour)
+            </h3>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Min
+                  </label>
                   <input
                     type="number"
                     value={priceRange.min}
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, min: parseInt(e.target.value) || 0 }))}
+                    onChange={(e) =>
+                      setPriceRange((prev) => ({
+                        ...prev,
+                        min: parseInt(e.target.value) || 0,
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="0"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Max
+                  </label>
                   <input
                     type="number"
                     value={priceRange.max}
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, max: parseInt(e.target.value) || 1000 }))}
+                    onChange={(e) =>
+                      setPriceRange((prev) => ({
+                        ...prev,
+                        max: parseInt(e.target.value) || 1000,
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="1000"
                   />
@@ -266,15 +287,15 @@ const Filter: React.FC<FilterProps> = ({ isOpen, onClose, onApply }) => {
               </Button>
             )}
             <span className="text-sm text-gray-600">
-              {selectedCategories.length + selectedSkills.length + selectedLocations.length + (selectedRating ? 1 : 0)} filters applied
+              {selectedCategories.length +
+                selectedSkills.length +
+                selectedLocations.length +
+                (selectedRating ? 1 : 0)}{" "}
+              filters applied
             </span>
           </div>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="px-6"
-            >
+            <Button variant="outline" onClick={onClose} className="px-6">
               Cancel
             </Button>
             <Button

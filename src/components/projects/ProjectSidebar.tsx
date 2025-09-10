@@ -1,6 +1,14 @@
-"use client"
+"use client";
 
-import { LayoutDashboard, PlusCircle, Search, FolderCog, Wallet, MessageSquare, LogOut } from "lucide-react"
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Search,
+  FolderCog,
+  Wallet,
+  MessageSquare,
+  LogOut,
+} from "lucide-react";
 
 const items = [
   { icon: LayoutDashboard, label: "Dashboard", active: true },
@@ -9,7 +17,7 @@ const items = [
   { icon: FolderCog, label: "Manage project" },
   { icon: Wallet, label: "Wallet" },
   { icon: MessageSquare, label: "Messages" },
-]
+];
 
 export function Sidebar() {
   return (
@@ -20,7 +28,9 @@ export function Sidebar() {
             <button
               className={[
                 "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm",
-                active ? "bg-teal-50 text-teal-700" : "text-slate-600 hover:bg-slate-50",
+                active
+                  ? "bg-teal-50 text-teal-700"
+                  : "text-slate-600 hover:bg-slate-50",
               ].join(" ")}
               aria-current={active ? "page" : undefined}
             >
@@ -38,5 +48,5 @@ export function Sidebar() {
         </button>
       </div>
     </nav>
-  )
+  );
 }

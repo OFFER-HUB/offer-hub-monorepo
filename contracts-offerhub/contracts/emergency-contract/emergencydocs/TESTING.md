@@ -4,10 +4,10 @@ Example tests tailored to `emergency-contract/src/emergency.rs` using Soroban te
 
 ## Unit tests
 
-* **Initialization**: `initialize(env, admin)` sets `emergency_admin` and defaults.
-* **Pause/unpause**: admin can pause/unpause; non-admins revert with `UnauthorizedAccess`.
-* **Circuit**: calling `trigger_circuit_breaker` increments `suspicious_activity_count` and sets pause when threshold reached.
-* **Recovery**: `create_recovery_request` creates a request; `approve_recovery_request` records approvals; `emergency_fund_withdrawal` reduces `emergency_fund`.
+- **Initialization**: `initialize(env, admin)` sets `emergency_admin` and defaults.
+- **Pause/unpause**: admin can pause/unpause; non-admins revert with `UnauthorizedAccess`.
+- **Circuit**: calling `trigger_circuit_breaker` increments `suspicious_activity_count` and sets pause when threshold reached.
+- **Recovery**: `create_recovery_request` creates a request; `approve_recovery_request` records approvals; `emergency_fund_withdrawal` reduces `emergency_fund`.
 
 ## Example (Rust / Soroban test snippet)
 
@@ -29,14 +29,14 @@ fn test_emergency_pause_and_recovery() {
 
 ## Negative tests
 
-* Unauthorized `emergency_pause` calls revert with `UnauthorizedAccess`.
-* `emergency_fund_withdrawal` with amount > `emergency_fund` reverts with `InsufficientEmergencyFunds`.
-* Approving non-existent `request_id` reverts with `RecoveryRequestNotFound`.
+- Unauthorized `emergency_pause` calls revert with `UnauthorizedAccess`.
+- `emergency_fund_withdrawal` with amount > `emergency_fund` reverts with `InsufficientEmergencyFunds`.
+- Approving non-existent `request_id` reverts with `RecoveryRequestNotFound`.
 
 ## Property tests
 
-* approvals are unique
-* total recovered <= tracked `emergency_fund` cap
+- approvals are unique
+- total recovered <= tracked `emergency_fund` cap
 
 ---
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ExampleBioCard = () => {
   return (
@@ -31,12 +31,13 @@ const ExampleBioCard = () => {
           </div>
         </div>
         <p className="text-sm text-gray-600">
-          I'm a developer experienced in building websites for small and medium-sized businesses, whether you're trying
-          to win work, list your services, or create a new online store, I can help.
+          I'm a developer experienced in building websites for small and
+          medium-sized businesses, whether you're trying to win work, list your
+          services, or create a new online store, I can help.
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ExampleBioCard
+export default ExampleBioCard;

@@ -1,9 +1,19 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Code, Smartphone, PenTool, FileText, BarChart, Video, Database, Server, ChevronRight } from "lucide-react"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Code,
+  Smartphone,
+  PenTool,
+  FileText,
+  BarChart,
+  Video,
+  Database,
+  Server,
+  ChevronRight,
+} from "lucide-react";
 
 export default function TalentCategories() {
   const categories = [
@@ -33,7 +43,12 @@ export default function TalentCategories() {
       name: "Writing & Translation",
       icon: <FileText className="h-6 w-6 text-[#15949C]" />,
       count: 290,
-      skills: ["Content Writing", "Copywriting", "Translation", "Technical Writing"],
+      skills: [
+        "Content Writing",
+        "Copywriting",
+        "Translation",
+        "Technical Writing",
+      ],
     },
     {
       id: "marketing",
@@ -63,7 +78,7 @@ export default function TalentCategories() {
       count: 170,
       skills: ["AWS", "Docker", "Kubernetes", "CI/CD", "Azure"],
     },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -83,7 +98,9 @@ export default function TalentCategories() {
                 </div>
                 <div>
                   <h3 className="font-bold text-[#002333]">{category.name}</h3>
-                  <p className="text-sm text-[#002333]/70">{category.count} freelancers</p>
+                  <p className="text-sm text-[#002333]/70">
+                    {category.count} freelancers
+                  </p>
                 </div>
               </div>
 
@@ -93,7 +110,11 @@ export default function TalentCategories() {
                     {skill}
                   </Badge>
                 ))}
-                {category.skills.length > 3 && <Badge variant="outline">+{category.skills.length - 3} more</Badge>}
+                {category.skills.length > 3 && (
+                  <Badge variant="outline">
+                    +{category.skills.length - 3} more
+                  </Badge>
+                )}
               </div>
 
               <div className="flex items-center text-[#15949C] text-sm font-medium">
@@ -105,6 +126,5 @@ export default function TalentCategories() {
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
-

@@ -38,11 +38,13 @@ The resulting WASM file will be in `target/wasm32-unknown-unknown/release/nft_co
 ## Deployment on Testnet
 
 1. Install Soroban CLI:
+
 ```bash
 cargo install --locked soroban-cli
 ```
 
 2. Configure the connection to testnet:
+
 ```bash
 soroban config network add --global testnet \
   --rpc-url https://soroban-testnet.stellar.org:443/soroban/rpc \
@@ -50,17 +52,20 @@ soroban config network add --global testnet \
 ```
 
 3. Create an account (if you don't have one):
+
 ```bash
 soroban config identity generate --global admin
 soroban config identity address admin
 ```
 
 4. Fund the account from friendbot:
+
 ```
 curl "https://friendbot.stellar.org/?addr=$(soroban config identity address admin)"
 ```
 
 5. Deploy the contract:
+
 ```bash
 soroban contract deploy \
   --wasm target/wasm32-unknown-unknown/release/nft_contract.wasm \
@@ -158,6 +163,7 @@ cargo test -p nft-contract
 ```
 
 The test suite covers:
+
 - Contract initialization
 - NFT minting
 - Transfer operations

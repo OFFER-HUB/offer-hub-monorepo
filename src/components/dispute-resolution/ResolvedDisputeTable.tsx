@@ -1,6 +1,13 @@
 // components/dispute-resolution/ResolvedDisputeTable.tsx
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -39,7 +46,12 @@ export default function ResolvedDisputeTable() {
               <TableCell>{item.name}</TableCell>
               <TableCell className="flex items-center gap-2 text-primary font-medium">
                 {item.ticketId}
-                <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => navigator.clipboard.writeText(item.ticketId)}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5 w-5"
+                  onClick={() => navigator.clipboard.writeText(item.ticketId)}
+                >
                   <Copy className="w-4 h-4" />
                 </Button>
               </TableCell>

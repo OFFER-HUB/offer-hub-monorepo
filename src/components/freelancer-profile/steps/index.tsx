@@ -1,27 +1,30 @@
-"use client"
+"use client";
 
-import type { UserProfileData, ProfileStepProps } from "@/app/types/freelancer-profile"
-import Header from "../header"
+import type {
+  UserProfileData,
+  ProfileStepProps,
+} from "@/app/types/freelancer-profile";
+import Header from "../header";
 
 // Import all step components
-import UserChooseRole from "./user-choose-role"
-import UserSelectJobType from "./user-select-job-type"
-import UserSelectInterestedCategory from "./user-select-interested-category"
-import UserAddWorkExperience from "./user-add-work-experience"
-import UserAddWorkExperienceActiveState from "./user-add-work-experience-active-state"
-import UserAddEducationActiveState from "./user-add-education-active-state"
-import UserAddLanguagesActiveState from "./user-add-languages-active-state"
-import UserAddBioActiveState from "./user-add-bio-active-state"
-import UserSetHourlyRateActiveState from "./user-set-hourly-rate-active-state"
-import UserSetAccountProfileActiveState from "./user-set-account-profile-active-state"
-import UserProfilePreviewActiveState from "./user-profile-preview-active-state"
+import UserChooseRole from "./user-choose-role";
+import UserSelectJobType from "./user-select-job-type";
+import UserSelectInterestedCategory from "./user-select-interested-category";
+import UserAddWorkExperience from "./user-add-work-experience";
+import UserAddWorkExperienceActiveState from "./user-add-work-experience-active-state";
+import UserAddEducationActiveState from "./user-add-education-active-state";
+import UserAddLanguagesActiveState from "./user-add-languages-active-state";
+import UserAddBioActiveState from "./user-add-bio-active-state";
+import UserSetHourlyRateActiveState from "./user-set-hourly-rate-active-state";
+import UserSetAccountProfileActiveState from "./user-set-account-profile-active-state";
+import UserProfilePreviewActiveState from "./user-profile-preview-active-state";
 
 interface StepsControllerProps {
-  currentStep: number
-  userData: UserProfileData
-  nextStep: () => void
-  prevStep: () => void
-  updateUserData: (data: Partial<UserProfileData>) => void
+  currentStep: number;
+  userData: UserProfileData;
+  nextStep: () => void;
+  prevStep: () => void;
+  updateUserData: (data: Partial<UserProfileData>) => void;
 }
 
 const steps = [
@@ -36,7 +39,7 @@ const steps = [
   UserSetHourlyRateActiveState,
   UserSetAccountProfileActiveState,
   UserProfilePreviewActiveState,
-]
+];
 
 export default function StepsController({
   currentStep,
@@ -45,14 +48,14 @@ export default function StepsController({
   prevStep,
   updateUserData,
 }: StepsControllerProps) {
-  const CurrentStepComponent = steps[currentStep]
+  const CurrentStepComponent = steps[currentStep];
 
   const props: ProfileStepProps = {
     userData,
     updateUserData,
     nextStep,
     prevStep,
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -70,5 +73,5 @@ export default function StepsController({
         </div>
       </main>
     </div>
-  )
+  );
 }

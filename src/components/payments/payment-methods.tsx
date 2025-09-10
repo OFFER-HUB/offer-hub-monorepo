@@ -457,7 +457,7 @@ export default function PaymentMethods() {
                                 year: "numeric",
                                 month: "short",
                                 day: "numeric",
-                              }
+                              },
                             )}
                           </td>
                           <td className="py-4 px-4 text-[#002333]">

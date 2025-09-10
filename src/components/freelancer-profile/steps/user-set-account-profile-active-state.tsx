@@ -1,20 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { format } from "date-fns"
-import { PlusCircle, ArrowLeft } from "lucide-react"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
-import type { ProfileStepProps } from "@/app/types/freelancer-profile"
-import Footer from "../footer"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format } from "date-fns";
+import { PlusCircle, ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import type { ProfileStepProps } from "@/app/types/freelancer-profile";
+import Footer from "../footer";
 
 export default function UserSetAccountProfileActiveState({
   userData,
@@ -22,32 +32,43 @@ export default function UserSetAccountProfileActiveState({
   nextStep,
   prevStep,
 }: ProfileStepProps) {
-  const [profileImage, setProfileImage] = useState<string | null>(userData.profilePicture || null)
+  const [profileImage, setProfileImage] = useState<string | null>(
+    userData.profilePicture || null,
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateUserData({ profileDetails: { ...userData.profileDetails, [e.target.name]: e.target.value } })
-  }
+    updateUserData({
+      profileDetails: {
+        ...userData.profileDetails,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
 
   const handleSelectChange = (name: string, value: string) => {
-    updateUserData({ profileDetails: { ...userData.profileDetails, [name]: value } })
-  }
+    updateUserData({
+      profileDetails: { ...userData.profileDetails, [name]: value },
+    });
+  };
 
   const handleDateChange = (date?: Date) => {
-    updateUserData({ profileDetails: { ...userData.profileDetails, dateOfBirth: date } })
-  }
+    updateUserData({
+      profileDetails: { ...userData.profileDetails, dateOfBirth: date },
+    });
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result as string
-        setProfileImage(result)
-        updateUserData({ profilePicture: result })
-      }
-      reader.readAsDataURL(file)
+        const result = reader.result as string;
+        setProfileImage(result);
+        updateUserData({ profilePicture: result });
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 pb-28">
@@ -57,7 +78,8 @@ export default function UserSetAccountProfileActiveState({
           A few last details, then you can check and publish your profile.
         </h1>
         <p className="text-muted-foreground max-w-2xl">
-          This information is for identity verification and will not be shown on your public profile.
+          This information is for identity verification and will not be shown on
+          your public profile.
         </p>
       </div>
 
@@ -101,7 +123,8 @@ export default function UserSetAccountProfileActiveState({
                 variant="outline"
                 className={cn(
                   "w-full text-left font-normal rounded-[16px]",
-                  !userData.profileDetails?.dateOfBirth && "text-muted-foreground",
+                  !userData.profileDetails?.dateOfBirth &&
+                    "text-muted-foreground",
                 )}
               >
                 {userData.profileDetails?.dateOfBirth
@@ -148,11 +171,21 @@ export default function UserSetAccountProfileActiveState({
         </div>
         <div className="col-span-1 md:col-span-2">
           <Label>APT/Suite (Optional)</Label>
-          <Input type="text" name="aptSuite" value={userData.profileDetails?.aptSuite} onChange={handleChange} />
+          <Input
+            type="text"
+            name="aptSuite"
+            value={userData.profileDetails?.aptSuite}
+            onChange={handleChange}
+          />
         </div>
         <div>
           <Label>City*</Label>
-          <Input type="text" name="city" value={userData.profileDetails?.city} onChange={handleChange} />
+          <Input
+            type="text"
+            name="city"
+            value={userData.profileDetails?.city}
+            onChange={handleChange}
+          />
         </div>
         <div>
           <Label>State/Province*</Label>
@@ -185,16 +218,23 @@ export default function UserSetAccountProfileActiveState({
       </form>
       <Footer className="px-4 mt-auto flex justify-between">
         <div>
-          <Button onClick={prevStep} variant="ghost" className="gap-1 rounded-full">
+          <Button
+            onClick={prevStep}
+            variant="ghost"
+            className="gap-1 rounded-full"
+          >
             <ArrowLeft size={18} /> Back
           </Button>
         </div>
         <div className="space-x-4">
-          <Button onClick={nextStep} className="gap-1 bg-[#149A9B] text-white rounded-full md:min-w-36">
+          <Button
+            onClick={nextStep}
+            className="gap-1 bg-[#149A9B] text-white rounded-full md:min-w-36"
+          >
             Preview Profile
           </Button>
         </div>
       </Footer>
     </div>
-  )
+  );
 }

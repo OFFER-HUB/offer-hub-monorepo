@@ -66,9 +66,11 @@ Public functions (exact names):
       soroban contract invoke --wasm <WASM> --id <CONTRACT_ID> -- --get_emergency_state
 
 Events / logs:
+
 - log_emergency_action(action_symbol, admin, timestamp) — used internally for PAUSE/CIRCUIT/etc.
 - The contract also emits logs for recovery requests (create/approve/execute) — scan logs for audit.
 
 Notes:
+
 - CLI invocation arguments after `--` map to function names and positional args.
 - Some commands require a signer (`--source-account` or equivalent) depending on your soroban-cli version.

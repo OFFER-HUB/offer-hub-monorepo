@@ -1,10 +1,10 @@
-import { MapPin, Clock, Briefcase, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import type { Freelancer } from "@/app/freelancer-search/page"
+import { MapPin, Clock, Briefcase, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import type { Freelancer } from "@/app/freelancer-search/page";
 
 interface FreelancerCardProps {
-  freelancer: Freelancer
+  freelancer: Freelancer;
 }
 
 export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
@@ -19,7 +19,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
     skills,
     projectsCompleted,
     responseTime,
-  } = freelancer
+  } = freelancer;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
@@ -29,7 +29,9 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
           <div className="relative h-24 w-24 mb-4">
             <div className="relative h-24 w-24 rounded-full overflow-hidden bg-gray-100 border-20 border-white">
               <div className="h-full w-full flex items-center justify-center bg-gray-200">
-                <span className="text-gray-500 text-xl font-semibold">{name.charAt(0)}</span>
+                <span className="text-gray-500 text-xl font-semibold">
+                  {name.charAt(0)}
+                </span>
               </div>
             </div>
             <div className="absolute bottom-0 right-0 h-6 w-6 bg-[#42A5A2] rounded-full transform translate-x-[-10px] translate-y-[-5px] border-2 border-white z-10" />
@@ -57,7 +59,9 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
             <span>{location}</span>
           </div>
 
-          <p className="text-xl font-semibold text-gray-800">${hourlyRate}/hr</p>
+          <p className="text-xl font-semibold text-gray-800">
+            ${hourlyRate}/hr
+          </p>
         </div>
 
         {/* Right Column - Description, Skills, Stats */}
@@ -66,8 +70,8 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
 
           <div className="flex flex-wrap gap-2 mb-8">
             {skills.map((skill) => (
-              <Badge 
-                key={skill} 
+              <Badge
+                key={skill}
                 className="bg-teal-100 text-black hover:bg-teal-200 border-none rounded-full px-3 py-1 text-sm font-normal"
               >
                 {skill}
@@ -80,7 +84,9 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
               <div className="flex items-center gap-14">
                 <div className="flex items-center text-gray-600">
                   <Briefcase className="h-5 w-5 mr-2 text-teal-500 flex-shrink-0" />
-                  <span className="text-sm">{projectsCompleted} Projects completed</span>
+                  <span className="text-sm">
+                    {projectsCompleted} Projects completed
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-600">
                   <Clock className="h-5 w-5 mr-2 text-teal-500 flex-shrink-0" />
@@ -105,6 +111,5 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

@@ -33,7 +33,7 @@ export default function MetricCard({
           <div
             className={cn(
               "flex h-12 w-12 items-center justify-center rounded-full",
-              iconColor
+              iconColor,
             )}
           >
             {icon}
@@ -49,7 +49,7 @@ export default function MetricCard({
           <span
             className={cn(
               "ml-1 text-sm font-medium",
-              isPositive ? "text-green-500" : "text-red-500"
+              isPositive ? "text-green-500" : "text-red-500",
             )}
           >
             {Math.abs(change)}% {isPositive ? "Up" : "Down"}

@@ -10,16 +10,16 @@ import Link from "next/link";
 import TalentLayout from "@/components/talent/TalentLayout";
 
 export default function DemoFreelancerProfilePage() {
-  const [selectedFreelancer, setSelectedFreelancer] = useState<string | null>(null);
+  const [selectedFreelancer, setSelectedFreelancer] = useState<string | null>(
+    null,
+  );
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
         className={`w-4 h-4 ${
-          i < rating
-            ? "fill-yellow-400 text-yellow-400"
-            : "text-gray-300"
+          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
         }`}
       />
     ));
@@ -33,26 +33,36 @@ export default function DemoFreelancerProfilePage() {
             Freelancer Profile Demo
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Explore the freelancer profile and portfolio pages. Click on any freelancer to view their detailed profile.
+            Explore the freelancer profile and portfolio pages. Click on any
+            freelancer to view their detailed profile.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockFreelancerProfiles.map((freelancer) => (
-            <Card key={freelancer.id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={freelancer.id}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
                   <Avatar className="w-20 h-20">
-                    <AvatarImage src={freelancer.avatar} alt={freelancer.name} />
+                    <AvatarImage
+                      src={freelancer.avatar}
+                      alt={freelancer.name}
+                    />
                     <AvatarFallback className="text-lg font-semibold">
-                      {freelancer.name.split(" ").map(n => n[0]).join("")}
+                      {freelancer.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <CardTitle className="text-xl">{freelancer.name}</CardTitle>
                 <p className="text-gray-600">{freelancer.title}</p>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-center gap-1">
                   {renderStars(freelancer.rating)}
@@ -60,18 +70,18 @@ export default function DemoFreelancerProfilePage() {
                     {freelancer.rating} ({freelancer.reviewCount} reviews)
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
                     {freelancer.location}
                   </div>
                   <div className="flex items-center gap-1">
-                    <DollarSign className="w-4 h-4" />
-                    ${freelancer.hourlyRate}/hr
+                    <DollarSign className="w-4 h-4" />${freelancer.hourlyRate}
+                    /hr
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2 justify-center">
                   <Link href={`/talent/${freelancer.id}/profile`}>
                     <Button variant="outline" size="sm">
@@ -79,17 +89,13 @@ export default function DemoFreelancerProfilePage() {
                     </Button>
                   </Link>
                   <Link href={`/talent/${freelancer.id}/portfolio`}>
-                    <Button size="sm">
-                      View Portfolio
-                    </Button>
+                    <Button size="sm">View Portfolio</Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
-       
       </div>
     </TalentLayout>
   );

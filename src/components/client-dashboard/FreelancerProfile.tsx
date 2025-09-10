@@ -53,8 +53,12 @@ const FREELANCER_ID = "default-freelancer-id";
 export default function FreelancerProfile() {
   // Fetch real reviews data
   const { useUserReviews, computeAverage } = useReviewsApi();
-  const { data: reviews = [], isLoading: reviewsLoading, error: reviewsError } = useUserReviews(FREELANCER_ID);
-  
+  const {
+    data: reviews = [],
+    isLoading: reviewsLoading,
+    error: reviewsError,
+  } = useUserReviews(FREELANCER_ID);
+
   const averageRating = computeAverage(reviews);
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -63,7 +67,7 @@ export default function FreelancerProfile() {
 
   const visibleItems = portfolioItems.slice(
     currentPage * itemsPerPage,
-    currentPage * itemsPerPage + itemsPerPage
+    currentPage * itemsPerPage + itemsPerPage,
   );
 
   const handleNext = () =>
@@ -76,7 +80,7 @@ export default function FreelancerProfile() {
 
   const visibleReviews = reviews.slice(
     currentReviewPage * reviewsPerPage,
-    currentReviewPage * reviewsPerPage + reviewsPerPage
+    currentReviewPage * reviewsPerPage + reviewsPerPage,
   );
 
   const handleReviewsNext = () =>
@@ -202,8 +206,12 @@ export default function FreelancerProfile() {
           {reviews.length > 0 && (
             <div className="flex items-center space-x-2">
               <StarRating rating={averageRating} size="sm" />
-              <span className="text-sm font-medium text-gray-700">{averageRating}</span>
-              <span className="text-sm text-gray-500">({reviews.length} review{reviews.length !== 1 ? 's' : ''})</span>
+              <span className="text-sm font-medium text-gray-700">
+                {averageRating}
+              </span>
+              <span className="text-sm text-gray-500">
+                ({reviews.length} review{reviews.length !== 1 ? "s" : ""})
+              </span>
             </div>
           )}
         </div>
@@ -212,7 +220,10 @@ export default function FreelancerProfile() {
           {reviewsLoading ? (
             <div className="space-y-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="border-b border-gray-200 pb-4 animate-pulse">
+                <div
+                  key={i}
+                  className="border-b border-gray-200 pb-4 animate-pulse"
+                >
                   <div className="flex justify-between items-start mb-1">
                     <div>
                       <div className="h-5 bg-gray-300 rounded w-32 mb-2"></div>
@@ -232,22 +243,26 @@ export default function FreelancerProfile() {
           ) : reviews.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500 text-lg">No reviews yet</p>
-              <p className="text-gray-400 text-sm mt-1">Reviews from completed contracts will appear here</p>
+              <p className="text-gray-400 text-sm mt-1">
+                Reviews from completed contracts will appear here
+              </p>
             </div>
           ) : (
             visibleReviews.map((review) => {
               const reviewDate = new Date(review.created_at);
-              const formattedDate = reviewDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+              const formattedDate = reviewDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               });
 
               return (
                 <div key={review.id} className="border-b border-gray-200 pb-4">
                   <div className="flex justify-between items-start mb-1">
                     <div>
-                      <p className="font-semibold text-gray-900">Client Review</p>
+                      <p className="font-semibold text-gray-900">
+                        Client Review
+                      </p>
                       <p className="text-sm text-gray-500">{formattedDate}</p>
                     </div>
                     <StarRating rating={review.rating} size="sm" />
@@ -257,7 +272,9 @@ export default function FreelancerProfile() {
                       "{review.comment}"
                     </p>
                   )}
-                  <p className="text-xs text-gray-400 mt-2">Contract: {review.contract_id.slice(-8)}</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Contract: {review.contract_id.slice(-8)}
+                  </p>
                 </div>
               );
             })

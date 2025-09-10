@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { DisputeMessageDisplay } from './DisputeMessageDisplay';
-import { DisputeMessageInput } from './DisputeMessageInput';
-import { getMessagesByDisputeId, addMessage, DisputeMessage } from '@/lib/mockData/dispute-messages-mock';
+import { useState, useEffect } from "react";
+import { DisputeMessageDisplay } from "./DisputeMessageDisplay";
+import { DisputeMessageInput } from "./DisputeMessageInput";
+import {
+  getMessagesByDisputeId,
+  addMessage,
+  DisputeMessage,
+} from "@/lib/mockData/dispute-messages-mock";
 
 interface DisputeConversationProps {
   disputeId: string;
@@ -18,7 +22,7 @@ export function DisputeConversation({ disputeId }: DisputeConversationProps) {
     const loadMessages = async () => {
       setIsLoading(true);
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const disputeMessages = getMessagesByDisputeId(disputeId);
       setMessages(disputeMessages);
       setIsLoading(false);
@@ -31,11 +35,11 @@ export function DisputeConversation({ disputeId }: DisputeConversationProps) {
     if (!content.trim() && !file) return;
 
     // Add message optimistically
-    const newMessage = addMessage(disputeId, content, 'current-user');
-    setMessages(prev => [...prev, newMessage]);
+    const newMessage = addMessage(disputeId, content, "current-user");
+    setMessages((prev) => [...prev, newMessage]);
 
     // In a real app, you would send this to the backend
-    console.log('Sending message:', { content, file, disputeId });
+    console.log("Sending message:", { content, file, disputeId });
   };
 
   if (isLoading) {

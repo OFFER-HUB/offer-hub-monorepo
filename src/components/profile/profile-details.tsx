@@ -1,13 +1,16 @@
 "use client";
 
-import { User } from '@/types/user.types';
+import { User } from "@/types/user.types";
 
 interface ProfileDetailsProps {
   user: User | null;
   isLoading?: boolean;
 }
 
-export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps) {
+export default function ProfileDetails({
+  user,
+  isLoading,
+}: ProfileDetailsProps) {
   if (isLoading) {
     return (
       <div className="w-full">
@@ -64,7 +67,7 @@ export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps)
             <input
               id="fullName"
               type="text"
-              value={user?.name || 'Not provided'}
+              value={user?.name || "Not provided"}
               readOnly
               className="w-full h-9 px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none"
             />
@@ -80,7 +83,7 @@ export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps)
             <input
               id="email"
               type="email"
-              value={user?.email || 'Not provided'}
+              value={user?.email || "Not provided"}
               readOnly
               className="w-full h-9 px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none"
             />
@@ -98,7 +101,7 @@ export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps)
             <input
               id="username"
               type="text"
-              value={user?.username || 'Not provided'}
+              value={user?.username || "Not provided"}
               readOnly
               className="w-full h-9 px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none"
             />
@@ -114,7 +117,7 @@ export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps)
             <input
               id="walletAddress"
               type="text"
-              value={user?.wallet_address || 'Not provided'}
+              value={user?.wallet_address || "Not provided"}
               readOnly
               className="w-full h-9 px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none font-mono text-xs"
             />
@@ -132,7 +135,7 @@ export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps)
             id="bio"
             readOnly
             className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-800 resize-none min-h-[60px] focus:outline-none"
-            value={user?.bio || 'No bio provided'}
+            value={user?.bio || "No bio provided"}
           ></textarea>
         </div>
 
@@ -141,12 +144,14 @@ export default function ProfileDetails({ user, isLoading }: ProfileDetailsProps)
             User Type
           </label>
           <div className="flex">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-normal border ${
-              user?.is_freelancer 
-                ? 'bg-blue-100 text-blue-800 border-blue-200' 
-                : 'bg-green-100 text-green-800 border-green-200'
-            }`}>
-              {user?.is_freelancer ? 'Freelancer' : 'Client'}
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-normal border ${
+                user?.is_freelancer
+                  ? "bg-blue-100 text-blue-800 border-blue-200"
+                  : "bg-green-100 text-green-800 border-green-200"
+              }`}
+            >
+              {user?.is_freelancer ? "Freelancer" : "Client"}
             </span>
           </div>
         </div>

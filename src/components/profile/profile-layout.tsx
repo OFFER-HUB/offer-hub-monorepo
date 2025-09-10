@@ -8,7 +8,7 @@ import ProfileHeader from "./profile-header";
 import ProfileSidebar from "./profile-sidebar";
 import ProfileStats from "./profile-stats";
 import { useProfileApi } from "@/hooks/api-connections/use-profile-api";
-import { User } from '@/types/user.types';
+import { User } from "@/types/user.types";
 
 export default function ProfileLayout() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -37,9 +37,11 @@ export default function ProfileLayout() {
         <Header />
         <main className="max-w-6xl mt-10 mx-auto px-4 py-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h2 className="text-red-800 font-semibold mb-2">Error Loading Profile</h2>
+            <h2 className="text-red-800 font-semibold mb-2">
+              Error Loading Profile
+            </h2>
             <p className="text-red-600">{error.message}</p>
-            <button 
+            <button
               onClick={() => fetchProfile(TEMP_USER_ID)}
               className="mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
@@ -70,8 +72,8 @@ export default function ProfileLayout() {
               <h1 className="text-xl font-bold text-gray-800">
                 Profile Information
               </h1>
-              <EditProfileButton 
-                user={currentUser} 
+              <EditProfileButton
+                user={currentUser}
                 onProfileUpdate={handleProfileUpdate}
                 disabled={isLoading || !currentUser}
               />

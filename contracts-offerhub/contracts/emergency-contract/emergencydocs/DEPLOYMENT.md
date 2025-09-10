@@ -4,9 +4,9 @@ Deployment guidance for the Soroban/Rust Emergency Contract in Offer‑Hub.
 
 ## Pre-deploy checklist
 
-* Choose `governance` multisig address
-* Set initial `emergency_admin` (multisig recommended)
-* Determine `circuit_breaker_threshold` and `initial emergency_fund`
+- Choose `governance` multisig address
+- Set initial `emergency_admin` (multisig recommended)
+- Determine `circuit_breaker_threshold` and `initial emergency_fund`
 
 ## Example deploy (soroban CLI / pseudo)
 
@@ -20,13 +20,13 @@ soroban invoke --wasm emergency_contract.wasm --func initialize --arg <admin_add
 
 ## Post-deploy configuration
 
-* Add emergency contacts using `add_emergency_contact`.
-* Wire emergency contract id into dependent services if they require a reference.
+- Add emergency contacts using `add_emergency_contact`.
+- Wire emergency contract id into dependent services if they require a reference.
 
 ## Testing & Staging
 
-* Deploy to a testnet or local Soroban sandbox and run the full test suite in `emergency-contract/test_snapshots/`.
+- Deploy to a testnet or local Soroban sandbox and run the full test suite in `emergency-contract/test_snapshots/`.
 
 ## Notes
 
-* Use multisig for any privileged admin change. Keep emergency config under governance control.
+- Use multisig for any privileged admin change. Keep emergency config under governance control.

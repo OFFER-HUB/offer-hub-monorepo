@@ -25,9 +25,11 @@ The Publication Contract manages the on-chain publishing of services and project
 ### Publishing Functions
 
 #### `publish(env: Env, user: Address, publication_type: Symbol, title: String, category: String, amount: i128, timestamp: u64) -> Result<u32, ContractError>`
+
 Publishes a new service or project on-chain.
 
 **Parameters:**
+
 - `user`: Publisher address
 - `publication_type`: "service" or "project"
 - `title`: Publication title
@@ -38,6 +40,7 @@ Publishes a new service or project on-chain.
 **Returns:** Unique publication ID for the user
 
 **Validation:**
+
 - Title length requirements
 - Amount positivity
 - Category validation
@@ -46,9 +49,11 @@ Publishes a new service or project on-chain.
 ### Query Functions
 
 #### `get_publication(env: Env, user: Address, id: u32) -> Option<PublicationData>`
+
 Retrieves a specific publication.
 
 **Returns:**
+
 ```rust
 PublicationData {
     publication_type: Symbol,
@@ -62,47 +67,49 @@ PublicationData {
 ## Integration Examples
 
 ### Publish Service
+
 ```typescript
 const publishService = async (
   userAddress: string,
   serviceData: {
-    title: string,
-    category: string,
-    price: string,
-    description: string
-  }
+    title: string;
+    category: string;
+    price: string;
+    description: string;
+  },
 ) => {
   const publicationId = await publicationContract.publish({
     user: userAddress,
-    publication_type: 'service',
+    publication_type: "service",
     title: serviceData.title,
     category: serviceData.category,
     amount: serviceData.price,
-    timestamp: Math.floor(Date.now() / 1000)
+    timestamp: Math.floor(Date.now() / 1000),
   });
-  
+
   // Store detailed data off-chain with reference to on-chain publication
   await storeServiceDetails({
     publicationId,
     description: serviceData.description,
-    userAddress
+    userAddress,
   });
-  
+
   return publicationId;
 };
 ```
 
 ### Event Monitoring
+
 ```typescript
 // Listen for publication events
 publicationContract.events.publication_created.subscribe((event) => {
   console.log(`New ${event.publication_type} published by ${event.user}`);
-  
+
   // Trigger off-chain indexing
   indexPublication({
     userId: event.user,
     publicationId: event.id,
-    type: event.publication_type
+    type: event.publication_type,
   });
 });
 ```

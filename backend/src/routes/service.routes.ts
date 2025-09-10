@@ -16,7 +16,7 @@ router.post(
   "/",
   verifyToken,
   authorizeRoles("freelancer", "admin"),
-  createServiceHandler
+  createServiceHandler,
 );
 // GET /api/services - List all services with optional filters
 // Public route - no authentication required
@@ -32,7 +32,7 @@ router.patch(
   "/:id",
   verifyToken,
   authorizeRoles("freelancer", "admin"),
-  updateServiceHandler
+  updateServiceHandler,
 );
 // DELETE /api/services/:id - Delete service (soft delete)
 // Protected route - requires authentication and ownership verification
@@ -40,6 +40,6 @@ router.delete(
   "/:id",
   verifyToken,
   authorizeRoles("freelancer", "admin"),
-  deleteServiceHandler
+  deleteServiceHandler,
 );
 export default router;

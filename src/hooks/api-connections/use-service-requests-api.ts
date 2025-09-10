@@ -1,5 +1,10 @@
-import { useState } from 'react';
-import type { ServiceRequest, CreateServiceRequestDTO, UpdateServiceRequestDTO, RequestStatus } from '@/types/service-request-types';
+import { useState } from "react";
+import type {
+  ServiceRequest,
+  CreateServiceRequestDTO,
+  UpdateServiceRequestDTO,
+  RequestStatus,
+} from "@/types/service-request-types";
 
 const API_BASE_URL = "http://localhost:4000/api";
 
@@ -17,13 +22,17 @@ export function useServiceRequestsApi() {
     setError(null);
 
     try {
-  const res = await fetch(`${API_BASE_URL}/service-requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_BASE_URL}/service-requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       const result = await res.json();
-      if (!res.ok) throw { status: res.status, message: result?.message || 'Error creating request' };
+      if (!res.ok)
+        throw {
+          status: res.status,
+          message: result?.message || "Error creating request",
+        };
       return result as ServiceRequest;
     } catch (err: any) {
       setError(err);
@@ -37,9 +46,15 @@ export function useServiceRequestsApi() {
     setLoading(true);
     setError(null);
     try {
-  const res = await fetch(`${API_BASE_URL}/service-requests/${freelancerId}`);
+      const res = await fetch(
+        `${API_BASE_URL}/service-requests/${freelancerId}`,
+      );
       const result = await res.json();
-      if (!res.ok) throw { status: res.status, message: result?.message || 'Error retrieving requests' };
+      if (!res.ok)
+        throw {
+          status: res.status,
+          message: result?.message || "Error retrieving requests",
+        };
       return result.data as ServiceRequest[];
     } catch (err: any) {
       setError(err);
@@ -49,17 +64,25 @@ export function useServiceRequestsApi() {
     }
   };
 
-  const updateServiceRequestStatus = async (id: string, status: RequestStatus, freelancerId: string) => {
+  const updateServiceRequestStatus = async (
+    id: string,
+    status: RequestStatus,
+    freelancerId: string,
+  ) => {
     setLoading(true);
     setError(null);
     try {
-  const res = await fetch(`${API_BASE_URL}/service-requests/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, freelancerId}),
+      const res = await fetch(`${API_BASE_URL}/service-requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, freelancerId }),
       });
       const result = await res.json();
-      if (!res.ok) throw { status: res.status, message: result?.message || 'Error updating status' };
+      if (!res.ok)
+        throw {
+          status: res.status,
+          message: result?.message || "Error updating status",
+        };
       return result as ServiceRequest;
     } catch (err: any) {
       setError(err);

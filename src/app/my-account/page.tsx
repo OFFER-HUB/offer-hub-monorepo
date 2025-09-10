@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import AccountSettings from "./account-settings-client"
+import AccountSettings from "./account-settings-client";
 
 export default function Page() {
-    return <AccountSettings />
+  return <AccountSettings />;
 }

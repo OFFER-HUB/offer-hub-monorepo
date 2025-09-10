@@ -11,8 +11,14 @@ import contractRoutes from "@/routes/contract.routes";
 import projectRoutes from "@/routes/project.routes";
 import userRoutes from "@/routes/user.routes";
 import authRoutes from "@/routes/auth.routes";
-import { errorHandlerMiddleware, setupGlobalErrorHandlers } from "./middlewares/errorHandler.middleware";
-import { generalLimiter, authLimiter } from "./middlewares/ratelimit.middleware";
+import {
+  errorHandlerMiddleware,
+  setupGlobalErrorHandlers,
+} from "./middlewares/errorHandler.middleware";
+import {
+  generalLimiter,
+  authLimiter,
+} from "./middlewares/ratelimit.middleware";
 import { authenticateToken } from "./middlewares/auth.middleware";
 
 import conversationRoutes from "@/routes/conversation.routes";

@@ -24,4 +24,4 @@ export default function CreateProjectStep2() {
       <BudgetConfigurationForm onNext={handleNext} onBack={handleBack} />
     </CreateProjectLayout>
   );
-} 
+}

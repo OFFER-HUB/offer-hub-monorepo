@@ -26,7 +26,7 @@ export const mockMessages = [
       status: "Uploaded",
     },
   },
-]
+];
 
 export const mockConversation = {
   id: 1,
@@ -36,4 +36,4 @@ export const mockConversation = {
   timestamp: "10:32 AM",
   isOnline: true,
   unreadCount: 2,
-}
+};

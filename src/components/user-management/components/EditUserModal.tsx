@@ -95,9 +95,7 @@ export function EditUserModal({
             className="bg-[#002333] hover:bg-[#001a26] text-white"
             onClick={() => {
               setUserData((prevData) =>
-                prevData.map((u) =>
-                  u.id === userToEdit.id ? userToEdit : u
-                )
+                prevData.map((u) => (u.id === userToEdit.id ? userToEdit : u)),
               );
               setIsEditModalOpen(false);
             }}

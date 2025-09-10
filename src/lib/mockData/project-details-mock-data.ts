@@ -1,14 +1,14 @@
 export interface ProjectDetail {
-  id: string
-  title: string
-  date: string
-  description: string
-  mainImages: string[]
-  additionalImages: string[]
-  category: string
-  tools: string[]
-  duration: string
-  client?: string
+  id: string;
+  title: string;
+  date: string;
+  description: string;
+  mainImages: string[];
+  additionalImages: string[];
+  category: string;
+  tools: string[];
+  duration: string;
+  client?: string;
 }
 
 export const projectDetailsData: ProjectDetail[] = [
@@ -18,9 +18,7 @@ export const projectDetailsData: ProjectDetail[] = [
     date: "August 2024",
     description:
       "Introducing the sleek and user-friendly design of our innovative crypto exchange mobile app, where you can effortlessly trade, track, and manage your digital assets with unparalleled ease. This app is not just a tool; it's your gateway to the world of cryptocurrency. It features real-time market data that keeps you informed about price fluctuations and trends, intuitive navigation that allows you to find what you need in seconds, and robust security measures that ensure your transactions are safe and secure. With advanced encryption and two-factor authentication, you can trade with confidence. Whether you're a seasoned investor looking to optimize your portfolio or just starting out on your crypto journey, our app is meticulously designed to meet your unique needs. It provides educational resources and market insights to help you make informed decisions, ensuring you stay ahead in the fast-paced and ever-evolving world of cryptocurrency. Join us today and experience the future of trading at your fingertips!",
-    mainImages: [
-      "/mobile-app-design.png",
-    ],
+    mainImages: ["/mobile-app-design.png"],
     additionalImages: [
       "/project1.png",
       "/project2.png",
@@ -61,7 +59,11 @@ export const projectDetailsData: ProjectDetail[] = [
     description:
       "A high-converting landing page design created to maximize user engagement and conversion rates. The design focuses on clear messaging, compelling visuals, and strategic placement of call-to-action elements to guide users through the conversion funnel.",
     mainImages: ["/website-design.png"],
-    additionalImages: ["/landing-page-testimonials.png", "/landing-page-pricing.png", "/landing-page-footer.png"],
+    additionalImages: [
+      "/landing-page-testimonials.png",
+      "/landing-page-pricing.png",
+      "/landing-page-footer.png",
+    ],
     category: "Landing Page",
     tools: ["Figma", "Adobe Illustrator"],
     duration: "3 weeks",
@@ -93,9 +95,7 @@ export const projectDetailsData: ProjectDetail[] = [
     date: "August 2024",
     description:
       "A modern and comprehensive dashboard interface designed for enterprise-level data management and analytics. This project focused on creating an intuitive user experience for complex data visualization and workflow management.",
-    mainImages: [
-      "/dashboard-design.png",
-    ],
+    mainImages: ["/dashboard-design.png"],
     additionalImages: [
       "/project1.png",
       "/project2.png",
@@ -115,9 +115,7 @@ export const projectDetailsData: ProjectDetail[] = [
     date: "August 2024",
     description:
       "A sleek mobile application design focused on social networking and community building. The design emphasizes user engagement, intuitive navigation, and seamless social interactions while maintaining a modern and appealing visual aesthetic.",
-    mainImages: [
-      "/dashboard-design1.png",
-    ],
+    mainImages: ["/dashboard-design1.png"],
     additionalImages: [
       "/project1.png",
       "/project2.png",
@@ -131,4 +129,4 @@ export const projectDetailsData: ProjectDetail[] = [
     duration: "4 months",
     client: "Social Media Startup",
   },
-]
+];

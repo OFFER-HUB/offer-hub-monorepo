@@ -1,7 +1,17 @@
 "use client";
 
-import { createContext, useContext, useReducer, useCallback, ReactNode } from "react";
-import { OfferFormData, defaultOfferFormData, PaymentMilestone } from "@/lib/mockData/offer-form-mock";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  ReactNode,
+} from "react";
+import {
+  OfferFormData,
+  defaultOfferFormData,
+  PaymentMilestone,
+} from "@/lib/mockData/offer-form-mock";
 
 interface OfferFormState {
   formData: OfferFormData;
@@ -11,7 +21,11 @@ interface OfferFormState {
 }
 
 type OfferFormAction =
-  | { type: "UPDATE_FIELD"; field: keyof OfferFormData; value: OfferFormData[keyof OfferFormData] }
+  | {
+      type: "UPDATE_FIELD";
+      field: keyof OfferFormData;
+      value: OfferFormData[keyof OfferFormData];
+    }
   | { type: "UPDATE_DELIVERABLES"; deliverables: string[] }
   | { type: "UPDATE_MILESTONES"; milestones: PaymentMilestone[] }
   | { type: "SET_STEP"; step: number }
@@ -24,7 +38,10 @@ type OfferFormAction =
 interface OfferFormContextType {
   state: OfferFormState;
   dispatch: React.Dispatch<OfferFormAction>;
-  updateField: (field: keyof OfferFormData, value: OfferFormData[keyof OfferFormData]) => void;
+  updateField: (
+    field: keyof OfferFormData,
+    value: OfferFormData[keyof OfferFormData],
+  ) => void;
   updateDeliverables: (deliverables: string[]) => void;
   updateMilestones: (milestones: PaymentMilestone[]) => void;
   setCurrentStep: (step: number) => void;
@@ -35,85 +52,90 @@ interface OfferFormContextType {
   resetForm: () => void;
 }
 
-const OfferFormContext = createContext<OfferFormContextType | undefined>(undefined);
+const OfferFormContext = createContext<OfferFormContextType | undefined>(
+  undefined,
+);
 
 const initialState: OfferFormState = {
   formData: { ...defaultOfferFormData },
   currentStep: 1,
   isValid: false,
-  errors: {}
+  errors: {},
 };
 
-function offerFormReducer(state: OfferFormState, action: OfferFormAction): OfferFormState {
+function offerFormReducer(
+  state: OfferFormState,
+  action: OfferFormAction,
+): OfferFormState {
   switch (action.type) {
     case "UPDATE_FIELD":
       return {
         ...state,
         formData: {
           ...state.formData,
-          [action.field]: action.value
-        }
+          [action.field]: action.value,
+        },
       };
-    
+
     case "UPDATE_DELIVERABLES":
       return {
         ...state,
         formData: {
           ...state.formData,
-          deliverables: action.deliverables
-        }
+          deliverables: action.deliverables,
+        },
       };
-    
+
     case "UPDATE_MILESTONES":
       return {
         ...state,
         formData: {
           ...state.formData,
-          paymentMilestones: action.milestones
-        }
+          paymentMilestones: action.milestones,
+        },
       };
-    
+
     case "SET_STEP":
       return {
         ...state,
-        currentStep: action.step
+        currentStep: action.step,
       };
-    
+
     case "SET_ERROR":
       return {
         ...state,
         errors: {
           ...state.errors,
-          [action.field]: action.error
-        }
+          [action.field]: action.error,
+        },
       };
-    
+
     case "CLEAR_ERROR":
       const { [action.field]: _, ...restErrors } = state.errors;
       return {
         ...state,
-        errors: restErrors
+        errors: restErrors,
       };
-    
+
     case "CLEAR_ALL_ERRORS":
       return {
         ...state,
-        errors: {}
+        errors: {},
       };
-    
+
     case "RESET_FORM":
       return {
         ...initialState,
-        formData: { ...defaultOfferFormData }
+        formData: { ...defaultOfferFormData },
       };
-    
+
     case "VALIDATE_STEP":
       const isValid = validateStepData(state.formData, action.step);
       return {
         ...state,
-        isValid
+        isValid,
       };
-    
+
     default:
       return state;
   }
@@ -127,10 +149,10 @@ function validateStepData(formData: OfferFormData, step: number): boolean {
         formData.projectDescription.trim() &&
         formData.budgetAmount > 0
       );
-    
+
     case 2:
-      return !!(formData.projectDuration);
-    
+      return !!formData.projectDuration;
+
     case 3:
       return !!(
         formData.offerTitle.trim() &&
@@ -138,7 +160,7 @@ function validateStepData(formData: OfferFormData, step: number): boolean {
         formData.budgetAmount > 0 &&
         formData.projectDuration
       );
-    
+
     default:
       return false;
   }
@@ -151,9 +173,12 @@ interface OfferFormProviderProps {
 export function OfferFormProvider({ children }: OfferFormProviderProps) {
   const [state, dispatch] = useReducer(offerFormReducer, initialState);
 
-  const updateField = useCallback((field: keyof OfferFormData, value: OfferFormData[keyof OfferFormData]) => {
-    dispatch({ type: "UPDATE_FIELD", field, value });
-  }, []);
+  const updateField = useCallback(
+    (field: keyof OfferFormData, value: OfferFormData[keyof OfferFormData]) => {
+      dispatch({ type: "UPDATE_FIELD", field, value });
+    },
+    [],
+  );
 
   const updateDeliverables = useCallback((deliverables: string[]) => {
     dispatch({ type: "UPDATE_DELIVERABLES", deliverables });
@@ -179,10 +204,13 @@ export function OfferFormProvider({ children }: OfferFormProviderProps) {
     dispatch({ type: "CLEAR_ALL_ERRORS" });
   }, []);
 
-  const validateStep = useCallback((step: number): boolean => {
-    dispatch({ type: "VALIDATE_STEP", step });
-    return validateStepData(state.formData, step);
-  }, [state.formData]);
+  const validateStep = useCallback(
+    (step: number): boolean => {
+      dispatch({ type: "VALIDATE_STEP", step });
+      return validateStepData(state.formData, step);
+    },
+    [state.formData],
+  );
 
   const resetForm = useCallback(() => {
     dispatch({ type: "RESET_FORM" });
@@ -199,7 +227,7 @@ export function OfferFormProvider({ children }: OfferFormProviderProps) {
     clearError,
     clearAllErrors,
     validateStep,
-    resetForm
+    resetForm,
   };
 
   return (

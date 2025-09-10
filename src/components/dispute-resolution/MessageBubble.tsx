@@ -66,27 +66,44 @@ export function DisputeMessageBubble({
   const isAdminMessage = sender.role === "admin";
 
   return (
-    <div className={`flex gap-3 mb-4 ${isAdminMessage ? "flex-row-reverse" : ""}`}>
+    <div
+      className={`flex gap-3 mb-4 ${isAdminMessage ? "flex-row-reverse" : ""}`}
+    >
       <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
         <AvatarImage src={sender.avatar} alt={sender.name} />
         <AvatarFallback className="text-xs">
-          {sender.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+          {sender.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()}
         </AvatarFallback>
       </Avatar>
-      
-      <div className={`flex flex-col max-w-[70%] ${isAdminMessage ? "items-end" : ""}`}>
-        <div className={`flex items-center gap-2 mb-1 ${isAdminMessage ? "flex-row-reverse" : ""}`}>
-          <span className="text-sm font-medium text-gray-900">{sender.name}</span>
-          <Badge variant="secondary" className={`text-xs ${getRoleColor(sender.role)}`}>
+
+      <div
+        className={`flex flex-col max-w-[70%] ${isAdminMessage ? "items-end" : ""}`}
+      >
+        <div
+          className={`flex items-center gap-2 mb-1 ${isAdminMessage ? "flex-row-reverse" : ""}`}
+        >
+          <span className="text-sm font-medium text-gray-900">
+            {sender.name}
+          </span>
+          <Badge
+            variant="secondary"
+            className={`text-xs ${getRoleColor(sender.role)}`}
+          >
             {getRoleLabel(sender.role)}
           </Badge>
         </div>
-        
-        <div className={`rounded-lg p-3 ${
-          isAdminMessage 
-            ? "bg-[#149A9B] text-white" 
-            : "bg-gray-100 text-gray-900"
-        }`}>
+
+        <div
+          className={`rounded-lg p-3 ${
+            isAdminMessage
+              ? "bg-[#149A9B] text-white"
+              : "bg-gray-100 text-gray-900"
+          }`}
+        >
           <p className="text-sm whitespace-pre-wrap">{content}</p>
         </div>
 
@@ -108,13 +125,15 @@ export function DisputeMessageBubble({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-gray-100 rounded">
-                      📄
-                    </div>
+                    <div className="p-2 bg-gray-100 rounded">📄</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 truncate">{attachment.name}</p>
+                      <p className="text-sm text-gray-900 truncate">
+                        {attachment.name}
+                      </p>
                       {attachment.size && (
-                        <p className="text-xs text-gray-500">{attachment.size}</p>
+                        <p className="text-xs text-gray-500">
+                          {attachment.size}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -123,11 +142,13 @@ export function DisputeMessageBubble({
             ))}
           </div>
         )}
-        
-        <span className={`text-xs text-gray-500 mt-1 ${isAdminMessage ? "text-right" : ""}`}>
+
+        <span
+          className={`text-xs text-gray-500 mt-1 ${isAdminMessage ? "text-right" : ""}`}
+        >
           {timestamp}
         </span>
       </div>
     </div>
   );
-} 
+}

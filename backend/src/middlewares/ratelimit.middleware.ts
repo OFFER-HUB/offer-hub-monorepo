@@ -1,9 +1,9 @@
 import rateLimit from "express-rate-limit";
 import { Request, Response } from "express";
-import { 
-  RateLimitMiddlewareOptions, 
+import {
+  RateLimitMiddlewareOptions,
   AuthenticatedRequest,
-  RateLimitInfo 
+  RateLimitInfo,
 } from "@/types/middleware.types";
 import { authConfig } from "@/config/auth.config";
 
@@ -20,7 +20,8 @@ function createEnhancedLimiter(options: RateLimitMiddlewareOptions) {
       success: false,
       error: {
         code: "RATE_LIMIT_EXCEEDED",
-        message: options.errorMessage || "Too many requests, please try again later.",
+        message:
+          options.errorMessage || "Too many requests, please try again later.",
         timestamp: new Date().toISOString(),
       },
     },
@@ -28,12 +29,14 @@ function createEnhancedLimiter(options: RateLimitMiddlewareOptions) {
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     skipFailedRequests: options.skipFailedRequests || false,
-    keyGenerator: options.keyGenerator || ((req: Request) => {
-      // Default key generator: use IP address for unauthenticated requests,
-      // user ID for authenticated requests
-      const authReq = req as AuthenticatedRequest;
-      return authReq.user?.id || req.ip || 'anonymous';
-    }),
+    keyGenerator:
+      options.keyGenerator ||
+      ((req: Request) => {
+        // Default key generator: use IP address for unauthenticated requests,
+        // user ID for authenticated requests
+        const authReq = req as AuthenticatedRequest;
+        return authReq.user?.id || req.ip || "anonymous";
+      }),
     handler: (req: Request, res: Response) => {
       const authReq = req as AuthenticatedRequest;
       const rateLimitInfo: RateLimitInfo = {
@@ -49,23 +52,27 @@ function createEnhancedLimiter(options: RateLimitMiddlewareOptions) {
       }
 
       // Log rate limit violation
-      console.log(JSON.stringify({
-        type: 'RATE_LIMIT_VIOLATION',
-        timestamp: new Date().toISOString(),
-        userId: authReq.user?.id,
-        ipAddress: req.ip || 'unknown',
-        userAgent: req.get('User-Agent') || 'unknown',
-        endpoint: req.url,
-        method: req.method,
-        limit: options.max,
-        windowMs: options.windowMs,
-      }));
+      console.log(
+        JSON.stringify({
+          type: "RATE_LIMIT_VIOLATION",
+          timestamp: new Date().toISOString(),
+          userId: authReq.user?.id,
+          ipAddress: req.ip || "unknown",
+          userAgent: req.get("User-Agent") || "unknown",
+          endpoint: req.url,
+          method: req.method,
+          limit: options.max,
+          windowMs: options.windowMs,
+        }),
+      );
 
       res.status(429).json({
         success: false,
         error: {
           code: "RATE_LIMIT_EXCEEDED",
-          message: options.errorMessage || "Too many requests, please try again later.",
+          message:
+            options.errorMessage ||
+            "Too many requests, please try again later.",
           details: {
             limit: options.max,
             windowMs: options.windowMs,
@@ -110,7 +117,7 @@ export const adminLimiter = createEnhancedLimiter({
   keyGenerator: (req: Request) => {
     const authReq = req as AuthenticatedRequest;
     // Use user ID for authenticated admin requests, IP for others
-    return authReq.user?.id || req.ip || 'anonymous';
+    return authReq.user?.id || req.ip || "anonymous";
   },
 });
 
@@ -125,7 +132,7 @@ export const userLimiter = createEnhancedLimiter({
   keyGenerator: (req: Request) => {
     const authReq = req as AuthenticatedRequest;
     if (!authReq.user) {
-      return req.ip || 'anonymous';
+      return req.ip || "anonymous";
     }
     return `user:${authReq.user.id}`;
   },
@@ -138,10 +145,11 @@ export const userLimiter = createEnhancedLimiter({
 export const strictLimiter = createEnhancedLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5, // Only 5 attempts per hour
-  errorMessage: "Too many sensitive operations attempted, please try again later.",
+  errorMessage:
+    "Too many sensitive operations attempted, please try again later.",
   keyGenerator: (req: Request) => {
     const authReq = req as AuthenticatedRequest;
-    return authReq.user?.id || req.ip || 'anonymous';
+    return authReq.user?.id || req.ip || "anonymous";
   },
 });
 
@@ -155,7 +163,7 @@ export const uploadLimiter = createEnhancedLimiter({
   errorMessage: "Too many file uploads, please try again later.",
   keyGenerator: (req: Request) => {
     const authReq = req as AuthenticatedRequest;
-    return authReq.user?.id || req.ip || 'anonymous';
+    return authReq.user?.id || req.ip || "anonymous";
   },
 });
 
@@ -169,7 +177,7 @@ export const searchLimiter = createEnhancedLimiter({
   errorMessage: "Too many search requests, please try again later.",
   keyGenerator: (req: Request) => {
     const authReq = req as AuthenticatedRequest;
-    return authReq.user?.id || req.ip || 'anonymous';
+    return authReq.user?.id || req.ip || "anonymous";
   },
 });
 

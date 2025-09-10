@@ -1,50 +1,50 @@
 export interface Skill {
-  name: string
-  color: string
+  name: string;
+  color: string;
 }
 
 export interface Talent {
-  id: number
-  name: string
-  title: string
-  location: string
-  category: string
-  rating: number
-  hourlyRate: number
-  avatar: string
-  skills: Skill[]
-  description: string
-  actionText: string
+  id: number;
+  name: string;
+  title: string;
+  location: string;
+  category: string;
+  rating: number;
+  hourlyRate: number;
+  avatar: string;
+  skills: Skill[];
+  description: string;
+  actionText: string;
 }
 
 export interface PortfolioItem {
-  id: number
-  title: string
-  description: string
-  image: string
-  date: string
-  category: string
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  date: string;
+  category: string;
 }
 
 export interface Review {
-  id: number
-  clientName: string
-  rating: number
-  comment: string
-  date: string
-  projectTitle?: string
+  id: number;
+  clientName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  projectTitle?: string;
 }
 
 export interface TalentProfile extends Talent {
-  bio: string
-  experience: string
-  education: string
-  languages: string[]
-  availability: string
-  responseTime: string
-  completedProjects: number
-  portfolio: PortfolioItem[]
-  reviews: Review[]
+  bio: string;
+  experience: string;
+  education: string;
+  languages: string[];
+  availability: string;
+  responseTime: string;
+  completedProjects: number;
+  portfolio: PortfolioItem[];
+  reviews: Review[];
 }
 
 export const talentProfileData: TalentProfile[] = [
@@ -203,7 +203,8 @@ export const talentProfileData: TalentProfile[] = [
         id: 1,
         clientName: "Michael Brown",
         rating: 5,
-        comment: "Outstanding work on our brand identity. Alex delivered beyond expectations.",
+        comment:
+          "Outstanding work on our brand identity. Alex delivered beyond expectations.",
         date: "June 10, 2024",
         projectTitle: "Brand Identity Project",
       },
@@ -383,4 +384,4 @@ export const talentProfileData: TalentProfile[] = [
     portfolio: [],
     reviews: [],
   },
-]
+];

@@ -1,5 +1,5 @@
-import { Progress } from '@/components/ui/progress';
-import React from 'react';
+import { Progress } from "@/components/ui/progress";
+import React from "react";
 
 export interface DisputeTableColumn<T = any> {
   key: string;
@@ -21,7 +21,7 @@ const DisputeTable = <T,>({
   data,
   isLoading,
   isFiltering,
-  emptyMessage = 'No disputes found',
+  emptyMessage = "No disputes found",
 }: DisputeTableProps<T>) => {
   if (isLoading) {
     return (
@@ -34,14 +34,14 @@ const DisputeTable = <T,>({
   return (
     <div
       className={
-        isLoading || isFiltering ? 'overflow-x-hidden' : 'overflow-x-auto'
+        isLoading || isFiltering ? "overflow-x-hidden" : "overflow-x-auto"
       }
     >
       <div className="relative bg-white shadow-sm">
         {isLoading || isFiltering ? (
           <Progress indeterminate={isLoading || isFiltering} className="!h-2" />
         ) : (
-          ''
+          ""
         )}
         <table className="min-w-full">
           <thead>
@@ -50,7 +50,7 @@ const DisputeTable = <T,>({
                 <th
                   key={col.key}
                   className={`py-4 px-6 font-medium text-gray-700 ${
-                    col.className || ''
+                    col.className || ""
                   }`}
                 >
                   {col.label}
@@ -74,7 +74,7 @@ const DisputeTable = <T,>({
                   {columns.map((col) => (
                     <td
                       key={col.key}
-                      className={`py-4 px-6 ${col.className || ''}`}
+                      className={`py-4 px-6 ${col.className || ""}`}
                     >
                       {col.render
                         ? col.render(row)

@@ -32,13 +32,13 @@ The rating contract automatically triggers reputation updates:
 // When user achieves rating milestones
 pub fn update_reputation(env: Env, caller: Address, user: Address) -> Result<(), Error> {
     let stats = get_user_rating_stats(&env, &user)?;
-    
+
     // Award achievement NFTs based on rating performance
     if stats.average_rating >= 480 && stats.total_ratings >= 20 {
         // Triggers reputation contract to mint top-rated NFT
         reputation_contract.mint_rating_achievement(
-            &env, &caller, &user, 
-            "top_rated_professional", 
+            &env, &caller, &user,
+            "top_rated_professional",
             "4.8+ average with 20+ ratings"
         )?;
     }
@@ -62,17 +62,18 @@ pub fn update_reputation_score(env, caller, user, rating_average, total_ratings)
 
 The system automatically mints achievement NFTs when users reach specific milestones:
 
-| Achievement | Requirement | NFT Type |
-|-------------|-------------|----------|
-| First Five Star | First 5-star rating | `first_five_star` |
-| Ten Reviews | 10+ ratings received | `ten_ratings` |
-| Top Rated Pro | 4.8+ avg, 20+ ratings | `top_rated_professional` |
-| Consistency Award | Sustained high performance | `rating_consistency` |
-| Most Improved | Significant improvement | `improvement_award` |
+| Achievement       | Requirement                | NFT Type                 |
+| ----------------- | -------------------------- | ------------------------ |
+| First Five Star   | First 5-star rating        | `first_five_star`        |
+| Ten Reviews       | 10+ ratings received       | `ten_ratings`            |
+| Top Rated Pro     | 4.8+ avg, 20+ ratings      | `top_rated_professional` |
+| Consistency Award | Sustained high performance | `rating_consistency`     |
+| Most Improved     | Significant improvement    | `improvement_award`      |
 
 ### Achievement Metadata
 
 Each achievement NFT includes:
+
 - **Name**: Human-readable achievement name
 - **Description**: Achievement criteria and date earned
 - **URI**: IPFS link to achievement artwork
@@ -118,24 +119,28 @@ Each achievement NFT includes:
 ## Implementation Timeline
 
 ### Phase 1: Core Rating System ✅
+
 - [x] Basic rating submission and storage
 - [x] Rating statistics calculation
 - [x] User feedback collection
 - [x] Input validation and spam prevention
 
 ### Phase 2: Integration with Reputation ✅
+
 - [x] Achievement NFT minting integration
 - [x] Cross-contract communication
 - [x] Reputation score updates
 - [x] Milestone-based rewards
 
 ### Phase 3: Advanced Features ✅
+
 - [x] Feedback moderation system
 - [x] Rating-based restrictions and privileges
 - [x] Incentive and rewards system
 - [x] Platform analytics and insights
 
 ### Phase 4: Frontend Integration (Next Steps)
+
 - [ ] Rating submission UI components
 - [ ] User dashboard with statistics
 - [ ] Achievement display system
@@ -153,7 +158,7 @@ const submitRating = async (
   contractId: string,
   rating: number,
   feedback: string,
-  category: string
+  category: string,
 ) => {
   const result = await ratingContract.submit_rating({
     caller: raterAddress,
@@ -161,9 +166,9 @@ const submitRating = async (
     contract_id: contractId,
     rating: rating,
     feedback: feedback,
-    work_category: category
+    work_category: category,
   });
-  
+
   return result;
 };
 ```
@@ -173,21 +178,21 @@ const submitRating = async (
 ```typescript
 const getUserRatingProfile = async (userAddress: string) => {
   const stats = await ratingContract.get_user_rating_stats({
-    user: userAddress
+    user: userAddress,
   });
-  
+
   const achievements = await reputationContract.get_user_achievements({
-    user: userAddress
+    user: userAddress,
   });
-  
+
   const privileges = await ratingContract.get_user_privileges({
-    user: userAddress
+    user: userAddress,
   });
-  
+
   return {
     stats,
     achievements,
-    privileges
+    privileges,
   };
 };
 ```
@@ -197,13 +202,13 @@ const getUserRatingProfile = async (userAddress: string) => {
 ```typescript
 const claimAvailableIncentives = async (userAddress: string) => {
   const incentives = await ratingContract.check_rating_incentives({
-    user: userAddress
+    user: userAddress,
   });
-  
+
   for (const incentive of incentives) {
     await ratingContract.claim_incentive_reward({
       caller: userAddress,
-      incentive_type: incentive
+      incentive_type: incentive,
     });
   }
 };
@@ -217,7 +222,7 @@ After deployment, update these addresses in your frontend configuration:
 const CONTRACT_ADDRESSES = {
   rating: "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   reputation: "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  userRegistry: "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  userRegistry: "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 };
 ```
 
@@ -249,6 +254,7 @@ reputationContract.events.AchievementMinted.subscribe((event) => {
 ## Testing Strategy
 
 ### Unit Tests
+
 - Rating submission validation
 - Statistical calculations
 - Privilege assignment logic
@@ -256,12 +262,14 @@ reputationContract.events.AchievementMinted.subscribe((event) => {
 - Achievement criteria
 
 ### Integration Tests
+
 - Cross-contract communication
 - NFT minting triggers
 - Event emission verification
 - End-to-end rating workflows
 
 ### Load Testing
+
 - High-volume rating submissions
 - Concurrent user interactions
 - Platform analytics performance
@@ -270,6 +278,7 @@ reputationContract.events.AchievementMinted.subscribe((event) => {
 ## Monitoring and Analytics
 
 Key metrics to track:
+
 - Total ratings submitted
 - Average platform rating
 - User engagement rates
@@ -302,7 +311,7 @@ Key metrics to track:
 ## Support and Maintenance
 
 - **Documentation**: Keep this guide updated with contract changes
-- **Version Control**: Tag releases and maintain backwards compatibility  
+- **Version Control**: Tag releases and maintain backwards compatibility
 - **Bug Reports**: Use GitHub issues for tracking problems
 - **Feature Requests**: Community input via discussion forums
 

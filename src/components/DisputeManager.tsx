@@ -1,5 +1,5 @@
-import React from 'react';
-import { StartDisputeForm } from './forms/StartDisputeForm';
+import React from "react";
+import { StartDisputeForm } from "./forms/StartDisputeForm";
 
 interface DisputeManagerProps {
   contractId?: string;

@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Star } from 'lucide-react';
-import ReviewModal from '@/components/modals/review-modal';
-import { Review } from '@/types/review.types';
-import { useNotification } from '@/lib/contexts/NotificatonContext';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
+import ReviewModal from "@/components/modals/review-modal";
+import { Review } from "@/types/review.types";
+import { useNotification } from "@/lib/contexts/NotificatonContext";
 
 interface ContractCompletionActionsProps {
   contractId: string;
-  contractStatus: 'active' | 'completed' | 'released' | 'disputed';
+  contractStatus: "active" | "completed" | "released" | "disputed";
   fromId: string; // Current user ID (authenticated user)
-  toId: string;   // Other participant ID
-  userRole: 'client' | 'freelancer'; // Current user's role in the contract
+  toId: string; // Other participant ID
+  userRole: "client" | "freelancer"; // Current user's role in the contract
   onReviewSubmitted?: (review: Review) => void;
 }
 
@@ -26,10 +26,12 @@ const ContractCompletionActions: React.FC<ContractCompletionActionsProps> = ({
 }) => {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
-  const { actions: { addNotification } } = useNotification();
+  const {
+    actions: { addNotification },
+  } = useNotification();
 
   // Only show review option when contract is completed/released
-  if (contractStatus !== 'released') {
+  if (contractStatus !== "released") {
     return null;
   }
 
@@ -54,25 +56,25 @@ const ContractCompletionActions: React.FC<ContractCompletionActionsProps> = ({
   const handleReviewCreated = (review: Review) => {
     setHasSubmittedReview(true);
     onReviewSubmitted?.(review);
-    
+
     // Optional: Show additional success notification
     addNotification({
-      type: 'success',
-      title: 'Review Published',
-      message: 'Your review will help other users make informed decisions.',
+      type: "success",
+      title: "Review Published",
+      message: "Your review will help other users make informed decisions.",
     });
   };
 
   const getRoleSpecificText = () => {
-    if (userRole === 'client') {
+    if (userRole === "client") {
       return {
-        buttonText: 'Review Freelancer',
-        description: 'Share your experience working with this freelancer'
+        buttonText: "Review Freelancer",
+        description: "Share your experience working with this freelancer",
       };
     } else {
       return {
-        buttonText: 'Review Client',
-        description: 'Share your experience working with this client'
+        buttonText: "Review Client",
+        description: "Share your experience working with this client",
       };
     }
   };
@@ -86,9 +88,7 @@ const ContractCompletionActions: React.FC<ContractCompletionActionsProps> = ({
           <h3 className="text-sm font-medium text-gray-900 mb-1">
             Contract Completed
           </h3>
-          <p className="text-xs text-gray-600 mb-3">
-            {description}
-          </p>
+          <p className="text-xs text-gray-600 mb-3">{description}</p>
         </div>
         <div className="flex space-x-2">
           <Button

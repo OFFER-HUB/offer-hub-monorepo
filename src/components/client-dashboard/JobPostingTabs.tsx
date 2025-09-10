@@ -6,7 +6,7 @@ import ViewJobPostingProposals from "@/components/client-dashboard/ViewJobPostin
 
 export default function JobPostingTabs() {
   const [activeTab, setActiveTab] = useState<"overview" | "proposals">(
-    "overview"
+    "overview",
   );
 
   return (

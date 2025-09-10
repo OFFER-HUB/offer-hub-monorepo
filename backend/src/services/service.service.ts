@@ -6,7 +6,12 @@ import {
   Service,
   ServiceWithFreelancer,
 } from "@/types/service.types";
-import { BadRequestError, ForbiddenError, NotFoundError ,InternalServerError} from "@/utils/AppError";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  InternalServerError,
+} from "@/utils/AppError";
 class ServiceService {
   async createService(serviceData: CreateServiceDTO): Promise<Service> {
     const { user_id, title, description, category, min_price, max_price } =
@@ -53,19 +58,21 @@ class ServiceService {
         is_active,
         created_at,
         updated_at
-      `
+      `,
       )
       .single();
 
     if (error) {
-      throw new InternalServerError(`Failed to create service: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to create service: ${error.message}`,
+      );
     }
 
     return service;
   }
 
   async getAllServices(
-    filters: ServiceFilters
+    filters: ServiceFilters,
   ): Promise<{ services: ServiceWithFreelancer[]; total: number }> {
     const {
       category,
@@ -98,7 +105,7 @@ class ServiceService {
         is_freelancer
       )
       `,
-        { count: "exact" }
+        { count: "exact" },
       )
       .eq("is_active", true);
 
@@ -117,7 +124,7 @@ class ServiceService {
 
     if (keyword) {
       query = query.or(
-        `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
+        `title.ilike.%${keyword}%,description.ilike.%${keyword}%`,
       );
     }
 
@@ -131,7 +138,9 @@ class ServiceService {
     const { data: services, error, count } = await query;
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch services: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch services: ${error.message}`,
+      );
     }
 
     // Transform the data to include freelancer info
@@ -170,7 +179,7 @@ class ServiceService {
   }
 
   async getServiceById(
-    serviceId: string
+    serviceId: string,
   ): Promise<ServiceWithFreelancer | null> {
     const { data: service, error } = await supabase
       .from("services")
@@ -194,7 +203,7 @@ class ServiceService {
         bio,
         is_freelancer
       )
-      `
+      `,
       )
       .eq("id", serviceId)
       .eq("is_active", true)
@@ -233,7 +242,7 @@ class ServiceService {
   async updateService(
     serviceId: string,
     updateData: UpdateServiceDTO,
-    userId?: string
+    userId?: string,
   ): Promise<Service | null> {
     // First, check if the service exists and get the owner
     const { data: existingService, error: fetchError } = await supabase
@@ -248,7 +257,9 @@ class ServiceService {
 
     // If userId is provided, check ownership
     if (userId && existingService.user_id !== userId) {
-      throw new ForbiddenError("Unauthorized: You can only update your own services");
+      throw new ForbiddenError(
+        "Unauthorized: You can only update your own services",
+      );
     }
 
     // Prepare update data
@@ -287,12 +298,14 @@ class ServiceService {
         is_active,
         created_at,
         updated_at
-      `
+      `,
       )
       .single();
 
     if (error) {
-      throw new InternalServerError(`Failed to update service: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to update service: ${error.message}`,
+      );
     }
 
     return service;
@@ -312,7 +325,9 @@ class ServiceService {
 
     // If userId is provided, check ownership
     if (userId && existingService.user_id !== userId) {
-      throw new ForbiddenError("Unauthorized: You can only delete your own services");
+      throw new ForbiddenError(
+        "Unauthorized: You can only delete your own services",
+      );
     }
 
     // Soft delete by setting is_active to false
@@ -325,7 +340,9 @@ class ServiceService {
       .eq("id", serviceId);
 
     if (error) {
-      throw new InternalServerError(`Failed to delete service: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to delete service: ${error.message}`,
+      );
     }
 
     return true;
@@ -347,13 +364,15 @@ class ServiceService {
         is_active,
         created_at,
         updated_at
-      `
+      `,
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch user services: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch user services: ${error.message}`,
+      );
     }
 
     return services || [];
@@ -366,7 +385,9 @@ class ServiceService {
       .eq("is_active", true);
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch categories: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch categories: ${error.message}`,
+      );
     }
 
     // Get unique categories

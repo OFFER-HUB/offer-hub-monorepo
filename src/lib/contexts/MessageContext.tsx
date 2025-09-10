@@ -1,37 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 interface Message {
-  id: string
-  text: string
-  timestamp: string
-  isOutgoing: boolean
-  talentId: number
-  senderId: number
-  receiverId: number
+  id: string;
+  text: string;
+  timestamp: string;
+  isOutgoing: boolean;
+  talentId: number;
+  senderId: number;
+  receiverId: number;
 }
 
 interface Conversation {
-  id: string
-  talentId: number
-  messages: Message[]
-  lastMessage?: Message
-  unreadCount: number
+  id: string;
+  talentId: number;
+  messages: Message[];
+  lastMessage?: Message;
+  unreadCount: number;
 }
 
 interface MessageContextType {
-  conversations: Conversation[]
-  loading: boolean
-  error: string | null
-  getConversation: (talentId: number) => Conversation | undefined
-  sendMessage: (talentId: number, text: string) => Promise<void>
-  markAsRead: (talentId: number) => void
-  getTotalUnreadCount: () => number
+  conversations: Conversation[];
+  loading: boolean;
+  error: string | null;
+  getConversation: (talentId: number) => Conversation | undefined;
+  sendMessage: (talentId: number, text: string) => Promise<void>;
+  markAsRead: (talentId: number) => void;
+  getTotalUnreadCount: () => number;
 }
 
-const MessageContext = createContext<MessageContextType | undefined>(undefined)
+const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 // Mock data for conversations
 const mockConversations: Conversation[] = [
@@ -76,39 +76,39 @@ const mockConversations: Conversation[] = [
     ],
     unreadCount: 1,
   },
-]
+];
 
 export function MessageProvider({ children }: { children: React.ReactNode }) {
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Simulate API call to fetch conversations
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        setLoading(true)
+        setLoading(true);
         // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 800))
-        setConversations(mockConversations)
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        setConversations(mockConversations);
       } catch (err) {
-        setError("Failed to load conversations")
+        setError("Failed to load conversations");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchConversations()
-  }, [])
+    fetchConversations();
+  }, []);
 
   const getConversation = (talentId: number): Conversation | undefined => {
-    return conversations.find((conv) => conv.talentId === talentId)
-  }
+    return conversations.find((conv) => conv.talentId === talentId);
+  };
 
   const sendMessage = async (talentId: number, text: string): Promise<void> => {
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const newMessage: Message = {
         id: Date.now().toString(),
@@ -121,20 +121,22 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
         talentId,
         senderId: 2, // Current user ID
         receiverId: talentId,
-      }
+      };
 
       setConversations((prev) => {
-        const existingConvIndex = prev.findIndex((conv) => conv.talentId === talentId)
+        const existingConvIndex = prev.findIndex(
+          (conv) => conv.talentId === talentId,
+        );
 
         if (existingConvIndex >= 0) {
           // Update existing conversation
-          const updated = [...prev]
+          const updated = [...prev];
           updated[existingConvIndex] = {
             ...updated[existingConvIndex],
             messages: [...updated[existingConvIndex].messages, newMessage],
             lastMessage: newMessage,
-          }
-          return updated
+          };
+          return updated;
         } else {
           // Create new conversation
           const newConversation: Conversation = {
@@ -143,23 +145,27 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
             messages: [newMessage],
             lastMessage: newMessage,
             unreadCount: 0,
-          }
-          return [...prev, newConversation]
+          };
+          return [...prev, newConversation];
         }
-      })
+      });
     } catch (err) {
-      setError("Failed to send message")
-      throw err
+      setError("Failed to send message");
+      throw err;
     }
-  }
+  };
 
   const markAsRead = (talentId: number) => {
-    setConversations((prev) => prev.map((conv) => (conv.talentId === talentId ? { ...conv, unreadCount: 0 } : conv)))
-  }
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.talentId === talentId ? { ...conv, unreadCount: 0 } : conv,
+      ),
+    );
+  };
 
   const getTotalUnreadCount = (): number => {
-    return conversations.reduce((total, conv) => total + conv.unreadCount, 0)
-  }
+    return conversations.reduce((total, conv) => total + conv.unreadCount, 0);
+  };
 
   const value: MessageContextType = {
     conversations,
@@ -169,15 +175,17 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     sendMessage,
     markAsRead,
     getTotalUnreadCount,
-  }
+  };
 
-  return <MessageContext.Provider value={value}>{children}</MessageContext.Provider>
+  return (
+    <MessageContext.Provider value={value}>{children}</MessageContext.Provider>
+  );
 }
 
 export const useMessages = () => {
-  const context = useContext(MessageContext)
+  const context = useContext(MessageContext);
   if (context === undefined) {
-    throw new Error("useMessages must be used within a MessageProvider")
+    throw new Error("useMessages must be used within a MessageProvider");
   }
-  return context
-}
+  return context;
+};

@@ -44,4 +44,4 @@ export interface NFTAwardedTable {
   nft_type: string; // TEXT NOT NULL
   token_id_on_chain: string; // TEXT NOT NULL
   minted_at: string; // TIMESTAMP DEFAULT NOW()
-} 
+}

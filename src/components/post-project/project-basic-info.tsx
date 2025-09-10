@@ -1,21 +1,36 @@
-"use client"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/text-area"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Info } from "lucide-react"
-import { ProjectDraft } from "@/types/project.types"
+"use client";
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/text-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import { ProjectDraft } from "@/types/project.types";
 
 interface ProjectBasicInfoProps {
-  projectData: ProjectDraft
-  updateProjectData: (data: keyof ProjectDraft, value: any) => void
+  projectData: ProjectDraft;
+  updateProjectData: (data: keyof ProjectDraft, value: any) => void;
 }
 
-export default function ProjectBasicInfo({ projectData, updateProjectData }: ProjectBasicInfoProps) {
+export default function ProjectBasicInfo({
+  projectData,
+  updateProjectData,
+}: ProjectBasicInfoProps) {
   const categories = [
     { id: "web-dev", name: "Web Development" },
     { id: "mobile-dev", name: "Mobile Development" },
@@ -25,7 +40,7 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
     { id: "video", name: "Video & Animation" },
     { id: "admin", name: "Admin Support" },
     { id: "other", name: "Other" },
-  ]
+  ];
 
   const subcategories: Record<string, Array<{ id: string; name: string }>> = {
     "web-dev": [
@@ -49,7 +64,7 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
       { id: "illustration", name: "Illustration" },
       { id: "product-design", name: "Product Design" },
     ],
-  }
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -59,21 +74,27 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
-  }
+  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-6"
+    >
       <motion.div variants={item}>
         <Card>
           <CardHeader>
             <CardTitle>Basic Project Information</CardTitle>
             <CardDescription>
-              Provide the essential details about your project to help freelancers understand what you need
+              Provide the essential details about your project to help
+              freelancers understand what you need
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -83,10 +104,11 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
                 id="project-title"
                 placeholder="e.g. Professional Website Design for Small Business"
                 value={projectData.title}
-                onChange={(e) => updateProjectData("title", e.target.value )}
+                onChange={(e) => updateProjectData("title", e.target.value)}
               />
               <p className="text-sm text-muted-foreground">
-                A clear title helps attract the right freelancers (50-80 characters recommended)
+                A clear title helps attract the right freelancers (50-80
+                characters recommended)
               </p>
             </div>
 
@@ -95,7 +117,9 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
                 <Label htmlFor="category">Category</Label>
                 <Select
                   value={projectData.category}
-                  onValueChange={(value) => updateProjectData("category", value)}
+                  onValueChange={(value) =>
+                    updateProjectData("category", value)
+                  }
                 >
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
@@ -114,19 +138,29 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
                 <Label htmlFor="subcategory">Subcategory</Label>
                 <Select
                   value={projectData.subcategory}
-                  onValueChange={(value) => updateProjectData("subcategory", value)}
-                  disabled={!projectData.category || !subcategories[projectData.category]}
+                  onValueChange={(value) =>
+                    updateProjectData("subcategory", value)
+                  }
+                  disabled={
+                    !projectData.category ||
+                    !subcategories[projectData.category]
+                  }
                 >
                   <SelectTrigger id="subcategory">
                     <SelectValue placeholder="Select a subcategory" />
                   </SelectTrigger>
                   <SelectContent>
                     {projectData.category &&
-                      subcategories[projectData.category]?.map((subcategory) => (
-                        <SelectItem key={subcategory.id} value={subcategory.id}>
-                          {subcategory.name}
-                        </SelectItem>
-                      ))}
+                      subcategories[projectData.category]?.map(
+                        (subcategory) => (
+                          <SelectItem
+                            key={subcategory.id}
+                            value={subcategory.id}
+                          >
+                            {subcategory.name}
+                          </SelectItem>
+                        ),
+                      )}
                   </SelectContent>
                 </Select>
               </div>
@@ -139,10 +173,13 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
                 placeholder="Describe your project in detail..."
                 className="min-h-[200px]"
                 value={projectData.description}
-                onChange={(e) => updateProjectData("description", e.target.value)}
+                onChange={(e) =>
+                  updateProjectData("description", e.target.value)
+                }
               />
               <p className="text-sm text-muted-foreground">
-                Include all details about your project requirements, goals, and expectations
+                Include all details about your project requirements, goals, and
+                expectations
               </p>
             </div>
 
@@ -150,21 +187,27 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
               <Label>Project Type</Label>
               <RadioGroup
                 value={projectData.projectType}
-                onValueChange={(value) => updateProjectData("projectType", value)}
+                onValueChange={(value) =>
+                  updateProjectData("projectType", value)
+                }
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
                 <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <RadioGroupItem value="one-time" id="one-time" />
                   <Label htmlFor="one-time" className="flex-1 cursor-pointer">
                     <div className="font-medium">One-time project</div>
-                    <div className="text-sm text-muted-foreground">A project with a defined scope and deliverables</div>
+                    <div className="text-sm text-muted-foreground">
+                      A project with a defined scope and deliverables
+                    </div>
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
                   <RadioGroupItem value="ongoing" id="ongoing" />
                   <Label htmlFor="ongoing" className="flex-1 cursor-pointer">
                     <div className="font-medium">Ongoing project</div>
-                    <div className="text-sm text-muted-foreground">A long-term project that may evolve over time</div>
+                    <div className="text-sm text-muted-foreground">
+                      A long-term project that may evolve over time
+                    </div>
                   </Label>
                 </div>
               </RadioGroup>
@@ -174,7 +217,9 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
               <Label>Project Visibility</Label>
               <RadioGroup
                 value={projectData.visibility}
-                onValueChange={(value) => updateProjectData("visibility", value)}
+                onValueChange={(value) =>
+                  updateProjectData("visibility", value)
+                }
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
                 <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
@@ -201,13 +246,13 @@ export default function ProjectBasicInfo({ projectData, updateProjectData }: Pro
             <Alert className="bg-[#DEEFE7]/30 border-[#15949C]">
               <Info className="h-4 w-4 text-[#15949C]" />
               <AlertDescription className="text-[#002333]/70">
-                Projects with clear, detailed descriptions receive 3x more quality proposals from freelancers.
+                Projects with clear, detailed descriptions receive 3x more
+                quality proposals from freelancers.
               </AlertDescription>
             </Alert>
           </CardContent>
         </Card>
       </motion.div>
     </motion.div>
-  )
+  );
 }
-

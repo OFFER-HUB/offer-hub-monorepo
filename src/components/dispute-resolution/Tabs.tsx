@@ -1,6 +1,6 @@
-import { JSX } from 'react';
-import PillTabs from '../tabs/pill-tabs';
-import React from 'react';
+import { JSX } from "react";
+import PillTabs from "../tabs/pill-tabs";
+import React from "react";
 
 interface TabItem {
   label: string;
@@ -17,7 +17,7 @@ interface DisputeTabsProps {
 
 export default function DisputeTabs({
   tabs,
-  defaultValue = 'unassigned',
+  defaultValue = "unassigned",
   className,
   tabsListclassName,
 }: DisputeTabsProps) {

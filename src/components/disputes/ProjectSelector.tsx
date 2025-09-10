@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { getActiveProjects } from '@/lib/mockData/projects-mock';
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { getActiveProjects } from "@/lib/mockData/projects-mock";
 
 interface ProjectSelectorProps {
   value: string;
@@ -10,11 +10,15 @@ interface ProjectSelectorProps {
   error?: string;
 }
 
-export function ProjectSelector({ value, onChange, error }: ProjectSelectorProps) {
+export function ProjectSelector({
+  value,
+  onChange,
+  error,
+}: ProjectSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const projects = getActiveProjects();
 
-  const selectedProject = projects.find(project => project.id === value);
+  const selectedProject = projects.find((project) => project.id === value);
 
   const handleSelect = (projectId: string) => {
     onChange(projectId);
@@ -27,17 +31,17 @@ export function ProjectSelector({ value, onChange, error }: ProjectSelectorProps
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-3 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-          error ? 'border-red-500' : 'border-gray-300'
+          error ? "border-red-500" : "border-gray-300"
         }`}
       >
         <div className="flex items-center justify-between">
-          <span className={selectedProject ? 'text-gray-900' : 'text-gray-500'}>
-            {selectedProject ? selectedProject.title : 'Choose client'}
+          <span className={selectedProject ? "text-gray-900" : "text-gray-500"}>
+            {selectedProject ? selectedProject.title : "Choose client"}
           </span>
-          <ChevronDown 
+          <ChevronDown
             className={`h-4 w-4 text-gray-400 transition-transform ${
-              isOpen ? 'transform rotate-180' : ''
-            }`} 
+              isOpen ? "transform rotate-180" : ""
+            }`}
           />
         </div>
       </button>
@@ -51,7 +55,9 @@ export function ProjectSelector({ value, onChange, error }: ProjectSelectorProps
                 type="button"
                 onClick={() => handleSelect(project.id)}
                 className={`w-full px-3 py-2 text-left hover:bg-gray-100 focus:outline-none focus:bg-gray-100 ${
-                  value === project.id ? 'bg-blue-50 text-blue-700' : 'text-gray-900'
+                  value === project.id
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-900"
                 }`}
               >
                 <div>
@@ -66,9 +72,7 @@ export function ProjectSelector({ value, onChange, error }: ProjectSelectorProps
         </div>
       )}
 
-      {error && (
-        <p className="mt-1 text-sm text-red-500">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   );
 }

@@ -1,26 +1,29 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu"
-import { SlidersHorizontal, ChevronDown } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { SlidersHorizontal, ChevronDown } from "lucide-react";
 
 interface SortingOptionsProps {
-  sortOption: string
-  setSortOption: (option: string) => void
+  sortOption: string;
+  setSortOption: (option: string) => void;
 }
 
-export default function SortingOptions({ sortOption, setSortOption }: SortingOptionsProps) {
+export default function SortingOptions({
+  sortOption,
+  setSortOption,
+}: SortingOptionsProps) {
   return (
     <div className="flex items-center justify-between gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex items-center justify-between border-gray-200 rounded-lg text-gray-700 font-normal px-4 py-2 w-48 h-11 bg-white"
           >
             <span>{sortOption}</span>
@@ -46,13 +49,12 @@ export default function SortingOptions({ sortOption, setSortOption }: SortingOpt
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         className="border-gray-200 rounded-lg text-gray-700 font-normal px-3 h-11 w-11 bg-white"
       >
         <SlidersHorizontal className="h-5 w-5" />
       </Button>
     </div>
-  )
+  );
 }
-

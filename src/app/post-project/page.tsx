@@ -195,11 +195,12 @@ export default function PostProjectPage() {
   const { createProject } = useProjectsApi();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [projectData, setProjectData] = useState<ProjectDraft>(initialProjectData);
+  const [projectData, setProjectData] =
+    useState<ProjectDraft>(initialProjectData);
 
   useEffect(() => {
     if (typeof window !== "undefined" && user?.id) {
-      const saved = localStorage.getItem('projectDataDraft');
+      const saved = localStorage.getItem("projectDataDraft");
       if (saved) {
         setProjectData(JSON.parse(saved));
       } else {
@@ -210,17 +211,13 @@ export default function PostProjectPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && user?.id) {
-      localStorage.setItem(
-        'projectDataDraft',
-        JSON.stringify(projectData)
-      );
+      localStorage.setItem("projectDataDraft", JSON.stringify(projectData));
     }
   }, [projectData]);
 
   const updateProjectData = (data: keyof ProjectDraft, value: any) => {
     setProjectData((prev) => ({ ...prev, [data]: value }));
   };
-
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -239,14 +236,13 @@ export default function PostProjectPage() {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      if (!user?.id)
-        throw new Error("No authenticated user found");
+      if (!user?.id) throw new Error("No authenticated user found");
       const dto = mapData(projectData, user);
       await createProject(dto);
       toast.success("Success!! Project Posted");
       setCurrentStep(totalSteps + 1); // Show success screen
-      if (typeof window !== "undefined") 
-        localStorage.removeItem('projectDataDraft');
+      if (typeof window !== "undefined")
+        localStorage.removeItem("projectDataDraft");
       setProjectData({ ...initialProjectData, client_id: user?.id });
     } catch (error: any) {
       toast.error(error.message || "Error creating project");
@@ -352,7 +348,11 @@ export default function PostProjectPage() {
                   className="bg-[#15949C] hover:bg-[#15949C]/90 flex items-center disabled:opacity-60"
                 >
                   {isLoading ? "Posting..." : "Post Project"}
-                  {!isLoading ? <Loading/> : <Check className="ml-2 h-4 w-4" />}
+                  {!isLoading ? (
+                    <Loading />
+                  ) : (
+                    <Check className="ml-2 h-4 w-4" />
+                  )}
                 </Button>
               )}
             </div>

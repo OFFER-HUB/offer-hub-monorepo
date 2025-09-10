@@ -58,12 +58,12 @@ export interface UseFreelancerServicesApiReturn {
   error: string | null;
   createService: (
     serviceData: CreateServiceFormData,
-    userId: string
+    userId: string,
   ) => Promise<boolean>;
   updateService: (
     serviceId: string,
     serviceData: UpdateServiceFormData,
-    userId: string
+    userId: string,
   ) => Promise<boolean>;
   deleteService: (serviceId: string, userId: string) => Promise<boolean>;
   fetchUserServices: (userId: string) => Promise<void>;
@@ -89,7 +89,7 @@ const mapBackendToFrontend = (backendService: Service): FrontendService => {
 // Helper function to convert frontend service to backend format
 const mapFrontendToBackend = (
   frontendService: CreateServiceFormData,
-  userId: string
+  userId: string,
 ) => {
   return {
     user_id: userId,
@@ -130,13 +130,14 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+          errorData.message ||
+            `HTTP ${response.status}: ${response.statusText}`,
         );
       }
 
@@ -161,7 +162,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
   const createService = useCallback(
     async (
       serviceData: CreateServiceFormData,
-      userId: string
+      userId: string,
     ): Promise<boolean> => {
       if (!userId) {
         setError("User ID is required");
@@ -185,7 +186,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
         serviceData.min_price > serviceData.max_price
       ) {
         setError(
-          "Invalid price range. Min price must be less than or equal to max price, and both must be positive."
+          "Invalid price range. Min price must be less than or equal to max price, and both must be positive.",
         );
         return false;
       }
@@ -220,7 +221,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
 
           throw new Error(
             errorData.message ||
-              `HTTP ${response.status}: ${response.statusText}`
+              `HTTP ${response.status}: ${response.statusText}`,
           );
         }
 
@@ -246,14 +247,14 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
         setIsCreating(false);
       }
     },
-    []
+    [],
   );
 
   const updateService = useCallback(
     async (
       serviceId: string,
       serviceData: UpdateServiceFormData,
-      userId: string
+      userId: string,
     ): Promise<boolean> => {
       if (!userId || !serviceId) {
         setError("User ID and service ID are required");
@@ -271,7 +272,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
           serviceData.min_price > serviceData.max_price
         ) {
           setError(
-            "Invalid price range. Min price must be less than or equal to max price, and both must be positive."
+            "Invalid price range. Min price must be less than or equal to max price, and both must be positive.",
           );
           return false;
         }
@@ -318,7 +319,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
 
           throw new Error(
             errorData.message ||
-              `HTTP ${response.status}: ${response.statusText}`
+              `HTTP ${response.status}: ${response.statusText}`,
           );
         }
 
@@ -333,8 +334,8 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
           const updatedService = mapBackendToFrontend(data.data);
           setServices((prev) =>
             prev.map((service) =>
-              service.id === serviceId ? updatedService : service
-            )
+              service.id === serviceId ? updatedService : service,
+            ),
           );
         }
 
@@ -348,7 +349,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
         setIsUpdating(false);
       }
     },
-    []
+    [],
   );
 
   const deleteService = useCallback(
@@ -382,7 +383,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
 
           throw new Error(
             errorData.message ||
-              `HTTP ${response.status}: ${response.statusText}`
+              `HTTP ${response.status}: ${response.statusText}`,
           );
         }
 
@@ -394,7 +395,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
 
         // Remove the service from the list
         setServices((prev) =>
-          prev.filter((service) => service.id !== serviceId)
+          prev.filter((service) => service.id !== serviceId),
         );
 
         return true;
@@ -407,7 +408,7 @@ export function useFreelancerServicesApi(): UseFreelancerServicesApiReturn {
         setIsDeleting(false);
       }
     },
-    []
+    [],
   );
 
   return {

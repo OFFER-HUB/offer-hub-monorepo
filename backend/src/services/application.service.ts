@@ -1,5 +1,9 @@
-import { supabase } from '../lib/supabase/supabase';
-import { ConflictError,BadRequestError,NotFoundError } from '@/utils/AppError';
+import { supabase } from "../lib/supabase/supabase";
+import {
+  ConflictError,
+  BadRequestError,
+  NotFoundError,
+} from "@/utils/AppError";
 export interface ApplicationInput {
   project_id: string;
   freelancer_id: string;
@@ -8,35 +12,37 @@ export interface ApplicationInput {
 
 export interface Application extends ApplicationInput {
   id: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   created_at: string;
 }
 
-export const createApplication = async (input: ApplicationInput): Promise<Application> => {
+export const createApplication = async (
+  input: ApplicationInput,
+): Promise<Application> => {
   const { data: existingApplication } = await supabase
-    .from('applications')
-    .select('id')
-    .eq('project_id', input.project_id)
-    .eq('freelancer_id', input.freelancer_id)
+    .from("applications")
+    .select("id")
+    .eq("project_id", input.project_id)
+    .eq("freelancer_id", input.freelancer_id)
     .single();
 
   if (existingApplication) {
-    throw new ConflictError('You have already applied to this project');
+    throw new ConflictError("You have already applied to this project");
   }
 
   const { data: project } = await supabase
-    .from('projects')
-    .select('status')
-    .eq('id', input.project_id)
+    .from("projects")
+    .select("status")
+    .eq("id", input.project_id)
     .single();
 
-  if (!project || project.status !== 'pending') {
-    throw new BadRequestError('This project is not accepting applications');
+  if (!project || project.status !== "pending") {
+    throw new BadRequestError("This project is not accepting applications");
   }
 
   const { data: application, error } = await supabase
-    .from('applications')
-    .insert([{ ...input, status: 'pending' }])
+    .from("applications")
+    .insert([{ ...input, status: "pending" }])
     .select()
     .single();
 
@@ -44,11 +50,13 @@ export const createApplication = async (input: ApplicationInput): Promise<Applic
   return application;
 };
 
-export const getApplicationsByProject = async (projectId: string): Promise<Application[]> => {
+export const getApplicationsByProject = async (
+  projectId: string,
+): Promise<Application[]> => {
   const { data: applications, error } = await supabase
-    .from('applications')
-    .select('id, project_id, freelancer_id, message, status, created_at')
-    .eq('project_id', projectId);
+    .from("applications")
+    .select("id, project_id, freelancer_id, message, status, created_at")
+    .eq("project_id", projectId);
 
   if (error) throw error;
   return applications || [];
@@ -56,46 +64,48 @@ export const getApplicationsByProject = async (projectId: string): Promise<Appli
 
 export const updateApplicationStatus = async (
   applicationId: string,
-  status: 'accepted' | 'rejected'
+  status: "accepted" | "rejected",
 ): Promise<Application> => {
   const { data: existingApplication } = await supabase
-    .from('applications')
-    .select('status')
-    .eq('id', applicationId)
+    .from("applications")
+    .select("status")
+    .eq("id", applicationId)
     .single();
 
   if (!existingApplication) {
-    throw new NotFoundError('Application not found');
+    throw new NotFoundError("Application not found");
   }
 
-  if (existingApplication.status !== 'pending') {
-    throw new ConflictError('Application status can only be updated once');
+  if (existingApplication.status !== "pending") {
+    throw new ConflictError("Application status can only be updated once");
   }
 
-  if (status === 'accepted') {
+  if (status === "accepted") {
     const { data: project } = await supabase
-      .from('applications')
-      .select('project_id')
-      .eq('id', applicationId)
+      .from("applications")
+      .select("project_id")
+      .eq("id", applicationId)
       .single();
 
     if (project) {
       const { count } = await supabase
-        .from('applications')
-        .select('*', { count: 'exact', head: true })
-        .eq('project_id', project.project_id)
-        .eq('status', 'accepted');
+        .from("applications")
+        .select("*", { count: "exact", head: true })
+        .eq("project_id", project.project_id)
+        .eq("status", "accepted");
 
       if (count && count > 0) {
-        throw new ConflictError('This project already has an accepted application');
+        throw new ConflictError(
+          "This project already has an accepted application",
+        );
       }
     }
   }
 
   const { data: application, error } = await supabase
-    .from('applications')
+    .from("applications")
     .update({ status })
-    .eq('id', applicationId)
+    .eq("id", applicationId)
     .select()
     .single();
 

@@ -7,7 +7,8 @@ import { Send, Paperclip } from "lucide-react";
 const mockMessages = [
   {
     id: 1,
-    content: "Hello, I have an issue with the payment. The freelancer completed the work but I haven't received the deliverables as promised.",
+    content:
+      "Hello, I have an issue with the payment. The freelancer completed the work but I haven't received the deliverables as promised.",
     timestamp: "2 hours ago",
     sender: {
       name: "Sarah Johnson",
@@ -17,7 +18,8 @@ const mockMessages = [
   },
   {
     id: 2,
-    content: "I understand your concern. I actually did send the files via email yesterday. Let me resend them to make sure you receive them.",
+    content:
+      "I understand your concern. I actually did send the files via email yesterday. Let me resend them to make sure you receive them.",
     timestamp: "1 hour ago",
     sender: {
       name: "Mike Chen",
@@ -26,7 +28,8 @@ const mockMessages = [
   },
   {
     id: 3,
-    content: "I've checked my email including spam folder and didn't receive anything. Can you please provide proof of delivery?",
+    content:
+      "I've checked my email including spam folder and didn't receive anything. Can you please provide proof of delivery?",
     timestamp: "45 minutes ago",
     sender: {
       name: "Sarah Johnson",
@@ -36,7 +39,8 @@ const mockMessages = [
   },
   {
     id: 4,
-    content: "This dispute has been escalated to our support team. We will review all communications and resolve this matter within 24 hours.",
+    content:
+      "This dispute has been escalated to our support team. We will review all communications and resolve this matter within 24 hours.",
     timestamp: "30 minutes ago",
     sender: {
       name: "Support Team",
@@ -51,7 +55,10 @@ interface DisputeChatProps {
   disputeId?: string;
 }
 
-export default function DisputeChat({ onCloseConflict, disputeId }: DisputeChatProps) {
+export default function DisputeChat({
+  onCloseConflict,
+  disputeId,
+}: DisputeChatProps) {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState(mockMessages);
 
@@ -86,11 +93,13 @@ export default function DisputeChat({ onCloseConflict, disputeId }: DisputeChatP
       <div className="border-b bg-gray-50 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-gray-900">Dispute #{disputeId || "ABC123"}</h3>
+            <h3 className="font-semibold text-gray-900">
+              Dispute #{disputeId || "ABC123"}
+            </h3>
             <p className="text-sm text-gray-500">Payment & Delivery Issue</p>
           </div>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={onCloseConflict}
             className="bg-red-600 hover:bg-red-700"
           >
@@ -102,8 +111,8 @@ export default function DisputeChat({ onCloseConflict, disputeId }: DisputeChatP
       {/* Messages Area */}
       <div className="flex-1 overflow-auto p-6 space-y-4 bg-gray-50">
         {messages.map((msg) => (
-          <DisputeMessageBubble 
-            key={msg.id} 
+          <DisputeMessageBubble
+            key={msg.id}
             content={msg.content}
             timestamp={msg.timestamp}
             sender={msg.sender}
@@ -142,4 +151,4 @@ export default function DisputeChat({ onCloseConflict, disputeId }: DisputeChatP
       </div>
     </div>
   );
-} 
+}

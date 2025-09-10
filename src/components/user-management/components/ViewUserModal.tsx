@@ -28,12 +28,26 @@ export function ViewUserModal({
           </button>
         </div>
         <div className="p-4 space-y-3 text-sm text-gray-700">
-          <p><strong>Name:</strong> {selectedUser.name}</p>
-          <p><strong>Email:</strong> {selectedUser.email}</p>
-          <p><strong>Status:</strong> {selectedUser.status}</p>
-          <p><strong>Email Validated:</strong> {selectedUser.emailValidated ? "Yes" : "No"}</p>
-          <p><strong>Identity Card:</strong> {selectedUser.identityCard}</p>
-          <p><strong>Submission Date:</strong> {new Date(selectedUser.submissionDate).toLocaleDateString("en-US")}</p>
+          <p>
+            <strong>Name:</strong> {selectedUser.name}
+          </p>
+          <p>
+            <strong>Email:</strong> {selectedUser.email}
+          </p>
+          <p>
+            <strong>Status:</strong> {selectedUser.status}
+          </p>
+          <p>
+            <strong>Email Validated:</strong>{" "}
+            {selectedUser.emailValidated ? "Yes" : "No"}
+          </p>
+          <p>
+            <strong>Identity Card:</strong> {selectedUser.identityCard}
+          </p>
+          <p>
+            <strong>Submission Date:</strong>{" "}
+            {new Date(selectedUser.submissionDate).toLocaleDateString("en-US")}
+          </p>
         </div>
         <div className="flex justify-end p-4 border-t">
           <Button

@@ -1,26 +1,26 @@
-"use client"
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { useTalentData } from "@/hooks/talent/useTalentData"
-import { MessageBubble } from "@/components/messaging/MessageBubble"
-import { MessageInputs } from "@/components/messaging/MessageInputs"
-import Image from "next/image"
-import TalentLayout from "@/components/talent/talents/TalentLayout"
+"use client";
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useTalentData } from "@/hooks/talent/useTalentData";
+import { MessageBubble } from "@/components/messaging/MessageBubble";
+import { MessageInputs } from "@/components/messaging/MessageInputs";
+import Image from "next/image";
+import TalentLayout from "@/components/talent/talents/TalentLayout";
 
 interface Message {
-  id: string
-  text: string
-  timestamp: string
-  isOutgoing: boolean
+  id: string;
+  text: string;
+  timestamp: string;
+  isOutgoing: boolean;
 }
 
 export default function MessagesPage() {
-  const params = useParams()
-  const router = useRouter()
-  const talentId = params.id as string
-  const { getTalentById } = useTalentData()
-  const talent = getTalentById(Number(talentId))
+  const params = useParams();
+  const router = useRouter();
+  const talentId = params.id as string;
+  const { getTalentById } = useTalentData();
+  const talent = getTalentById(Number(talentId));
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -35,7 +35,7 @@ export default function MessagesPage() {
       timestamp: "09:23 am",
       isOutgoing: false,
     },
-  ])
+  ]);
 
   const handleSendMessage = (messageText: string) => {
     const newMessage: Message = {
@@ -46,13 +46,13 @@ export default function MessagesPage() {
         minute: "2-digit",
       }),
       isOutgoing: true,
-    }
-    setMessages((prev) => [...prev, newMessage])
-  }
+    };
+    setMessages((prev) => [...prev, newMessage]);
+  };
 
   const handleBack = () => {
-    router.back()
-  }
+    router.back();
+  };
 
   return (
     <section className="min-h-screen bg-gray-100">
@@ -77,13 +77,17 @@ export default function MessagesPage() {
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10">
                 <Image
-                  src={talent?.avatar || "/professional-male-designer-avatar.png"}
+                  src={
+                    talent?.avatar || "/professional-male-designer-avatar.png"
+                  }
                   alt={talent?.name || "User"}
                   fill
                   className="rounded-full object-cover"
                 />
               </div>
-              <h1 className="text-lg font-semibold text-gray-900">{talent?.name || "John Doe"}</h1>
+              <h1 className="text-lg font-semibold text-gray-900">
+                {talent?.name || "John Doe"}
+              </h1>
             </div>
           </div>
 
@@ -106,5 +110,5 @@ export default function MessagesPage() {
         </div>
       </TalentLayout>
     </section>
-  )
+  );
 }

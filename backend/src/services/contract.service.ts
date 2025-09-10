@@ -6,7 +6,14 @@ import {
   ContractWithUsers,
 } from "@/types/contract.types";
 import { UUID_REGEX } from "@/utils/validation";
-import { MissingFieldsError ,ValidationError,ForbiddenError,NotFoundError,InternalServerError, BadRequestError} from "@/utils/AppError";
+import {
+  MissingFieldsError,
+  ValidationError,
+  ForbiddenError,
+  NotFoundError,
+  InternalServerError,
+  BadRequestError,
+} from "@/utils/AppError";
 class ContractService {
   async createContract(contractData: CreateContractDTO): Promise<Contract> {
     const {
@@ -21,11 +28,15 @@ class ContractService {
 
     // Validate contract type and required fields
     if (contract_type === "project" && !project_id) {
-      throw new MissingFieldsError("project_id is required for project contracts");
+      throw new MissingFieldsError(
+        "project_id is required for project contracts",
+      );
     }
 
     if (contract_type === "service" && !service_request_id) {
-      throw new MissingFieldsError("service_request_id is required for service contracts");
+      throw new MissingFieldsError(
+        "service_request_id is required for service contracts",
+      );
     }
 
     // Validate UUID format
@@ -83,12 +94,14 @@ class ContractService {
         escrow_status,
         amount_locked,
         created_at
-      `
+      `,
       )
       .single();
 
     if (error) {
-      throw new InternalServerError(`Failed to create contract: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to create contract: ${error.message}`,
+      );
     }
 
     return contract;
@@ -126,7 +139,7 @@ class ContractService {
           username,
           email
         )
-      `
+      `,
       )
       .eq("id", contractId)
       .single();
@@ -172,7 +185,7 @@ class ContractService {
   async updateContractStatus(
     contractId: string,
     updateData: UpdateContractDTO,
-    userId?: string
+    userId?: string,
   ): Promise<Contract | null> {
     // Validate UUID format
     if (!UUID_REGEX.test(contractId)) {
@@ -205,17 +218,23 @@ class ContractService {
 
       if (!allowedTransitions.includes(escrow_status)) {
         throw new BadRequestError(
-          `Invalid status transition from ${currentStatus} to ${escrow_status}`
+          `Invalid status transition from ${currentStatus} to ${escrow_status}`,
         );
       }
 
       // Validate user permissions
       if (userId) {
-        if (escrow_status === "funded" && userId !== currentContract.client_id) {
+        if (
+          escrow_status === "funded" &&
+          userId !== currentContract.client_id
+        ) {
           throw new ForbiddenError("Only the client can fund the escrow");
         }
 
-        if (escrow_status === "released" && userId !== currentContract.client_id) {
+        if (
+          escrow_status === "released" &&
+          userId !== currentContract.client_id
+        ) {
           throw new ForbiddenError("Only the client can release the escrow");
         }
 
@@ -248,12 +267,14 @@ class ContractService {
         escrow_status,
         amount_locked,
         created_at
-      `
+      `,
       )
       .single();
 
     if (error) {
-      throw new InternalServerError(`Failed to update contract: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to update contract: ${error.message}`,
+      );
     }
 
     return contract;
@@ -292,49 +313,53 @@ class ContractService {
           username,
           email
         )
-      `
+      `,
       )
       .or(`freelancer_id.eq.${userId},client_id.eq.${userId}`)
       .order("created_at", { ascending: false });
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch user contracts: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch user contracts: ${error.message}`,
+      );
     }
 
     // Transform the data to include user info
-    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map((contract: any) => {
-      const freelancer = Array.isArray(contract.freelancer)
-        ? contract.freelancer[0]
-        : contract.freelancer;
-      const client = Array.isArray(contract.client)
-        ? contract.client[0]
-        : contract.client;
+    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map(
+      (contract: any) => {
+        const freelancer = Array.isArray(contract.freelancer)
+          ? contract.freelancer[0]
+          : contract.freelancer;
+        const client = Array.isArray(contract.client)
+          ? contract.client[0]
+          : contract.client;
 
-      return {
-        id: contract.id,
-        contract_type: contract.contract_type,
-        project_id: contract.project_id,
-        service_request_id: contract.service_request_id,
-        freelancer_id: contract.freelancer_id,
-        client_id: contract.client_id,
-        contract_on_chain_id: contract.contract_on_chain_id,
-        escrow_status: contract.escrow_status,
-        amount_locked: contract.amount_locked,
-        created_at: contract.created_at,
-        freelancer: {
-          id: freelancer?.id,
-          name: freelancer?.name,
-          username: freelancer?.username,
-          email: freelancer?.email,
-        },
-        client: {
-          id: client?.id,
-          name: client?.name,
-          username: client?.username,
-          email: client?.email,
-        },
-      };
-    });
+        return {
+          id: contract.id,
+          contract_type: contract.contract_type,
+          project_id: contract.project_id,
+          service_request_id: contract.service_request_id,
+          freelancer_id: contract.freelancer_id,
+          client_id: contract.client_id,
+          contract_on_chain_id: contract.contract_on_chain_id,
+          escrow_status: contract.escrow_status,
+          amount_locked: contract.amount_locked,
+          created_at: contract.created_at,
+          freelancer: {
+            id: freelancer?.id,
+            name: freelancer?.name,
+            username: freelancer?.username,
+            email: freelancer?.email,
+          },
+          client: {
+            id: client?.id,
+            name: client?.name,
+            username: client?.username,
+            email: client?.email,
+          },
+        };
+      },
+    );
 
     return contractsWithUsers;
   }
@@ -366,52 +391,56 @@ class ContractService {
           username,
           email
         )
-      `
+      `,
       )
       .eq("escrow_status", status)
       .order("created_at", { ascending: false });
 
     if (error) {
-      throw new InternalServerError(`Failed to fetch contracts by status: ${error.message}`);
+      throw new InternalServerError(
+        `Failed to fetch contracts by status: ${error.message}`,
+      );
     }
 
     // Transform the data to include user info
-    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map((contract: any) => {
-      const freelancer = Array.isArray(contract.freelancer)
-        ? contract.freelancer[0]
-        : contract.freelancer;
-      const client = Array.isArray(contract.client)
-        ? contract.client[0]
-        : contract.client;
+    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map(
+      (contract: any) => {
+        const freelancer = Array.isArray(contract.freelancer)
+          ? contract.freelancer[0]
+          : contract.freelancer;
+        const client = Array.isArray(contract.client)
+          ? contract.client[0]
+          : contract.client;
 
-      return {
-        id: contract.id,
-        contract_type: contract.contract_type,
-        project_id: contract.project_id,
-        service_request_id: contract.service_request_id,
-        freelancer_id: contract.freelancer_id,
-        client_id: contract.client_id,
-        contract_on_chain_id: contract.contract_on_chain_id,
-        escrow_status: contract.escrow_status,
-        amount_locked: contract.amount_locked,
-        created_at: contract.created_at,
-        freelancer: {
-          id: freelancer?.id,
-          name: freelancer?.name,
-          username: freelancer?.username,
-          email: freelancer?.email,
-        },
-        client: {
-          id: client?.id,
-          name: client?.name,
-          username: client?.username,
-          email: client?.email,
-        },
-      };
-    });
+        return {
+          id: contract.id,
+          contract_type: contract.contract_type,
+          project_id: contract.project_id,
+          service_request_id: contract.service_request_id,
+          freelancer_id: contract.freelancer_id,
+          client_id: contract.client_id,
+          contract_on_chain_id: contract.contract_on_chain_id,
+          escrow_status: contract.escrow_status,
+          amount_locked: contract.amount_locked,
+          created_at: contract.created_at,
+          freelancer: {
+            id: freelancer?.id,
+            name: freelancer?.name,
+            username: freelancer?.username,
+            email: freelancer?.email,
+          },
+          client: {
+            id: client?.id,
+            name: client?.name,
+            username: client?.username,
+            email: client?.email,
+          },
+        };
+      },
+    );
 
     return contractsWithUsers;
   }
 }
 
-export const contractService = new ContractService(); 
+export const contractService = new ContractService();

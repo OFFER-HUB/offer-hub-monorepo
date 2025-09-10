@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import * as ProgressPrimitive from '@radix-ui/react-progress';
-import * as React from 'react';
+import * as ProgressPrimitive from "@radix-ui/react-progress";
+import * as React from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 interface ProgressProps
   extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
   indeterminate?: boolean;
@@ -16,9 +16,9 @@ const Progress = React.forwardRef<
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      'relative h-4 w-full overflow-hidden rounded-full bg-secondary-100',
+      "relative h-4 w-full overflow-hidden rounded-full bg-secondary-100",
       className,
-      indeterminate && 'animate-progress origin-left'
+      indeterminate && "animate-progress origin-left",
     )}
     {...props}
   >

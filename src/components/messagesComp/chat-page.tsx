@@ -62,7 +62,7 @@ export default function ChatPageClient({
   const [conversations, setConversations] =
     useState<Conversation[]>(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string>(
-    initialConversations[0]?.id ?? ""
+    initialConversations[0]?.id ?? "",
   );
 
   // State: reply target and simulated peer typing
@@ -80,15 +80,15 @@ export default function ChatPageClient({
   const activeConversation = useMemo(
     () =>
       conversations.find(
-        (conversation) => conversation.id === activeConversationId
+        (conversation) => conversation.id === activeConversationId,
       ) ?? conversations[0],
-    [conversations, activeConversationId]
+    [conversations, activeConversationId],
   );
 
   // Handler: start reply by clicking the reply rail/icon or swiping on touch
   const handleStartReply = (messageId: string) => {
     const originalMessage = activeConversation?.messages.find(
-      (message) => message.id === messageId
+      (message) => message.id === messageId,
     );
     if (!originalMessage) return;
     const firstAttachment = originalMessage.attachments?.[0];
@@ -124,8 +124,8 @@ export default function ChatPageClient({
               messages: [...conversation.messages, newMessage],
               unread: 0,
             }
-          : conversation
-      )
+          : conversation,
+      ),
     );
 
     // Simulate delivered/read
@@ -136,11 +136,11 @@ export default function ChatPageClient({
             ? {
                 ...conversation,
                 messages: conversation.messages.map((m) =>
-                  m.id === newMessage.id ? { ...m, status: "delivered" } : m
+                  m.id === newMessage.id ? { ...m, status: "delivered" } : m,
                 ),
               }
-            : conversation
-        )
+            : conversation,
+        ),
       );
     }, 600);
 
@@ -151,11 +151,11 @@ export default function ChatPageClient({
             ? {
                 ...conversation,
                 messages: conversation.messages.map((m) =>
-                  m.id === newMessage.id ? { ...m, status: "read" } : m
+                  m.id === newMessage.id ? { ...m, status: "read" } : m,
                 ),
               }
-            : conversation
-        )
+            : conversation,
+        ),
       );
     }, 1400);
 

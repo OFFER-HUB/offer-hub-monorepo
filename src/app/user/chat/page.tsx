@@ -7,8 +7,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { MessagesSidebar } from "@/components/messages/messages-sidebar";
 import { MessagesMain } from "@/components/messages/messages-main";
 
-
-const currentUserId = 'user-1';
+const currentUserId = "user-1";
 
 export default function MessagingInterface() {
   const {

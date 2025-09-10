@@ -1,12 +1,12 @@
 export interface PaymentMetric {
   label: string;
   amount: number;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
 }
 
 export const requestedPaymentsCards: PaymentMetric[] = [
-  { label: 'Requested payment', amount: 487, variant: 'primary' },
-  { label: 'Requested payment', amount: 487, variant: 'secondary' },
+  { label: "Requested payment", amount: 487, variant: "primary" },
+  { label: "Requested payment", amount: 487, variant: "secondary" },
 ];
 
 export interface RevenueMetric {
@@ -16,9 +16,7 @@ export interface RevenueMetric {
 }
 
 export const revenueMetricsMock: RevenueMetric[] = [
-  { title: 'Total revenue', value: '$12,450', change: '+8.3%' },
-  { title: 'Pending payouts', value: '$1,320' },
-  { title: 'Completed invoices', value: '27' },
+  { title: "Total revenue", value: "$12,450", change: "+8.3%" },
+  { title: "Pending payouts", value: "$1,320" },
+  { title: "Completed invoices", value: "27" },
 ];
-
-

@@ -1,8 +1,7 @@
+"use client";
 
-"use client"
-
-import React, { useState } from 'react';
-import { useServiceRequestsApi } from '@/hooks/api-connections/use-service-requests-api';
+import React, { useState } from "react";
+import { useServiceRequestsApi } from "@/hooks/api-connections/use-service-requests-api";
 
 //import { useUser } from '@/providers/user-context';
 
@@ -12,11 +11,15 @@ interface ServiceRequestModalProps {
   serviceId: string;
 }
 
-const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({ open, onClose, serviceId }) => {
+const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
+  open,
+  onClose,
+  serviceId,
+}) => {
   // const { user } = useUser(); // Get client_id from authenticated user context
-  const user = { id: '080471dc-96d0-48b9-bee6-f8450f92c7fe' }; // TODO: Replace with real user context
+  const user = { id: "080471dc-96d0-48b9-bee6-f8450f92c7fe" }; // TODO: Replace with real user context
   const { createServiceRequest, loading, error } = useServiceRequestsApi();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +33,7 @@ const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({ open, onClose
         message: message.trim(),
       });
       setSuccess(true);
-      setMessage('');
+      setMessage("");
     } catch {}
   };
 
@@ -50,7 +53,9 @@ const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({ open, onClose
         <h2 className="text-xl font-bold mb-4">Request Service</h2>
         {success ? (
           <div className="flex flex-col items-center">
-            <div className="text-green-600 text-base mb-6">Request sent successfully!</div>
+            <div className="text-green-600 text-base mb-6">
+              Request sent successfully!
+            </div>
             <button
               type="button"
               className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -65,15 +70,22 @@ const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({ open, onClose
               className="w-full border rounded p-2 mb-2"
               placeholder="Write your message for the freelancer..."
               value={message}
-              onChange={e => setMessage(e.target.value)}
+              onChange={(e) => setMessage(e.target.value)}
               minLength={5}
               required
             />
             {error && (
-              <div className="text-red-500 text-sm mb-2">{error.message || 'Error sending request'}</div>
+              <div className="text-red-500 text-sm mb-2">
+                {error.message || "Error sending request"}
+              </div>
             )}
             <div className="flex gap-2 justify-end">
-              <button type="button" className="px-4 py-2" onClick={onClose} disabled={loading}>
+              <button
+                type="button"
+                className="px-4 py-2"
+                onClick={onClose}
+                disabled={loading}
+              >
                 Cancel
               </button>
               <button
@@ -81,7 +93,7 @@ const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({ open, onClose
                 className="bg-blue-600 text-white px-4 py-2 rounded"
                 disabled={loading || !message.trim()}
               >
-                {loading ? 'Sending...' : 'Send Request'}
+                {loading ? "Sending..." : "Send Request"}
               </button>
             </div>
           </form>

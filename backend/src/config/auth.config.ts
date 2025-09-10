@@ -53,15 +53,8 @@ export const authConfig = {
 
   // Routes that require specific roles
   roleBasedRoutes: {
-    admin: [
-      "/api/admin",
-      "/api/users/delete",
-      "/api/system",
-    ],
-    moderator: [
-      "/api/moderate",
-      "/api/reports",
-    ],
+    admin: ["/api/admin", "/api/users/delete", "/api/system"],
+    moderator: ["/api/moderate", "/api/reports"],
     // Freelancer and client routes are handled by business logic
   },
 
@@ -104,8 +97,8 @@ export const authConfig = {
  * @returns boolean indicating if route is public
  */
 export function isPublicRoute(path: string): boolean {
-  return authConfig.publicRoutes.some(route => 
-    path.startsWith(route) || path === route
+  return authConfig.publicRoutes.some(
+    (route) => path.startsWith(route) || path === route,
   );
 }
 
@@ -116,7 +109,7 @@ export function isPublicRoute(path: string): boolean {
  */
 export function getRequiredRole(path: string): UserRole | null {
   for (const [role, routes] of Object.entries(authConfig.roleBasedRoutes)) {
-    if (routes.some(route => path.startsWith(route))) {
+    if (routes.some((route) => path.startsWith(route))) {
       return role as UserRole;
     }
   }
@@ -131,9 +124,11 @@ export function validateAuthConfig(): void {
   if (!authConfig.jwt.secret) {
     throw new Error("JWT_SECRET is not defined in environment variables");
   }
-  
+
   if (authConfig.jwt.secret.length < 32) {
-    throw new Error("JWT_SECRET must be at least 32 characters long for security");
+    throw new Error(
+      "JWT_SECRET must be at least 32 characters long for security",
+    );
   }
 }
 

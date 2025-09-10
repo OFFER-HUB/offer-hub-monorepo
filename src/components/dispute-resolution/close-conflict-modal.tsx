@@ -5,15 +5,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { DisputeRow, User } from '@/types';
-import React, { useState } from 'react';
+} from "@/components/ui/dialog";
+import { DisputeRow, User } from "@/types";
+import React, { useState } from "react";
 
-import { Button } from '@/components/ui/button';
-import { FaCaretDown } from 'react-icons/fa';
-import { PropagateLoader } from 'react-spinners';
-import { simulateDisputResolution } from '@/data/generic-mock-data';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { FaCaretDown } from "react-icons/fa";
+import { PropagateLoader } from "react-spinners";
+import { simulateDisputResolution } from "@/data/generic-mock-data";
+import { toast } from "sonner";
 
 export default function CloseConflictModal({
   open,
@@ -28,10 +28,10 @@ export default function CloseConflictModal({
 }) {
   const [loading, setLoading] = useState(false);
   const [recipient, setRecipient] = useState(
-    dispute.parties.find((e) => e.id === dispute.userId)!
+    dispute.parties.find((e) => e.id === dispute.userId)!,
   );
   const [message, setMessage] = useState(
-    `Hi [Customer name]\n\nWe have closed your conflict and released payment to you.\n\nXYZ team`
+    `Hi [Customer name]\n\nWe have closed your conflict and released payment to you.\n\nXYZ team`,
   );
 
   const handleConfirm = async () => {
@@ -44,10 +44,10 @@ export default function CloseConflictModal({
     toast.success(
       `Conflict "${data.ticket}" has been closed and payment released to ${recipient.name}`,
       {
-        position: 'bottom-center',
+        position: "bottom-center",
         duration: 5000,
         richColors: true,
-      }
+      },
     );
   };
 
@@ -69,7 +69,7 @@ export default function CloseConflictModal({
                 value={recipient.id}
                 onChange={(e) =>
                   setRecipient(
-                    dispute.parties.find((x) => x.id === e.target.value)!
+                    dispute.parties.find((x) => x.id === e.target.value)!,
                   )
                 }
                 className="px-4 py-[5px] pr-8 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 flex-1 focus:ring-primary-500 focus:border-transparent"
@@ -117,7 +117,7 @@ export default function CloseConflictModal({
                 className="pb-2"
               />
             ) : (
-              'Close conflict'
+              "Close conflict"
             )}
           </Button>
         </DialogFooter>

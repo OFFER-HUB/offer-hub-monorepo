@@ -13,9 +13,12 @@ import { useCallback } from "react";
 export function SignInPage() {
   const { registerUser, isLoading, error, clearError } = useAuthApi();
 
-  const handleRegister = useCallback(async (payload: Parameters<typeof registerUser>[0]) => {
-    await registerUser(payload);
-  }, [registerUser]);
+  const handleRegister = useCallback(
+    async (payload: Parameters<typeof registerUser>[0]) => {
+      await registerUser(payload);
+    },
+    [registerUser],
+  );
 
   return (
     <div className="min-h-screen bg-muted flex flex-col">
@@ -29,12 +32,12 @@ export function SignInPage() {
             <OAuthButton
               icon={<FaApple />}
               label="Sign in with Apple"
-              onClick={() => { }}
+              onClick={() => {}}
             />
             <OAuthButton
               icon={<FcGoogle />}
               label="Sign in with Google"
-              onClick={() => { }}
+              onClick={() => {}}
             />
           </div>
           <div className="flex items-center my-6">
@@ -45,7 +48,7 @@ export function SignInPage() {
             <Separator className="flex-1" />
           </div>
           <SignInForm
-            onSignIn={() => { }}
+            onSignIn={() => {}}
             onRegister={handleRegister}
             isRegistering={isLoading}
             backendError={error?.message || null}

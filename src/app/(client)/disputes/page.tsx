@@ -6,7 +6,7 @@ import React from "react";
 export default function DisputesPage() {
   return (
     <DisputeLayout>
-     <DisputesDashboard disputes={mockDisputes} />
+      <DisputesDashboard disputes={mockDisputes} />
     </DisputeLayout>
   );
 }

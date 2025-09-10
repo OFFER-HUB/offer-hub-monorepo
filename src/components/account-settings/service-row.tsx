@@ -30,7 +30,7 @@ export function ServiceRow({
   const convertPrice = (
     price: number,
     fromCurrency: string,
-    toCurrency: string
+    toCurrency: string,
   ): number => {
     if (fromCurrency === toCurrency) return price;
     const rate = conversionRates[fromCurrency]?.[toCurrency] || 1;
@@ -40,7 +40,7 @@ export function ServiceRow({
   const formatPriceRange = (
     minPrice: number,
     maxPrice: number,
-    currency: string
+    currency: string,
   ): string => {
     if (minPrice === maxPrice) {
       return `${minPrice.toFixed(3)} ${currency}`;
@@ -62,7 +62,7 @@ export function ServiceRow({
           value={formatPriceRange(
             service.min_price,
             service.max_price,
-            service.currency || "XLM"
+            service.currency || "XLM",
           )}
           readOnly
           className="text-secondary-500 border-gray-200 pl-10"
@@ -87,16 +87,16 @@ export function ServiceRow({
                     min_price: convertPrice(
                       s.min_price,
                       s.currency || "XLM",
-                      value
+                      value,
                     ),
                     max_price: convertPrice(
                       s.max_price,
                       s.currency || "XLM",
-                      value
+                      value,
                     ),
                   }
-                : s
-            )
+                : s,
+            ),
           );
         }}
       >

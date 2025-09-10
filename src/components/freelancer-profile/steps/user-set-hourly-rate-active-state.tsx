@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { ArrowLeft } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import type { ProfileStepProps } from "@/app/types/freelancer-profile"
-import { Button } from "@/components/ui/button"
-import Footer from "../footer"
+import { ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import type { ProfileStepProps } from "@/app/types/freelancer-profile";
+import { Button } from "@/components/ui/button";
+import Footer from "../footer";
 
 const EthIcon = () => (
   <svg
@@ -27,7 +27,7 @@ const EthIcon = () => (
       fill="white"
     />
   </svg>
-)
+);
 
 export default function UserSetHourlyRateActiveState({
   userData,
@@ -36,25 +36,32 @@ export default function UserSetHourlyRateActiveState({
   prevStep,
 }: ProfileStepProps) {
   const handleServiceFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
+    const value = e.target.value;
     if (value === "" || /^[0-9]*\.?\d*$/.test(value)) {
-      updateUserData({ hourlyRate: value })
+      updateUserData({ hourlyRate: value });
     }
-  }
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col pb-28">
       <div className="w-full max-w-xl mx-auto flex-grow pt-10">
         <div className="text-lg font-medium text-gray-500 mb-4">9/11</div>
-        <h1 className="text-3xl font-medium text-[#002333] mb-1">Now, let&apos;s set your hourly rate.</h1>
+        <h1 className="text-3xl font-medium text-[#002333] mb-1">
+          Now, let&apos;s set your hourly rate.
+        </h1>
         <p className="text-sm md:text-base text-[#6D758F] mb-10 ">
-          Clients will see this rate on your profile and in search results once you publish your profile. You can adjust
-          your rate every time you submit a proposal.
+          Clients will see this rate on your profile and in search results once
+          you publish your profile. You can adjust your rate every time you
+          submit a proposal.
         </p>
         <Separator className="mb-12 text-[#B4B9C9" />
         <div className="mb-10">
-          <h2 className="text-xl md:text-2xl font-medium text-[#344054] mb-1">Service Fee</h2>
-          <p className="text-sm text-gray-500 mb-4">Enter your service fee can be edited later in your profile</p>
+          <h2 className="text-xl md:text-2xl font-medium text-[#344054] mb-1">
+            Service Fee
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Enter your service fee can be edited later in your profile
+          </p>
           <div className="relative inline-block">
             <EthIcon />
             <Input
@@ -71,16 +78,23 @@ export default function UserSetHourlyRateActiveState({
       </div>
       <Footer className="px-4 mt-auto flex justify-between">
         <div>
-          <Button onClick={prevStep} variant="ghost" className="gap-1 rounded-full">
+          <Button
+            onClick={prevStep}
+            variant="ghost"
+            className="gap-1 rounded-full"
+          >
             <ArrowLeft size={18} /> Back
           </Button>
         </div>
         <div className="space-x-4">
-          <Button onClick={nextStep} className="gap-1 bg-[#149A9B] text-white rounded-full md:min-w-36">
+          <Button
+            onClick={nextStep}
+            className="gap-1 bg-[#149A9B] text-white rounded-full md:min-w-36"
+          >
             Next
           </Button>
         </div>
       </Footer>
     </div>
-  )
+  );
 }

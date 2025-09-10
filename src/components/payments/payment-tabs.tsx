@@ -69,8 +69,8 @@ export default function PaymentTabs({
                 {tab.id === "overview"
                   ? "Overview"
                   : tab.id === "methods"
-                  ? "Methods"
-                  : tab.label.split(" ")[0]}
+                    ? "Methods"
+                    : tab.label.split(" ")[0]}
               </span>
               {activeTab === tab.id && (
                 <motion.div

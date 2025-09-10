@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import TalentCard from "@/components/find-workers/talent-card"
+import { motion } from "framer-motion";
+import TalentCard from "@/components/find-workers/talent-card";
 
 // Sample freelancer data - same as in grid view
 const freelancers = [
@@ -65,7 +65,13 @@ const freelancers = [
     reviewCount: 112,
     hourlyRate: 45,
     totalEarned: 15000,
-    skills: ["Content Writing", "SEO", "Copywriting", "Blog Posts", "Technical Writing"],
+    skills: [
+      "Content Writing",
+      "SEO",
+      "Copywriting",
+      "Blog Posts",
+      "Technical Writing",
+    ],
     location: "Madrid, Spain",
     availability: "Part-time",
     experience: "6 years",
@@ -99,7 +105,13 @@ const freelancers = [
     reviewCount: 89,
     hourlyRate: 50,
     totalEarned: 16000,
-    skills: ["Photoshop", "Illustrator", "Branding", "Logo Design", "Print Design"],
+    skills: [
+      "Photoshop",
+      "Illustrator",
+      "Branding",
+      "Logo Design",
+      "Print Design",
+    ],
     location: "Mumbai, India",
     availability: "Full-time",
     experience: "5 years",
@@ -107,12 +119,12 @@ const freelancers = [
     isVerified: true,
     isTopRated: true,
   },
-]
+];
 
 interface TalentListViewProps {
-  selectedFreelancers: string[]
-  toggleFreelancerSelection: (id: string) => void
-  openFreelancerDetail: (freelancer: any) => void
+  selectedFreelancers: string[];
+  toggleFreelancerSelection: (id: string) => void;
+  openFreelancerDetail: (freelancer: any) => void;
 }
 
 export default function TalentListView({
@@ -139,6 +151,5 @@ export default function TalentListView({
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
-

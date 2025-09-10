@@ -50,7 +50,7 @@ export default function StarRating({
   };
 
   return (
-    <div className={`flex ${isInteractiveMode ? 'cursor-pointer' : ''}`}>
+    <div className={`flex ${isInteractiveMode ? "cursor-pointer" : ""}`}>
       {Array(maxRating)
         .fill(0)
         .map((_, i) => (
@@ -58,8 +58,10 @@ export default function StarRating({
             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             key={i}
             className={`${sizeClass} ${
-              i < displayRating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-            } ${isInteractiveMode ? 'hover:text-yellow-300 transition-colors' : ''}`}
+              i < displayRating
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-300"
+            } ${isInteractiveMode ? "hover:text-yellow-300 transition-colors" : ""}`}
             onMouseEnter={() => handleMouseEnter(i)}
             onMouseLeave={handleMouseLeave}
             onClick={() => handleClick(i)}

@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import TalentCard from "@/components/find-workers/talent-card"
-import { FreelancerDisplay } from "@/types/service.types"
+import { motion } from "framer-motion";
+import TalentCard from "@/components/find-workers/talent-card";
+import { FreelancerDisplay } from "@/types/service.types";
 
 interface TalentGridViewProps {
-  services: FreelancerDisplay[]
-  selectedFreelancers: string[]
-  toggleFreelancerSelection: (id: string) => void
-  openFreelancerDetail: (freelancer: FreelancerDisplay) => void
-  isLoading?: boolean
+  services: FreelancerDisplay[];
+  selectedFreelancers: string[];
+  toggleFreelancerSelection: (id: string) => void;
+  openFreelancerDetail: (freelancer: FreelancerDisplay) => void;
+  isLoading?: boolean;
 }
 
 export default function TalentGridView({
@@ -28,16 +28,20 @@ export default function TalentGridView({
           </div>
         ))}
       </div>
-    )
+    );
   }
 
   if (services.length === 0) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No services found</h3>
-        <p className="text-gray-500">Try adjusting your search criteria or filters.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          No services found
+        </h3>
+        <p className="text-gray-500">
+          Try adjusting your search criteria or filters.
+        </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -74,6 +78,5 @@ export default function TalentGridView({
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
-

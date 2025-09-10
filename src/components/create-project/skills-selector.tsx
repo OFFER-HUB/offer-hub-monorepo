@@ -7,22 +7,29 @@ interface SkillsSelectorProps {
   onSkillsChange: (skills: string[]) => void;
 }
 
-export function SkillsSelector({ addedSkills, onSkillsChange }: SkillsSelectorProps) {
+export function SkillsSelector({
+  addedSkills,
+  onSkillsChange,
+}: SkillsSelectorProps) {
   const [skillSearch, setSkillSearch] = useState("");
 
   const handleAddSkill = (skill: string) => {
-    if (skill.trim() && !addedSkills.includes(skill.trim()) && addedSkills.length < 10) {
+    if (
+      skill.trim() &&
+      !addedSkills.includes(skill.trim()) &&
+      addedSkills.length < 10
+    ) {
       onSkillsChange([...addedSkills, skill.trim()]);
       setSkillSearch("");
     }
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
-    onSkillsChange(addedSkills.filter(skill => skill !== skillToRemove));
+    onSkillsChange(addedSkills.filter((skill) => skill !== skillToRemove));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAddSkill(skillSearch);
     }
@@ -32,7 +39,10 @@ export function SkillsSelector({ addedSkills, onSkillsChange }: SkillsSelectorPr
     <div className="space-y-4">
       {/* Skills Search */}
       <div className="space-y-2">
-        <label htmlFor="skillSearch" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="skillSearch"
+          className="text-sm font-medium text-gray-700"
+        >
           Skill required for project
         </label>
         <div className="relative">
@@ -75,4 +85,4 @@ export function SkillsSelector({ addedSkills, onSkillsChange }: SkillsSelectorPr
       )}
     </div>
   );
-} 
+}

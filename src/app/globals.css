@@ -75,20 +75,20 @@
     font-family: var(--font-geist-sans);
   }
 
-  .no-scrollbar::-webkit-scrollbar{
+  .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
 }
 
 /* Hide arrows in Chrome, Safari, Edge, Opera */
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Hide arrows in Firefox */
-input[type='number'] {
+input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }

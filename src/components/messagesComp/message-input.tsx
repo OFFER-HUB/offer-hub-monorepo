@@ -31,7 +31,6 @@ type LocalPreview = {
   isImage: boolean;
 };
 
-
 type MinimalEmoji = { native?: string };
 
 async function fileToDataUrl(file: File): Promise<string> {

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React from "react";
 import UnassignedDispute from "./views/unassigned-dispute";
 
@@ -8,4 +8,4 @@ export default function DisputeResolutionPage() {
       <UnassignedDispute />
     </div>
   );
-} 
+}

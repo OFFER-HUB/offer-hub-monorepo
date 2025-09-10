@@ -34,10 +34,14 @@ export const useInitializeContract = () => {
      */
     try {
       // TODO: Fix type mismatch between InitializeContractPayload and package types
-      console.warn('useInitializeContract: Hook not fully implemented - type mismatch');
-      throw new Error('useInitializeContract hook not implemented - type mismatch');
+      console.warn(
+        "useInitializeContract: Hook not fully implemented - type mismatch",
+      );
+      throw new Error(
+        "useInitializeContract hook not implemented - type mismatch",
+      );
     } catch (error) {
-      console.error('Error in useInitializeContract:', error);
+      console.error("Error in useInitializeContract:", error);
       throw error;
     }
   };

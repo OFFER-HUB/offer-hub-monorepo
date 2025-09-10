@@ -5,27 +5,27 @@
 global:
   # Enable/disable CodeRabbit for this repository
   enabled: true
-  
+
   # Set the default language for reviews
   language: "en"
-  
+
   # Configure review behavior
   review:
     # Enable automatic reviews on pull requests
     auto_review: true
-    
+
     # Enable inline comments
     inline_comments: true
-    
+
     # Enable summary comments
     summary_comments: true
-    
+
     # Set review depth to deep for comprehensive analysis
     depth: "deep"
-    
+
     # Enable issue compliance checking
     issue_compliance: true
-    
+
     # Enable architecture validation
     architecture_validation: true
 
@@ -39,7 +39,7 @@ files:
     - "*.{json,md,yaml,yml}"
     - "*.{css,scss}"
     - "*.{sql}"
-  
+
   # Exclude patterns
   exclude:
     - "node_modules/**"
@@ -69,7 +69,7 @@ languages:
     react_patterns: true
     # Check for proper imports using @/
     import_validation: true
-    
+
   rust:
     # Rust specific settings for smart contracts
     enabled: true
@@ -79,7 +79,7 @@ languages:
     cargo_check: true
     # Security analysis for smart contracts
     security_analysis: true
-    
+
   sql:
     # SQL specific settings
     enabled: true
@@ -90,13 +90,13 @@ languages:
 security:
   # Enable security scanning
   enabled: true
-  
+
   # Check for common vulnerabilities
   vulnerability_scan: true
-  
+
   # Check for secrets in code
   secret_scan: true
-  
+
   # Check for dependency vulnerabilities
   dependency_scan: true
 
@@ -104,10 +104,10 @@ security:
 performance:
   # Enable performance analysis
   enabled: true
-  
+
   # Check for performance issues
   performance_scan: true
-  
+
   # Check for memory leaks
   memory_leak_scan: true
 
@@ -115,16 +115,16 @@ performance:
 quality:
   # Enable code quality checks
   enabled: true
-  
+
   # Check for code smells
   code_smells: true
-  
+
   # Check for maintainability issues
   maintainability: true
-  
+
   # Check for readability issues
   readability: true
-  
+
   # Check for complexity issues
   complexity: true
 
@@ -137,33 +137,33 @@ rules:
   component_naming: "PascalCase"
   variable_naming: "camelCase"
   constant_naming: "UPPER_SNAKE_CASE"
-  
+
   # Check for proper error handling
   error_handling: true
-  
+
   # Check for proper documentation (disabled as per requirements)
   documentation: false
-  
+
   # Check for test coverage
   test_coverage: true
-  
+
   # Check for accessibility issues
   accessibility: true
-  
+
   # Architecture validation
   single_responsibility: true
-  component_size_limit: 200  # Maximum lines per component
-  page_orchestration: true   # Pages should orchestrate, not implement complex logic
-  
+  component_size_limit: 200 # Maximum lines per component
+  page_orchestration: true # Pages should orchestrate, not implement complex logic
+
   # Import validation
-  absolute_imports: true     # Prefer @/ over relative paths
-  import_grouping: true      # Group imports: libraries → internals → relatives
-  
+  absolute_imports: true # Prefer @/ over relative paths
+  import_grouping: true # Group imports: libraries → internals → relatives
+
   # Code quality
   duplicate_code_detection: true
   cyclomatic_complexity: true
-  function_length_limit: 50  # Maximum lines per function
-  
+  function_length_limit: 50 # Maximum lines per function
+
   # Issue compliance
   issue_requirement_check: true
   change_traceability: true
@@ -172,7 +172,7 @@ rules:
 project:
   # Project type
   type: "fullstack"
-  
+
   # Framework detection
   frameworks:
     - "nextjs"
@@ -180,13 +180,13 @@ project:
     - "typescript"
     - "rust"
     - "stellar"
-  
+
   # Database type
   database: "supabase"
-  
+
   # Blockchain integration
   blockchain: "stellar"
-  
+
   # Smart contracts
   smart_contracts: true
 
@@ -202,16 +202,16 @@ templates:
     issue_compliance: "✅ Issue compliance check completed"
     naming: "📝 Naming conventions check completed"
     imports: "📦 Import structure validation completed"
-  
+
   # Priority-based review messages
   priorities:
     high: "🚨 HIGH PRIORITY ISSUE"
     medium: "⚠️ MEDIUM PRIORITY ISSUE"
     low: "ℹ️ LOW PRIORITY ISSUE"
-  
+
   # Architecture-specific messages
   architecture:
     single_responsibility: "🔧 Component has multiple responsibilities - consider splitting"
     large_component: "📏 Component exceeds size limit - consider refactoring"
     page_logic: "🎭 Page contains complex logic - move to components/hooks"
-    relative_imports: "🔄 Use @/ imports instead of relative paths" 
+    relative_imports: "🔄 Use @/ imports instead of relative paths"

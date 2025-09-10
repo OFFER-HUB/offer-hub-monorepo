@@ -9,7 +9,11 @@ interface OfferFormStep3Props {
   freelancerId: string;
 }
 
-export function OfferFormStep3({ onSubmit, onBack, freelancerId }: OfferFormStep3Props) {
+export function OfferFormStep3({
+  onSubmit,
+  onBack,
+  freelancerId,
+}: OfferFormStep3Props) {
   const { state } = useOfferForm();
   const { formData } = state;
 
@@ -33,21 +37,31 @@ export function OfferFormStep3({ onSubmit, onBack, freelancerId }: OfferFormStep
               <h3 className="font-medium text-gray-900 mb-1">Job Title</h3>
               <p className="text-gray-700">{formData.offerTitle}</p>
             </div>
-            
+
             <div>
               <h3 className="font-medium text-gray-900 mb-1">Description</h3>
-              <p className="text-gray-700 text-sm">{formData.projectDescription}</p>
+              <p className="text-gray-700 text-sm">
+                {formData.projectDescription}
+              </p>
             </div>
-            
+
             <div>
-              <h3 className="font-medium text-gray-900 mb-1">Budget Estimate</h3>
-              <p className="text-gray-700">${formData.budgetAmount?.toLocaleString()}</p>
+              <h3 className="font-medium text-gray-900 mb-1">
+                Budget Estimate
+              </h3>
+              <p className="text-gray-700">
+                ${formData.budgetAmount?.toLocaleString()}
+              </p>
             </div>
-            
+
             <div>
-              <h3 className="font-medium text-gray-900 mb-1">Project Duration</h3>
+              <h3 className="font-medium text-gray-900 mb-1">
+                Project Duration
+              </h3>
               <p className="text-gray-700 capitalize">
-                {formData.projectDuration === 'long' ? 'Long term project' : 'Short term project'}
+                {formData.projectDuration === "long"
+                  ? "Long term project"
+                  : "Short term project"}
               </p>
             </div>
           </div>
@@ -61,7 +75,7 @@ export function OfferFormStep3({ onSubmit, onBack, freelancerId }: OfferFormStep
           >
             Send Offer
           </Button>
-          
+
           <Button
             onClick={onBack}
             className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-md font-medium border-0"

@@ -1,6 +1,6 @@
 "use client";
-import React from 'react';
-import OnboardingHeader from '@/components/layout/OnboardingHeader';
+import React from "react";
+import OnboardingHeader from "@/components/layout/OnboardingHeader";
 
 interface CheckEmailProps {
   email?: string;
@@ -9,7 +9,7 @@ interface CheckEmailProps {
 
 const CheckEmail: React.FC<CheckEmailProps> = ({
   email: _email,
-  onBackToSignIn
+  onBackToSignIn,
 }) => {
   return (
     <div className="min-h-screen bg-[#f6f6f6]">
@@ -18,16 +18,16 @@ const CheckEmail: React.FC<CheckEmailProps> = ({
         <div
           className="bg-white"
           style={{
-            width: '714px',
-            height: '450px',
-            borderRadius: '12px',
+            width: "714px",
+            height: "450px",
+            borderRadius: "12px",
             opacity: 1,
-            padding: '60px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '25px',
-            alignItems: 'center',
-            justifyContent: 'center'
+            padding: "60px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "25px",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <div className="inline-block">
@@ -35,9 +35,9 @@ const CheckEmail: React.FC<CheckEmailProps> = ({
               src="/emailicon.jpg"
               alt="Email icon"
               style={{
-                width: '155px',
-                height: '155px',
-                opacity: 1
+                width: "155px",
+                height: "155px",
+                opacity: 1,
               }}
             />
           </div>
@@ -47,7 +47,8 @@ const CheckEmail: React.FC<CheckEmailProps> = ({
           </h1>
 
           <p className="text-gray-600 text-center">
-            We've sent an email with the next steps, check your inbox and follow along.
+            We've sent an email with the next steps, check your inbox and follow
+            along.
           </p>
 
           <div className="flex justify-center">
@@ -55,24 +56,22 @@ const CheckEmail: React.FC<CheckEmailProps> = ({
               onClick={onBackToSignIn}
               className="text-white font-medium hover:bg-teal-600 transition-colors flex items-center justify-center"
               style={{
-                width: '361px',
-                height: '44px',
-                borderRadius: '32px',
+                width: "361px",
+                height: "44px",
+                borderRadius: "32px",
                 opacity: 1,
-                gap: '10px',
-                padding: '16px',
-                backgroundColor: '#002333'
+                gap: "10px",
+                padding: "16px",
+                backgroundColor: "#002333",
               }}
             >
               Return to login
             </button>
           </div>
-
-
         </div>
       </div>
     </div>
   );
 };
 
-export default CheckEmail; 
+export default CheckEmail;

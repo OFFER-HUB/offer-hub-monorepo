@@ -16,7 +16,7 @@ function atTime(base: Date, h: number, m: number) {
     h,
     m,
     0,
-    0
+    0,
   );
 }
 function dayShift(from: Date, deltaDays: number) {
@@ -45,7 +45,7 @@ function fileAtt(
   id: string,
   name: string,
   size = 18_000,
-  mime = "text/plain"
+  mime = "text/plain",
 ): Attachment {
   return {
     id,

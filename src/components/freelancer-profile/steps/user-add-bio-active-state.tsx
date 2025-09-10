@@ -1,46 +1,54 @@
-"use client"
-import { useState } from "react"
-import type React from "react"
+"use client";
+import { useState } from "react";
+import type React from "react";
 
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import Footer from "@/components/freelancer-profile/footer"
-import { Textarea } from "@/components/ui/textarea"
-import ExampleBioCard from "./user-add-bio-example-card"
-import type { ProfileStepProps } from "@/app/types/freelancer-profile"
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import Footer from "@/components/freelancer-profile/footer";
+import { Textarea } from "@/components/ui/textarea";
+import ExampleBioCard from "./user-add-bio-example-card";
+import type { ProfileStepProps } from "@/app/types/freelancer-profile";
 
-function UserAddBioActiveState({ userData, updateUserData, nextStep, prevStep }: ProfileStepProps) {
-  const [bio, setBio] = useState(userData.bio || "")
-  const [bioError, setBioError] = useState("")
+function UserAddBioActiveState({
+  userData,
+  updateUserData,
+  nextStep,
+  prevStep,
+}: ProfileStepProps) {
+  const [bio, setBio] = useState(userData.bio || "");
+  const [bioError, setBioError] = useState("");
 
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newBio = e.target.value
-    setBio(newBio)
-    updateUserData({ bio: newBio })
+    const newBio = e.target.value;
+    setBio(newBio);
+    updateUserData({ bio: newBio });
     if (newBio.length < 100) {
-      setBioError("Bio must be at least 100 characters")
+      setBioError("Bio must be at least 100 characters");
     } else {
-      setBioError("")
+      setBioError("");
     }
-  }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (bio.length >= 100) {
-      nextStep()
+      nextStep();
     } else {
-      setBioError("Bio must be at least 100 characters")
+      setBioError("Bio must be at least 100 characters");
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-y-16 w-full pb-28">
       <div className="gap-8 mx-auto px-4 font-semibold space-y-4 max-w-4xl">
         <p className="text-neutral-500">8/11</p>
-        <h1 className="text-3xl text-[#19213D]">Great. Now write a bio to tell the world about yourself.</h1>
+        <h1 className="text-3xl text-[#19213D]">
+          Great. Now write a bio to tell the world about yourself.
+        </h1>
         <p className="font-normal text-lg text-[#19213D]">
-          Help people get to know you at a glance. What work do you do best? Tell them clearly, using paragraphs or
-          bullet points. You can always edit later; just make sure you proofread now.
+          Help people get to know you at a glance. What work do you do best?
+          Tell them clearly, using paragraphs or bullet points. You can always
+          edit later; just make sure you proofread now.
         </p>
       </div>
       <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl mx-auto px-4">
@@ -58,8 +66,12 @@ function UserAddBioActiveState({ userData, updateUserData, nextStep, prevStep }:
                 className="w-full min-h-48 border border-[#19213D] rounded-lg p-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#19213D]"
               />
               <div className="flex justify-between mt-2">
-                {bioError && <span className="text-red-500 text-xs">{bioError}</span>}
-                <span className={`text-xs ml-auto ${bio.length < 100 ? "text-gray-500" : "text-green-600"}`}>
+                {bioError && (
+                  <span className="text-red-500 text-xs">{bioError}</span>
+                )}
+                <span
+                  className={`text-xs ml-auto ${bio.length < 100 ? "text-gray-500" : "text-green-600"}`}
+                >
                   At least 100 characters ({bio.length}/100)
                 </span>
               </div>
@@ -72,7 +84,11 @@ function UserAddBioActiveState({ userData, updateUserData, nextStep, prevStep }:
       </div>
       <Footer className="px-4 flex justify-between">
         <div>
-          <Button onClick={prevStep} variant="ghost" className="gap-1 rounded-full">
+          <Button
+            onClick={prevStep}
+            variant="ghost"
+            className="gap-1 rounded-full"
+          >
             <ArrowLeft size={18} /> Back
           </Button>
         </div>
@@ -95,7 +111,7 @@ function UserAddBioActiveState({ userData, updateUserData, nextStep, prevStep }:
         </div>
       </Footer>
     </div>
-  )
+  );
 }
 
-export default UserAddBioActiveState
+export default UserAddBioActiveState;

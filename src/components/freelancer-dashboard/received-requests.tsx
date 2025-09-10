@@ -6,8 +6,11 @@ interface ReceivedRequestsListProps {
   freelancerId: string;
 }
 
-const ReceivedRequestsList: React.FC<ReceivedRequestsListProps> = ({ freelancerId }) => {
-  const { getFreelancerRequests, updateServiceRequestStatus, loading, error } = useServiceRequestsApi();
+const ReceivedRequestsList: React.FC<ReceivedRequestsListProps> = ({
+  freelancerId,
+}) => {
+  const { getFreelancerRequests, updateServiceRequestStatus, loading, error } =
+    useServiceRequestsApi();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(0);
@@ -23,7 +26,7 @@ const ReceivedRequestsList: React.FC<ReceivedRequestsListProps> = ({ freelancerI
     setActionLoading(id + status);
     try {
       await updateServiceRequestStatus(id, status, freelancerId);
-      setRefresh(r => r + 1);
+      setRefresh((r) => r + 1);
     } catch {}
     setActionLoading(null);
   };
@@ -34,13 +37,33 @@ const ReceivedRequestsList: React.FC<ReceivedRequestsListProps> = ({ freelancerI
 
   return (
     <div className="space-y-4">
-      {requests.map(req => (
-        <div key={req.id} className="border rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white shadow-sm">
+      {requests.map((req) => (
+        <div
+          key={req.id}
+          className="border rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white shadow-sm"
+        >
           <div>
-            <div className="font-semibold text-[#002333]">Service: {req.service_id}</div>
-            <div className="text-sm text-[#002333]/70">Client: {req.client_id}</div>
+            <div className="font-semibold text-[#002333]">
+              Service: {req.service_id}
+            </div>
+            <div className="text-sm text-[#002333]/70">
+              Client: {req.client_id}
+            </div>
             <div className="mt-2 text-[#002333]">Message: {req.message}</div>
-            <div className="mt-1 text-xs text-gray-500">Status: <span className={req.status === 'pending' ? 'text-yellow-600' : req.status === 'accepted' ? 'text-green-600' : 'text-red-600'}>{req.status}</span></div>
+            <div className="mt-1 text-xs text-gray-500">
+              Status:{" "}
+              <span
+                className={
+                  req.status === "pending"
+                    ? "text-yellow-600"
+                    : req.status === "accepted"
+                      ? "text-green-600"
+                      : "text-red-600"
+                }
+              >
+                {req.status}
+              </span>
+            </div>
           </div>
           {req.status === "pending" && (
             <div className="flex gap-2">
@@ -49,14 +72,18 @@ const ReceivedRequestsList: React.FC<ReceivedRequestsListProps> = ({ freelancerI
                 disabled={actionLoading === req.id + "accepted"}
                 onClick={() => handleAction(req.id, "accepted")}
               >
-                {actionLoading === req.id + "accepted" ? "Accepting..." : "Accept"}
+                {actionLoading === req.id + "accepted"
+                  ? "Accepting..."
+                  : "Accept"}
               </button>
               <button
                 className="bg-red-600 text-white px-3 py-1 rounded"
                 disabled={actionLoading === req.id + "rejected"}
                 onClick={() => handleAction(req.id, "rejected")}
               >
-                {actionLoading === req.id + "rejected" ? "Rejecting..." : "Reject"}
+                {actionLoading === req.id + "rejected"
+                  ? "Rejecting..."
+                  : "Reject"}
               </button>
             </div>
           )}

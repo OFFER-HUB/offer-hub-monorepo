@@ -12,7 +12,11 @@ interface OfferFormStep1Props {
   freelancerId: string;
 }
 
-export function OfferFormStep1({ onNext, onBack, freelancerId }: OfferFormStep1Props) {
+export function OfferFormStep1({
+  onNext,
+  onBack,
+  freelancerId,
+}: OfferFormStep1Props) {
   const { state, updateField, setError, clearError } = useOfferForm();
   const { formData, errors } = state;
 
@@ -53,16 +57,17 @@ export function OfferFormStep1({ onNext, onBack, freelancerId }: OfferFormStep1P
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
             Send an offer
           </h1>
-          <p className="text-teal-600 text-sm">
-            Create and send offer to hire
-          </p>
+          <p className="text-teal-600 text-sm">Create and send offer to hire</p>
         </div>
 
         {/* Form */}
         <div className="space-y-6">
           {/* Job Title */}
           <div className="space-y-2">
-            <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="jobTitle"
+              className="text-sm font-medium text-gray-700"
+            >
               Job title
             </Label>
             <Input
@@ -81,27 +86,37 @@ export function OfferFormStep1({ onNext, onBack, freelancerId }: OfferFormStep1P
 
           {/* Job Description */}
           <div className="space-y-2">
-            <Label htmlFor="jobDescription" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="jobDescription"
+              className="text-sm font-medium text-gray-700"
+            >
               Job description
             </Label>
             <Textarea
               id="jobDescription"
               placeholder="Enter a description..."
               value={formData.projectDescription}
-              onChange={(e) => updateField("projectDescription", e.target.value)}
+              onChange={(e) =>
+                updateField("projectDescription", e.target.value)
+              }
               rows={6}
               className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none ${
                 errors.projectDescription ? "border-red-500" : ""
               }`}
             />
             {errors.projectDescription && (
-              <p className="text-sm text-red-600">{errors.projectDescription}</p>
+              <p className="text-sm text-red-600">
+                {errors.projectDescription}
+              </p>
             )}
           </div>
 
           {/* Budget Estimate */}
           <div className="space-y-2">
-            <Label htmlFor="budget" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="budget"
+              className="text-sm font-medium text-gray-700"
+            >
               What is your estimate for this project
             </Label>
             <Input
@@ -126,12 +141,16 @@ export function OfferFormStep1({ onNext, onBack, freelancerId }: OfferFormStep1P
         <div className="space-y-3 pt-4">
           <Button
             onClick={validateAndProceed}
-            disabled={!formData.offerTitle.trim() || !formData.projectDescription.trim() || !formData.budgetAmount}
+            disabled={
+              !formData.offerTitle.trim() ||
+              !formData.projectDescription.trim() ||
+              !formData.budgetAmount
+            }
             className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </Button>
-          
+
           <Button
             onClick={onBack}
             className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-md font-medium border-0"

@@ -7,12 +7,14 @@ This document describes the standardized error handling and validation system im
 ## Features
 
 ### ✅ Standardized Error Handling
+
 - **Consistent Error Response Format**: All errors follow a standardized JSON structure
 - **Specific Error Types**: Dedicated error classes for different scenarios
 - **Enhanced Error Logging**: Detailed error logging with severity levels
 - **Supabase Error Mapping**: Automatic mapping of database errors to user-friendly messages
 
 ### ✅ Comprehensive Validation
+
 - **Input Validation**: Validation for emails, wallet addresses, usernames, monetary amounts, dates, and more
 - **Schema-based Validation**: Reusable validation schemas for common data types
 - **UUID Validation**: Standardized UUID validation across all endpoints
@@ -46,17 +48,17 @@ All error responses follow this consistent format:
 
 ### AppError Classes
 
-| Error Class | Status Code | Use Case |
-|-------------|-------------|----------|
-| `ValidationError` | 422 | Input validation failures |
-| `DatabaseError` | 500 | Database operation failures |
-| `BusinessLogicError` | 400 | Business rule violations |
-| `AuthenticationError` | 401 | Authentication failures |
-| `AuthorizationError` | 403 | Authorization failures |
-| `NotFoundError` | 404 | Resource not found |
-| `BadRequestError` | 400 | Malformed requests |
-| `ConflictError` | 409 | Resource conflicts |
-| `InternalServerError` | 500 | Unexpected system errors |
+| Error Class           | Status Code | Use Case                    |
+| --------------------- | ----------- | --------------------------- |
+| `ValidationError`     | 422         | Input validation failures   |
+| `DatabaseError`       | 500         | Database operation failures |
+| `BusinessLogicError`  | 400         | Business rule violations    |
+| `AuthenticationError` | 401         | Authentication failures     |
+| `AuthorizationError`  | 403         | Authorization failures      |
+| `NotFoundError`       | 404         | Resource not found          |
+| `BadRequestError`     | 400         | Malformed requests          |
+| `ConflictError`       | 409         | Resource conflicts          |
+| `InternalServerError` | 500         | Unexpected system errors    |
 
 ### Error Codes
 
@@ -65,31 +67,31 @@ The system uses standardized error codes for consistent error handling:
 ```typescript
 enum ErrorCodes {
   // Validation errors
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  REQUIRED_FIELD = 'REQUIRED_FIELD',
-  INVALID_EMAIL = 'INVALID_EMAIL',
-  INVALID_WALLET_ADDRESS = 'INVALID_WALLET_ADDRESS',
-  INVALID_USERNAME = 'INVALID_USERNAME',
-  INVALID_UUID = 'INVALID_UUID',
-  INVALID_AMOUNT = 'INVALID_AMOUNT',
-  
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  REQUIRED_FIELD = "REQUIRED_FIELD",
+  INVALID_EMAIL = "INVALID_EMAIL",
+  INVALID_WALLET_ADDRESS = "INVALID_WALLET_ADDRESS",
+  INVALID_USERNAME = "INVALID_USERNAME",
+  INVALID_UUID = "INVALID_UUID",
+  INVALID_AMOUNT = "INVALID_AMOUNT",
+
   // Database errors
-  DATABASE_ERROR = 'DATABASE_ERROR',
-  DUPLICATE_ENTRY = 'DUPLICATE_ENTRY',
-  REFERENCE_NOT_FOUND = 'REFERENCE_NOT_FOUND',
-  
+  DATABASE_ERROR = "DATABASE_ERROR",
+  DUPLICATE_ENTRY = "DUPLICATE_ENTRY",
+  REFERENCE_NOT_FOUND = "REFERENCE_NOT_FOUND",
+
   // Business logic errors
-  BUSINESS_LOGIC_ERROR = 'BUSINESS_LOGIC_ERROR',
-  USER_NOT_FOUND = 'USER_NOT_FOUND',
-  CONTRACT_NOT_FOUND = 'CONTRACT_NOT_FOUND',
-  
+  BUSINESS_LOGIC_ERROR = "BUSINESS_LOGIC_ERROR",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  CONTRACT_NOT_FOUND = "CONTRACT_NOT_FOUND",
+
   // Authentication errors
-  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
-  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
-  
+  AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR",
+  TOKEN_EXPIRED = "TOKEN_EXPIRED",
+
   // Authorization errors
-  AUTHORIZATION_ERROR = 'AUTHORIZATION_ERROR',
-  INSUFFICIENT_PERMISSIONS = 'INSUFFICIENT_PERMISSIONS'
+  AUTHORIZATION_ERROR = "AUTHORIZATION_ERROR",
+  INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
 }
 ```
 
@@ -134,50 +136,51 @@ Predefined validation schemas for common data types:
 const USER_CREATION_SCHEMA = {
   wallet_address: {
     required: true,
-    type: 'string',
+    type: "string",
     validator: validateWalletAddress,
-    errorMessage: 'Invalid wallet address format',
-    errorCode: 'INVALID_WALLET_ADDRESS'
+    errorMessage: "Invalid wallet address format",
+    errorCode: "INVALID_WALLET_ADDRESS",
   },
   username: {
     required: true,
-    type: 'string',
+    type: "string",
     validator: validateUsername,
-    errorMessage: 'Username must be 3-20 characters, alphanumeric with underscores and hyphens only',
-    errorCode: 'INVALID_USERNAME'
+    errorMessage:
+      "Username must be 3-20 characters, alphanumeric with underscores and hyphens only",
+    errorCode: "INVALID_USERNAME",
   },
   email: {
     required: false,
-    type: 'string',
+    type: "string",
     validator: validateEmail,
-    errorMessage: 'Invalid email format',
-    errorCode: 'INVALID_EMAIL'
-  }
+    errorMessage: "Invalid email format",
+    errorCode: "INVALID_EMAIL",
+  },
 };
 
 // Contract creation schema
 const CONTRACT_CREATION_SCHEMA = {
   contract_type: {
     required: true,
-    type: 'string',
+    type: "string",
     validator: (value) => validateEnum(value, CONTRACT_TYPES),
     errorMessage: 'Contract type must be "project" or "service"',
-    errorCode: 'INVALID_CONTRACT_TYPE'
+    errorCode: "INVALID_CONTRACT_TYPE",
   },
   freelancer_id: {
     required: true,
-    type: 'string',
+    type: "string",
     validator: validateUUID,
-    errorMessage: 'Invalid freelancer ID format',
-    errorCode: 'INVALID_FREELANCER_ID'
+    errorMessage: "Invalid freelancer ID format",
+    errorCode: "INVALID_FREELANCER_ID",
   },
   amount_locked: {
     required: true,
-    type: 'number',
+    type: "number",
     validator: validateMonetaryAmount,
-    errorMessage: 'Amount must be greater than 0',
-    errorCode: 'INVALID_AMOUNT'
-  }
+    errorMessage: "Amount must be greater than 0",
+    errorCode: "INVALID_AMOUNT",
+  },
 };
 ```
 
@@ -189,33 +192,42 @@ const CONTRACT_CREATION_SCHEMA = {
 // Before (inconsistent validation)
 export const createUserHandler = async (req: Request, res: Response) => {
   const { wallet_address, username } = req.body;
-  
+
   if (!wallet_address || !username) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  
+
   // ... rest of implementation
 };
 
 // After (standardized validation)
-export const createUserHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const createUserHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     // Use standardized validation
     const validationResult = validateObject(req.body, USER_CREATION_SCHEMA);
-    
+
     if (!validationResult.isValid) {
-      throw new ValidationError("User validation failed", validationResult.errors);
+      throw new ValidationError(
+        "User validation failed",
+        validationResult.errors,
+      );
     }
 
     const user = await userService.createUser(req.body);
-    res.status(201).json(buildSuccessResponse(user, "User created successfully"));
+    res
+      .status(201)
+      .json(buildSuccessResponse(user, "User created successfully"));
   } catch (error: any) {
     // Handle Supabase errors
     if (error.code && error.message) {
       throw mapSupabaseError(error);
     }
-    
+
     next(error);
   }
 };
@@ -227,14 +239,17 @@ export const createUserHandler = async (req: Request, res: Response, next: NextF
 // Automatic error mapping
 const mapSupabaseError = (error: any): AppError => {
   switch (error.code) {
-    case '23505': // Unique violation
-      return new ConflictError('Duplicate entry', 'DUPLICATE_ENTRY');
-    case '23503': // Foreign key violation
-      return new BusinessLogicError('Referenced record not found', 'REFERENCE_NOT_FOUND');
-    case '42501': // Insufficient privilege
-      return new AuthorizationError('Insufficient database permissions');
+    case "23505": // Unique violation
+      return new ConflictError("Duplicate entry", "DUPLICATE_ENTRY");
+    case "23503": // Foreign key violation
+      return new BusinessLogicError(
+        "Referenced record not found",
+        "REFERENCE_NOT_FOUND",
+      );
+    case "42501": // Insufficient privilege
+      return new AuthorizationError("Insufficient database permissions");
     default:
-      return new DatabaseError('Database operation failed', error);
+      return new DatabaseError("Database operation failed", error);
   }
 };
 ```
@@ -243,12 +258,12 @@ const mapSupabaseError = (error: any): AppError => {
 
 The system categorizes errors by severity for better monitoring:
 
-| Severity | Description | Examples |
-|----------|-------------|----------|
-| `LOW` | Validation errors, user input issues | Invalid email, missing fields |
-| `MEDIUM` | Business logic errors, expected failures | User not found, insufficient funds |
-| `HIGH` | Authentication/authorization issues | Token expired, insufficient permissions |
-| `CRITICAL` | System errors, database failures | Database connection lost, internal server errors |
+| Severity   | Description                              | Examples                                         |
+| ---------- | ---------------------------------------- | ------------------------------------------------ |
+| `LOW`      | Validation errors, user input issues     | Invalid email, missing fields                    |
+| `MEDIUM`   | Business logic errors, expected failures | User not found, insufficient funds               |
+| `HIGH`     | Authentication/authorization issues      | Token expired, insufficient permissions          |
+| `CRITICAL` | System errors, database failures         | Database connection lost, internal server errors |
 
 ## Testing
 
@@ -279,19 +294,25 @@ npm run test:coverage
 ### Updating Existing Controllers
 
 1. **Import new error classes and validation utilities**:
+
    ```typescript
-   import { ValidationError, BusinessLogicError, mapSupabaseError } from "@/utils/AppError";
+   import {
+     ValidationError,
+     BusinessLogicError,
+     mapSupabaseError,
+   } from "@/utils/AppError";
    import { validateObject, USER_CREATION_SCHEMA } from "@/utils/validation";
    ```
 
 2. **Replace manual validation with schema validation**:
+
    ```typescript
    // Before
    if (!email || !validateEmail(email)) {
      res.status(400).json({ error: "Invalid email" });
      return;
    }
-   
+
    // After
    const validationResult = validateObject(req.body, USER_CREATION_SCHEMA);
    if (!validationResult.isValid) {
@@ -300,10 +321,11 @@ npm run test:coverage
    ```
 
 3. **Replace direct error responses with error throwing**:
+
    ```typescript
    // Before
    res.status(404).json({ error: "User not found" });
-   
+
    // After
    throw new NotFoundError("User not found", "USER_NOT_FOUND");
    ```
@@ -323,18 +345,21 @@ npm run test:coverage
 ## Benefits
 
 ### For Developers
+
 - **Consistent API**: Predictable error responses across all endpoints
 - **Better Debugging**: Detailed error information and logging
 - **Type Safety**: Full TypeScript support with proper error types
 - **Reusable Validation**: Pre-built validation schemas for common use cases
 
 ### For API Consumers
+
 - **Clear Error Messages**: User-friendly error messages with specific details
 - **Consistent Format**: Standardized error response structure
 - **Proper Status Codes**: Appropriate HTTP status codes for different error types
 - **Error Codes**: Machine-readable error codes for programmatic handling
 
 ### For Operations
+
 - **Enhanced Monitoring**: Severity-based error logging for better alerting
 - **Detailed Logs**: Comprehensive error context for debugging
 - **Performance**: Optimized validation functions with caching support

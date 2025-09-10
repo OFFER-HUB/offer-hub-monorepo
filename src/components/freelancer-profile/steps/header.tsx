@@ -1,10 +1,10 @@
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type Props = {
-  className?: string
-} & React.HTMLAttributes<HTMLElement>
+  className?: string;
+} & React.HTMLAttributes<HTMLElement>;
 
 function Header({ className, ...props }: Props) {
   return (
@@ -12,7 +12,7 @@ function Header({ className, ...props }: Props) {
       className={`border-b border-[#6D758F] px-4 ${className}`}
       {...props}
     >
-      <div className='max-w-6xl mx-auto py-4 flex justify-between items-center'>
+      <div className="max-w-6xl mx-auto py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-4">
           <Image
             src="/oh-logo.png"
@@ -26,12 +26,14 @@ function Header({ className, ...props }: Props) {
 
         <Button
           onClick={() => {}}
-          variant="outline" className='border-[#002333] bg-transparent rounded-full md:min-w-36'>
+          variant="outline"
+          className="border-[#002333] bg-transparent rounded-full md:min-w-36"
+        >
           Sign In
         </Button>
       </div>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;

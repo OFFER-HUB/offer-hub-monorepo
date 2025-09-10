@@ -11,7 +11,7 @@ import {
   CONTRACT_CREATION_SCHEMA,
   validateEnum,
   validateMonetaryAmount,
-  validateStringLength
+  validateStringLength,
 } from "@/utils/validation";
 import { HTTP_STATUS } from "../types/api.type";
 import {
@@ -24,7 +24,7 @@ import {
   BusinessLogicError,
   NotFoundError,
   BadRequestError,
-  mapSupabaseError
+  mapSupabaseError,
 } from "@/utils/AppError";
 
 /**
@@ -57,16 +57,22 @@ import {
 export const createContractHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const contractData: CreateContractDTO = req.body;
 
     // Use standardized validation
-    const validationResult = validateObject(contractData, CONTRACT_CREATION_SCHEMA);
-    
+    const validationResult = validateObject(
+      contractData,
+      CONTRACT_CREATION_SCHEMA,
+    );
+
     if (!validationResult.isValid) {
-      throw new ValidationError("Contract validation failed", validationResult.errors);
+      throw new ValidationError(
+        "Contract validation failed",
+        validationResult.errors,
+      );
     }
 
     const newContract = await contractService.createContract(contractData);
@@ -77,11 +83,17 @@ export const createContractHandler = async (
   } catch (error: any) {
     // Handle specific business logic errors
     if (error.message === "Freelancer or client not found") {
-      throw new BusinessLogicError("Freelancer or client not found", "USER_NOT_FOUND");
+      throw new BusinessLogicError(
+        "Freelancer or client not found",
+        "USER_NOT_FOUND",
+      );
     }
 
     if (error.message === "Freelancer and client cannot be the same user") {
-      throw new BusinessLogicError("Freelancer and client cannot be the same user", "SAME_USER_OPERATION");
+      throw new BusinessLogicError(
+        "Freelancer and client cannot be the same user",
+        "SAME_USER_OPERATION",
+      );
     }
 
     // Handle Supabase errors
@@ -132,7 +144,7 @@ export const createContractHandler = async (
 export const getContractByIdHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -197,7 +209,7 @@ export const getContractByIdHandler = async (
 export const updateContractStatusHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -220,14 +232,14 @@ export const updateContractStatusHandler = async (
     if (!validateEnum(escrow_status, ACTIVE_ESCROW_STATUSES)) {
       throw new BadRequestError(
         "escrow_status must be 'funded', 'released', or 'disputed'",
-        "INVALID_ENUM_VALUE"
+        "INVALID_ENUM_VALUE",
       );
     }
 
     const updatedContract = await contractService.updateContractStatus(
       id,
       updateData,
-      userId
+      userId,
     );
 
     if (!updatedContract) {
@@ -239,8 +251,8 @@ export const updateContractStatusHandler = async (
       .json(
         buildSuccessResponse(
           updatedContract,
-          "Contract status updated successfully"
-        )
+          "Contract status updated successfully",
+        ),
       );
   } catch (error: any) {
     // Handle Supabase errors
@@ -289,7 +301,7 @@ export const updateContractStatusHandler = async (
 export const getContractsByUserHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { userId } = req.params;
@@ -304,7 +316,7 @@ export const getContractsByUserHandler = async (
     res
       .status(HTTP_STATUS.OK)
       .json(
-        buildListResponse(contracts, "User contracts retrieved successfully")
+        buildListResponse(contracts, "User contracts retrieved successfully"),
       );
   } catch (error: any) {
     // Handle Supabase errors
@@ -349,7 +361,7 @@ export const getContractsByUserHandler = async (
 export const getContractsByStatusHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { status } = req.params;
@@ -357,7 +369,7 @@ export const getContractsByStatusHandler = async (
     if (!status || !validateEnum(status, ESCROW_STATUSES)) {
       throw new BadRequestError(
         "Valid status is required: pending, funded, released, or disputed",
-        "INVALID_ENUM_VALUE"
+        "INVALID_ENUM_VALUE",
       );
     }
 
@@ -368,8 +380,8 @@ export const getContractsByStatusHandler = async (
       .json(
         buildListResponse(
           contracts,
-          "Contracts by status retrieved successfully"
-        )
+          "Contracts by status retrieved successfully",
+        ),
       );
   } catch (error: any) {
     // Handle Supabase errors

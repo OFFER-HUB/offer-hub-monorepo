@@ -1,15 +1,21 @@
 interface LoadingSkeletonProps {
-  variant?: "card" | "list" | "profile" | "text"
-  count?: number
-  className?: string
+  variant?: "card" | "list" | "profile" | "text";
+  count?: number;
+  className?: string;
 }
 
-export default function LoadingSkeleton({ variant = "card", count = 1, className = "" }: LoadingSkeletonProps) {
+export default function LoadingSkeleton({
+  variant = "card",
+  count = 1,
+  className = "",
+}: LoadingSkeletonProps) {
   const renderSkeleton = () => {
     switch (variant) {
       case "card":
         return (
-          <div className={`animate-pulse bg-gray-200 rounded-lg p-4 ${className}`}>
+          <div
+            className={`animate-pulse bg-gray-200 rounded-lg p-4 ${className}`}
+          >
             <div className="flex items-center space-x-4 mb-4">
               <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
               <div className="flex-1">
@@ -27,18 +33,20 @@ export default function LoadingSkeleton({ variant = "card", count = 1, className
               <div className="h-6 bg-gray-300 rounded-full w-14"></div>
             </div>
           </div>
-        )
+        );
 
       case "list":
         return (
-          <div className={`animate-pulse flex items-center space-x-4 p-4 ${className}`}>
+          <div
+            className={`animate-pulse flex items-center space-x-4 p-4 ${className}`}
+          >
             <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
             <div className="flex-1">
               <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
               <div className="h-3 bg-gray-300 rounded w-1/3"></div>
             </div>
           </div>
-        )
+        );
 
       case "profile":
         return (
@@ -52,7 +60,7 @@ export default function LoadingSkeleton({ variant = "card", count = 1, className
               <div className="h-3 bg-gray-300 rounded w-4/6"></div>
             </div>
           </div>
-        )
+        );
 
       case "text":
         return (
@@ -61,12 +69,12 @@ export default function LoadingSkeleton({ variant = "card", count = 1, className
             <div className="h-4 bg-gray-300 rounded w-5/6"></div>
             <div className="h-4 bg-gray-300 rounded w-4/6"></div>
           </div>
-        )
+        );
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <>
@@ -74,5 +82,5 @@ export default function LoadingSkeleton({ variant = "card", count = 1, className
         <div key={index}>{renderSkeleton()}</div>
       ))}
     </>
-  )
+  );
 }

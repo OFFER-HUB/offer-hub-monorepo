@@ -2,7 +2,13 @@
 
 import { useFilteredUsers } from "@/hooks/useFilteredUsers";
 import NotificationModal from "./notify";
-import { EditUserModal, UserCards, UserFilters, UserTable, ViewUserModal } from "./components";
+import {
+  EditUserModal,
+  UserCards,
+  UserFilters,
+  UserTable,
+  ViewUserModal,
+} from "./components";
 
 export default function UserVerificationTable() {
   const {

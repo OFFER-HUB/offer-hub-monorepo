@@ -53,7 +53,7 @@ export class ReviewService {
     if (to_id !== expectedToUser) {
       throw new AppError(
         "You_can_only_review_the_other_party_in_the_contract",
-        400
+        400,
       );
     }
 
@@ -92,7 +92,7 @@ export class ReviewService {
           username,
           avatar_url
         )
-      `
+      `,
       )
       .eq("to_id", userId)
       .order("created_at", { ascending: false });

@@ -10,7 +10,12 @@ interface TimelineSummaryProps {
   startDate?: Date;
 }
 
-export function TimelineSummary({ projectType, duration, urgency, startDate }: TimelineSummaryProps) {
+export function TimelineSummary({
+  projectType,
+  duration,
+  urgency,
+  startDate,
+}: TimelineSummaryProps) {
   const getProjectTypeLabel = (type: "long-term" | "short-term") => {
     return type === "long-term" ? "Long Term Project" : "Short Term Project";
   };
@@ -65,7 +70,9 @@ export function TimelineSummary({ projectType, duration, urgency, startDate }: T
             <AlertTriangle className="w-5 h-5 text-gray-500" />
             <div>
               <p className="text-sm font-medium text-gray-700">Urgency</p>
-              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(urgency)}`}>
+              <span
+                className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(urgency)}`}
+              >
                 {urgency.charAt(0).toUpperCase() + urgency.slice(1)}
               </span>
             </div>
@@ -86,4 +93,4 @@ export function TimelineSummary({ projectType, duration, urgency, startDate }: T
       </CardContent>
     </Card>
   );
-} 
+}

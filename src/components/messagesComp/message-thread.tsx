@@ -30,9 +30,9 @@ export function MessageThread({
     () =>
       [...messages].sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       ),
-    [messages]
+    [messages],
   );
 
   // Group by a timezone-stable key (UTC date portion) to avoid SSR/client drift.
@@ -49,7 +49,7 @@ export function MessageThread({
   const orderedDayKeys = useMemo(
     () =>
       Object.keys(messagesByDay).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
-    [messagesByDay]
+    [messagesByDay],
   );
 
   // Map of message id to DOM element to support jump-to.
@@ -57,7 +57,7 @@ export function MessageThread({
 
   // Jump-back support: remember previous scrollTop and show a floating button.
   const [previousScrollTop, setPreviousScrollTop] = useState<number | null>(
-    null
+    null,
   );
   const [showJumpBack, setShowJumpBack] = useState(false);
 
@@ -72,7 +72,7 @@ export function MessageThread({
     window.setTimeout(
       () =>
         targetEl.classList.remove("ring-2", "ring-sky-400/60", "rounded-xl"),
-      1500
+      1500,
     );
   };
 
@@ -94,7 +94,7 @@ export function MessageThread({
       ref={scrollRef}
       className={cn(
         "h-full w-full overflow-y-auto overflow-x-hidden rounded-xl bg-white",
-        className
+        className,
       )}
       aria-label="Message thread"
     >

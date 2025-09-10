@@ -8,6 +8,6 @@ interface Step2PageProps {
 
 export default async function Step2Page({ params }: Step2PageProps) {
   const { id } = await params;
-  
+
   return <Step2PageClient id={id} />;
 }

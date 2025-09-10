@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 import {
   AdminUser,
   AdminUsersResponse,
@@ -8,33 +8,34 @@ import {
   mapBackendUserToAdmin,
   ApiResult,
   isApiError,
-  ApiError
-} from '@/types/admin.types';
+  ApiError,
+} from "@/types/admin.types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
 export const useAdminUsersApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const getAuthToken = useCallback((): string | null => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('adminToken');
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("adminToken");
   }, []);
 
   const setAuthToken = useCallback((token: string) => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem('adminToken', token);
+    if (typeof window === "undefined") return;
+    localStorage.setItem("adminToken", token);
   }, []);
 
   const apiRequest = async <T>(
     url: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<ApiResult<T>> => {
     try {
       const authToken = getAuthToken();
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
       if (options.headers) {
@@ -52,7 +53,7 @@ export const useAdminUsersApi = () => {
       }
 
       if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+        headers["Authorization"] = `Bearer ${authToken}`;
       }
 
       const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -74,113 +75,132 @@ export const useAdminUsersApi = () => {
     } catch (err) {
       return {
         success: false,
-        message: err instanceof Error ? err.message : 'Network error occurred',
+        message: err instanceof Error ? err.message : "Network error occurred",
       } as ApiError;
     }
   };
 
-  const fetchUsers = useCallback(async (filters: UserFilters = {}): Promise<AdminUsersResponse | null> => {
-    setLoading(true);
-    setError(null);
+  const fetchUsers = useCallback(
+    async (filters: UserFilters = {}): Promise<AdminUsersResponse | null> => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const queryParams = new URLSearchParams();
-      
-      if (filters.page) queryParams.append('page', filters.page.toString());
-      if (filters.limit) queryParams.append('limit', filters.limit.toString());
-      if (filters.search) queryParams.append('search', filters.search);
-      if (filters.is_freelancer !== undefined) {
-        queryParams.append('is_freelancer', filters.is_freelancer.toString());
-      }
+      try {
+        const queryParams = new URLSearchParams();
 
-      const url = `/users${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      const result = await apiRequest<AdminUsersResponse>(url);
+        if (filters.page) queryParams.append("page", filters.page.toString());
+        if (filters.limit)
+          queryParams.append("limit", filters.limit.toString());
+        if (filters.search) queryParams.append("search", filters.search);
+        if (filters.is_freelancer !== undefined) {
+          queryParams.append("is_freelancer", filters.is_freelancer.toString());
+        }
 
-      if (isApiError(result)) {
-        setError(result.message);
+        const url = `/users${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+        const result = await apiRequest<AdminUsersResponse>(url);
+
+        if (isApiError(result)) {
+          setError(result.message);
+          return null;
+        }
+
+        const mappedData = {
+          ...result,
+          data: result.data.map(mapBackendUserToAdmin),
+        };
+
+        return mappedData;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch users";
+        setError(errorMessage);
         return null;
+      } finally {
+        setLoading(false);
       }
-
-      const mappedData = {
-        ...result,
-        data: result.data.map(mapBackendUserToAdmin),
-      };
-
-      return mappedData;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Fetch a single user by ID
-  const fetchUserById = useCallback(async (userId: string): Promise<AdminUser | null> => {
-    setLoading(true);
-    setError(null);
+  const fetchUserById = useCallback(
+    async (userId: string): Promise<AdminUser | null> => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await apiRequest<AdminUserResponse>(`/users/${userId}`);
+      try {
+        const result = await apiRequest<AdminUserResponse>(`/users/${userId}`);
 
-      if (isApiError(result)) {
-        setError(result.message);
+        if (isApiError(result)) {
+          setError(result.message);
+          return null;
+        }
+
+        return mapBackendUserToAdmin(result.data);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch user";
+        setError(errorMessage);
         return null;
+      } finally {
+        setLoading(false);
       }
-
-      return mapBackendUserToAdmin(result.data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Update a user
-  const updateUser = useCallback(async (
-    userId: string,
-    updates: UpdateUserRequest
-  ): Promise<AdminUser | null> => {
-    setLoading(true);
-    setError(null);
+  const updateUser = useCallback(
+    async (
+      userId: string,
+      updates: UpdateUserRequest,
+    ): Promise<AdminUser | null> => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await apiRequest<AdminUserResponse>(`/users/${userId}`, {
-        method: 'PATCH',
-        body: JSON.stringify(updates),
-      });
+      try {
+        const result = await apiRequest<AdminUserResponse>(`/users/${userId}`, {
+          method: "PATCH",
+          body: JSON.stringify(updates),
+        });
 
-      if (isApiError(result)) {
-        setError(result.message);
+        if (isApiError(result)) {
+          setError(result.message);
+          return null;
+        }
+
+        return mapBackendUserToAdmin(result.data);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update user";
+        setError(errorMessage);
         return null;
+      } finally {
+        setLoading(false);
       }
+    },
+    [],
+  );
 
-      return mapBackendUserToAdmin(result.data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update user';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const searchUsers = useCallback(
+    async (
+      searchTerm: string,
+      filters: Omit<UserFilters, "search"> = {},
+    ): Promise<AdminUsersResponse | null> => {
+      return fetchUsers({ ...filters, search: searchTerm });
+    },
+    [fetchUsers],
+  );
 
-  const searchUsers = useCallback(async (
-    searchTerm: string,
-    filters: Omit<UserFilters, 'search'> = {}
-  ): Promise<AdminUsersResponse | null> => {
-    return fetchUsers({ ...filters, search: searchTerm });
-  }, [fetchUsers]);
-
-  const filterUsersByRole = useCallback(async (
-    isFreelancer: boolean,
-    filters: Omit<UserFilters, 'is_freelancer'> = {}
-  ): Promise<AdminUsersResponse | null> => {
-    return fetchUsers({ ...filters, is_freelancer: isFreelancer });
-  }, [fetchUsers]);
+  const filterUsersByRole = useCallback(
+    async (
+      isFreelancer: boolean,
+      filters: Omit<UserFilters, "is_freelancer"> = {},
+    ): Promise<AdminUsersResponse | null> => {
+      return fetchUsers({ ...filters, is_freelancer: isFreelancer });
+    },
+    [fetchUsers],
+  );
 
   const createAdminUser = useCallback(async (): Promise<boolean> => {
     setLoading(true);
@@ -188,15 +208,15 @@ export const useAdminUsersApi = () => {
 
     try {
       const registerResponse = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          wallet_address: '0xadmin123456789abcdef123456789abcdef123456',
-          username: 'admin_user',
-          name: 'Admin User',
-          email: 'admin@offerhub.com',
+          wallet_address: "0xadmin123456789abcdef123456789abcdef123456",
+          username: "admin_user",
+          name: "Admin User",
+          email: "admin@offerhub.com",
           is_freelancer: false,
         }),
       });
@@ -204,7 +224,7 @@ export const useAdminUsersApi = () => {
       const registerData = await registerResponse.json();
 
       if (!registerResponse.ok) {
-        setError(registerData.message || 'Failed to create admin user');
+        setError(registerData.message || "Failed to create admin user");
         return false;
       }
 
@@ -214,7 +234,8 @@ export const useAdminUsersApi = () => {
 
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create admin user';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create admin user";
       setError(errorMessage);
       return false;
     } finally {

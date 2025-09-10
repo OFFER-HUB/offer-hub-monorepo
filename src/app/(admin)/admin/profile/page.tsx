@@ -5,7 +5,6 @@ import EditProfileForm from "@/components/admin-profile/EditProfileForm";
 import SecuritySettings from "@/components/admin-profile/SecuritySettings";
 import Sidebar from "@/components/admin/layouts/Sidebar";
 
-
 const mockAdmin = {
   firstName: "Aminu",
   lastName: "Abdulrasheed",

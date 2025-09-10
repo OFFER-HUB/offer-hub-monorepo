@@ -44,6 +44,7 @@ A comprehensive smart contract for handling disputes in the OfferHub platform, f
 ### 🔧 Implementation Details
 
 #### Direct Escrow Integration
+
 The contract integrates directly with the escrow contract for fund release:
 
 ```rust
@@ -57,6 +58,7 @@ const ESCROW_SPLIT: &str = "split";
 When a dispute is resolved, the contract automatically calls the escrow contract to release funds based on the decision.
 
 #### Backward Compatibility
+
 The contract maintains backward compatibility with existing interfaces while providing enhanced functionality:
 
 - Original `resolve_dispute` function preserved
@@ -68,61 +70,77 @@ The contract maintains backward compatibility with existing interfaces while pro
 ### Core Functions
 
 #### `initialize(admin, default_timeout, escrow_contract, fee_manager)`
+
 Initializes the dispute resolution contract.
 
 #### `open_dispute(job_id, initiator, reason, escrow_contract, dispute_amount)`
+
 Opens a new dispute for a job.
 
 #### `resolve_dispute(job_id, decision)`
+
 Resolves a dispute (backward compatible version).
 
 #### `resolve_dispute_with_auth(job_id, decision, caller)`
+
 Resolves a dispute with explicit caller authorization (production version).
 
 ### Mediation Functions
 
 #### `assign_mediator(job_id, admin, mediator)`
+
 Assigns a mediator to a dispute.
 
 #### `escalate_to_arbitration(job_id, mediator, arbitrator)`
+
 Escalates a dispute from mediation to arbitration.
 
 ### Evidence Management
 
 #### `add_evidence(job_id, submitter, description, attachment_hash)`
+
 Adds evidence to a dispute.
 
 #### `get_dispute_evidence(job_id)`
+
 Retrieves all evidence for a dispute.
 
 ### Arbitrator Management
 
 #### `add_arbitrator(admin, arbitrator, name)`
+
 Adds a new arbitrator to the system.
 
 #### `remove_arbitrator(admin, arbitrator)`
+
 Removes an arbitrator from the system.
 
 #### `add_mediator_access(admin, mediator)`
+
 Grants mediator access to an address.
 
 #### `remove_mediator_access(admin, mediator)`
+
 Revokes mediator access from an address.
 
 ### Utility Functions
 
 #### `get_dispute(job_id)`
+
 Retrieves dispute data.
 
 #### `check_timeout(job_id)`
+
 Checks if a dispute has timed out.
 
 #### `set_dispute_timeout(admin, timeout_seconds)`
+
 Sets the default dispute timeout.
 
 ## Data Structures
 
 ### DisputeData
+
 ```rust
 pub struct DisputeData {
     pub initiator: Address,
@@ -145,6 +163,7 @@ pub struct DisputeData {
 ```
 
 ### DisputeOutcome
+
 ```rust
 pub enum DisputeOutcome {
     None,
@@ -155,6 +174,7 @@ pub enum DisputeOutcome {
 ```
 
 ### DisputeStatus
+
 ```rust
 pub enum DisputeStatus {
     Open,
@@ -168,6 +188,7 @@ pub enum DisputeStatus {
 ## Usage Examples
 
 ### Opening a Dispute
+
 ```rust
 // Open a dispute
 client.open_dispute(
@@ -180,6 +201,7 @@ client.open_dispute(
 ```
 
 ### Assigning a Mediator
+
 ```rust
 // Add mediator to system
 client.add_mediator_access(&admin, &mediator);
@@ -189,6 +211,7 @@ client.assign_mediator(&job_id, &admin, &mediator);
 ```
 
 ### Escalating to Arbitration
+
 ```rust
 // Add arbitrator to system
 client.add_arbitrator(&admin, &arbitrator, &name);
@@ -198,6 +221,7 @@ client.escalate_to_arbitration(&job_id, &mediator, &arbitrator);
 ```
 
 ### Resolving a Dispute
+
 ```rust
 // Resolve dispute (backward compatible)
 client.resolve_dispute(&job_id, &DisputeOutcome::FavorClient);
@@ -209,11 +233,13 @@ client.resolve_dispute_with_auth(&job_id, &DisputeOutcome::FavorClient, &arbitra
 ## Testing
 
 Run the test suite:
+
 ```bash
 cargo test --package dispute-contract
 ```
 
 The test suite includes:
+
 - Basic functionality tests
 - Authorization tests
 - Edge case tests

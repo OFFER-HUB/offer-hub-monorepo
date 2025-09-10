@@ -8,15 +8,18 @@ interface ProfileNavigationProps {
   onTabChange: (tab: "profile" | "portfolio") => void;
 }
 
-export default function ProfileNavigation({ activeTab, onTabChange }: ProfileNavigationProps) {
+export default function ProfileNavigation({
+  activeTab,
+  onTabChange,
+}: ProfileNavigationProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-1">
       <div className="flex">
         <Button
           variant={activeTab === "profile" ? "default" : "ghost"}
           className={`flex-1 justify-start gap-2 ${
-            activeTab === "profile" 
-              ? "bg-teal-600 text-white hover:bg-teal-700" 
+            activeTab === "profile"
+              ? "bg-teal-600 text-white hover:bg-teal-700"
               : "text-gray-600 hover:text-gray-900"
           }`}
           onClick={() => onTabChange("profile")}
@@ -27,8 +30,8 @@ export default function ProfileNavigation({ activeTab, onTabChange }: ProfileNav
         <Button
           variant={activeTab === "portfolio" ? "default" : "ghost"}
           className={`flex-1 justify-start gap-2 ${
-            activeTab === "portfolio" 
-              ? "bg-teal-600 text-white hover:bg-teal-700" 
+            activeTab === "portfolio"
+              ? "bg-teal-600 text-white hover:bg-teal-700"
               : "text-gray-600 hover:text-gray-900"
           }`}
           onClick={() => onTabChange("portfolio")}

@@ -5,7 +5,6 @@ import { RestrictAccountDialog } from "./restrict-account-dialog";
 import { UserChat } from "./user-chat";
 import UserProfile from "./user-profile";
 
-
 export default function AccountManagementTable() {
   const [showChat, setShowChat] = useState(false);
   const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
