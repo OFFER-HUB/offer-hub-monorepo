@@ -7,8 +7,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create workflow_stages table
 CREATE TABLE workflow_stages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    -- Unique identifier for the workflow stage
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), 
+
+    -- Reference to the dispute this stage belongs to
     dispute_id UUID NOT NULL,
+
+    -- Name of the workflow stage (enum: dispute_initiation, mediator_assignment, etc.)
     stage_name VARCHAR(50) NOT NULL CHECK (stage_name IN (
         'dispute_initiation',
         'mediator_assignment', 
@@ -18,6 +24,8 @@ CREATE TABLE workflow_stages (
         'arbitration',
         'resolution_implementation'
     )),
+
+    -- Order of the stage in the workflow (0-based index)
     stage_order INTEGER NOT NULL CHECK (stage_order >= 0),
     status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN (
         'pending',
@@ -27,25 +35,56 @@ CREATE TABLE workflow_stages (
         'failed',
         'escalated'
     )),
+
+    -- Timestamp when the stage was started
     started_at TIMESTAMP WITH TIME ZONE,
+
+    -- Timestamp when the stage was completed
     completed_at TIMESTAMP WITH TIME ZONE,
+
+    -- Deadline for completing the stage
     deadline TIMESTAMP WITH TIME ZONE,
+
+    -- User assigned to this stage (typically a mediator or arbitrator)
     assigned_to UUID REFERENCES users(id),
+
+    -- Additional metadata for the stage (JSONB)
     metadata JSONB DEFAULT '{}',
+
+    -- Timestamp when the stage record was created
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Timestamp when the stage record was last updated
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create workflow_progress table
 CREATE TABLE workflow_progress (
+    -- Unique identifier for each progress entry
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    
+    -- Reference to the dispute this progress belongs to
     dispute_id UUID NOT NULL,
+    
+    -- Reference to the specific workflow stage
     stage_id UUID NOT NULL REFERENCES workflow_stages(id) ON DELETE CASCADE,
+    
+    -- Progress percentage (0-100)
     progress_percentage INTEGER NOT NULL DEFAULT 0 CHECK (progress_percentage >= 0 AND progress_percentage <= 100),
+    
+    -- Milestone description for this progress update
     milestone VARCHAR(100),
+    
+    -- Additional notes about the progress
     notes TEXT,
+    
+    -- When this progress entry was last updated
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    -- User who made this progress update
     updated_by UUID NOT NULL REFERENCES users(id),
+    
+    -- When this progress entry was created
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
