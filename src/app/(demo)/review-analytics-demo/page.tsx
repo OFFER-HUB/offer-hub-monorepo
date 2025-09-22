@@ -334,28 +334,30 @@ export default function ReviewAnalyticsDemoPage() {
 
       {/* Demo Content */}
       <Tabs value={demoMode} onValueChange={(value) => setDemoMode(value as typeof demoMode)}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="components">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Components
-          </TabsTrigger>
-          <TabsTrigger value="dashboard">
-            <Monitor className="h-4 w-4 mr-2" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="reports">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Reports
-          </TabsTrigger>
-          <TabsTrigger value="predictive">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            AI/ML
-          </TabsTrigger>
-          <TabsTrigger value="pipelines">
-            <Settings className="h-4 w-4 mr-2" />
-            Pipelines
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex w-max min-w-full lg:grid lg:w-full lg:grid-cols-5 h-auto p-1">
+            <TabsTrigger value="components" className="whitespace-nowrap text-xs sm:text-sm">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Components
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="whitespace-nowrap text-xs sm:text-sm">
+              <Monitor className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="whitespace-nowrap text-xs sm:text-sm">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="predictive" className="whitespace-nowrap text-xs sm:text-sm">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              AI/ML
+            </TabsTrigger>
+            <TabsTrigger value="pipelines" className="whitespace-nowrap text-xs sm:text-sm">
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Pipelines
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="components" className="space-y-8">
           <div className="space-y-6">

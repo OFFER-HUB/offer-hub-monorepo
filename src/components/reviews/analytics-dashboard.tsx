@@ -777,49 +777,61 @@ export default function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold">Review Analytics</h1>
-          <p className="text-gray-600">Comprehensive insights into review performance and user behavior</p>
+      <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl lg:text-3xl">
+            Review Analytics
+          </h1>
+          <p className="mt-1 text-sm text-gray-600 sm:text-base">
+            Comprehensive insights into review performance and user behavior
+          </p>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <DateRangeSelector
-            selectedRange={dateRange}
-            onRangeChange={updateDateRange}
-          />
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 lg:flex-shrink-0">
+          {/* Date Range Selector - Full width on mobile */}
+          <div className="w-full sm:w-auto">
+            <DateRangeSelector
+              selectedRange={dateRange}
+              onRangeChange={updateDateRange}
+            />
+          </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>
-                <Users className="h-4 w-4 mr-2" />
-                User Segments
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Globe className="h-4 w-4 mr-2" />
-                Regions
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={clearFilters}>
-                Clear All Filters
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          
-          <Button variant="outline" size="sm" onClick={refresh}>
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+          {/* Action Buttons Row */}
+          <div className="flex space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Filters</span>
+                  <span className="sm:hidden">Filter</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem>
+                  <Users className="h-4 w-4 mr-2" />
+                  User Segments
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Globe className="h-4 w-4 mr-2" />
+                  Regions
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={clearFilters}>
+                  Clear All Filters
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <Button variant="outline" size="sm" onClick={handleExport} className="flex-1 sm:flex-none">
+              <Download className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+            
+            <Button variant="outline" size="sm" onClick={refresh} className="px-2 sm:px-3">
+              <RotateCcw className="h-4 w-4" />
+              <span className="sr-only">Refresh</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -833,12 +845,22 @@ export default function AnalyticsDashboard() {
 
       {/* Main Dashboard Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="behavior">Behavior</TabsTrigger>
-          <TabsTrigger value="reputation">Reputation</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex w-max min-w-full sm:grid sm:w-full sm:grid-cols-4 h-auto p-1">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm whitespace-nowrap">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="text-xs sm:text-sm whitespace-nowrap">
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="behavior" className="text-xs sm:text-sm whitespace-nowrap">
+              Behavior
+            </TabsTrigger>
+            <TabsTrigger value="reputation" className="text-xs sm:text-sm whitespace-nowrap">
+              Reputation
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Basic overview charts */}
