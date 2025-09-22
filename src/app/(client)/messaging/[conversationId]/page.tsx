@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { use } from "react"
 import { Header } from "@/components/account-settings/header"
 import { Sidebar } from "@/components/account-settings/sidebar"
 import { MessagesSidebar } from "@/components/messages/messages-sidebar"
@@ -26,11 +27,11 @@ type UIMessage = {
 };
 
 interface PageProps {
-  params: { conversationId: string }
+  params: Promise<{ conversationId: string }>
 }
 
 export default function MessagingById({ params }: PageProps) {
-  const { conversationId } = params
+  const { conversationId } = use(params)
   
   return <MessagingClient conversationId={conversationId} />
 }

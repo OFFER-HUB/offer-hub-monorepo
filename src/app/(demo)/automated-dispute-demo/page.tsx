@@ -338,8 +338,7 @@ export default function AutomatedDisputeDemo() {
             <CardContent>
               <DisputeCategorization
                 dispute={selectedDispute}
-                autoStart={true}
-                onCategorized={(category: DisputeCategory, confidence: number) => {
+                onCategorized={(category: string) => {
                   markStepComplete('categorization');
                   setTimeout(() => setActiveDemo('priority'), 2000);
                 }}

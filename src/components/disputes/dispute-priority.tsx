@@ -1,25 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calculator, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
-import { DisputeAutomationData } from '@/types/dispute-automation.types';
+import { DisputeAutomationData, PriorityCalculationResult } from '@/types/dispute-automation.types';
 
 interface DisputePriorityProps {
   dispute: DisputeAutomationData;
-  onPriorityCalculated?: (priority: string) => void;
+  autoCalculate?: boolean;
+  onPriorityCalculated?: (result: PriorityCalculationResult) => void;
 }
 
 const PRIORITIES = {
   low: { label: 'Low', color: 'bg-green-100 text-green-800', icon: CheckCircle },
   medium: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
   high: { label: 'High', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
+  critical: { label: 'Critical', color: 'bg-red-200 text-red-900', icon: AlertTriangle },
 };
 
-export function DisputePriority({ dispute, onPriorityCalculated }: DisputePriorityProps) {
+export function DisputePriority({ dispute, autoCalculate, onPriorityCalculated }: DisputePriorityProps) {
   const [calculating, setCalculating] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<PriorityCalculationResult | null>(null);
+
+  useEffect(() => {
+    if (autoCalculate) {
+      calculatePriority();
+    }
+  }, [autoCalculate]);
 
   const calculatePriority = async () => {
     setCalculating(true);
@@ -35,9 +43,9 @@ export function DisputePriority({ dispute, onPriorityCalculated }: DisputePriori
       score += 15;
     }
     
-    if (dispute.urgency === 'high') {
+    if (dispute.priority === 'high' || dispute.priority === 'critical') {
       score += 25;
-    } else if (dispute.urgency === 'medium') {
+    } else if (dispute.priority === 'medium') {
       score += 10;
     }
     
@@ -48,19 +56,30 @@ export function DisputePriority({ dispute, onPriorityCalculated }: DisputePriori
     }
 
     setResult({
-      priority,
+      priority: priority as PriorityCalculationResult['priority'],
       score,
-      factors: [
+      factors: {
+        amount: dispute.amount > 1000 ? 30 : dispute.amount > 500 ? 15 : 0,
+        urgency: dispute.priority === 'high' || dispute.priority === 'critical' ? 25 : dispute.priority === 'medium' ? 10 : 0,
+        userHistory: 0,
+        projectComplexity: 0,
+        timelineSensitivity: 0,
+        communicationQuality: 0,
+      },
+      reasoning: [
         `Amount: $${dispute.amount}`,
-        `Urgency: ${dispute.urgency}`,
+        `Current Priority: ${dispute.priority}`,
         `Type: ${dispute.disputeType}`
-      ]
+      ],
+      recommendedTimeline: priority === 'high' ? 24 : priority === 'medium' ? 48 : 72
     });
     setCalculating(false);
   };
 
   const acceptPriority = () => {
-    onPriorityCalculated?.(result.priority);
+    if (result) {
+      onPriorityCalculated?.(result);
+    }
   };
 
   if (calculating) {
@@ -105,7 +124,7 @@ export function DisputePriority({ dispute, onPriorityCalculated }: DisputePriori
             <div>
               <h4 className="font-medium text-[#002333] mb-2">Factors Considered:</h4>
               <ul className="text-sm text-[#6D758F] space-y-1">
-                {result.factors.map((factor, index) => (
+                {result.reasoning.map((factor, index) => (
                   <li key={index}>• {factor}</li>
                 ))}
               </ul>

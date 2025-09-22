@@ -19,9 +19,15 @@ const CATEGORIES = [
   { id: 'other', label: 'Other' },
 ];
 
+type CategorizationResult = {
+  category: string;
+  confidence: number;
+  label: string;
+};
+
 export function DisputeCategorization({ dispute, onCategorized }: DisputeCategorizationProps) {
   const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<CategorizationResult | null>(null);
 
   const analyzeDispute = async () => {
     setAnalyzing(true);
@@ -55,7 +61,9 @@ export function DisputeCategorization({ dispute, onCategorized }: DisputeCategor
   };
 
   const acceptResult = () => {
-    onCategorized?.(result.category);
+    if (result) {
+      onCategorized?.(result.category);
+    }
   };
 
   if (analyzing) {
