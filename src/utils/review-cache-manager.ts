@@ -16,7 +16,7 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
 /**
  * ReviewCacheManager
  *
- * A sophisticated cache management system for reviews with the following features:
+ * Cache manager for reviews:
  * - TTL (Time-to-Live) based caching
  * - Automatic cache invalidation
  * - Cross-tab synchronization via localStorage
