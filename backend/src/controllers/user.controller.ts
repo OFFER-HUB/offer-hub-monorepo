@@ -5,8 +5,18 @@
 
 import { Request, Response, NextFunction } from "express";
 import { userService } from "@/services/user.service";
+import { userManagementService } from "@/services/user-management.service";
 import { AppError, MissingFieldsError, NotFoundError, ValidationError, BadRequestError, mapSupabaseError } from "@/utils/AppError";
 import { UserFilters } from "@/types/user.types";
+import { 
+    AdminUserFilters, 
+    BulkUserOperation,
+    UserStatusChange,
+    UserRoleChange,
+    UserVerification,
+    AdminCreateUserDTO,
+    UserExportOptions
+} from "@/types/user-management.types";
 import { buildSuccessResponse, buildPaginatedResponse } from '../utils/responseBuilder';
 import { 
   validateUUID, 
