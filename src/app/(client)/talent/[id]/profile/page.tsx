@@ -35,14 +35,15 @@ const TalentProfilePage = () => {
       const talentData = getTalentById(Number(params.id));
       setTalent(talentData || null);
 
-    if (talentData) {
-      addNotification({
-        type: 'info',
-        title: 'Profile Loaded',
-        message: `Viewing ${talentData.name}'s profile`,
-      })
+      if (talentData) {
+        addNotification({
+          type: 'info',
+          title: 'Profile Loaded',
+          message: `Viewing ${talentData.name}'s profile`,
+        })
+      }
     }
-  }, [params.id, loading]);
+  }, [params.id, loading, getTalentById, addNotification]);
 
   const handleSendMessage = () => {
     if (talent) {
