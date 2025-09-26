@@ -42,7 +42,6 @@ interface PerformanceAnalyticsProps {
 
 export default function PerformanceAnalytics({
   metrics,
-  benchmarks,
   insights,
   timeframe = "Last 6 months",
   showExportButton = true,
@@ -56,11 +55,6 @@ export default function PerformanceAnalytics({
     return "text-yellow-600";
   };
 
-  const getProgressColor = (value: number, threshold: { good: number; excellent: number }) => {
-    if (value >= threshold.excellent) return "bg-green-500";
-    if (value >= threshold.good) return "bg-blue-500";
-    return "bg-yellow-500";
-  };
 
   const formatDuration = (hours: number) => {
     if (hours < 1) return `${Math.round(hours * 60)}m`;

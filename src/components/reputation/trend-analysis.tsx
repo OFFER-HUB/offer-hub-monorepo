@@ -26,16 +26,12 @@ import {
   Lightbulb,
   AlertCircle,
   CheckCircle,
-  Calendar,
   BarChart3,
   LineChart,
   PieChart,
-  Zap,
   Award,
   Clock,
-  Star,
   ArrowRight,
-  Filter,
   RefreshCw
 } from "lucide-react";
 
@@ -55,7 +51,6 @@ export default function TrendAnalysis({
   insights,
   predictions,
   recommendations,
-  currentScore,
   timeframe = "6months",
   onTimeframeChange,
   className = ""
@@ -146,7 +141,7 @@ export default function TrendAnalysis({
     }
   };
 
-  const getInsightBadgeColor = (type: string, impact: string) => {
+  const getInsightBadgeColor = (type: string) => {
     const baseColors = {
       strength: "bg-green-100 text-green-800",
       opportunity: "bg-blue-100 text-blue-800",
@@ -383,7 +378,7 @@ export default function TrendAnalysis({
                       <div>
                         <h4 className="font-semibold">{insight.title}</h4>
                         <div className="flex items-center space-x-2 mt-1">
-                          <Badge className={getInsightBadgeColor(insight.type, insight.impact)}>
+                          <Badge className={getInsightBadgeColor(insight.type)}>
                             {insight.type}
                           </Badge>
                           <Badge variant="outline">

@@ -200,7 +200,7 @@ export default function ResponseCreation({
                     <li>Consider thanking the reviewer for their feedback</li>
                   )}
                   {!content.toLowerCase().includes('improve') && (
-                    <li>Mention any improvements you'll make based on the feedback</li>
+                    <li>Mention any improvements you&apos;ll make based on the feedback</li>
                   )}
                 </ul>
               </div>
@@ -219,7 +219,7 @@ export default function ResponseCreation({
                   <CheckCircle className="w-4 h-4 text-green-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-green-800">Good example:</p>
-                    <p className="text-sm text-green-700 italic">"{guidelines.examples.good}"</p>
+                    <p className="text-sm text-green-700 italic">&ldquo;{guidelines.examples.good}&rdquo;</p>
                   </div>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export default function ResponseCreation({
                   <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-red-800">Avoid this:</p>
-                    <p className="text-sm text-red-700 italic">"{guidelines.examples.bad}"</p>
+                    <p className="text-sm text-red-700 italic">&ldquo;{guidelines.examples.bad}&rdquo;</p>
                   </div>
                 </div>
               </div>

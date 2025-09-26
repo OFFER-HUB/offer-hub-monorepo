@@ -27,7 +27,7 @@ export const useAdminUsersApi = () => {
     localStorage.setItem('adminToken', token);
   }, []);
 
-  const apiRequest = async <T>(
+  const apiRequest = useCallback(async <T>(
     url: string,
     options: RequestInit = {}
   ): Promise<ApiResult<T>> => {
@@ -77,7 +77,7 @@ export const useAdminUsersApi = () => {
         message: err instanceof Error ? err.message : 'Network error occurred',
       } as ApiError;
     }
-  };
+  }, []);
 
   const fetchUsers = useCallback(async (filters: UserFilters = {}): Promise<AdminUsersResponse | null> => {
     setLoading(true);
@@ -114,7 +114,7 @@ export const useAdminUsersApi = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiRequest]);
 
   // Fetch a single user by ID
   const fetchUserById = useCallback(async (userId: string): Promise<AdminUser | null> => {
@@ -137,7 +137,7 @@ export const useAdminUsersApi = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiRequest]);
 
   // Update a user
   const updateUser = useCallback(async (
@@ -166,7 +166,7 @@ export const useAdminUsersApi = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiRequest]);
 
   const searchUsers = useCallback(async (
     searchTerm: string,

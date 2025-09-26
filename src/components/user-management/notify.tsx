@@ -8,10 +8,10 @@ import { X, Bold, Italic, Link, Image, List, ListOrdered, AlignLeft, AlignCenter
 interface NotificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any; // You should replace 'any' with a proper user type interface
+  user: Record<string, unknown>; // You should replace with a proper user type interface
 }
 
-export default function NotificationModal({ isOpen, onClose, user }: NotificationModalProps) {
+export default function NotificationModal({ isOpen, onClose }: NotificationModalProps) {
   const [message, setMessage] = useState(
     `Hi [Customer name]\n\nCongratulations! Your KYC upgrade request has been approved, you can start transacting without limit.\n\nXYZ team`
   );

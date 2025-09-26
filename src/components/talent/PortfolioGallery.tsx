@@ -103,7 +103,7 @@ export default function PortfolioGallery({ projects, onProjectClick }: Portfolio
         <div className="text-center py-12">
           <div className="text-gray-400 text-lg font-medium">No portfolio projects yet</div>
           <p className="text-gray-500 text-sm mt-2">
-            This freelancer hasn't added any portfolio projects yet.
+            This freelancer hasn&apos;t added any portfolio projects yet.
           </p>
         </div>
       )}

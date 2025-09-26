@@ -52,7 +52,7 @@ export default function ReputationScoring({
     return "Needs Improvement";
   };
 
-  const getTrendIcon = (trend: string, trendPercentage: number) => {
+  const getTrendIcon = (trend: string) => {
     if (trend === "up") return <TrendingUp className="h-4 w-4 text-green-500" />;
     if (trend === "down") return <TrendingDown className="h-4 w-4 text-red-500" />;
     return <Minus className="h-4 w-4 text-gray-400" />;

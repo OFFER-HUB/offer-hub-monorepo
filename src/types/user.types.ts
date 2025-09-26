@@ -33,9 +33,9 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface ProfileResponse extends ApiResponse<User> {}
+export type ProfileResponse = ApiResponse<User>;
 
-export interface UpdateProfileResponse extends ApiResponse<Partial<User>> {}
+export type UpdateProfileResponse = ApiResponse<Partial<User>>;
 
 export interface ProfileError {
   message: string;

@@ -30,7 +30,6 @@ import {
   Eye,
   EyeOff,
   Bell,
-  Calendar,
   BarChart3,
   TrendingUp,
   Star,
@@ -73,7 +72,6 @@ export default function ReputationDashboard({
     getBenchmarks,
     getTrends,
     getMobileView,
-    markNotificationRead,
     retryCalculation
   } = useReputationAnalytics({
     userId,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,25 +19,17 @@ import {
   TrendingDown,
   Activity,
   Users,
-  Clock,
   CheckCircle,
   AlertTriangle,
   Download,
   RefreshCw,
   Calendar,
-  Eye,
   Target,
   Award,
-  Filter,
 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useReviewQuality } from '@/hooks/use-review-quality';
 import {
-  QualityAnalytics,
-  QualityTrend,
-} from '@/types/review-quality.types';
-import {
-  formatQualityScore,
   getQualityScoreColor,
 } from '@/utils/quality-helpers';
 
@@ -117,16 +109,6 @@ export default function QualityMetrics({
     }
   };
 
-  const getTrendIndicator = (current: number, previous: number) => {
-    const change = ((current - previous) / previous) * 100;
-    if (Math.abs(change) < 1) {
-      return { icon: Activity, color: 'text-gray-500', text: 'No change' };
-    } else if (change > 0) {
-      return { icon: TrendingUp, color: 'text-green-500', text: `+${change.toFixed(1)}%` };
-    } else {
-      return { icon: TrendingDown, color: 'text-red-500', text: `${change.toFixed(1)}%` };
-    }
-  };
 
   const OverviewPanel = () => (
     <div className="space-y-6">

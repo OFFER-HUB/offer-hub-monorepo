@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,18 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import {
   Shield,
-  AlertTriangle,
   CheckCircle,
   XCircle,
   Flag,
   Eye,
   Clock,
-  Search,
-  Filter,
   RefreshCw,
-  MoreHorizontal,
   MessageSquare,
-  User,
   TrendingUp,
   Settings,
 } from 'lucide-react';
@@ -37,10 +32,8 @@ import {
   ModerationStatus,
   ModerationAction,
   ModerationDecision,
-  ModerationSeverity,
 } from '@/types/review-quality.types';
 import {
-  formatQualityScore,
   getModerationStatusColor,
 } from '@/utils/quality-helpers';
 
@@ -231,7 +224,7 @@ export default function ContentModeration({
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex flex-wrap gap-3">
-              <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+              <Select value={filterStatus} onValueChange={(value: ModerationStatus | "all") => setFilterStatus(value)}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
@@ -245,7 +238,7 @@ export default function ContentModeration({
                 </SelectContent>
               </Select>
 
-              <Select value={filterPriority} onValueChange={(value: any) => setFilterPriority(value)}>
+              <Select value={filterPriority} onValueChange={(value: "urgent" | "high" | "medium" | "low" | "all") => setFilterPriority(value)}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Filter by priority" />
                 </SelectTrigger>

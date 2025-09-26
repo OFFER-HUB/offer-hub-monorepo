@@ -45,7 +45,7 @@ const CHART_COLORS = [
 export interface ChartData {
   name: string;
   value?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface BaseChartProps {

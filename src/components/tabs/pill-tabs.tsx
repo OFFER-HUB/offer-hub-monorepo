@@ -44,7 +44,7 @@ export default function PillTabs({
             onClick={() => {
               // If the tab item provides an href, navigate to it
               // This enables cross-page tab navigation while preserving the same UI
-              const href = (tab as any).href as string | undefined;
+              const href = (tab as { href?: string }).href;
               if (href) router.push(href);
             }}
           >

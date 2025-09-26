@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, StarHalf, StarOff } from 'lucide-react';
+import { Star, StarHalf } from 'lucide-react';
 import { Rating, RatingDimension } from '@/types/review-creation.types';
 import { cn } from '@/lib/utils';
 
@@ -116,7 +116,7 @@ export const RatingInterface: React.FC<RatingInterfaceProps> = ({
 
   return (
     <div className={cn('space-y-6', className)}>
-      {ratings.map((rating, index) => {
+      {ratings.map((rating) => {
         const dimension = dimensions.find(d => d.id === rating.dimension);
         if (!dimension) return null;
 

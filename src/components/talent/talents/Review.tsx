@@ -62,7 +62,7 @@ export default function ReviewsCarousel({
                 </div>
               </div>
               <p className="text-sm text-gray-500 mb-2">{review.date.slice(0,1).toUpperCase()+review.date.slice(1)}</p>
-              <p className="text-gray-700 leading-relaxed text-sm">"{review.comment}"</p>
+              <p className="text-gray-700 leading-relaxed text-sm">&ldquo;{review.comment}&rdquo;</p>
             </div>
           ))}
         </div>

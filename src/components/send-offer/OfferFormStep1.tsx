@@ -46,7 +46,7 @@ export function OfferFormStep1({ onNext, onBack, freelancerId }: OfferFormStep1P
     }
   };
 
-  const handleAutoSave = (data: any) => {
+  const handleAutoSave = (data: Record<string, unknown>) => {
     // Auto-save form data to localStorage
     localStorage.setItem('offer-form-draft', JSON.stringify(data));
   };

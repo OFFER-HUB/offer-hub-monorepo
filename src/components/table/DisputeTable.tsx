@@ -1,14 +1,14 @@
 import { Progress } from '@/components/ui/progress';
 import React from 'react';
 
-export interface DisputeTableColumn<T = any> {
+export interface DisputeTableColumn<T = unknown> {
   key: string;
   label: string;
   render?: (row: T) => React.ReactNode;
   className?: string;
 }
 
-export interface DisputeTableProps<T = any> {
+export interface DisputeTableProps<T = unknown> {
   columns: DisputeTableColumn<T>[];
   data: T[];
   isLoading?: boolean;
@@ -78,7 +78,7 @@ const DisputeTable = <T,>({
                     >
                       {col.render
                         ? col.render(row)
-                        : String((row as any)[col.key])}
+                        : String((row as Record<string, unknown>)[col.key])}
                     </td>
                   ))}
                 </tr>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,24 +15,18 @@ import {
   XCircle,
   Clock,
   TrendingUp,
-  Eye,
   RefreshCw,
   Download,
-  Filter,
-  Search,
-  MoreHorizontal
+  Eye
 } from 'lucide-react';
 import { useReviewQuality } from '@/hooks/use-review-quality';
 import {
   QualityScore,
-  QualityMetrics,
   ModerationStatus,
   QualityAssessmentConfig,
 } from '@/types/review-quality.types';
 import {
-  formatQualityScore,
   getQualityScoreColor,
-  getModerationStatusColor,
 } from '@/utils/quality-helpers';
 
 interface QualityAssuranceProps {
@@ -49,8 +43,6 @@ export default function QualityAssurance({
   onConfigChange,
 }: QualityAssuranceProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  const [configMode, setConfigMode] = useState(false);
 
   const {
     state,
@@ -101,34 +93,6 @@ export default function QualityAssurance({
     }
   };
 
-  const QualityScoreDisplay = ({ score }: { score: QualityScore }) => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="font-medium text-gray-900">Overall Quality Score</h4>
-        <div className="flex items-center gap-2">
-          <span className={`text-2xl font-bold ${getQualityScoreColor(score.overall)}`}>
-            {score.overall.toFixed(1)}
-          </span>
-          <span className="text-sm text-gray-500">/ 100</span>
-        </div>
-      </div>
-
-      <Progress value={score.overall} className="h-2" />
-
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        {Object.entries(score.breakdown).map(([key, value]) => (
-          <div key={key} className="flex justify-between">
-            <span className="capitalize text-gray-600">
-              {key.replace('_', ' ')}:
-            </span>
-            <span className={`font-medium ${getQualityScoreColor(value)}`}>
-              {value.toFixed(1)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   const OverviewPanel = () => (
     <div className="space-y-6">

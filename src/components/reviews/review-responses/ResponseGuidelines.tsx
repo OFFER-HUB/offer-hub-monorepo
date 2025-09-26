@@ -39,8 +39,8 @@ export default function ResponseGuidelines({
     {
       icon: <TrendingUp className="w-5 h-5" />,
       title: "Mention Improvements",
-      description: "Share how you'll improve based on the feedback",
-      example: "I'll implement better project tracking tools...",
+      description: "Share how you&apos;ll improve based on the feedback",
+      example: "I&apos;ll implement better project tracking tools...",
     },
     {
       icon: <MessageSquare className="w-5 h-5" />,
@@ -175,7 +175,7 @@ export default function ResponseGuidelines({
                         {practice.description}
                       </p>
                       <div className="p-2 bg-gray-50 rounded text-xs text-gray-700 italic">
-                        "{practice.example}"
+                        &ldquo;{practice.example}&rdquo;
                       </div>
                     </div>
                   </div>
@@ -198,7 +198,7 @@ export default function ResponseGuidelines({
                         Good Response
                       </h4>
                       <p className="text-sm text-green-800 italic">
-                        "{guidelines.examples.good}"
+                        &ldquo;{guidelines.examples.good}&rdquo;
                       </p>
                       <div className="mt-2 flex gap-1">
                         <Badge variant="outline" className="text-xs">
@@ -223,7 +223,7 @@ export default function ResponseGuidelines({
                         Poor Response
                       </h4>
                       <p className="text-sm text-red-800 italic">
-                        "{guidelines.examples.bad}"
+                        &ldquo;{guidelines.examples.bad}&rdquo;
                       </p>
                       <div className="mt-2 flex gap-1">
                         <Badge
@@ -330,7 +330,7 @@ export default function ResponseGuidelines({
                   Show Growth
                 </h4>
                 <p className="text-sm text-purple-800">
-                  Demonstrate how you'll improve
+                  Demonstrate how you&apos;ll improve
                 </p>
               </div>
             </div>
@@ -339,7 +339,7 @@ export default function ResponseGuidelines({
           {/* Action Buttons */}
           <div className="flex justify-end pt-4 border-t border-gray-200">
             <Button onClick={onClose} className="bg-blue-600 hover:bg-blue-700">
-              Got it! Let's write a response
+              Got it! Let&apos;s write a response
             </Button>
           </div>
         </CardContent>

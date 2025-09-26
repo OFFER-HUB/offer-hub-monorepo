@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
   AlertCircle, 
   CheckCircle2, 
@@ -12,8 +12,7 @@ import {
   ShieldCheck,
   ShieldX,
   MoreVertical,
-  Trash2,
-  Eye
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -433,7 +432,7 @@ export const ReviewModeration: React.FC<ReviewModerationProps> = ({
                     </div>
                   )}
                 </Card>
-              ))}
+              ))
         </div>
       )}
     </div>
