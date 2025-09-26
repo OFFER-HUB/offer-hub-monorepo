@@ -55,7 +55,7 @@ describe('MatchResolver', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       providers: [
         MatchResolver,
         {
@@ -65,8 +65,8 @@ describe('MatchResolver', () => {
       ],
     }).compile();
 
-    resolver = module.get<MatchResolver>(MatchResolver);
-    matchService = module.get<MatchService>(MatchService);
+    resolver = testingModule.get<MatchResolver>(MatchResolver);
+    matchService = testingModule.get<MatchService>(MatchService);
   });
 
   it('should be defined', () => {

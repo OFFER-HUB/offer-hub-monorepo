@@ -87,7 +87,7 @@ describe('HighQualityModelService - Refinement', () => {
       JsonOutputParser: jest.fn().mockImplementation(() => mockJsonOutputParser),
     }));
     
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       providers: [
         HighQualityModelService,
         {
@@ -97,7 +97,7 @@ describe('HighQualityModelService - Refinement', () => {
       ],
     }).compile();
 
-    service = module.get<HighQualityModelService>(HighQualityModelService);
+    service = testingModule.get<HighQualityModelService>(HighQualityModelService);
     
     // Override the chain invoke method for testing
     (service as any).createJsonParsingChain = jest.fn().mockImplementation(() => ({

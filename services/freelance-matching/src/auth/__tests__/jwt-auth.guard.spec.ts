@@ -9,7 +9,7 @@ describe('JwtAuthGuard', () => {
   let reflector: Reflector;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       providers: [
         JwtAuthGuard,
         {
@@ -21,8 +21,8 @@ describe('JwtAuthGuard', () => {
       ],
     }).compile();
 
-    guard = module.get<JwtAuthGuard>(JwtAuthGuard);
-    reflector = module.get<Reflector>(Reflector);
+    guard = testingModule.get<JwtAuthGuard>(JwtAuthGuard);
+    reflector = testingModule.get<Reflector>(Reflector);
   });
 
   it('should be defined', () => {

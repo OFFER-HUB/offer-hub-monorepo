@@ -24,7 +24,7 @@ describe('HighQualityModelService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       providers: [
         HighQualityModelService,
         {
@@ -34,7 +34,7 @@ describe('HighQualityModelService', () => {
       ],
     }).compile();
 
-    service = module.get<HighQualityModelService>(HighQualityModelService);
+    service = testingModule.get<HighQualityModelService>(HighQualityModelService);
   });
 
   it('should be defined', () => {
@@ -89,7 +89,7 @@ describe('HighQualityModelService', () => {
       mockConfigService.get.mockReturnValueOnce(undefined);
       
       expect(() => {
-        const module = Test.createTestingModule({
+        const testingModule = Test.createTestingModule({
           providers: [
             HighQualityModelService,
             {

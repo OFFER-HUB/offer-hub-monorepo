@@ -26,7 +26,7 @@ describe('LowCostModelService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       providers: [
         LowCostModelService,
         {
@@ -36,7 +36,7 @@ describe('LowCostModelService', () => {
       ],
     }).compile();
 
-    service = module.get<LowCostModelService>(LowCostModelService);
+    service = testingModule.get<LowCostModelService>(LowCostModelService);
     mockHfInference = new HfInference('') as jest.Mocked<HfInference>;
     // Access the private hf property
     (service as any).hf = mockHfInference;

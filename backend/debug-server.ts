@@ -10,8 +10,8 @@ import cors from "cors";
 console.log("3. CORS imported");
 
 // Test Supabase connection
-import { supabase } from "./src/lib/supabase/supabase";
-console.log("4. Supabase imported");
+// import { supabase } from "./src/lib/supabase/supabase";
+console.log("4. Supabase import commented out");
 
 const app = express();
 const port = process.env.PORT || 4000;

@@ -20,7 +20,7 @@ describe('PreFilter Benchmarks', () => {
   }));
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
@@ -44,8 +44,8 @@ describe('PreFilter Benchmarks', () => {
       ],
     }).compile();
 
-    service = module.get<LowCostModelService>(LowCostModelService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    service = testingModule.get<LowCostModelService>(LowCostModelService);
+    prismaService = testingModule.get<PrismaService>(PrismaService);
   });
 
   it('should prefilter freelancers with latency < 100ms', async () => {
