@@ -17,12 +17,12 @@ import {
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Review, ReviewModerationAction, ReviewStats } from '@/types/review-creation.types';
+import { Review, ReviewStats } from '@/types/review-creation.types';
 import { cn } from '@/lib/utils';
 
 type ReviewStatus = 'pending' | 'published' | 'rejected' | 'flagged' | 'all';
@@ -178,7 +178,8 @@ export const ReviewModeration: React.FC<ReviewModerationProps> = ({
             </CardContent>
           </Card>
         ) : (
-          filteredReviews.map((review) => (
+          <div className="space-y-4">
+            {filteredReviews.map((review) => (
             <Card key={review.id} className="overflow-hidden">
               <div 
                 className={cn(
@@ -432,9 +433,10 @@ export const ReviewModeration: React.FC<ReviewModerationProps> = ({
                     </div>
                   )}
                 </Card>
-              ))
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
