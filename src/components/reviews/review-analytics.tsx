@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Download, BarChart3, PieChart, LineChart, Table, FileText, FileSpreadsheet, FileCode, Filter, Calendar } from 'lucide-react';
+import { Download, BarChart3, PieChart, LineChart, Table, FileText, FileSpreadsheet, FileCode, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -133,8 +133,8 @@ export const ReviewAnalytics: React.FC<ReviewAnalyticsProps> = ({ reviews, class
         />
       </div>
 
-      <Tabs value={view} onValueChange={(v: any) => setView(v)} className="space-y-4">
-        <TabsList>
+      <Tabs value={view} onValueChange={(v: 'overview' | 'ratings' | 'trends' | 'export') => setView(v)} className="space-y-4">
+      <TabsList>
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             <span>Overview</span>

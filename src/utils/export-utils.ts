@@ -1,4 +1,4 @@
-import { Review, ReviewAnalytics, ReviewStats } from '@/types/review-creation.types';
+import { Review, ReviewAnalytics } from '@/types/review-creation.types';
 
 export const generateCSV = (reviews: Review[]): string => {
   if (reviews.length === 0) return '';
