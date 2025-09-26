@@ -434,22 +434,21 @@ export const ReviewModeration: React.FC<ReviewModerationProps> = ({
                   )}
                 </Card>
               ))}
-            </div>
-          )}
         </div>
-      </div>
-    );
-  };
-  
-  // Helper component for stats cards
-  const StatCard = ({ title, value, icon }: { title: string; value: number; icon: React.ReactNode }) => (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        {icon}
-      </div>
-      <p className="text-2xl font-bold mt-1">{value}</p>
-    </Card>
+      )}
+    </div>
   );
-  
-  export default ReviewModeration;
+};
+
+// Helper component for stats cards
+const StatCard = ({ title, value, icon }: { title: string; value: number; icon: React.ReactNode }) => (
+  <Card className="p-4">
+    <div className="flex items-center justify-between">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      {icon}
+    </div>
+    <p className="text-2xl font-bold mt-1">{value}</p>
+  </Card>
+);
+
+export default ReviewModeration;
