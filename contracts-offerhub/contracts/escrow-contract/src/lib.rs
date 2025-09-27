@@ -27,6 +27,22 @@ impl EscrowContract {
         contract::init_contract(&env, client, freelancer, amount, fee_manager);
     }
 
+    pub fn pause(env: Env, admin: Address) -> Result<(), Error> {
+        contract::pause(&env, admin)
+    }
+
+    pub fn is_paused(env: Env) -> bool {
+        contract::is_paused(&env)
+    }
+
+    pub fn unpause(env: Env, admin: Address) -> Result<(), Error> {
+        contract::unpause(&env, admin)
+    }
+
+    pub fn emergency_withdraw(env: &Env, admin: Address) -> Result<(), Error> {
+        contract::emergency_withdraw(&env, admin)
+    }
+
     pub fn deposit_funds(env: Env, client: Address) {
         contract::deposit_funds(&env, client);
     }

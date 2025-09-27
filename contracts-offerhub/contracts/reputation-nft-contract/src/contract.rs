@@ -14,7 +14,7 @@ use crate::storage::{
     save_admin, save_token_owner, store_reputation_score, token_exists, update_achievement_stats,
     update_leaderboard,
 };
-use crate::types::{AchievementType, Metadata, TokenId};
+use crate::types::{AchievementType, Metadata, TokenId, PAUSED};
 use crate::error::Error;
 use soroban_sdk::{symbol_short, Address, Env, Map, String, Symbol, Vec};
 
@@ -23,7 +23,57 @@ pub struct ReputationNFTContract;
 impl ReputationNFTContract {
     pub fn init(env: Env, admin: Address) -> Result<(), Error> {
         save_admin(&env, &admin);
+        env.storage().instance().set(&PAUSED, &false);
         emit_reputaion_contract_initiated(&env, &admin);
+        Ok(())
+    }
+
+    // Function to check if contract is paused
+    pub fn is_paused(env: &Env) -> bool {
+        env.storage().instance().get(&PAUSED).unwrap_or(false)
+    }
+
+    // Function to pause the contract
+    pub fn pause(env: &Env, admin: Address) -> Result<(), Error> {
+        admin.require_auth();
+        let stored_admin = get_admin(env);
+        if stored_admin != admin {
+            return Err(Error::Unauthorized);
+        }
+        
+        if Self::is_paused(env) {
+            return Err(Error::AlreadyPaused);
+        }
+        
+        env.storage().instance().set(&PAUSED, &true);
+        
+        env.events().publish(
+            (Symbol::new(env, "contract_paused"), admin),
+            env.ledger().timestamp(),
+        );
+        
+        Ok(())
+    }
+
+    // Function to unpause the contract
+    pub fn unpause(env: &Env, admin: Address) -> Result<(), Error> {
+        admin.require_auth();
+        let stored_admin = get_admin(env);
+        if stored_admin != admin {
+            return Err(Error::Unauthorized);
+        }
+        
+        if !Self::is_paused(env) {
+            return Err(Error::NotPaused);
+        }
+        
+        env.storage().instance().set(&PAUSED, &false);
+        
+        env.events().publish(
+            (Symbol::new(env, "contract_unpaused"), admin),
+            env.ledger().timestamp(),
+        );
+        
         Ok(())
     }
 
@@ -36,6 +86,9 @@ impl ReputationNFTContract {
         description: String,
         uri: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         check_minter(&env, &caller)?;
         if token_exists(&env, &token_id) {
             return Err(Error::TokenAlreadyExists);
@@ -65,6 +118,9 @@ impl ReputationNFTContract {
         to: Address,
         nft_type: Symbol,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         check_minter(&env, &caller)?;
 
         // Determine achievement type and check prerequisites
@@ -130,6 +186,9 @@ impl ReputationNFTContract {
     }
 
     pub fn transfer(env: Env, from: Address, to: Address, token_id: TokenId) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         // Check if token exists and get owner
         let owner = get_token_owner(&env, &token_id)?;
 
@@ -177,10 +236,16 @@ impl ReputationNFTContract {
     }
 
     pub fn add_minter(env: Env, caller: Address, minter: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         add_minter_impl(&env, &caller, &minter)
     }
 
     pub fn remove_minter(env: Env, caller: Address, minter: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         remove_minter_impl(&env, &caller, &minter)
     }
 
@@ -193,6 +258,9 @@ impl ReputationNFTContract {
     }
 
     pub fn transfer_admin(env: Env, caller: Address, new_admin: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         transfer_admin_impl(&env, &caller, &new_admin)
     }
 
@@ -204,6 +272,9 @@ impl ReputationNFTContract {
         achievement_type: String,
         _rating_data: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         check_minter(&env, &caller)?;
 
         let token_id = next_token_id(&env);
@@ -270,6 +341,9 @@ impl ReputationNFTContract {
     }
 
     pub fn burn(env: Env, caller: Address, token_id: TokenId) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         // Only admin or minter can burn
         check_minter(&env, &caller)?;
         // Get owner to remove index
@@ -301,6 +375,9 @@ impl ReputationNFTContract {
         descriptions: Vec<String>,
         uris: Vec<String>,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         check_minter(&env, &caller)?;
         const MAX_BATCH_SIZE: u32 = 50; // Aligns with PR description benchmark
         let len = tos.len();
@@ -348,6 +425,9 @@ impl ReputationNFTContract {
         rating_average: u32,
         total_ratings: u32,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         check_minter(&env, &caller)?;
 
         // Get old reputation score for event emission
@@ -392,6 +472,9 @@ impl ReputationNFTContract {
         new_description: Option<String>,
         new_uri: Option<String>,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         check_minter(&env, &caller)?;
 
         // Verify token exists
@@ -423,6 +506,9 @@ impl ReputationNFTContract {
         achievement_type: AchievementType,
         prerequisite: AchievementType,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         let admin = get_admin(&env);
         if caller != admin {
             return Err(Error::Unauthorized);

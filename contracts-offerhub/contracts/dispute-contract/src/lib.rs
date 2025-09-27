@@ -32,6 +32,18 @@ impl DisputeResolutionContract {
         Ok(())
     }
 
+    pub fn pause(env: Env, admin: Address) -> Result<(), Error> {
+        contract::pause(&env, admin)
+    }
+
+    pub fn is_paused(env: Env) -> bool {
+        contract::is_paused(&env)
+    }
+
+    pub fn unpause(env: Env, admin: Address) -> Result<(), Error> {
+        contract::unpause(&env, admin)
+    }
+
     pub fn open_dispute(
         env: Env,
         job_id: u32,

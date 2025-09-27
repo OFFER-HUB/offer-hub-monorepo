@@ -15,6 +15,9 @@ pub enum Error {
     InvalidFeeType = 9,           // Fee type provided is not supported
     FeeCalculationError = 10,     // Error occurred during fee calculation
     WithdrawalFailed = 11,        // Withdrawal operation failed
+    AlreadyPaused = 12,
+    NotPaused = 13,
+    ContractPaused = 14,
 }
 
 pub fn handle_error(env: &Env, error: Error) -> ! {

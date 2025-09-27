@@ -22,6 +22,9 @@ pub enum Error {
     InvalidAddress = 16,            // InvalidAddress
     InvalidMediator = 17,           // InvalidMediator
     InvalidOutcome = 18,            // InvalidOutcome
+    AlreadyPaused = 19,
+    NotPaused = 20,
+    ContractPaused = 21,
 }
 
 pub fn handle_error(env: &Env, error: Error) -> ! {

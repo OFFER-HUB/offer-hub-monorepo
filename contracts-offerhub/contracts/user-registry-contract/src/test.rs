@@ -4,7 +4,7 @@ use crate::{
     storage::{get_verified_users, set_verified_users},
     error::Error,
     types::{VerificationLevel},
-    Contract,
+    Contract, ContractClient
 };
 use soroban_sdk::{log, testutils::Address as _, Address, Env, String, Vec};
 
@@ -1014,4 +1014,82 @@ fn test_get_user_profile_formatted() {
         assert_eq!(profile.metadata, metadata);
         assert!(!profile.is_blacklisted);
     });
+}
+
+
+fn create_contract(env: &Env) -> (ContractClient, Address) {
+    let contract_id = Address::generate(env);
+    env.register_contract(&contract_id, Contract);
+    let client = ContractClient::new(env, &contract_id);
+    let admin = Address::generate(env);
+
+    // client.initialize(&admin, &86400_u64, &escrow_contract, &fee_manager);
+    client.initialize_admin(&admin.clone());
+    (client, admin)
+}
+
+#[test]
+fn test_pause_unpause() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (client, admin) = create_contract(&env);
+    // Test pause
+    client.pause(&admin.clone());
+    assert_eq!(client.is_paused(), true);
+
+    // Test unpause
+    client.unpause(&admin.clone());
+    assert_eq!(client.is_paused(), false);  
+}
+
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #3)")]
+fn test_pause_unpause_unauthorized() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (client, admin) = create_contract(&env);
+    let unauthorized = Address::generate(&env);
+    
+    client.pause(&unauthorized.clone());
+    assert_eq!(client.is_paused(), true);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #20)")]
+fn test_moderator_management_panic() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (client, admin) = create_contract(&env);
+    let moderator = Address::generate(&env);
+    client.pause(&admin);
+
+    client.add_moderator(&admin, &moderator);    
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #20)")]
+fn test_add_verified_user() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (client, admin) = create_contract(&env);
+    let user = Address::generate(&env);
+
+
+    let metadata = String::from_str(&env, "Test user metadata");
+    let expires_at = env.ledger().timestamp() + 365 * 24 * 60 * 60; // 1 year
+
+    client.pause(&admin);
+
+    let _ = client.verify_user(
+        &admin.clone(),
+        &user.clone(),
+        &VerificationLevel::Premium,
+        &expires_at,
+        &metadata.clone(),
+    );   
 }

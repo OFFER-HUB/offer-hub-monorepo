@@ -1,7 +1,7 @@
 use soroban_sdk::{panic_with_error, Address, Env, Map, String, Vec};
 
 use crate::{
-    storage::{ARBITRATORS, MEDIATORS},
+    storage::{ARBITRATORS, MEDIATORS, PAUSED},
     types::{ArbitratorData},
     error::{ Error},
 };
@@ -13,6 +13,10 @@ pub fn add_arbitrator(
     name: String,
 ) -> Result<(), Error> {
     admin.require_auth();
+
+    if env.storage().instance().get(&PAUSED).unwrap_or(false) {
+        return Err(Error::ContractPaused);
+    }
 
     let mut arbitrators: Map<Address, ArbitratorData> = env
         .storage()
@@ -46,6 +50,10 @@ pub fn add_arbitrator(
 
 pub fn remove_arbitrator(env: &Env, admin: Address, arbitrator: Address) -> Result<(), Error> {
     admin.require_auth();
+
+    if env.storage().instance().get(&PAUSED).unwrap_or(false) {
+        return Err(Error::ContractPaused);
+    }
 
     let mut arbitrators: Map<Address, ArbitratorData> = env
         .storage()
@@ -87,6 +95,10 @@ pub fn is_valid_arbitrator(env: &Env, arbitrator: &Address) -> bool {
 pub fn add_mediator(env: &Env, admin: Address, mediator: Address) -> Result<(), Error> {
     admin.require_auth();
 
+    if env.storage().instance().get(&PAUSED).unwrap_or(false) {
+        return Err(Error::ContractPaused);
+    }
+
     let mut mediators: Vec<Address> = env
         .storage()
         .instance()
@@ -110,6 +122,10 @@ pub fn add_mediator(env: &Env, admin: Address, mediator: Address) -> Result<(), 
 
 pub fn remove_mediator(env: &Env, admin: Address, mediator: Address) -> Result<(), Error> {
     admin.require_auth();
+
+    if env.storage().instance().get(&PAUSED).unwrap_or(false) {
+        return Err(Error::ContractPaused);
+    }
 
     let mediators: Vec<Address> = env
         .storage()

@@ -1231,3 +1231,78 @@ fn test_submit_rating_time_too_old() {
     client.submit_rating(&caller, &rated_user, &cid4, &5u32, &feedback, &category);
 
 }
+
+#[test]
+fn test_pause_unpause() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let contract_id = create_contract(&env);
+    let client = ContractClient::new(&env, &contract_id);
+
+    let admin = Address::generate(&env);
+    client.init(&admin);
+
+    let caller = Address::generate(&env);
+    let rated_user = Address::generate(&env);
+    let feedback = String::from_str(&env, "stale ts");
+    let category = String::from_str(&env, "test");
+
+     // Test pause
+    client.pause(&admin.clone());
+    assert_eq!(client.is_paused(), true);
+
+    // Test unpause
+    client.unpause(&admin.clone());
+    assert_eq!(client.is_paused(), false);
+    client.submit_rating(&caller, &rated_user, &String::from_str(&env, "cY"), &5u32, &feedback, &category);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #1)")]
+fn test_pause_unpause_unauthorized() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let contract_id = create_contract(&env);
+    let client = ContractClient::new(&env, &contract_id);
+
+    let admin = Address::generate(&env);
+    client.init(&admin);
+
+    let caller = Address::generate(&env);
+    let rated_user = Address::generate(&env);
+    let feedback = String::from_str(&env, "stale ts");
+    let category = String::from_str(&env, "test");
+
+    let unauthorized = Address::generate(&env);
+
+     // Test pause
+    client.pause(&unauthorized.clone());
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #21)")]
+fn test_submit_rating_fails() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let contract_id = create_contract(&env);
+    let client = ContractClient::new(&env, &contract_id);
+
+    let admin = Address::generate(&env);
+    client.init(&admin);
+
+    let caller = Address::generate(&env);
+    let rated_user = Address::generate(&env);
+    let feedback = String::from_str(&env, "stale ts");
+    let category = String::from_str(&env, "test");
+
+    // Put ledger at a "normal" time
+    env.ledger().with_mut(|l| l.timestamp = 10_000);
+
+    // Now try to trick validate_timestamp by subtracting more than MAX_AGE.
+    // Easiest way: temporarily patch submit_rating to take a timestamp param,
+    // OR simulate by moving ledger time back (stale). Here we move back.
+    env.ledger().with_mut(|l| l.timestamp = 10_000 );
+    client.pause(&admin.clone());
+
+    client.submit_rating(&caller, &rated_user, &String::from_str(&env, "cY"), &5u32, &feedback, &category);
+}

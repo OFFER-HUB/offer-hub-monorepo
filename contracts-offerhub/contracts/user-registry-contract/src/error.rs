@@ -38,4 +38,7 @@ pub enum Error {
     InvalidValidationData = 16,
     /// An unexpected error occurred
     UnexpectedError = 17,
+    AlreadyPaused = 18,
+    NotPaused = 19,
+    ContractPaused = 20,
 }

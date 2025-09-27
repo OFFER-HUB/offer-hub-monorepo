@@ -24,4 +24,7 @@ pub enum Error {
     NonTransferableToken = 7,
 
     InvalidInput = 8,
+    AlreadyPaused = 9,
+    NotPaused = 10,
+    ContractPaused = 11,
 }

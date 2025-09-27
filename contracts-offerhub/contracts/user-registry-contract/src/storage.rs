@@ -13,6 +13,7 @@ pub const TOTAL_USERS: Symbol = symbol_short!("TOTALUSER");
 pub const RATING_CONTRACT: Symbol = symbol_short!("RATING");
 pub const ESCROW_CONTRACTS: Symbol = symbol_short!("ESCROWS");
 pub const DISPUTE_CONTRACTS: Symbol = symbol_short!("DISPUTES");
+pub const PAUSED: Symbol = symbol_short!("PAUSED");
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]

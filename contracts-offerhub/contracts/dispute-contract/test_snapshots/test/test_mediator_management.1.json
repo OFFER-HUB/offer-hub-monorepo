@@ -252,6 +252,14 @@
                       },
                       {
                         "key": {
+                          "symbol": "PAUSED"
+                        },
+                        "val": {
+                          "bool": false
+                        }
+                      },
+                      {
+                        "key": {
                           "symbol": "TIMEOUT"
                         },
                         "val": {

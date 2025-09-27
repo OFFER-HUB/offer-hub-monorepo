@@ -687,3 +687,99 @@ fn test_get_platform_stats() {
     assert_eq!(get_platform_stats.total_transactions, 3);
 
 }
+
+#[test]
+fn test_pause_unpause() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    
+    let contract_id = Address::generate(&env);
+    env.register_contract(&contract_id, FeeManagerContract);
+    let client = FeeManagerContractClient::new(&env, &contract_id);
+   let admin = Address::generate(&env);
+    let platform_wallet = Address::generate(&env);
+    let non_admin = Address::generate(&env);
+
+    client.initialize(&admin, &platform_wallet);
+    
+    // Test pause
+    client.pause(&admin.clone());
+    assert_eq!(client.is_paused(), true);
+
+    // Test unpause
+    client.unpause(&admin.clone());
+    assert_eq!(client.is_paused(), false);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #14)")]
+fn test_set_config_paused() {
+    let env = Env::default();
+    let contract_id = env.register_contract(None, FeeManagerContract);
+    let client = FeeManagerContractClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let platform_wallet = Address::generate(&env);
+    let non_admin = Address::generate(&env);
+
+    client.initialize(&admin, &platform_wallet);
+
+    // Mock non-admin authentication
+    env.mock_all_auths();
+
+    let new_config = ContractConfig {
+        platform_fee_percentage: 3,
+        escrow_timeout_days: 45,
+        max_rating_per_day: 15,
+        min_escrow_amount: 2000,
+        max_escrow_amount: 2000000000,
+        dispute_timeout_hours: 240,
+        rate_limit_window_hours: 12,
+        max_rate_limit_calls: 150,
+    };
+    client.pause(&admin);
+
+    // This should fail because non_admin is not the admin
+    client.set_config(&admin, &new_config);
+}
+
+
+#[test]
+#[should_panic(expected = "Error(Contract, #14)")]
+fn test_set_fee_rates_pause() {
+    let env = Env::default();
+    let contract_id = env.register_contract(None, FeeManagerContract);
+    let client = FeeManagerContractClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let platform_wallet = Address::generate(&env);
+
+    client.initialize(&admin, &platform_wallet);
+
+    // Mock admin authentication
+    env.mock_all_auths();
+    client.pause(&admin);
+
+    // Set new fee rates
+    client.set_fee_rates(&300, &600, &400);
+
+    let fee_config = client.get_fee_config();
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #3)")]
+fn test_pause_unpause_unauthorized() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register_contract(None, FeeManagerContract);
+    let client = FeeManagerContractClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let platform_wallet = Address::generate(&env);
+
+    client.initialize(&admin, &platform_wallet);
+    
+    let unauthorized = Address::generate(&env);
+    
+    // Test pause
+    client.pause(&unauthorized.clone());
+}

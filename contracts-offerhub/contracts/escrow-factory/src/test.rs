@@ -107,3 +107,17 @@ fn test_batch_operations_structure() {
     assert_eq!(batch_params.get(1).unwrap().amount, 1100);
     assert_eq!(batch_params.get(2).unwrap().amount, 1200);
 }
+
+// Helper function to setup test environment
+fn setup_env() -> (Env, Address, Address, Address, Address, BytesN<32>) {
+    let env = Env::default();
+    env.mock_all_auths();
+    
+    let admin = Address::generate(&env);
+    let client = Address::generate(&env);
+    let freelancer = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
+    let wasm_hash = BytesN::from_array(&env, &[0; 32]);
+    
+    (env, admin, client, freelancer, fee_manager, wasm_hash)
+}

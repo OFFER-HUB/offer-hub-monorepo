@@ -26,7 +26,7 @@ use crate::types::{
     ContractConfig, CONTRACT_CONFIG, DEFAULT_MAX_RATING_PER_DAY, DEFAULT_MAX_FEEDBACK_LENGTH, MAX_RATING_AGE,
     DEFAULT_MIN_RATING, DEFAULT_MAX_RATING, DEFAULT_RATE_LIMIT_CALLS, DEFAULT_RATE_LIMIT_WINDOW_HOURS,
     DEFAULT_AUTO_MODERATION_ENABLED, DEFAULT_RESTRICTION_THRESHOLD, DEFAULT_WARNING_THRESHOLD,
-    DEFAULT_TOP_RATED_THRESHOLD, RatingDataExport, UserRatingSummary
+    DEFAULT_TOP_RATED_THRESHOLD, RatingDataExport, UserRatingSummary, PAUSED
 };
 use crate::validation::{validate_report_feedback, validate_submit_rating};
 use soroban_sdk::{log, Address, Env, IntoVal, String, Symbol, Vec, Bytes};
@@ -52,8 +52,7 @@ impl RatingContract {
             top_rated_threshold: DEFAULT_TOP_RATED_THRESHOLD,
         };
         env.storage().instance().set(&CONTRACT_CONFIG, &contract_config);
-        
-
+        env.storage().instance().set(&PAUSED, &false);
 
 
         // Initialize default thresholds
@@ -75,15 +74,59 @@ impl RatingContract {
         };
         save_rating_threshold(&env, &top_rated_threshold);
 
-        
         // Health check system initialization removed for now
-        
-
 
         // Initialize health check system
         // crate::health_check::initialize_health_check_system(&env)?;
 
+        Ok(())
+    }
 
+    pub fn is_paused(env: &Env) -> bool {
+        env.storage().instance().get(&PAUSED).unwrap_or(false)
+    }
+
+    // Function to pause the contract
+    pub fn pause(env: &Env, admin: Address) -> Result<(), Error> {
+        admin.require_auth();
+        let stored_admin = get_admin(env);
+        if stored_admin != admin {
+            return Err(Error::Unauthorized);
+        }
+        
+        if Self::is_paused(env) {
+            return Err(Error::AlreadyPaused);
+        }
+        
+        env.storage().instance().set(&PAUSED, &true);
+        
+        env.events().publish(
+            (Symbol::new(env, "contract_paused"), admin),
+            env.ledger().timestamp(),
+        );
+        
+        Ok(())
+    }
+
+    // Function to unpause the contract
+    pub fn unpause(env: &Env, admin: Address) -> Result<(), Error> {
+        admin.require_auth();
+        let stored_admin = get_admin(env);
+        if stored_admin != admin {
+            return Err(Error::Unauthorized);
+        }
+        
+        if !Self::is_paused(env) {
+            return Err(Error::NotPaused);
+        }
+        
+        env.storage().instance().set(&PAUSED, &false);
+        
+        env.events().publish(
+            (Symbol::new(env, "contract_unpaused"), admin),
+            env.ledger().timestamp(),
+        );
+        
         Ok(())
     }
 
@@ -97,6 +140,9 @@ impl RatingContract {
         work_category: String,
     ) -> Result<(), Error> {
         require_auth(&caller)?;
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         let user_rating = get_user_rating_history(&env, &rated_user, 3, 0);
 
         let mut user_time = 0;
@@ -194,6 +240,9 @@ impl RatingContract {
         user: Address,
         bypass: bool,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         set_rate_limit_bypass(&env, &admin, &user, bypass)
     }
 
@@ -204,6 +253,9 @@ impl RatingContract {
         user: Address,
         limit_type: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         // simple admin auth
         if get_admin(&env) != admin {
             return Err(Error::Unauthorized);
@@ -311,6 +363,9 @@ impl RatingContract {
         feedback_id: String,
         reason: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         // Input validation
         validate_report_feedback(&env, &caller, &feedback_id, &reason)?;
         report_feedback_impl(&env, &caller, &feedback_id, &reason)
@@ -323,6 +378,9 @@ impl RatingContract {
         action: String,
         reason: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         moderate_feedback_impl(&env, &caller, &feedback_id, &action, &reason)
     }
 
@@ -339,10 +397,16 @@ impl RatingContract {
         caller: Address,
         incentive_type: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         claim_incentive_impl(&env, &caller, &incentive_type)
     }
 
     pub fn update_reputation(env: Env, caller: Address, user: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         require_auth(&caller)?;
 
         // Get user's rating statistics
@@ -455,10 +519,16 @@ impl RatingContract {
     }
 
     pub fn add_moderator(env: Env, caller: Address, moderator: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         add_moderator_impl(&env, &caller, &moderator)
     }
 
     pub fn remove_moderator(env: Env, caller: Address, moderator: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         remove_moderator_impl(&env, &caller, &moderator)
     }
 
@@ -468,6 +538,9 @@ impl RatingContract {
         threshold_type: String,
         value: u32,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         crate::access::check_admin(&env, &caller)?;
 
         let threshold = RatingThreshold {
@@ -484,6 +557,9 @@ impl RatingContract {
         caller: Address,
         contract_address: Address,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         crate::access::check_admin(&env, &caller)?;
         save_reputation_contract(&env, &contract_address);
         Ok(())
@@ -494,6 +570,9 @@ impl RatingContract {
     }
 
     pub fn transfer_admin(env: Env, caller: Address, new_admin: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         transfer_admin_impl(&env, &caller, &new_admin)
     }
 
@@ -606,6 +685,9 @@ impl RatingContract {
     }
 
     pub fn set_config(env: Env, caller: Address, config: ContractConfig) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         crate::access::check_admin(&env, &caller)?;
         
         // Validate config parameters
@@ -676,6 +758,9 @@ fn validate_config(config: &ContractConfig) -> Result<(), Error> {
     }
 
     pub fn reset_total_rating(env: &Env, admin: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         admin.require_auth();
         if get_admin(&env) != admin {
             return Err(Error::Unauthorized);

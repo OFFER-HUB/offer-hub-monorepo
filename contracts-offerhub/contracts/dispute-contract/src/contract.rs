@@ -6,7 +6,7 @@ use crate::{
     storage::{set_total_disputes, ARBITRATOR, DISPUTES, DISPUTE_TIMEOUT, ESCROW_CONTRACT, FEE_MANAGER, check_rate_limit,
               CONTRACT_CONFIG, DEFAULT_TIMEOUT_HOURS, DEFAULT_MAX_EVIDENCE, DEFAULT_MEDIATION_TIMEOUT,
               DEFAULT_ARBITRATION_TIMEOUT, DEFAULT_FEE_PERCENTAGE, DEFAULT_RATE_LIMIT_CALLS,
-              DEFAULT_RATE_LIMIT_WINDOW_HOURS},
+              DEFAULT_RATE_LIMIT_WINDOW_HOURS, PAUSED},
     types::{DisputeData, DisputeLevel, DisputeOutcome, Evidence, ContractConfig},
     validation::{validate_open_dispute, validate_add_evidence, validate_timeout_duration, validate_address},
     types::{
@@ -73,6 +73,8 @@ pub fn initialize(
     env.storage()
         .instance()
         .set(&DISPUTES, &Map::<u32, DisputeData>::new(env));
+    env.storage().instance().set(&PAUSED, &false);
+
 
     set_total_disputes(env, 0);
 
@@ -81,6 +83,56 @@ pub fn initialize(
         env.ledger().timestamp(),
     );
 }
+
+// Function to check if contract is paused
+pub fn is_paused(env: &Env) -> bool {
+    env.storage().instance().get(&PAUSED).unwrap_or(false)
+}
+
+// Function to pause the contract
+pub fn pause(env: &Env, admin: Address) -> Result<(), Error> {
+    admin.require_auth();
+    let stored_admin: Address = env.storage().instance().get(&ARBITRATOR).unwrap();
+    if stored_admin != admin {
+        return Err(Error::Unauthorized);
+    }
+    
+    if is_paused(env) {
+        return Err(Error::AlreadyPaused);
+    }
+    
+    env.storage().instance().set(&PAUSED, &true);
+    
+    env.events().publish(
+        (String::from_str(env, "contract_paused"), admin),
+        env.ledger().timestamp(),
+    );
+    
+    Ok(())
+}
+
+// Function to unpause the contract
+pub fn unpause(env: &Env, admin: Address) -> Result<(), Error> {
+    admin.require_auth();
+    let stored_admin: Address = env.storage().instance().get(&ARBITRATOR).unwrap();
+    if stored_admin != admin {
+        return Err(Error::Unauthorized);
+    }
+    
+    if !is_paused(env) {
+        return Err(Error::NotPaused);
+    }
+    
+    env.storage().instance().set(&PAUSED, &false);
+    
+    env.events().publish(
+        (String::from_str(env, "contract_unpaused"), admin),
+        env.ledger().timestamp(),
+    );
+    
+    Ok(())
+}
+
 
 pub fn open_dispute(
     env: &Env,
@@ -91,6 +143,10 @@ pub fn open_dispute(
     dispute_amount: i128,
 ) {
     initiator.require_auth();
+
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
 
     if !env.storage().instance().has(&ARBITRATOR) {
         handle_error(env, Error::NotInitialized);
@@ -175,6 +231,10 @@ pub fn add_evidence(
 ) {
     submitter.require_auth();
 
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
+
     // Input validation
     if let Err(e) = validate_add_evidence(env, job_id, &submitter, &description) {
         panic_with_error!(env, e);
@@ -209,6 +269,10 @@ pub fn add_evidence(
 pub fn assign_mediator(env: &Env, job_id: u32, admin: Address, mediator: Address) {
     admin.require_auth();
 
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
+
     if !is_valid_mediator(env, &mediator) {
         handle_error(env, Error::InvalidMediator);
     }
@@ -236,6 +300,10 @@ pub fn assign_mediator(env: &Env, job_id: u32, admin: Address, mediator: Address
 
 pub fn escalate_to_arbitration(env: &Env, job_id: u32, mediator: Address, arbitrator: Address) {
     mediator.require_auth();
+
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
 
     if !is_valid_arbitrator(env, &arbitrator) {
         handle_error(env, Error::InvalidArbitrator);
@@ -270,6 +338,10 @@ pub fn escalate_to_arbitration(env: &Env, job_id: u32, mediator: Address, arbitr
 }
 
 pub fn resolve_dispute(env: &Env, job_id: u32, decision: DisputeOutcome) {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
+
     if !env.storage().instance().has(&ARBITRATOR) {
         handle_error(env, Error::NotInitialized);
     }
@@ -378,6 +450,10 @@ pub fn resolve_dispute_with_auth(
     caller: Address,
 ) {
     caller.require_auth();
+
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
 
     if !env.storage().instance().has(&ARBITRATOR) {
         handle_error(env, Error::NotInitialized);
@@ -498,6 +574,10 @@ pub fn get_dispute_evidence(env: &Env, job_id: u32) -> Vec<Evidence> {
 pub fn set_dispute_timeout(env: &Env, admin: Address, timeout_seconds: u64) {
     admin.require_auth();
 
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
+
     // Input validation
     if let Err(_) = validate_address(&admin) {
         handle_error(env, Error::InvalidAddress);
@@ -519,6 +599,10 @@ pub fn set_dispute_timeout(env: &Env, admin: Address, timeout_seconds: u64) {
 
 pub fn set_config(env: &Env, admin: Address, config: ContractConfig) {
     admin.require_auth();
+
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     
     // Only admin can set config
     let stored_admin: Address = env.storage().instance().get(&ARBITRATOR).unwrap();
@@ -604,6 +688,10 @@ fn increment_dispute_count(env: &Env) -> u64 {
 }
 pub fn reset_dispute_count(env: &Env, admin: Address) -> Result<(), Error> {
     admin.require_auth();
+
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
 
     let arbitrator: Address = env.storage().instance().get(&ARBITRATOR).unwrap();
     if arbitrator != admin {
