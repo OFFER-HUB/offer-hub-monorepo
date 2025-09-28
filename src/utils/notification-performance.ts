@@ -559,7 +559,7 @@ export const compressNotificationData = (notifications: CreateNotificationDTO[])
 export const decompressNotificationData = (compressed: string): CreateNotificationDTO[] => {
   const data = JSON.parse(compressed);
   
-  return data.map((n: any) => ({
+  return data.map((n: CreateNotificationDTO) => ({
     user_id: n.u,
     type: n.t,
     channel: n.c,

@@ -1,6 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+
+// Battery API types
+interface BatteryManager {
+  level: number;
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+  addEventListener: (type: string, listener: () => void) => void;
+  removeEventListener: (type: string, listener: () => void) => void;
+}
 import { Smartphone, Bell, Wifi, WifiOff, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
 import { 
   requestNotificationPermission, 
@@ -9,7 +19,6 @@ import {
   shouldUseMobileOptimizations,
   playNotificationSound
 } from '../../utils/notification-helpers';
-import type { NotificationType } from '../../types/message-notifications.types';
 
 interface MobileNotificationSupportProps {
   userId: string;
@@ -18,15 +27,15 @@ interface MobileNotificationSupportProps {
   className?: string;
 }
 
-interface MobileStatusProps {
-  isOnline: boolean;
-  hasPermission: boolean;
-  isSupported: boolean;
-  batteryLevel?: number;
-}
+// interface MobileStatusProps {
+//   isOnline: boolean;
+//   hasPermission: boolean;
+//   isSupported: boolean;
+//   batteryLevel?: number;
+// }
 
 const MobileNotificationSupport: React.FC<MobileNotificationSupportProps> = ({
-  userId,
+  userId: _,
   onPermissionGranted,
   onPermissionDenied,
   className = ''
@@ -34,10 +43,10 @@ const MobileNotificationSupport: React.FC<MobileNotificationSupportProps> = ({
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const [isOnline, setIsOnline] = useState(true);
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
-  const [isSupported, setIsSupported] = useState(true);
+  const [, setIsSupported] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
 
   // Check if browser supports notifications
   useEffect(() => {
@@ -53,7 +62,7 @@ const MobileNotificationSupport: React.FC<MobileNotificationSupportProps> = ({
   useEffect(() => {
     const checkInstallation = () => {
       const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
-                         (window.navigator as any).standalone ||
+                         (window.navigator as Navigator & { standalone?: boolean }).standalone ||
                          document.referrer.includes('android-app://');
       setIsInstalled(isInstalled);
     };
@@ -94,7 +103,7 @@ const MobileNotificationSupport: React.FC<MobileNotificationSupportProps> = ({
   // Monitor battery level (if supported)
   useEffect(() => {
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as Navigator & { getBattery: () => Promise<BatteryManager> }).getBattery().then((battery: BatteryManager) => {
         setBatteryLevel(Math.round(battery.level * 100));
         
         battery.addEventListener('levelchange', () => {
@@ -354,10 +363,10 @@ const MobileNotificationSupport: React.FC<MobileNotificationSupportProps> = ({
             <div>
               <h4 className="text-sm font-medium text-yellow-900 mb-1">Mobile Notification Tips</h4>
               <ul className="text-sm text-yellow-700 space-y-1">
-                <li>• Keep OfferHub in your phone's background apps for best performance</li>
-                <li>• Enable "Do Not Disturb" exceptions for important notifications</li>
+                <li>• Keep OfferHub in your phone&apos;s background apps for best performance</li>
+                <li>• Enable &quot;Do Not Disturb&quot; exceptions for important notifications</li>
                 <li>• Install the PWA app for native notification support</li>
-                <li>• Check your browser's notification settings if notifications stop working</li>
+                <li>• Check your browser&apos;s notification settings if notifications stop working</li>
               </ul>
             </div>
           </div>

@@ -206,7 +206,7 @@ class NotificationService {
   async trackNotificationEvent(
     notificationId: string,
     eventType: 'opened' | 'clicked' | 'dismissed',
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<NotificationResponse> {
     try {
       const response = await axios.post<NotificationResponse>(`${API_BASE}/track`, {
@@ -332,7 +332,7 @@ class NotificationService {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
       if (axiosError.response?.data && typeof axiosError.response.data === 'object') {
-        const errorData = axiosError.response.data as any;
+        const errorData = axiosError.response.data as Record<string, unknown>;
         errorMessage = errorData.message || errorMessage;
       } else if (axiosError.message) {
         errorMessage = axiosError.message;

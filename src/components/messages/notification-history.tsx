@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   History, 
   Search, 
@@ -18,8 +18,6 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
-  Trash2,
-  Archive,
   RefreshCw,
   BarChart3,
   TrendingUp,
@@ -50,8 +48,6 @@ interface HistoryStatsProps {
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
-  onDismiss: (id: string) => void;
-  onDelete: (id: string) => void;
   onTrackEvent: (id: string, event: 'opened' | 'clicked' | 'dismissed') => void;
   showDetails?: boolean;
 }
@@ -155,8 +151,6 @@ const HistoryStats: React.FC<HistoryStatsProps> = ({ stats, engagement }) => {
 const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
   onMarkAsRead,
-  onDismiss,
-  onDelete,
   onTrackEvent,
   showDetails = false
 }) => {
@@ -364,8 +358,6 @@ const NotificationHistory: React.FC<NotificationHistoryProps> = ({
     dismissNotification,
     deleteNotification,
     setFilter,
-    setPage,
-    setLimit,
     trackEvent,
     refreshNotifications
   } = useMessageNotifications({
@@ -377,7 +369,7 @@ const NotificationHistory: React.FC<NotificationHistoryProps> = ({
   const {
     stats,
     engagement,
-    loading: analyticsLoading
+    loading
   } = useNotificationAnalytics(userId);
 
   const filteredNotifications = useMemo(() => {
@@ -450,10 +442,10 @@ const NotificationHistory: React.FC<NotificationHistoryProps> = ({
     window.URL.revokeObjectURL(url);
   }, [filteredNotifications]);
 
-  const handleBulkAction = useCallback(async (action: 'read' | 'delete' | 'archive') => {
-    // Implementation for bulk actions
-    console.log(`Bulk action: ${action}`);
-  }, []);
+  // const handleBulkAction = useCallback(async (action: 'read' | 'delete' | 'archive') => {
+  //   // Implementation for bulk actions
+  //   console.log(`Bulk action: ${action}`);
+  // }, []);
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>

@@ -15,7 +15,7 @@ import type {
 // Notification Content Generation
 export const generateNotificationContent = (
   type: NotificationType,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): { title: string; content: string; actionText?: string; actionUrl?: string } => {
   const templates = {
     new_message: {
@@ -91,7 +91,7 @@ export const generateNotificationContent = (
 // Priority Calculation
 export const calculateNotificationPriority = (
   type: NotificationType,
-  context: Record<string, any>
+  context: Record<string, unknown>
 ): NotificationPriority => {
   // High priority notifications
   if (['dispute_opened', 'security_alert', 'payment_received'].includes(type)) {

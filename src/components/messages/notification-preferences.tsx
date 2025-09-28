@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bell, 
-  BellOff, 
   Mail, 
   Smartphone, 
   Monitor, 
@@ -11,14 +10,11 @@ import {
   Save, 
   RotateCcw,
   Clock,
-  Globe,
   Shield,
   AlertTriangle,
   CheckCircle,
   Info,
   Settings,
-  ToggleLeft,
-  ToggleRight
 } from 'lucide-react';
 import { useNotificationPreferences } from '../../hooks/use-message-notifications';
 import type { 
@@ -282,9 +278,9 @@ const NotificationPreferences: React.FC<NotificationPreferencesProps> = ({
     }
   ];
 
-  const getPreferenceForType = (type: NotificationType, channel: NotificationChannel): NotificationPreferences | undefined => {
-    return preferences.find(p => p.type === type && p.channel === channel);
-  };
+  // const getPreferenceForType = (type: NotificationType, channel: NotificationChannel): NotificationPreferences | undefined => {
+  //   return preferences.find(p => p.type === type && p.channel === channel);
+  // };
 
   const isTypeEnabled = (type: NotificationType): boolean => {
     const typePreferences = preferences.filter(p => p.type === type);
@@ -333,35 +329,35 @@ const NotificationPreferences: React.FC<NotificationPreferencesProps> = ({
     setHasChanges(true);
   };
 
-  const updateChannelPreference = (type: NotificationType, channel: NotificationChannel, enabled: boolean) => {
-    const newPreferences = [...preferences];
-    const existingIndex = newPreferences.findIndex(p => p.type === type && p.channel === channel);
+  // const updateChannelPreference = (type: NotificationType, channel: NotificationChannel, enabled: boolean) => {
+  //   const newPreferences = [...preferences];
+  //   const existingIndex = newPreferences.findIndex(p => p.type === type && p.channel === channel);
     
-    const preference: NotificationPreferences = {
-      id: existingIndex >= 0 ? newPreferences[existingIndex].id : `temp_${Date.now()}_${Math.random()}`,
-      user_id: userId,
-      type,
-      channel,
-      enabled,
-      frequency: 'instant',
-      timezone,
-      created_at: existingIndex >= 0 ? newPreferences[existingIndex].created_at : new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      ...(quietHours.enabled && {
-        quiet_hours_start: quietHours.start,
-        quiet_hours_end: quietHours.end
-      })
-    };
+  //   const preference: NotificationPreferences = {
+  //     id: existingIndex >= 0 ? newPreferences[existingIndex].id : `temp_${Date.now()}_${Math.random()}`,
+  //     user_id: userId,
+  //     type,
+  //     channel,
+  //     enabled,
+  //     frequency: 'instant',
+  //     timezone,
+  //     created_at: existingIndex >= 0 ? newPreferences[existingIndex].created_at : new Date().toISOString(),
+  //     updated_at: new Date().toISOString(),
+  //     ...(quietHours.enabled && {
+  //       quiet_hours_start: quietHours.start,
+  //       quiet_hours_end: quietHours.end
+  //     })
+  //   };
 
-    if (existingIndex >= 0) {
-      newPreferences[existingIndex] = preference;
-    } else {
-      newPreferences.push(preference);
-    }
+  //   if (existingIndex >= 0) {
+  //     newPreferences[existingIndex] = preference;
+  //   } else {
+  //     newPreferences.push(preference);
+  //   }
 
-    setPreferencesState(newPreferences);
-    setHasChanges(true);
-  };
+  //   setPreferencesState(newPreferences);
+  //   setHasChanges(true);
+  // };
 
   const updateChannelSelection = (type: NotificationType, channels: NotificationChannel[]) => {
     const typeConfig = notificationTypes.find(t => t.type === type);

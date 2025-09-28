@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
   TrendingDown, 
-  Users, 
   Bell, 
   Eye, 
   MousePointer, 
@@ -14,20 +13,14 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  Download,
   Calendar,
-  Filter,
-  PieChart,
   Activity
 } from 'lucide-react';
 import { useNotificationAnalytics } from '../../hooks/use-message-notifications';
-import type { 
-  NotificationStats, 
-  NotificationEngagement,
-  NotificationType,
-  NotificationChannel,
-  NotificationStatus
-} from '../../types/message-notifications.types';
+// import type { 
+//   NotificationStats, 
+//   NotificationEngagement
+// } from '../../types/message-notifications.types';
 
 interface NotificationAnalyticsProps {
   userId: string;
@@ -142,7 +135,7 @@ const NotificationAnalytics: React.FC<NotificationAnalyticsProps> = ({
     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     to: new Date().toISOString().split('T')[0]
   });
-  const [selectedMetric, setSelectedMetric] = useState<'all' | 'engagement' | 'delivery'>('all');
+  // const [selectedMetric] = useState<'all' | 'engagement' | 'delivery'>('all');
 
   const {
     stats,
@@ -164,10 +157,10 @@ const NotificationAnalytics: React.FC<NotificationAnalyticsProps> = ({
   };
 
   // Calculate trends (mock data for now)
-  const calculateTrends = (current: number, previous: number) => {
-    if (previous === 0) return 0;
-    return Math.round(((current - previous) / previous) * 100);
-  };
+  // const calculateTrends = (current: number, previous: number) => {
+  //   if (previous === 0) return 0;
+  //   return Math.round(((current - previous) / previous) * 100);
+  // };
 
   // Mock trend data (in real implementation, this would come from historical data)
   const mockTrends = {
@@ -423,7 +416,7 @@ const NotificationAnalytics: React.FC<NotificationAnalyticsProps> = ({
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="text-sm font-medium text-gray-900 mb-2">Preferred Channels</h4>
                   <div className="flex flex-wrap gap-2">
-                    {engagement.preferred_channels.map((channel, index) => (
+                    {engagement.preferred_channels.map((channel) => (
                       <span
                         key={channel}
                         className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
