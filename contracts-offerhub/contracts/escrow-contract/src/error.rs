@@ -17,6 +17,10 @@ pub enum Error {
     UnexpectedError = 11,
     InvalidTimestamp = 12,
     TimestampTooOld = 13,
+    AlreadyPaused = 14,
+    NotPaused = 15,
+    ContractPaused = 16,
+    
 }
 
 pub fn handle_error(env: &Env, error: Error) -> ! {

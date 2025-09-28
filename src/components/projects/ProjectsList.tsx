@@ -2,6 +2,7 @@
 
 import { ProjectCard } from "@/components/projects/ProjectCard"
 import { MoreHorizontal } from "lucide-react"
+import EmptyState from "@/components/ui/empty-state"
 import type { Project } from "@/lib/mockData/projects-list-mock"
 
 interface ProjectsListProps {
@@ -10,11 +11,7 @@ interface ProjectsListProps {
 
 export function ProjectsList({ projects }: ProjectsListProps) {
   if (projects.length === 0) {
-    return (
-      <div className="rounded-lg border bg-white p-6 text-center text-slate-500">
-        No items to display.
-      </div>
-    )
+    return <EmptyState message="No projects available." />
   }
 
   return (

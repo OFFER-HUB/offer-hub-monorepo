@@ -13,6 +13,8 @@ pub const RATE_BYPASS: Symbol = symbol_short!("RLBYP");
 
 pub const CONTRACT_CONFIG: Symbol = symbol_short!("CONFIG");
 
+pub const PAUSED: Symbol = symbol_short!("PAUSED");
+
 // Default configuration values
 pub const DEFAULT_TIMEOUT_HOURS: u32 = 168;           // 7 days (168 hours)
 pub const DEFAULT_MAX_EVIDENCE: u32 = 10;             // Maximum 10 evidence submissions

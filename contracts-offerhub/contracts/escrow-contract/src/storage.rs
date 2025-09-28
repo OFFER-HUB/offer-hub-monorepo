@@ -5,6 +5,9 @@ pub const ESCROW_DATA: Symbol = symbol_short!("ESCROW");
 pub const INITIALIZED: Symbol = symbol_short!("INIT");
 pub const CONTRACT_CONFIG: Symbol = symbol_short!("CONFIG");
 
+pub const PAUSED: Symbol = symbol_short!("PAUSED");
+
+
 // Rate limit storage keys
 pub const RATE_LIMITS: Symbol = symbol_short!("RLIM");
 pub const RATE_BYPASS: Symbol = symbol_short!("RLBYP");

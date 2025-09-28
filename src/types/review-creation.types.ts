@@ -1,0 +1,680 @@
+/**
+ * Professional Rating and Review System Types
+ * Comprehensive type definitions for multi-dimensional rating and review creation
+ */
+
+// ===== CORE RATING TYPES =====
+
+export interface MultiDimensionalRating {
+  quality: number; // 1-5
+  communication: number; // 1-5
+  timeliness: number; // 1-5
+  value: number; // 1-5
+  overall: number; // 1-5 (calculated or user-set)
+}
+
+export interface RatingValidation {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  consistencyScore: number; // 0-100
+  outlierDetection: {
+    isOutlier: boolean;
+    confidence: number;
+    reason: string;
+    recommendations: string[];
+  };
+}
+
+export interface ReviewTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: ReviewTemplateCategory;
+  projectTypes: string[];
+  sections: ReviewTemplateSection[];
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ReviewTemplateCategory = 
+  | 'web_development'
+  | 'mobile_development'
+  | 'design'
+  | 'writing'
+  | 'marketing'
+  | 'consulting'
+  | 'data_analysis'
+  | 'general'
+  | 'custom';
+
+export interface ReviewTemplateSection {
+  id: string;
+  title: string;
+  type: 'text' | 'rating' | 'multiple_choice' | 'scale';
+  required: boolean;
+  placeholder?: string;
+  options?: string[];
+  minLength?: number;
+  maxLength?: number;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    custom?: string;
+  };
+}
+
+// ===== REVIEW CREATION TYPES =====
+
+export interface ReviewCreationData {
+  // Basic review info
+  fromUserId: string;
+  toUserId: string;
+  contractId: string;
+  projectId?: string;
+  
+  // Multi-dimensional ratings
+  ratings: MultiDimensionalRating;
+  
+  // Review content
+  title: string;
+  content: string;
+  
+  // Template and metadata
+  templateId?: string;
+  projectType: string;
+  projectTitle: string;
+  projectValue?: number;
+  projectDuration?: number; // in days
+  
+  // Additional data
+  tags: string[];
+  isAnonymous: boolean;
+  isPublic: boolean;
+  
+  // Media attachments
+  attachments: ReviewAttachment[];
+  
+  // Validation and moderation
+  validation: RatingValidation;
+  moderationStatus: ModerationStatus;
+  
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewAttachment {
+  id: string;
+  type: 'image' | 'document' | 'video';
+  url: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  uploadedAt: string;
+}
+
+export type ModerationStatus = 
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'flagged'
+  | 'escalated'
+  | 'auto_approved'
+  | 'auto_rejected';
+
+// ===== REVIEW TEMPLATE SYSTEM =====
+
+export interface ReviewTemplateConfig {
+  id: string;
+  name: string;
+  description: string;
+  category: ReviewTemplateCategory;
+  projectTypes: string[];
+  sections: ReviewTemplateSection[];
+  validationRules: TemplateValidationRule[];
+  isDefault: boolean;
+  isActive: boolean;
+  usageCount: number;
+  averageRating: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TemplateValidationRule {
+  field: string;
+  type: 'required' | 'min_length' | 'max_length' | 'pattern' | 'custom';
+  value: string | number;
+  message: string;
+}
+
+export interface TemplateUsage {
+  templateId: string;
+  userId: string;
+  projectType: string;
+  rating: number;
+  feedback?: string;
+  usedAt: string;
+}
+
+// ===== RATING VALIDATION SYSTEM =====
+
+export interface RatingValidationConfig {
+  consistencyThreshold: number; // 0-100
+  outlierDetectionEnabled: boolean;
+  outlierThreshold: number; // standard deviations
+  minRatingDifference: number; // minimum difference between dimensions
+  maxRatingDifference: number; // maximum difference between dimensions
+  autoFlagThreshold: number; // auto-flag reviews below this score
+}
+
+export interface RatingConsistencyCheck {
+  overallConsistency: number; // 0-100
+  dimensionConsistency: {
+    quality: number;
+    communication: number;
+    timeliness: number;
+    value: number;
+  };
+  flags: string[];
+  suggestions: string[];
+}
+
+export interface OutlierDetection {
+  isOutlier: boolean;
+  confidence: number; // 0-100
+  method: 'statistical' | 'ml' | 'rule_based';
+  reason: string;
+  similarReviews: string[]; // review IDs
+  recommendations: string[];
+}
+
+// ===== REVIEW MODERATION TYPES =====
+
+export interface ReviewModeration {
+  id: string;
+  reviewId: string;
+  status: ModerationStatus;
+  moderatorId?: string;
+  automatedScore: number; // 0-100
+  manualScore?: number; // 0-100
+  flags: ModerationFlag[];
+  actions: ModerationAction[];
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ModerationFlag {
+  type: ModerationFlagType;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  confidence: number; // 0-100
+  autoGenerated: boolean;
+  resolved: boolean;
+  resolvedAt?: string;
+  resolvedBy?: string;
+}
+
+export type ModerationFlagType = 
+  | 'inappropriate_content'
+  | 'spam'
+  | 'fake_review'
+  | 'inconsistent_rating'
+  | 'insufficient_detail'
+  | 'personal_attack'
+  | 'promotional_content'
+  | 'duplicate_content'
+  | 'policy_violation';
+
+export interface ModerationAction {
+  type: ModerationActionType;
+  description: string;
+  performedBy: string;
+  performedAt: string;
+  metadata?: Record<string, any>;
+}
+
+export type ModerationActionType = 
+  | 'approve'
+  | 'reject'
+  | 'flag'
+  | 'escalate'
+  | 'request_changes'
+  | 'delete'
+  | 'edit'
+  | 'hide';
+
+// ===== REVIEW ANALYTICS TYPES =====
+
+export interface ReviewAnalytics {
+  overview: {
+    totalReviews: number;
+    averageRating: number;
+    ratingDistribution: Record<number, number>;
+    completionRate: number;
+    moderationRate: number;
+  };
+  trends: {
+    period: 'daily' | 'weekly' | 'monthly';
+    data: Array<{
+      date: string;
+      reviews: number;
+      averageRating: number;
+      completionRate: number;
+    }>;
+  };
+  quality: {
+    averageQualityScore: number;
+    qualityDistribution: Record<string, number>;
+    improvementTrend: number; // percentage
+    topIssues: Array<{
+      issue: string;
+      count: number;
+      percentage: number;
+    }>;
+  };
+  engagement: {
+    averageResponseTime: number; // in hours
+    responseRate: number; // percentage
+    followUpRate: number; // percentage
+    userSatisfaction: number; // 0-100
+  };
+}
+
+export interface ReviewPattern {
+  type: 'rating_pattern' | 'content_pattern' | 'timing_pattern';
+  description: string;
+  frequency: number;
+  impact: 'positive' | 'negative' | 'neutral';
+  recommendations: string[];
+}
+
+// ===== MOBILE OPTIMIZATION TYPES =====
+
+export interface MobileReviewConfig {
+  compactView: boolean;
+  gestureControls: boolean;
+  offlineCapabilities: boolean;
+  pushNotifications: boolean;
+  quickActions: string[];
+  touchOptimized: boolean;
+  voiceInput: boolean;
+  cameraIntegration: boolean;
+}
+
+export interface MobileReviewState {
+  isOnline: boolean;
+  pendingReviews: ReviewCreationData[];
+  syncStatus: 'idle' | 'syncing' | 'error';
+  lastSyncAt?: string;
+  offlineStorage: {
+    enabled: boolean;
+    maxSize: number; // in MB
+    currentSize: number; // in MB
+  };
+}
+
+// ===== PERFORMANCE OPTIMIZATION TYPES =====
+
+export interface ReviewPerformanceMetrics {
+  processingTime: number; // in milliseconds
+  throughput: number; // reviews per minute
+  errorRate: number; // percentage
+  queueLength: number;
+  resourceUsage: {
+    cpu: number; // percentage
+    memory: number; // in MB
+    storage: number; // in MB
+  };
+  bottlenecks: Array<{
+    component: string;
+    issue: string;
+    impact: 'low' | 'medium' | 'high';
+    solution: string;
+  }>;
+}
+
+export interface ReviewOptimizationConfig {
+  batchProcessing: boolean;
+  batchSize: number;
+  parallelProcessing: boolean;
+  maxConcurrentRequests: number;
+  cachingEnabled: boolean;
+  cacheTTL: number; // in seconds
+  compressionEnabled: boolean;
+  lazyLoading: boolean;
+}
+
+// ===== COMPLIANCE TYPES =====
+
+export interface ComplianceConfig {
+  dataRetention: {
+    enabled: boolean;
+    period: number; // in days
+    autoDelete: boolean;
+  };
+  gdprCompliance: {
+    enabled: boolean;
+    rightToErasure: boolean;
+    dataPortability: boolean;
+    consentManagement: boolean;
+  };
+  auditTrail: {
+    enabled: boolean;
+    retentionPeriod: number; // in days
+    includeMetadata: boolean;
+  };
+  privacySettings: {
+    anonymizeData: boolean;
+    encryptSensitiveData: boolean;
+    accessControls: boolean;
+  };
+}
+
+export interface ComplianceReport {
+  id: string;
+  period: string;
+  totalReviews: number;
+  complianceRate: number; // percentage
+  violations: Array<{
+    type: string;
+    count: number;
+    resolved: number;
+    pending: number;
+  }>;
+  auditTrail: Array<{
+    timestamp: string;
+    action: string;
+    details: string;
+    compliance: boolean;
+  }>;
+  recommendations: string[];
+  generatedAt: string;
+}
+
+// ===== INTEGRATION TYPES =====
+
+export interface ExternalIntegration {
+  id: string;
+  name: string;
+  type: 'social_media' | 'review_platform' | 'analytics' | 'moderation';
+  provider: string;
+  endpoint: string;
+  credentials: Record<string, string>;
+  enabled: boolean;
+  configuration: Record<string, any>;
+  lastSyncAt?: string;
+  syncStatus: 'idle' | 'syncing' | 'error';
+}
+
+export interface SocialMediaSharing {
+  platform: 'facebook' | 'twitter' | 'linkedin' | 'instagram';
+  enabled: boolean;
+  autoShare: boolean;
+  template: string;
+  includeRating: boolean;
+  includeMedia: boolean;
+}
+
+// ===== INCENTIVE SYSTEM TYPES =====
+
+export interface ReviewIncentive {
+  id: string;
+  name: string;
+  description: string;
+  type: 'points' | 'badge' | 'discount' | 'featured';
+  value: number;
+  conditions: IncentiveCondition[];
+  isActive: boolean;
+  startDate: string;
+  endDate?: string;
+  usageLimit?: number;
+  currentUsage: number;
+}
+
+export interface IncentiveCondition {
+  type: 'rating_threshold' | 'review_count' | 'quality_score' | 'completion_rate';
+  operator: 'greater_than' | 'less_than' | 'equals' | 'between';
+  value: number | [number, number];
+  description: string;
+}
+
+export interface UserIncentiveProgress {
+  userId: string;
+  incentiveId: string;
+  progress: number; // 0-100
+  completed: boolean;
+  earnedAt?: string;
+  nextMilestone?: string;
+  remainingRequirements: string[];
+}
+
+// ===== REVIEW HISTORY TYPES =====
+
+export interface ReviewHistory {
+  id: string;
+  reviewId: string;
+  version: number;
+  changes: ReviewChange[];
+  changedBy: string;
+  changedAt: string;
+  reason: string;
+  metadata?: Record<string, any>;
+}
+
+export interface ReviewChange {
+  field: string;
+  oldValue: any;
+  newValue: any;
+  changeType: 'create' | 'update' | 'delete';
+  timestamp: string;
+}
+
+export interface ReviewVersionControl {
+  reviewId: string;
+  currentVersion: number;
+  versions: ReviewHistory[];
+  lastModified: string;
+  lastModifiedBy: string;
+  changeCount: number;
+}
+
+// ===== EXPORT FUNCTIONALITY TYPES =====
+
+export interface ExportConfig {
+  format: ExportFormat;
+  includeMetadata: boolean;
+  includeAttachments: boolean;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  filters?: Record<string, any>;
+  compression: boolean;
+  encryption: boolean;
+}
+
+export type ExportFormat = 'csv' | 'json' | 'pdf' | 'excel' | 'xml';
+
+export interface ExportResult {
+  id: string;
+  format: ExportFormat;
+  size: number; // in bytes
+  recordCount: number;
+  downloadUrl: string;
+  expiresAt: string;
+  createdAt: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  error?: string;
+}
+
+// ===== HOOK RETURN TYPES =====
+
+export interface UseReviewCreationReturn {
+  // State
+  reviewData: Partial<ReviewCreationData>;
+  isLoading: boolean;
+  isSubmitting: boolean;
+  isValid: boolean;
+  errors: Record<string, string>;
+  warnings: Record<string, string>;
+  
+  // Actions
+  updateReviewData: (data: Partial<ReviewCreationData>) => void;
+  updateRating: (dimension: keyof MultiDimensionalRating, value: number) => void;
+  updateContent: (field: string, value: string) => void;
+  addAttachment: (attachment: ReviewAttachment) => void;
+  removeAttachment: (attachmentId: string) => void;
+  submitReview: () => Promise<ReviewCreationData>;
+  resetReview: () => void;
+  validateReview: () => RatingValidation;
+  
+  // Template system
+  availableTemplates: ReviewTemplate[];
+  selectedTemplate: ReviewTemplate | null;
+  selectTemplate: (templateId: string) => void;
+  createCustomTemplate: (template: Omit<ReviewTemplate, 'id'>) => Promise<ReviewTemplate>;
+  
+  // Validation
+  validation: RatingValidation;
+  consistencyCheck: RatingConsistencyCheck;
+  outlierDetection: OutlierDetection;
+  
+  // Analytics
+  analytics: ReviewAnalytics | null;
+  patterns: ReviewPattern[];
+  
+  // Mobile
+  mobileConfig: MobileReviewConfig;
+  mobileState: MobileReviewState;
+  
+  // Performance
+  performanceMetrics: ReviewPerformanceMetrics;
+  
+  // Compliance
+  complianceConfig: ComplianceConfig;
+  complianceReport: ComplianceReport | null;
+}
+
+// ===== COMPONENT PROPS TYPES =====
+
+export interface ReviewSystemProps {
+  userId: string;
+  contractId: string;
+  projectId?: string;
+  onReviewCreated?: (review: ReviewCreationData) => void;
+  onReviewUpdated?: (review: ReviewCreationData) => void;
+  onReviewDeleted?: (reviewId: string) => void;
+  readOnly?: boolean;
+  showTemplates?: boolean;
+  showAnalytics?: boolean;
+  enableMobile?: boolean;
+  enableOffline?: boolean;
+}
+
+export interface RatingInterfaceProps {
+  ratings: MultiDimensionalRating;
+  onChange: (ratings: MultiDimensionalRating) => void;
+  readOnly?: boolean;
+  showLabels?: boolean;
+  showTooltips?: boolean;
+  compact?: boolean;
+  validation?: RatingValidation;
+}
+
+export interface ReviewTemplatesProps {
+  category?: ReviewTemplateCategory;
+  projectType?: string;
+  onTemplateSelect: (template: ReviewTemplate) => void;
+  onTemplateCreate?: (template: Omit<ReviewTemplate, 'id'>) => void;
+  showCreateButton?: boolean;
+  showCategoryFilter?: boolean;
+}
+
+export interface ReviewModerationProps {
+  reviews: ReviewCreationData[];
+  onModerate: (reviewId: string, action: ModerationAction) => void;
+  showAutomated?: boolean;
+  showManual?: boolean;
+  showAnalytics?: boolean;
+  enableBulkActions?: boolean;
+}
+
+// ===== UTILITY TYPES =====
+
+export interface ReviewCreationOptions {
+  enableTemplates: boolean;
+  enableValidation: boolean;
+  enableModeration: boolean;
+  enableAnalytics: boolean;
+  enableMobile: boolean;
+  enableOffline: boolean;
+  enableExport: boolean;
+  enableIncentives: boolean;
+  enableHistory: boolean;
+  enableCompliance: boolean;
+}
+
+export interface ReviewCreationConfig {
+  options: ReviewCreationOptions;
+  validation: RatingValidationConfig;
+  moderation: {
+    autoModeration: boolean;
+    manualModeration: boolean;
+    escalationThreshold: number;
+  };
+  analytics: {
+    enableTracking: boolean;
+    enablePatterns: boolean;
+    enableTrends: boolean;
+  };
+  mobile: MobileReviewConfig;
+  performance: ReviewOptimizationConfig;
+  compliance: ComplianceConfig;
+  integrations: ExternalIntegration[];
+  incentives: ReviewIncentive[];
+}
+
+// ===== CONSTANTS =====
+
+export const RATING_DIMENSIONS = {
+  QUALITY: 'quality',
+  COMMUNICATION: 'communication',
+  TIMELINESS: 'timeliness',
+  VALUE: 'value',
+  OVERALL: 'overall'
+} as const;
+
+export const MODERATION_STATUSES = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  FLAGGED: 'flagged',
+  ESCALATED: 'escalated',
+  AUTO_APPROVED: 'auto_approved',
+  AUTO_REJECTED: 'auto_rejected'
+} as const;
+
+export const EXPORT_FORMATS = {
+  CSV: 'csv',
+  JSON: 'json',
+  PDF: 'pdf',
+  EXCEL: 'excel',
+  XML: 'xml'
+} as const;
+
+export const REVIEW_TEMPLATE_CATEGORIES = {
+  WEB_DEVELOPMENT: 'web_development',
+  MOBILE_DEVELOPMENT: 'mobile_development',
+  DESIGN: 'design',
+  WRITING: 'writing',
+  MARKETING: 'marketing',
+  CONSULTING: 'consulting',
+  DATA_ANALYSIS: 'data_analysis',
+  GENERAL: 'general',
+  CUSTOM: 'custom'
+} as const;

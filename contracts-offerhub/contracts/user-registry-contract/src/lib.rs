@@ -27,6 +27,18 @@ impl Contract {
         UserRegistryContract::initialize_admin(env, admin)
     }
 
+     pub fn pause(env: Env, admin: Address) -> Result<(), Error> {
+        UserRegistryContract::pause(&env, admin)
+    }
+
+    pub fn is_paused(env: Env) -> bool {
+        UserRegistryContract::is_paused(&env)
+    }
+
+    pub fn unpause(env: Env, admin: Address) -> Result<(), Error> {
+        UserRegistryContract::unpause(&env, admin)
+    }
+
     // ==================== LEGACY FUNCTIONS (for backward compatibility) ====================
 
     /// Legacy function for registering a verified user

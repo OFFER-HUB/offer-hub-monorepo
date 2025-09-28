@@ -10,6 +10,7 @@ const ResetPasswordPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Memoized password strength criteria
   const strengthCriteria = useMemo(
@@ -29,7 +30,7 @@ const ResetPasswordPage: React.FC = () => {
     hasUpperLowerOrNumber &&
     hasSpecialChar &&
     passwordsMatch
-  );
+  ) || isSubmitting;
 
   // Determine strength level
   const getStrength = () => {
@@ -40,6 +41,21 @@ const ResetPasswordPage: React.FC = () => {
     if (strength === 3) return "Strong";
     if (strength >= 1) return "Medium";
     return "Weak";
+  };
+
+  const handleSubmit = async () => {
+    if (isButtonDisabled) return;
+
+    setIsSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log("Password reset successfully");
+    } catch (error) {
+      console.error("Failed to reset password:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -201,14 +217,16 @@ const ResetPasswordPage: React.FC = () => {
             )}
           </div>
           <Button
+            onClick={handleSubmit}
             disabled={isButtonDisabled}
+            isLoading={isSubmitting}
             className={`w-full ${
               isButtonDisabled
                 ? "bg-[#002333] disabled:bg-[#002333] disabled:opacity-100 text-white"
                 : "bg-blue-900 text-white"
             } py-2 rounded-3xl text-sm sm:text-base`}
           >
-            Change password
+            {isSubmitting ? "Changing password..." : "Change password"}
           </Button>
         </CardContent>
       </Card>

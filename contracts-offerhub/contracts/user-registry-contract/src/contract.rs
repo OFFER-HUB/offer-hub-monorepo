@@ -9,7 +9,7 @@ use crate::error::Error;
 use crate::validation::{
     validate_bulk_verification, validate_metadata_update, validate_user_verification,
 };
-use soroban_sdk::{Address, Env, IntoVal, String, Symbol, Vec};
+use soroban_sdk::{Address, Env, IntoVal, String, Symbol, Vec, log};
 
 pub struct UserRegistryContract;
 
@@ -18,15 +18,65 @@ impl UserRegistryContract {
 
     /// Initialize the contract with an admin
     pub fn initialize_admin(env: Env, admin: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         let result = AccessControl::initialize_admin(&env, admin.clone())?;
+        env.storage().instance().set(&PAUSED, &false);
         emit_admin_initialized(&env, &admin);
         Ok(result)
     }
+
+    // ==================== PAUSE/UNPAUSE ====================
+
+    // Function to check if contract is paused
+    pub fn is_paused(env: &Env) -> bool {
+        env.storage().instance().get(&PAUSED).unwrap_or(false)
+    }
+
+    // Function to pause the contract
+    pub fn pause(env: &Env, admin: Address) -> Result<(), Error> {
+        AccessControl::require_admin(&env, &admin)?;
+        if Self::is_paused(env) {
+            return Err(Error::AlreadyPaused);
+        }
+        
+        env.storage().instance().set(&PAUSED, &true);
+        
+        env.events().publish(
+            (Symbol::new(env, "contract_paused"), admin),
+            env.ledger().timestamp(),
+        );
+        
+        Ok(())
+    }
+
+    // Function to unpause the contract
+    pub fn unpause(env: &Env, admin: Address) -> Result<(), Error> {
+        AccessControl::require_admin(&env, &admin)?;
+        
+        if !Self::is_paused(env) {
+            return Err(Error::NotPaused);
+        }
+        
+        env.storage().instance().set(&PAUSED, &false);
+        
+        env.events().publish(
+            (Symbol::new(env, "contract_unpaused"), admin),
+            env.ledger().timestamp(),
+        );
+        
+        Ok(())
+    }
+
 
     // ==================== LEGACY FUNCTIONS (for backward compatibility) ====================
 
     /// Legacy function for registering a verified user (basic level)
     pub fn register_verified_user(env: Env, user: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         require_auth(&env, &user)?;
         // Rate limit: max 3 registrations per 24h per caller
         let limit_type = String::from_str(&env, "register_user");
@@ -81,6 +131,9 @@ impl UserRegistryContract {
         expires_at: u64, // 0 means no expiration
         metadata: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin_or_moderator(&env, &admin)?;
 
         // Input validation
@@ -116,6 +169,9 @@ impl UserRegistryContract {
 
     /// Unverify a user (admin/moderator only)
     pub fn unverify_user(env: Env, admin: Address, user: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin_or_moderator(&env, &admin)?;
 
         let _profile = get_user_profile(&env, &user).ok_or(Error::UserNotFound)?;
@@ -138,6 +194,9 @@ impl UserRegistryContract {
         user: Address,
         new_level: VerificationLevel,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin_or_moderator(&env, &admin)?;
 
         let mut profile = get_user_profile(&env, &user).ok_or(Error::UserNotFound)?;
@@ -157,6 +216,9 @@ impl UserRegistryContract {
         user: Address,
         new_expires_at: u64,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin_or_moderator(&env, &admin)?;
 
         let mut profile = get_user_profile(&env, &user).ok_or(Error::UserNotFound)?;
@@ -171,6 +233,9 @@ impl UserRegistryContract {
 
     /// Add user to blacklist (admin/moderator only)
     pub fn blacklist_user(env: Env, admin: Address, user: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin_or_moderator(&env, &admin)?;
 
         // Prevent blacklisting admin or moderators
@@ -203,6 +268,9 @@ impl UserRegistryContract {
 
     /// Remove user from blacklist (admin/moderator only)
     pub fn unblacklist_user(env: Env, admin: Address, user: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin_or_moderator(&env, &admin)?;
 
         if !is_blacklisted(&env, &user) {
@@ -237,6 +305,10 @@ impl UserRegistryContract {
         expires_at: u64,
         metadata: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
+
         AccessControl::require_admin(&env, &admin)?;
 
         // Input validation
@@ -289,6 +361,10 @@ impl UserRegistryContract {
         user: Address,
         metadata: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
+
         // Input validation
         validate_metadata_update(&env, &caller, &user, &metadata)?;
 
@@ -358,6 +434,9 @@ impl UserRegistryContract {
 
     /// Add moderator (admin only)
     pub fn add_moderator(env: Env, admin: Address, moderator: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::add_moderator(&env, admin.clone(), moderator.clone())?;
         emit_moderator_added(&env, &moderator, &admin);
         Ok(())
@@ -365,6 +444,9 @@ impl UserRegistryContract {
 
     /// Remove moderator (admin only)
     pub fn remove_moderator(env: Env, admin: Address, moderator: Address) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::remove_moderator(&env, admin.clone(), moderator.clone())?;
         emit_moderator_removed(&env, &moderator, &admin);
         Ok(())
@@ -376,6 +458,9 @@ impl UserRegistryContract {
         current_admin: Address,
         new_admin: Address,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::transfer_admin(&env, current_admin.clone(), new_admin.clone())?;
         emit_admin_transferred(&env, &current_admin, &new_admin);
         Ok(())
@@ -399,6 +484,9 @@ impl UserRegistryContract {
         admin: Address,
         contract_address: Address,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin(&env, &admin)?;
         set_rating_contract(&env, &contract_address);
         Ok(())
@@ -410,6 +498,9 @@ impl UserRegistryContract {
         admin: Address,
         contract_address: Address,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin(&env, &admin)?;
         add_escrow_contract(&env, &contract_address);
         Ok(())
@@ -421,6 +512,9 @@ impl UserRegistryContract {
         admin: Address,
         contract_address: Address,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         AccessControl::require_admin(&env, &admin)?;
         add_dispute_contract(&env, &contract_address);
         Ok(())
@@ -433,6 +527,9 @@ impl UserRegistryContract {
         user: Address,
         bypass: bool,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         set_rate_limit_bypass(&env, &admin, &user, bypass)
     }
 
@@ -442,6 +539,9 @@ impl UserRegistryContract {
         user: Address,
         limit_type: String,
     ) -> Result<(), Error> {
+        if Self::is_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         // Only admin
         AccessControl::require_admin(&env, &admin)?;
         reset_rate_limit(&env, &user, &limit_type);

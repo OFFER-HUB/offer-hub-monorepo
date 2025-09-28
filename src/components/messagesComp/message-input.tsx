@@ -63,6 +63,7 @@ export function MessageInput({
   const [textValue, setTextValue] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<LocalPreview[]>([]);
+  const [isSending, setIsSending] = useState(false);
 
   // Build data URL previews when files change (works with Next <Image> without unoptimized)
   useEffect(() => {
@@ -113,10 +114,16 @@ export function MessageInput({
     const hasText = textValue.trim().length > 0;
     const hasFiles = selectedFiles.length > 0;
     if (!hasText && !hasFiles) return;
-    await onSend?.(textValue.trim(), selectedFiles);
-    setTextValue("");
-    setSelectedFiles([]);
-    onCancelReply?.();
+
+    setIsSending(true);
+    try {
+      await onSend?.(textValue.trim(), selectedFiles);
+      setTextValue("");
+      setSelectedFiles([]);
+      onCancelReply?.();
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -256,8 +263,10 @@ export function MessageInput({
           aria-label="Send message"
           className="size-10 rounded-full bg-black hover:bg-black/90"
           onClick={() => void handleSend()}
+          isLoading={isSending}
+          disabled={isSending}
         >
-          <SendHorizonal className="size-5 text-white" />
+          {!isSending && <SendHorizonal className="size-5 text-white" />}
         </Button>
       </div>
     </div>

@@ -21,14 +21,14 @@ export default function ProfileCard({
   onSecurity,
 }: ProfileCardProps) {
   return (
-    <div className="flex flex-col justify-center items-center min-h-[60vh]">
+    <div className="flex flex-col justify-center items-center min-h-[60vh] px-4 sm:px-0">
       {/* Avatar */}
-      <Avatar className="w-24 h-24">
+      <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
         <AvatarImage
           src={user.avatar || "/verificationImage.svg"}
           alt={user.name}
         />
-        <AvatarFallback className="text-xl font-semibold bg-gray-100">
+        <AvatarFallback className="text-lg sm:text-xl font-semibold bg-gray-100">
           {user.name
             .split(" ")
             .map((n) => n[0])
@@ -38,29 +38,29 @@ export default function ProfileCard({
       </Avatar>
 
       {/* User Info */}
-      <div className="space-y-2 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
-        <p className="text-gray-600">{user.email}</p>
+      <div className="space-y-2 mb-4 sm:mb-6 text-center">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{user.name}</h2>
+        <p className="text-sm sm:text-base text-gray-600 break-all">{user.email}</p>
       </div>
-      <Card className="w-full max-w-md bg-white shadow-sm border border-gray-200">
-        <CardContent className="p-2 text-center">
-          <div className="flex flex-col items-center space-y-6">
+      <Card className="w-full max-w-sm sm:max-w-md bg-white shadow-sm border border-gray-200">
+        <CardContent className="p-3 sm:p-4 text-center">
+          <div className="flex flex-col items-center space-y-4 sm:space-y-6">
             {/* Action Buttons */}
-            <div className="w-full space-y-3">
+            <div className="w-full space-y-2 sm:space-y-3">
               <Button
                 onClick={onEditProfile}
-                className="w-full justify-start h-12 text-left hover:bg-gray-50 bg-transparent shadow-none border-none"
+                className="w-full justify-start h-11 sm:h-12 text-left hover:bg-gray-50 bg-transparent shadow-none border-none text-sm sm:text-base touch-manipulation"
               >
-                <Edit className="w-4 h-4 mr-3" />
-                Edit profile information
+                <Edit className="w-4 h-4 mr-2 sm:mr-3 flex-shrink-0" />
+                <span className="truncate">Edit profile information</span>
               </Button>
 
               <Button
                 onClick={onSecurity}
-                className="w-full justify-start h-12 text-left hover:bg-gray-50 bg-transparent shadow-none border-none"
+                className="w-full justify-start h-11 sm:h-12 text-left hover:bg-gray-50 bg-transparent shadow-none border-none text-sm sm:text-base touch-manipulation"
               >
-                <Shield className="w-4 h-4 mr-3" />
-                Security
+                <Shield className="w-4 h-4 mr-2 sm:mr-3 flex-shrink-0" />
+                <span className="truncate">Security</span>
               </Button>
             </div>
           </div>

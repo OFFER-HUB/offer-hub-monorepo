@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, contracttype, Address, Env, String};
+use soroban_sdk::{contracterror, contracttype, Address, Env, String, Symbol, symbol_short};
 use crate::error::Error;
 pub type TokenId = u64;
 
@@ -40,6 +40,7 @@ pub const ACHIEVEMENT_STATS: &[u8] = &[6];
 pub const ACHIEVEMENT_LEADERBOARD: &[u8] = &[7];
 pub const USER_REPUTATION: &[u8] = &[8];
 pub const ACHIEVEMENT_PREREQUISITES: &[u8] = &[9];
+pub const PAUSED: Symbol = symbol_short!("PAUSED");
 
 pub fn require_auth(_env: &Env, address: &Address) -> Result<(), Error> {
     address.require_auth();

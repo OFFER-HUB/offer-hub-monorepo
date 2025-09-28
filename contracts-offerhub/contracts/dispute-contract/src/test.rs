@@ -677,3 +677,107 @@ fn test_dispute_timeout_fail_max() {
     client.set_dispute_timeout(&admin, &2_592_001);
 }
 
+#[test]
+fn test_pause_unpause() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    
+    let contract_id = Address::generate(&env);
+    env.register_contract(&contract_id, DisputeResolutionContract);
+    let client = DisputeResolutionContractClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let escrow_contract = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
+
+    client.initialize(&admin, &86400_u64, &escrow_contract, &fee_manager);
+    
+    // Test pause
+    client.pause(&admin.clone());
+    assert_eq!(client.is_paused(), true);
+
+    // Test unpause
+    client.unpause(&admin.clone());
+    assert_eq!(client.is_paused(), false);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #3)")]
+fn test_pause_unpause_unauthorized() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    
+    let contract_id = Address::generate(&env);
+    env.register_contract(&contract_id, DisputeResolutionContract);
+    let client = DisputeResolutionContractClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    let escrow_contract = Address::generate(&env);
+    let fee_manager = Address::generate(&env);
+
+    client.initialize(&admin, &86400_u64, &escrow_contract, &fee_manager);
+    
+    let unauthorized = Address::generate(&env);
+    
+    // Test pause
+    client.pause(&unauthorized.clone());
+    assert_eq!(client.is_paused(), true);
+}
+
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #21)")]
+fn test_open_dispute_panic() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    let (client, admin, _, _) = create_contract(&env);
+    let initiator = Address::generate(&env);
+    let job_id = 1;
+    let reason = String::from_str(&env, "Job not completed");
+    let dispute_amount = 1000000;
+    let escrow_contract = Some(Address::generate(&env));
+
+    client.pause(&admin);
+
+    client.open_dispute(
+        &job_id,
+        &initiator,
+        &reason,
+        &escrow_contract,
+        &dispute_amount,
+    );
+}
+
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #21)")]
+fn test_assign_mediator_panic() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    let (client, admin, _, _) = create_contract(&env);
+    let initiator = Address::generate(&env);
+    let mediator = Address::generate(&env);
+    let job_id = 1;
+    let reason = String::from_str(&env, "Job not completed");
+    let dispute_amount = 1000000;
+    let escrow_contract = Some(Address::generate(&env));
+
+    // Add mediator to the system first
+    client.add_mediator_access(&admin, &mediator);
+
+    // Open dispute
+    client.open_dispute(
+        &job_id,
+        &initiator,
+        &reason,
+        &escrow_contract,
+        &dispute_amount,
+    );
+
+    client.pause(&admin);
+
+    // Assign mediator
+    client.assign_mediator(&job_id, &admin, &mediator);
+}

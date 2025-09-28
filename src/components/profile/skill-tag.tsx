@@ -11,7 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-
+import { Badge } from "@/components/ui/badge";
 import { skillCategories } from "../../data/skills-categories";
 import type { Skill } from "../../data/skills-categories";
 
@@ -27,10 +27,10 @@ export const SkillTag: React.FC<{
   const [showLevelSelector, setShowLevelSelector] = useState(false);
 
   const category = skillCategories.find((cat) => cat.id === skill.category);
-  const levelColors = {
-    Beginner: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    Intermediate: "bg-blue-100 text-blue-800 border-blue-300",
-    Advanced: "bg-green-100 text-green-800 border-green-300",
+  const levelVariants = {
+    Beginner: "warning" as const,
+    Intermediate: "default" as const,
+    Advanced: "success" as const,
   };
 
   const levelIcons = {
@@ -65,13 +65,13 @@ export const SkillTag: React.FC<{
       <div className="relative">
         <button
           onClick={() => setShowLevelSelector(!showLevelSelector)}
-          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
-            levelColors[skill.level]
-          }`}
+          className="flex items-center gap-1"
         >
-          <LevelIcon className="w-3 h-3" />
-          <span>{skill.level}</span>
-          <ChevronDown className="w-3 h-3" />
+          <Badge variant={levelVariants[skill.level]} className="flex items-center gap-1">
+            <LevelIcon className="w-3 h-3" />
+            <span>{skill.level}</span>
+            <ChevronDown className="w-3 h-3" />
+          </Badge>
         </button>
 
         {showLevelSelector && (
@@ -112,18 +112,19 @@ export const SkillTag: React.FC<{
       </button>
 
       {skill.demand && (
-        <div
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            skill.demand === "High"
-              ? "bg-red-100 text-red-700"
-              : skill.demand === "Medium"
-              ? "bg-orange-100 text-orange-700"
-              : "bg-gray-100 text-gray-700"
-          }`}
+        <Badge 
+          variant={
+            skill.demand === "High" 
+              ? "destructive" 
+              : skill.demand === "Medium" 
+              ? "warning" 
+              : "secondary"
+          }
+          className="flex items-center gap-1"
         >
-          <TrendingUp className="w-3 h-3 inline mr-1" />
+          <TrendingUp className="w-3 h-3" />
           {skill.demand}
-        </div>
+        </Badge>
       )}
     </div>
   );

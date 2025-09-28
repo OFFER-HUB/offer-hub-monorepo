@@ -10,6 +10,12 @@ pub enum Error {
     InvalidAmountSet = 5,
     AddressesShouldNotMatch = 6,
     BatchSizeExceeded = 7,
+    AlreadyInitialized = 8,
+    Unauthorized = 9,
+    NotInitialized = 10, 
+    ContractPaused = 11,
+    AlreadyPaused = 12,
+    NotPaused = 13,
 }
 
 pub fn handle_error(env: &Env, error: Error) -> ! {

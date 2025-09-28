@@ -9,23 +9,35 @@ export interface UseMessageComposerReturn {
   handleSendMessage: () => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleKeyPress: (e: React.KeyboardEvent) => void;
+  isLoading: boolean;
 }
 
 export function useMessageComposer(onSendMessage: (content: string, file?: File) => void): UseMessageComposerReturn {
   const [newMessage, setNewMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim()) {
-      onSendMessage(newMessage)
-      setNewMessage("")
+      setIsLoading(true)
+      try {
+        await onSendMessage(newMessage)
+        setNewMessage("")
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      onSendMessage(file.name, file)
+      setIsLoading(true)
+      try {
+        await onSendMessage(file.name, file)
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -43,5 +55,6 @@ export function useMessageComposer(onSendMessage: (content: string, file?: File)
     handleSendMessage,
     handleFileUpload,
     handleKeyPress,
+    isLoading,
   }
 }

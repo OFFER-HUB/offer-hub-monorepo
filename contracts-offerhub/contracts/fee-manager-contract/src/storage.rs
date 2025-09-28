@@ -7,6 +7,8 @@ pub const FEE_HISTORY: Symbol = symbol_short!("FEE_HIST");
 pub const FEE_STATS: Symbol = symbol_short!("FEE_STAT");
 pub const TOTAL_FESS_COLLECTED: Symbol = symbol_short!("FEE_TOTAL");
 
+pub const PAUSED: Symbol = symbol_short!("PAUSED");
+
 // Storage keys for premium users
 pub const PREMIUM_USERS: Symbol = symbol_short!("PREM_USR");
 

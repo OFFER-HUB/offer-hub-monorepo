@@ -54,6 +54,18 @@ impl Contract {
         )
     }
 
+    pub fn pause(env: Env, admin: Address) -> Result<(), Error> {
+        RatingContract::pause(&env, admin)
+    }
+
+    pub fn is_paused(env: Env) -> bool {
+        RatingContract::is_paused(&env)
+    }
+
+    pub fn unpause(env: Env, admin: Address) -> Result<(), Error> {
+        RatingContract::unpause(&env, admin)
+    }
+
     /// Get rating statistics for a user
     pub fn get_user_rating_stats(env: Env, user: Address) -> Result<RatingStats, Error> {
         RatingContract::get_user_rating_stats(env, user)

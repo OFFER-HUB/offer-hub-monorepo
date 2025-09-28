@@ -3,7 +3,7 @@
 use crate::types::EscrowState;
 use crate::{EscrowContract, EscrowContractClient};
 use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
-use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol};
+use soroban_sdk::{contract, contractimpl, log, Address, Env, String, Symbol};
 
 #[contract]
 pub struct MockTokenContract;
@@ -939,4 +939,122 @@ fn test_auto_release_fails() {
 
     // Fails with Error::TimestampTooOld
     contract.auto_release();
+}
+
+#[test]
+fn test_pause_unpause() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    
+   let contract_id = env.register(EscrowContract, ());
+    let contract = EscrowContractClient::new(&env, &contract_id);
+
+    let client = Address::generate(&env);
+    let freelancer = Address::generate(&env);
+    let arbitrator = Address::generate(&env);
+    let token = setup_token(&env);
+    let amount = 500;
+    let timeout = 3600; // 1 hour (minimum allowed)
+
+    contract.init_contract_full(&client, &freelancer, &arbitrator, &token, &amount, &timeout);
+    
+    // Test pause
+    contract.pause(&client.clone());
+    assert_eq!(contract.is_paused(), true);
+
+    // Test unpause
+    contract.unpause(&client.clone());
+    assert_eq!(contract.is_paused(), false);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #3)")]
+fn test_pause_unpause_unauthorized() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+     let contract_id = env.register(EscrowContract, ());
+    let contract = EscrowContractClient::new(&env, &contract_id);
+
+    let client = Address::generate(&env);
+    let freelancer = Address::generate(&env);
+    let arbitrator = Address::generate(&env);
+    let token = setup_token(&env);
+    let amount = 500;
+    let timeout = 3600; // 1 hour (minimum allowed)
+
+    contract.init_contract_full(&client, &freelancer, &arbitrator, &token, &amount, &timeout);;
+    
+    let unauthorized = Address::generate(&env);
+    
+    // Test pause
+    contract.pause(&unauthorized.clone());
+    assert_eq!(contract.is_paused(), true);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #16)")]
+fn test_deposit_and_release_token_panic() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    let contract_id = env.register(EscrowContract, ());
+    let contract = EscrowContractClient::new(&env, &contract_id);
+
+    let client = Address::generate(&env);
+    let freelancer = Address::generate(&env);
+    let arbitrator = Address::generate(&env);
+    let token = setup_token(&env);
+    let amount = 500;
+    let timeout = 3600; // 1 hour (minimum allowed)
+
+    contract.init_contract_full(&client, &freelancer, &arbitrator, &token, &amount, &timeout);
+
+    contract.pause(&client);
+    contract.deposit_funds(&client);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #15)")]
+fn test_emergency_withdraw_panic() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    let contract_id = env.register(EscrowContract, ());
+    let contract = EscrowContractClient::new(&env, &contract_id);
+
+    let client = Address::generate(&env);
+    let freelancer = Address::generate(&env);
+    let arbitrator = Address::generate(&env);
+    let token = setup_token(&env);
+    let amount = 500;
+    let timeout = 3600; // 1 hour (minimum allowed)
+
+    contract.init_contract_full(&client, &freelancer, &arbitrator, &token, &amount, &timeout);
+    contract.emergency_withdraw(&client);
+}
+
+#[test]
+fn test_emergency_withdraw() {
+    let env = setup_env();
+    env.mock_all_auths();
+
+    let contract_id = env.register(EscrowContract, ());
+    let contract = EscrowContractClient::new(&env, &contract_id);
+
+    let client = Address::generate(&env);
+    let freelancer = Address::generate(&env);
+    let arbitrator = Address::generate(&env);
+    let token = setup_token(&env);
+    let amount = 500;
+    let timeout = 3600; 
+    
+    contract.init_contract_full(&client, &freelancer, &arbitrator, &token, &amount, &timeout);
+    contract.pause(&client);
+    contract.emergency_withdraw(&client);
+    let data = contract.get_escrow_data();
+    log!(&env, "ESCROW: {}", data);
+    assert_eq!(data.state, EscrowState::Released);
+    assert_eq!(data.dispute_result, 3);
 }

@@ -7,7 +7,7 @@ use crate::{
         DEFAULT_ESCROW_FEE_PERCENTAGE, FEE_CONFIG, FEE_HISTORY, FEE_STATS, PLATFORM_BALANCE, PREMIUM_USERS,
         CONTRACT_CONFIG, DEFAULT_PLATFORM_FEE_PERCENTAGE, DEFAULT_ESCROW_TIMEOUT_DAYS, DEFAULT_MAX_RATING_PER_DAY,
         DEFAULT_MIN_ESCROW_AMOUNT, DEFAULT_MAX_ESCROW_AMOUNT, DEFAULT_DISPUTE_TIMEOUT_HOURS,
-        DEFAULT_RATE_LIMIT_WINDOW_HOURS, DEFAULT_MAX_RATE_LIMIT_CALLS, TOTAL_FESS_COLLECTED
+        DEFAULT_RATE_LIMIT_WINDOW_HOURS, DEFAULT_MAX_RATE_LIMIT_CALLS, TOTAL_FESS_COLLECTED, PAUSED
     },
     types::{FeeCalculation, FeeConfig, FeeRecord, FeeStats, PremiumUser, FEE_TYPE_ESCROW, FEE_TYPE_DISPUTE, PlatformStats, ContractConfig},
     validation::{validate_initialization, validate_fee_rates, validate_fee_calculation, validate_withdrawal_amount, validate_fee_type, validate_address},
@@ -64,7 +64,7 @@ pub fn initialize(env: &Env, admin: Address, platform_wallet: Address) {
         .instance()
         .set(&PREMIUM_USERS, &Vec::<PremiumUser>::new(env));
     env.storage().instance().set(&TOTAL_FESS_COLLECTED, &0i128);
-
+    env.storage().instance().set(&PAUSED, &false);
 
     env.events().publish(
         (Symbol::new(env, "fee_manager_initialized"), admin.clone()),
@@ -72,12 +72,63 @@ pub fn initialize(env: &Env, admin: Address, platform_wallet: Address) {
     );
 }
 
+pub fn is_paused(env: &Env) -> bool {
+    env.storage().instance().get(&PAUSED).unwrap_or(false)
+}
+
+pub fn pause(env: &Env, admin: Address) -> Result<(), Error> {
+    admin.require_auth();
+    let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap_or_else(|| handle_error(env, Error::NotInitialized));
+    if fee_config.admin != admin {
+        return Err(Error::Unauthorized);
+    }
+    
+    if is_paused(env) {
+        return Err(Error::AlreadyPaused);
+    }
+    
+    env.storage().instance().set(&PAUSED, &true);
+    
+    env.events().publish(
+        (Symbol::new(env, "contract_paused"), admin),
+        env.ledger().timestamp(),
+    );
+    
+    Ok(())
+}
+
+pub fn unpause(env: &Env, admin: Address) -> Result<(), Error> {
+    admin.require_auth();
+    let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap_or_else(|| handle_error(env, Error::NotInitialized));
+    if fee_config.admin != admin {
+        return Err(Error::Unauthorized);
+    }
+    
+    if !is_paused(env) {
+        return Err(Error::NotPaused);
+    }
+    
+    env.storage().instance().set(&PAUSED, &false);
+    
+    env.events().publish(
+        (Symbol::new(env, "contract_unpaused"), admin),
+        env.ledger().timestamp(),
+    );
+    
+    Ok(())
+}
+
+
 pub fn set_fee_rates(
     env: &Env,
     escrow_fee_percentage: i128,
     dispute_fee_percentage: i128,
     arbitrator_fee_percentage: i128,
 ) {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
+
     let mut fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
 
     // Only admin can set fee rates
@@ -112,6 +163,9 @@ pub fn set_fee_rates(
 }
 
 pub fn add_premium_user(env: &Env, user: Address) {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
     fee_config.admin.require_auth();
 
@@ -148,6 +202,9 @@ pub fn add_premium_user(env: &Env, user: Address) {
 }
 
 pub fn remove_premium_user(env: &Env, user: Address) {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
     fee_config.admin.require_auth();
 
@@ -178,6 +235,9 @@ pub fn remove_premium_user(env: &Env, user: Address) {
 }
 
 pub fn calculate_escrow_fee(env: &Env, amount: i128, user: Address) -> FeeCalculation {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     // Input validation
     if let Err(e) = validate_fee_calculation(amount, &user) {
         handle_error(env, e);
@@ -204,6 +264,9 @@ pub fn calculate_escrow_fee(env: &Env, amount: i128, user: Address) -> FeeCalcul
 }
 
 pub fn calculate_dispute_fee(env: &Env, amount: i128, user: Address) -> FeeCalculation {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     // Input validation
     if let Err(e) = validate_fee_calculation(amount, &user) {
         handle_error(env, e);
@@ -230,6 +293,9 @@ pub fn calculate_dispute_fee(env: &Env, amount: i128, user: Address) -> FeeCalcu
 }
 
 pub fn collect_fee(env: &Env, amount: i128, fee_type: u32, user: Address) -> i128 {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     // Input validation
     if let Err(e) = validate_fee_calculation(amount, &user) {
         handle_error(env, e);
@@ -321,6 +387,9 @@ pub fn collect_fee(env: &Env, amount: i128, fee_type: u32, user: Address) -> i12
 }
 
 pub fn withdraw_platform_fees(env: &Env, amount: i128) {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
     fee_config.admin.require_auth();
 
@@ -407,6 +476,9 @@ pub fn get_total_fees(env: &Env) -> i128 {
 
 pub fn reset_total_fees_collected(env: &Env, admin: Address) -> Result<(), Error> {
     admin.require_auth();
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
 
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
     if fee_config.admin != admin {
@@ -486,6 +558,9 @@ fn calculate_fee_amount(amount: i128, fee_percentage: i128) -> i128 {
 
 
 pub fn set_config(env: &Env, caller: Address, config: ContractConfig) {
+    if is_paused(env) {
+        handle_error(env, Error::ContractPaused);
+    }
     let fee_config: FeeConfig = env.storage().instance().get(&FEE_CONFIG).unwrap();
     
     // Only admin can set config

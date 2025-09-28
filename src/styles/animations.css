@@ -1,0 +1,58 @@
+/* Smooth animations for UI components */
+
+/* Button animations */
+.btn-smooth {
+  transition: all 0.2s ease-in-out;
+  transform: translateY(0);
+}
+
+.btn-smooth:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-smooth:active {
+  transform: translateY(0);
+  transition: all 0.1s ease-in-out;
+}
+
+/* Card animations */
+.card-smooth {
+  transition: all 0.3s ease-in-out;
+  transform: translateY(0);
+}
+
+.card-smooth:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading animation for buttons */
+.btn-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Fade in animation */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

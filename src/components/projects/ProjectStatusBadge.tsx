@@ -12,22 +12,22 @@ export function ProjectStatusBadge({ status }: ProjectStatusBadgeProps) {
       case "active":
         return {
           label: "Active",
-          className: "bg-blue-100 text-blue-700 hover:bg-blue-100"
+          variant: "default" as const
         }
       case "completed":
         return {
           label: "Completed",
-          className: "bg-green-100 text-green-700 hover:bg-green-100"
+          variant: "success" as const
         }
       case "dispute":
         return {
           label: "Dispute",
-          className: "bg-red-100 text-red-700 hover:bg-red-100"
+          variant: "destructive" as const
         }
       default:
         return {
           label: "Unknown",
-          className: "bg-gray-100 text-gray-700 hover:bg-gray-100"
+          variant: "secondary" as const
         }
     }
   }
@@ -35,7 +35,7 @@ export function ProjectStatusBadge({ status }: ProjectStatusBadgeProps) {
   const config = getStatusConfig(status)
 
   return (
-    <Badge variant="secondary" className={config.className}>
+    <Badge variant={config.variant}>
       {config.label}
     </Badge>
   )

@@ -2,6 +2,7 @@
 import { CreateProjectDTO, ProjectDraft, ProjectResponse } from "@/types/project.types";
 import axios, { AxiosError } from "axios";
 import { isApiError } from "@/utils/type-guards";
+import { useState } from "react";
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
@@ -26,27 +27,93 @@ const handleRequest = async <T>(request: Promise<{ data: T }>): Promise<T> => {
 }
 
 export const useProjectsApi = () => {
-    const createProject = (project: CreateProjectDTO) =>
-        handleRequest<ProjectResponse>(api.post('/api/projects', project));
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const getProjects = () =>
-        handleRequest<ProjectResponse[]>(api.get('/api/projects'));
+    const createProject = async (project: CreateProjectDTO) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await handleRequest<ProjectResponse>(api.post('/api/projects', project));
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create project';
+            setError(errorMessage);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const getProjectById = (id: string) =>
-        handleRequest<ProjectResponse>(api.get(`/api/projects/${id}`));
+    const getProjects = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await handleRequest<ProjectResponse[]>(api.get('/api/projects'));
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch projects';
+            setError(errorMessage);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const updateProject = (id: string, project: Partial<CreateProjectDTO>) =>
-        handleRequest<ProjectResponse>(api.patch(`/api/projects/${id}`, project));
+    const getProjectById = async (id: string) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await handleRequest<ProjectResponse>(api.get(`/api/projects/${id}`));
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch project';
+            setError(errorMessage);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const deleteProject = (id: string) =>
-        handleRequest<{ success: boolean; message: string }>(api.delete(`/api/projects/${id}`));
+    const updateProject = async (id: string, project: Partial<CreateProjectDTO>) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await handleRequest<ProjectResponse>(api.patch(`/api/projects/${id}`, project));
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to update project';
+            setError(errorMessage);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteProject = async (id: string) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await handleRequest<{ success: boolean; message: string }>(api.delete(`/api/projects/${id}`));
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to delete project';
+            setError(errorMessage);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return {
+        loading,
+        error,
         createProject,
         getProjects,
         getProjectById,
         updateProject,
-        deleteProject
+        deleteProject,
+        clearError: () => setError(null)
     }
 };
 

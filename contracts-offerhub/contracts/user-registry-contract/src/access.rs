@@ -1,6 +1,6 @@
 use crate::storage::{get_admin, get_moderators, set_admin, set_moderators};
 use crate::error::Error;
-use soroban_sdk::{Address, Env, Vec};
+use soroban_sdk::{Address, Env, Vec, log};
 
 pub struct AccessControl;
 
@@ -22,9 +22,11 @@ impl AccessControl {
         caller.require_auth();
 
         let admin = get_admin(env).ok_or(Error::NotInitialized)?;
+
         if admin != *caller {
             return Err(Error::Unauthorized);
         }
+
         Ok(())
     }
 

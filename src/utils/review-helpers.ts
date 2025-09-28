@@ -6,7 +6,6 @@
 import {
   Review,
   CreateReviewDTO,
-  UpdateReviewDTO,
   ReviewFilterOptions,
   ReviewStatistics,
   ReviewSearchResult,

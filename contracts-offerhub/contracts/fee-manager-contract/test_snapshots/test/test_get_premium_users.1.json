@@ -277,6 +277,14 @@
                       },
                       {
                         "key": {
+                          "symbol": "PAUSED"
+                        },
+                        "val": {
+                          "bool": false
+                        }
+                      },
+                      {
+                        "key": {
                           "symbol": "PLAT_BAL"
                         },
                         "val": {

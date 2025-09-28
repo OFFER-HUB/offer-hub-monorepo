@@ -58,8 +58,8 @@ export const useFundEscrow = (): UseFundEscrowReturn => {
       } else {
         throw new Error(result.message || 'Transaction failed');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fund escrow');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fund escrow');
       return false;
     } finally {
       setLoading(false);

@@ -1,7 +1,6 @@
 import {
   CacheConfig,
   CacheItem,
-  Review,
   ReviewQueryKey,
 } from "@/types/reviews.types";
 
@@ -32,7 +31,7 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
  */
 class ReviewCacheManager {
   private static instance: ReviewCacheManager;
-  private cache: Map<string, CacheItem<any>>;
+  private cache: Map<string, CacheItem<unknown>>;
   private config: CacheConfig;
   private cleanupIntervalId: NodeJS.Timeout | null = null;
   private subscribers: Set<(key: string) => void>;
@@ -315,7 +314,7 @@ class ReviewCacheManager {
   /**
    * Generate a consistent string key from various input types
    */
-  private generateKey(key: string | ReviewQueryKey | any): string {
+  private generateKey(key: string | ReviewQueryKey | unknown): string {
     if (typeof key === "string") {
       return key;
     }
@@ -342,7 +341,7 @@ class ReviewCacheManager {
    * @param obj - The value to stringify
    * @returns A deterministic string representation of the value
    */
-  private deterministicStringify(obj: any): string {
+  private deterministicStringify(obj: unknown): string {
     if (obj === null || obj === undefined) {
       return String(obj);
     }
@@ -374,7 +373,7 @@ class ReviewCacheManager {
   /**
    * Check if a cache item has expired
    */
-  private isExpired(item: CacheItem<any>): boolean {
+  private isExpired(item: CacheItem<unknown>): boolean {
     return Date.now() - item.timestamp > item.ttl;
   }
 
@@ -477,7 +476,7 @@ class ReviewCacheManager {
       // Add to memory cache
       this.cache.set(key, item);
       return item.data;
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -492,9 +491,9 @@ class ReviewCacheManager {
       const itemJson = localStorage.getItem(this.storageKeyPrefix + key);
       if (!itemJson) return false;
 
-      const item = JSON.parse(itemJson) as CacheItem<any>;
+      const item = JSON.parse(itemJson) as CacheItem<unknown>;
       return !this.isExpired(item);
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -547,7 +546,7 @@ class ReviewCacheManager {
         if (!itemJson) continue;
 
         try {
-          const item = JSON.parse(itemJson) as CacheItem<any>;
+          const item = JSON.parse(itemJson) as CacheItem<unknown>;
           if (now - item.timestamp > item.ttl) {
             localStorage.removeItem(key);
           }

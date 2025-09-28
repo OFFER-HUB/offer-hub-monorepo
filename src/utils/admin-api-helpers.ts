@@ -494,7 +494,7 @@ export function exportAsJson(data: any, filename: string): void {
 /**
  * Export data as CSV
  */
-export function exportAsCsv(data: any[], filename: string): void {
+export function exportAsCsv(data: unknown[], filename: string): void {
   if (data.length === 0) return;
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     console.warn('exportAsCsv is only available in the browser.');
@@ -502,7 +502,7 @@ export function exportAsCsv(data: any[], filename: string): void {
   }
 
   const headers = Array.from(new Set(data.flatMap(row => Object.keys(row))));
-  const escapeCell = (v: any) => String(v ?? '').replace(/"/g, '""');
+  const escapeCell = (v: unknown) => String(v ?? '').replace(/"/g, '""');
   const csvContent = [
     headers.join(','),
     ...data.map(row => headers.map(h => `"${escapeCell(row[h])}"`).join(',')),

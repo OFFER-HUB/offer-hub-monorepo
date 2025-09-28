@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, DollarSign, Clock } from "lucide-react";
+import EmptyState from "@/components/ui/empty-state";
 import { PortfolioProject } from "@/lib/mockData/portfolio-mock-data";
 
 interface PortfolioGalleryProps {
@@ -100,12 +101,7 @@ export default function PortfolioGallery({ projects, onProjectClick }: Portfolio
       </div>
       
       {projects.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-lg font-medium">No portfolio projects yet</div>
-          <p className="text-gray-500 text-sm mt-2">
-            This freelancer hasn't added any portfolio projects yet.
-          </p>
-        </div>
+        <EmptyState message="No portfolio items available." />
       )}
     </div>
   );

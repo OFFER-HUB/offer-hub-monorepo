@@ -25,6 +25,18 @@ impl Contract {
         ReputationNFTContract::init(env, admin)
     }
 
+    pub fn pause(env: Env, admin: Address) -> Result<(), Error> {
+        ReputationNFTContract::pause(&env, admin)
+    }
+
+    pub fn is_paused(env: Env) -> bool {
+        ReputationNFTContract::is_paused(&env)
+    }
+
+    pub fn unpause(env: Env, admin: Address) -> Result<(), Error> {
+        ReputationNFTContract::unpause(&env, admin)
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn mint(
         env: Env,

@@ -19,6 +19,18 @@ impl FeeManagerContract {
         contract::initialize(&env, admin, platform_wallet);
     }
 
+    pub fn pause(env: Env, admin: Address) -> Result<(), Error> {
+        contract::pause(&env, admin)
+    }
+
+    pub fn is_paused(env: Env) -> bool {
+        contract::is_paused(&env)
+    }
+
+    pub fn unpause(env: Env, admin: Address) -> Result<(), Error> {
+        contract::unpause(&env, admin)
+    }
+
     pub fn set_fee_rates(
         env: Env,
         escrow_fee_percentage: i128,
