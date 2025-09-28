@@ -70,6 +70,7 @@ jobs:
           npm ci --legacy-peer-deps || true
 
       - name: Run linting
+        if: matrix.node-version == '20.x'
         run: npm run lint
 
       - name: Upload build artifacts
