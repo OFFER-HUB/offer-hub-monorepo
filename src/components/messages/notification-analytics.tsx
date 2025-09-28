@@ -446,7 +446,7 @@ const NotificationAnalytics: React.FC<NotificationAnalyticsProps> = ({
               <h4 className="text-sm font-medium text-blue-900 mb-2">Analytics Insights</h4>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Your open rate is {stats.engagement_metrics.open_rate > 0.7 ? 'excellent' : stats.engagement_metrics.open_rate > 0.5 ? 'good' : 'below average'}</li>
-                <li>• Most notifications are delivered via {Object.keys(stats.notifications_by_channel).reduce((a, b) => stats.notifications_by_channel[a] > stats.notifications_by_channel[b] ? a : b)}</li>
+                <li>• Most notifications are delivered via {Object.keys(stats.notifications_by_channel).reduce((a, b) => stats.notifications_by_channel[a as keyof typeof stats.notifications_by_channel] > stats.notifications_by_channel[b as keyof typeof stats.notifications_by_channel] ? a : b)}</li>
                 <li>• {stats.unread_notifications > 0 ? `You have ${stats.unread_notifications} unread notifications` : 'All notifications have been read'}</li>
                 {engagement && engagement.avg_response_time < 5 * 60 * 1000 && (
                   <li>• You respond quickly to notifications (avg {formatDuration(engagement.avg_response_time)})</li>

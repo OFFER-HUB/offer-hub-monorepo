@@ -363,7 +363,7 @@ class NotificationService {
       }
 
       const preferences = Array.isArray(preferencesResponse.data) 
-        ? preferencesResponse.data as NotificationPreferences[]
+        ? preferencesResponse.data as unknown as NotificationPreferences[]
         : [];
 
       // Determine best channel based on preferences and priority

@@ -118,7 +118,7 @@ export function useMessageNotifications(options: UseNotificationsOptions): UseNo
       
       if (response.success && response.data) {
         const preferencesData = Array.isArray(response.data) ? response.data : [];
-        setPreferences(preferencesData);
+        setPreferences(preferencesData as unknown as NotificationPreferences[]);
       }
     } catch (err) {
       console.error('Failed to load preferences:', err);
@@ -483,7 +483,22 @@ export function useNotificationPreferences(userId: string) {
       
       if (response.success && response.data) {
         const preferencesData = Array.isArray(response.data) ? response.data : [];
-        setPreferences(preferencesData);
+        // Convert Notification[] to NotificationPreferences[] safely
+        const convertedPreferences = preferencesData.map((item: any) => ({
+          id: item.id || '',
+          user_id: item.user_id || '',
+          type: item.type || 'new_message',
+          channel: item.channel || 'in_app',
+          enabled: item.enabled !== undefined ? item.enabled : true,
+          frequency: item.frequency || 'immediate',
+          timezone: item.timezone || 'UTC',
+          quiet_hours_start: item.quiet_hours_start || null,
+          quiet_hours_end: item.quiet_hours_end || null,
+          channel_preferences: item.channel_preferences || {},
+          created_at: item.created_at || new Date().toISOString(),
+          updated_at: item.updated_at || new Date().toISOString()
+        }));
+        setPreferences(convertedPreferences);
       } else {
         setError(response.error || 'Failed to load preferences');
       }

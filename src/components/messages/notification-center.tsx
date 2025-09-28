@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Bell, BellRing, Settings, Search, Filter, MoreVertical, MarkAsUnread, Trash2, Archive, X, Check, Clock, AlertCircle, CheckCircle, Info, Zap } from 'lucide-react';
+import { Bell, BellRing, Settings, Search, Filter, MoreVertical, MailOpen, Trash2, Archive, X, Check, Clock, AlertCircle, CheckCircle, Info, Zap } from 'lucide-react';
 import { useMessageNotifications } from '../../hooks/use-message-notifications';
 import type { 
   Notification, 

@@ -80,7 +80,7 @@ export const generateNotificationContent = (
     }
   };
 
-  return templates[type] || {
+  return templates[type as keyof typeof templates] || {
     title: 'Notification',
     content: 'You have a new notification',
     actionText: 'View',
@@ -552,7 +552,7 @@ export const playNotificationSound = (type: NotificationType): void => {
     security_alert: '/sounds/security.mp3'
   };
   
-  audio.src = soundMap[type] || '/sounds/default.mp3';
+  audio.src = soundMap[type as keyof typeof soundMap] || '/sounds/default.mp3';
   audio.volume = 0.5;
   
   try {

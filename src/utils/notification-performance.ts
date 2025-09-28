@@ -411,7 +411,7 @@ export const createOptimalBatches = (
       
       batches.push({
         id: `batch-${Date.now()}-${Math.random()}`,
-        notifications: batch,
+        notifications: batch as unknown as Notification[],
         total_count: batch.length,
         processed_count: 0,
         failed_count: 0,
@@ -515,7 +515,7 @@ export const optimizeNotificationDelivery = (
       n.user_id === notification.user_id &&
       n.type === notification.type &&
       n.content === notification.content &&
-      n.created_at === notification.created_at
+      (n as any).created_at === (notification as any).created_at
     )
   );
 
