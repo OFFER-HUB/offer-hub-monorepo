@@ -2,11 +2,13 @@ import type {
   Notification,
   CreateNotificationDTO,
   NotificationPreferences,
-  NotificationBatch,
-  NotificationType,
-  NotificationChannel,
-  NotificationPriority
+  NotificationBatch
 } from '../types/message-notifications.types';
+
+// Extended notification type for retry tracking
+interface NotificationWithRetry extends CreateNotificationDTO {
+  __retryCount?: number;
+}
 
 // Performance Configuration
 interface PerformanceConfig {
@@ -205,7 +207,7 @@ class NotificationQueue {
     const minuteAgo = now - 60000;
     
     // Clean old entries
-    for (const [timestamp, count] of this.rateLimiter.entries()) {
+    for (const [timestamp] of this.rateLimiter.entries()) {
       if (parseInt(timestamp) < minuteAgo) {
         this.rateLimiter.delete(timestamp);
       }
@@ -225,11 +227,11 @@ class NotificationQueue {
   }
 
   private getRetryCount(notification: CreateNotificationDTO): number {
-    return (notification as any).__retryCount || 0;
+    return (notification as NotificationWithRetry).__retryCount || 0;
   }
 
   private incrementRetryCount(notification: CreateNotificationDTO): void {
-    (notification as any).__retryCount = this.getRetryCount(notification) + 1;
+    (notification as NotificationWithRetry).__retryCount = this.getRetryCount(notification) + 1;
   }
 
   private delay(ms: number): Promise<void> {
@@ -355,7 +357,7 @@ class NotificationPerformanceMonitor {
   }
 
   private checkAlerts(name: string, value: number): void {
-    const metric = this.getMetric(name);
+    // const metric = this.getMetric(name);
     
     // Example alert conditions
     if (name === 'processing_time' && value > 5000) {
@@ -515,7 +517,7 @@ export const optimizeNotificationDelivery = (
       n.user_id === notification.user_id &&
       n.type === notification.type &&
       n.content === notification.content &&
-      (n as any).created_at === (notification as any).created_at
+      (n as NotificationWithRetry).created_at === (notification as NotificationWithRetry).created_at
     )
   );
 

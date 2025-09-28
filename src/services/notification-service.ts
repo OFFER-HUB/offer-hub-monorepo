@@ -3,22 +3,12 @@ import type {
   Notification,
   NotificationTemplate,
   NotificationPreferences,
-  NotificationBatch,
-  NotificationAnalytics,
-  NotificationEngagement,
-  NotificationDeliveryStatus,
   NotificationFilter,
-  NotificationStats,
   CreateNotificationDTO,
   UpdateNotificationPreferencesDTO,
   NotificationServiceConfig,
-  NotificationWebhookPayload,
   NotificationResponse,
-  NotificationEvent,
-  NotificationChannel,
-  NotificationType,
-  NotificationStatus,
-  NotificationPriority
+  NotificationEvent
 } from '../types/message-notifications.types';
 
 const API_BASE = '/api/notifications';

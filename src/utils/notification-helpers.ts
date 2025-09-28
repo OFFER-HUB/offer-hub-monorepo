@@ -1,15 +1,11 @@
 import type {
   Notification,
-  NotificationTemplate,
-  NotificationPreferences,
   NotificationType,
   NotificationChannel,
   NotificationPriority,
   NotificationFilter,
   CreateNotificationDTO,
-  UpdateNotificationPreferencesDTO,
-  NotificationStats,
-  NotificationEngagement
+  NotificationStats
 } from '../types/message-notifications.types';
 
 // Notification Content Generation
@@ -126,7 +122,7 @@ export const selectOptimalChannels = (
   userPreferences: NotificationPreferences[],
   urgency: NotificationPriority
 ): NotificationChannel[] => {
-  const availableChannels: NotificationChannel[] = ['push', 'email', 'sms', 'in_app'];
+  // const availableChannels: NotificationChannel[] = ['push', 'email', 'sms', 'in_app'];
   
   // Get user preferences for this notification type
   const preferences = userPreferences.filter(p => p.type === type && p.enabled);
@@ -559,7 +555,7 @@ export const playNotificationSound = (type: NotificationType): void => {
     audio.play().catch(() => {
       // Ignore errors (user might not have interacted with page)
     });
-  } catch (error) {
+  } catch {
     // Ignore audio play errors
   }
 };

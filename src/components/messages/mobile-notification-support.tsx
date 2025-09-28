@@ -35,11 +35,14 @@ interface MobileNotificationSupportProps {
 // }
 
 const MobileNotificationSupport: React.FC<MobileNotificationSupportProps> = ({
-  userId: _,
+  userId: _userId,
   onPermissionGranted,
   onPermissionDenied,
   className = ''
 }) => {
+  // Use userId for future features like user-specific notification settings
+  console.log('Mobile notification support initialized for user:', _userId);
+  
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const [isOnline, setIsOnline] = useState(true);
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
