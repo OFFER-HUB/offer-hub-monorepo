@@ -21,8 +21,8 @@ import {
 import Image from "next/image";
 
 // emoji-mart
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+// emoji-picker-react replacement for emoji-mart
+import EmojiPicker from "emoji-picker-react";
 
 type LocalPreview = {
   id: string;
@@ -212,14 +212,12 @@ export function MessageInput({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0">
-              <Picker
-                data={data}
-                onEmojiSelect={(emoji: MinimalEmoji) =>
-                  setTextValue((prev) => (prev || "") + (emoji?.native || ""))
+              <EmojiPicker
+                onEmojiClick={(emojiData: any) =>
+                  setTextValue((prev) => (prev || "") + (emojiData?.emoji || ""))
                 }
                 theme="light"
-                previewPosition="none"
-                navPosition="top"
+                disableAutoFocus
               />
             </PopoverContent>
           </Popover>
