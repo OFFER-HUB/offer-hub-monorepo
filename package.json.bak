@@ -1,0 +1,5 @@
+{
+  "note": "Backup of package.json before removing incompatible React <=18 peer-dep packages",
+  "source": "package.json",
+  "date": "2025-09-28"
+}

@@ -15,8 +15,7 @@
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.6.1",
-    "@emoji-mart/data": "^1.2.1",
-    "@emoji-mart/react": "^1.1.1",
+    
     "@faker-js/faker": "^9.8.0",
     "@hookform/resolvers": "^3.10.0",
     "@nestjs/common": "^11.0.10",
@@ -49,9 +48,9 @@
     "clsx": "^2.1.1",
     "compressorjs": "^1.2.1",
     "cors": "^2.8.5",
-    "date-fns": "^4.1.0",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
-    "emoji-mart": "^5.6.0",
+    
     "express": "^4.21.2",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.473.0",
@@ -59,7 +58,7 @@
     "next-themes": "^0.4.6",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
-    "react-day-picker": "^8.10.1",
+    
     "react-dom": "^19.0.0",
     "react-easy-crop": "^5.5.1",
     "react-hook-form": "^7.54.2",
@@ -77,7 +76,8 @@
     "typeorm": "^0.3.20",
     "uuid": "^11.1.0",
     "zod": "^3.24.1",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "emoji-picker-react": "^4.7.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
