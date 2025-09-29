@@ -14,14 +14,39 @@ const SelectValue = SelectPrimitive.Value
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+    /** ARIA label for accessibility when no visible label is present */
+    "aria-label"?: string;
+    /** ID of element that labels this select */
+    "aria-labelledby"?: string;
+    /** ID of element that describes this select */
+    "aria-describedby"?: string;
+    /** Indicates whether the select is required */
+    "aria-required"?: boolean;
+    /** Indicates whether the select has an invalid value */
+    "aria-invalid"?: boolean;
+  }
+>(({ 
+  className, 
+  children, 
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledby,
+  "aria-describedby": ariaDescribedby,
+  "aria-required": ariaRequired,
+  "aria-invalid": ariaInvalid,
+  ...props 
+}, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
       "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
+    aria-label={ariaLabel}
+    aria-labelledby={ariaLabelledby}
+    aria-describedby={ariaDescribedby}
+    aria-required={ariaRequired}
+    aria-invalid={ariaInvalid}
     {...props}
   >
     {children}
@@ -56,7 +81,7 @@ const SelectScrollDownButton = React.forwardRef<
     {...props}
   >
     <ChevronDown className="h-4 w-4" />
-  </SelectPrimitive.ScrollDownButton>
+  </SelectScrollDownButton>
 ))
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName
 

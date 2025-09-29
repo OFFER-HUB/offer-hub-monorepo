@@ -51,31 +51,30 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnEscape = true,
   footer,
 }) => {
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (closeOnOverlayClick && e.target === e.currentTarget) {
+  // Handle dialog state changes (close for any allowed reason)
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
       onClose();
     }
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (closeOnEscape && e.key === "Escape") {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={closeOnOverlayClick ? onClose : undefined}
-    >
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn("relative w-full", sizeClasses[size], className)}
-        onKeyDown={handleKeyDown}
-        onClick={handleOverlayClick}
+        // Prevent closing via Escape when disabled
+        onEscapeKeyDown={(e) => {
+          if (!closeOnEscape) {
+            e.preventDefault();
+          }
+        }}
+        // Control closing via overlay click
+        onPointerDownOutside={(e) => {
+          if (!closeOnOverlayClick) {
+            e.preventDefault();
+          }
+        }}
       >
-        {/* Header */}
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between border-b pb-4 mb-4">
             <div className="flex-1">
@@ -102,10 +101,8 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         )}
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto">{children}</div>
 
-        {/* Footer */}
         {footer && <div className="border-t pt-4 mt-4">{footer}</div>}
       </DialogContent>
     </Dialog>

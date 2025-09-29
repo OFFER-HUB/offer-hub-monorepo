@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import ProgressiveImage from "@/components/ui/progressive-image";
 
 interface PortfolioItem {
   id: string | number;
@@ -61,7 +61,7 @@ export default function PortfolioCarousel({
               onClick={() => handleProjectClick(item.id)}
             >
               <div className="overflow-hidden">
-                <Image
+                <ProgressiveImage
                   src={item.image || "/placeholder.svg"}
                   alt={item.title}
                   width={300}

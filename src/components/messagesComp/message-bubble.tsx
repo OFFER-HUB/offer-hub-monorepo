@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Check, CheckCheck, FileText, Reply } from "lucide-react";
-import Image from "next/image";
 import { type Attachment, type Message } from "@/types/messages-types";
+import ProgressiveImage from "@/components/ui/progressive-image";
 
 function isImage(att: Attachment) {
   return att.kind === "image" || att.mime.startsWith("image/");
@@ -172,7 +172,7 @@ export function MessageBubble({
                     key={att.id}
                     className="relative aspect-square overflow-hidden rounded-xl"
                   >
-                    <Image
+                    <ProgressiveImage
                       src={
                         att.url ||
                         "/placeholder.svg?height=300&width=300&query=chat-media"

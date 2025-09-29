@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import Image from "next/image";
+import ProgressiveImage from "@/components/ui/progressive-image";
 
 // emoji picker replacement: emoji-picker-react
 import Picker from "emoji-picker-react";
@@ -163,7 +163,7 @@ export function MessageInput({
                     style={{ height: tile }}
                     className="relative w-full rounded-lg"
                   >
-                    <Image
+                    <ProgressiveImage
                       src={
                         p.dataUrl ||
                         "/placeholder.svg?height=96&width=96&query=attachment-preview"

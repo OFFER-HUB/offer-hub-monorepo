@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import ProgressiveImage from "./progressive-image"
 
 import { cn } from "@/lib/utils"
 
@@ -19,10 +20,28 @@ Avatar.displayName = AvatarPrimitive.Root.displayName
 
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image ref={ref} className={cn("aspect-square h-full w-full", className)} {...props} />
-))
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> & {
+    progressive?: boolean;
+    blurDataURL?: string;
+  }
+>(({ className, progressive = true, blurDataURL, ...props }, ref) => {
+  if (progressive) {
+    return (
+      <ProgressiveImage
+        src={props.src || ""}
+        alt={props.alt || ""}
+        className={cn("aspect-square h-full w-full", className)}
+        blurDataURL={blurDataURL}
+        fill
+        sizes="40px"
+      />
+    )
+  }
+  
+  return (
+    <AvatarPrimitive.Image ref={ref} className={cn("aspect-square h-full w-full", className)} {...props} />
+  )
+})
 AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
 const AvatarFallback = React.forwardRef<
