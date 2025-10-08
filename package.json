@@ -50,10 +50,11 @@
     "clsx": "^2.1.1",
     "compressorjs": "^1.2.1",
     "cors": "^2.8.5",
-    "date-fns": "^4.1.0",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
     "emoji-mart": "^5.6.0",
     "express": "^4.21.2",
+    "express-validator": "^7.2.1",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.473.0",
     "next": "^15.4.6",
@@ -90,8 +91,8 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/qrcode.react": "^1.0.5",
-  "@types/react": "^18.2.0",
-  "@types/react-dom": "^18.2.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@types/recharts": "^1.8.29",
     "@types/uuid": "^10.0.0",
     "eslint": "^9",
@@ -102,6 +103,5 @@
     "ts-jest": "^29.4.4",
     "typescript": "^5"
   },
-  
   "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }
