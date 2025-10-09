@@ -10,7 +10,6 @@ import { popularTags } from "@/data/landing-data";
 import { useSearch } from "@/hooks/use-search";
 import SearchResults from "@/components/search/search-results";
 import { normalizeQuery } from "@/utils/search-helpers";
-import Dropdown from "../ui/dropdown";
 
 export default function HeroSection() {
   const { searchQuery, setSearchQuery, isLoading } = useSearch();
