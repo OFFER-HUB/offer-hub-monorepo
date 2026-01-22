@@ -18,17 +18,18 @@ export function validateOAuthProvider(
   next: NextFunction
 ): void {
   const { provider } = req.params;
+  const providerStr = Array.isArray(provider) ? provider[0] : provider;
 
-  if (!provider) {
+  if (!providerStr) {
     return next(new AppError('OAuth provider is required', 400));
   }
 
-  const parsedProvider = parseOAuthProvider(provider);
+  const parsedProvider = parseOAuthProvider(providerStr);
 
   if (!parsedProvider) {
     return next(
       new AppError(
-        `Invalid OAuth provider: ${provider}. Active providers: google, github`,
+        `Invalid OAuth provider: ${providerStr}. Active providers: google, github`,
         400
       )
     );

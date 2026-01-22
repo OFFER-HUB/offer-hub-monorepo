@@ -202,11 +202,32 @@ export interface SessionService {
 }
 
 // Middleware Types
+export interface SecurityContext {
+  requestId: string;
+  sessionId?: string;
+  ipAddress: string;
+  userAgent: string;
+  timestamp: number;
+  endpoint: string;
+  method: string;
+  isAuthenticated: boolean;
+  userRole?: UserRole;
+  rateLimitInfo?: any;
+}
+
+export interface TokenInfo {
+  token: string;
+  expiresAt: number;
+  needsRefresh: boolean;
+}
+
 export interface AuthenticatedRequest extends Omit<Request, 'user'> {
-  user?: UserModel;
+  user?: AuthUser;
   session?: SessionModel;
   permissions?: Permission[];
   tokenPayload?: UserPayload;
+  securityContext?: SecurityContext;
+  tokenInfo?: TokenInfo;
 }
 
 export interface AuthMiddleware {

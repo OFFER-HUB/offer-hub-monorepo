@@ -606,7 +606,7 @@ export async function getSessions(req: Request, res: Response, next: NextFunctio
 export async function deactivateSession(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user.id;
-    const sessionId = req.params.sessionId;
+    const sessionId = Array.isArray(req.params.sessionId) ? req.params.sessionId[0] : req.params.sessionId;
 
     await authService.deactivateSession(userId, sessionId);
 

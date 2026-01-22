@@ -6,6 +6,7 @@ export interface CreateUserDTO {
   name?: string;
   bio?: string;
   email?: string;
+  avatar_url?: string;
   is_freelancer?: boolean;
 }
 
@@ -16,9 +17,11 @@ export interface User {
   name?: string;
   bio?: string;
   email?: string;
+  avatar_url?: string;
   is_freelancer?: boolean;
   nonce?: string;
   created_at?: string;
+  updated_at?: string;
   verification_level?: number;
   verified_on_blockchain?: boolean;
   verified_at?: string;

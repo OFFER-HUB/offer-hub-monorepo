@@ -3,6 +3,7 @@ import {
   createUserHandler,
   getUserByIdHandler,
   updateUserHandler,
+  updateAvatarHandler,
   getAllUsersHandler,
 } from "@/controllers/user.controller";
 import { authorizeRoles, verifyToken } from "@/middlewares/auth.middleware";
@@ -17,5 +18,6 @@ router.post("/", verifyToken, authorizeRoles(UserRole.ADMIN), createUserHandler)
 
 router.get("/:id", verifyToken, getUserByIdHandler);
 router.patch("/:id", verifyToken, updateUserHandler);
+router.patch("/:userId/avatar", verifyToken, updateAvatarHandler);
 
 export default router;

@@ -11,13 +11,13 @@ import {
   getTokenExpiration,
 } from "@/utils/jwt.utils";
 import { NextFunction, Request, Response } from "express";
-import { 
-  AuthenticatedRequest, 
-  AuthMiddlewareOptions, 
+import {
+  AuthMiddlewareOptions,
   SecurityContext,
   AuthAttemptLog,
-  TokenValidationResult 
+  TokenValidationResult
 } from "@/types/middleware.types";
+import { AuthenticatedRequest } from "@/types/auth.types";
 import { authConfig, isPublicRoute } from "@/config/auth.config";
 import { UserRole, AuthUser } from "@/types/auth.types";
 // import { v4 as uuidv4 } from "uuid";

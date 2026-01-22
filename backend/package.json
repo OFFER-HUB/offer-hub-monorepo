@@ -47,11 +47,15 @@
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "passport-microsoft": "^2.1.0",
+    "supabase": "^2.72.8",
     "systeminformation": "^5.27.9",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "overrides": {
+    "tar": "^7.5.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

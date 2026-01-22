@@ -4,16 +4,18 @@
  */
 
 import { Request, Response, NextFunction } from "express";
+import { AuthenticatedRequest } from "@/types/auth.types";
 import { userService } from "@/services/user.service";
 import { AppError, MissingFieldsError, NotFoundError, ValidationError, BadRequestError, mapSupabaseError } from "@/utils/AppError";
 import { UserFilters } from "@/types/user.types";
 import { buildSuccessResponse, buildPaginatedResponse } from '../utils/responseBuilder';
-import { 
-  validateUUID, 
-  validateObject, 
+import {
+  validateUUID,
+  validateObject,
   USER_CREATION_SCHEMA,
   validateIntegerRange,
-  validateStringLength
+  validateStringLength,
+  validateAvatarUrl
 } from "@/utils/validation";
 
 export const createUserHandler = async (req: Request, res: Response, next: NextFunction) => {
@@ -52,16 +54,17 @@ export const createUserHandler = async (req: Request, res: Response, next: NextF
 export const getUserByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    const userId = Array.isArray(id) ? id[0] : id;
 
-    if (!id) {
+    if (!userId) {
       throw new ValidationError("User ID is required");
     }
 
-    if (!validateUUID(id)) {
+    if (!validateUUID(userId)) {
       throw new BadRequestError("Invalid user ID format", "INVALID_UUID");
     }
 
-    const user = await userService.getUserById(id);
+    const user = await userService.getUserById(userId);
     if (!user) throw new NotFoundError("User not found", "USER_NOT_FOUND");
 
     res.status(200).json(
@@ -84,13 +87,14 @@ export const updateUserHandler = async (
 ) => {
   try {
     const { id } = req.params;
+    const userId = Array.isArray(id) ? id[0] : id;
 
-    if (!id) throw new MissingFieldsError("User ID is required");
-    
-    if (!validateUUID(id)) throw new BadRequestError("Invalid user ID format", "INVALID_UUID");
+    if (!userId) throw new MissingFieldsError("User ID is required");
+
+    if (!validateUUID(userId)) throw new BadRequestError("Invalid user ID format", "INVALID_UUID");
 
     const updateData = req.body;
-    const updatedUser = await userService.updateUser(id, updateData);
+    const updatedUser = await userService.updateUser(userId, updateData);
 
     if (!updatedUser) throw new NotFoundError("User not found", "USER_NOT_FOUND");
 
@@ -157,6 +161,61 @@ export const getAllUsersHandler = async (
           per_page: filters.limit || 20,
         }
       )
+    );
+  } catch (error: any) {
+    // Handle Supabase errors
+    if (error.code && error.message) {
+      throw mapSupabaseError(error);
+    }
+
+    next(error);
+  }
+};
+
+export const updateAvatarHandler = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const userIdStr = Array.isArray(userId) ? userId[0] : userId;
+    const { avatar_url } = req.body;
+
+    if (!userIdStr) {
+      throw new ValidationError("User ID is required");
+    }
+
+    if (!validateUUID(userIdStr)) {
+      throw new BadRequestError("Invalid user ID format", "INVALID_UUID");
+    }
+
+    // Check if requester owns the profile
+    if (!req.user || req.user.id !== userIdStr) {
+      throw new AppError("Access denied. You can only update your own avatar.", 403);
+    }
+
+    // Validate avatar URL format if provided
+    if (avatar_url !== null && avatar_url !== undefined && avatar_url !== '') {
+      if (typeof avatar_url !== 'string') {
+        throw new ValidationError("Avatar URL must be a string");
+      }
+
+      if (!validateAvatarUrl(avatar_url)) {
+        throw new BadRequestError(
+          "Invalid avatar URL format. Must be a valid URL ending with .jpg, .jpeg, .png, .gif, or .webp",
+          "INVALID_AVATAR_URL"
+        );
+      }
+    }
+
+    // Convert empty string to null for database
+    const avatarUrlValue = avatar_url === '' ? null : avatar_url;
+
+    const updatedUser = await userService.updateAvatar(userIdStr, avatarUrlValue);
+
+    res.status(200).json(
+      buildSuccessResponse(updatedUser, "Avatar updated successfully")
     );
   } catch (error: any) {
     // Handle Supabase errors

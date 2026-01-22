@@ -1,10 +1,10 @@
 import rateLimit from "express-rate-limit";
 import { Request, Response } from "express";
-import { 
-  RateLimitMiddlewareOptions, 
-  AuthenticatedRequest,
-  RateLimitInfo 
+import {
+  RateLimitMiddlewareOptions,
+  RateLimitInfo
 } from "@/types/middleware.types";
+import { AuthenticatedRequest } from "@/types/auth.types";
 import { authConfig } from "@/config/auth.config";
 
 /**

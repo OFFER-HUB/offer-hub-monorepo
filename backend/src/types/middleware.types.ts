@@ -1,18 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { UserRole, AuthUser } from "./auth.types";
+import { UserRole, AuthUser, AuthenticatedRequest } from "./auth.types";
 
 /**
  * Extended Request interface with authentication and security context
  */
-export interface AuthenticatedRequest extends Request {
-  user: AuthUser;
-  tokenInfo?: {
-    token: string;
-    expiresAt: number;
-    needsRefresh: boolean;
-  };
-  securityContext?: SecurityContext;
-}
 
 /**
  * Security context for request tracking and logging

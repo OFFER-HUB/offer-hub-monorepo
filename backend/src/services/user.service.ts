@@ -48,7 +48,7 @@ class UserService {
     async getUserById(id: string) {
         const { data, error } = await supabase
             .from("users")
-            .select("id, wallet_address, username, name, bio, email, is_freelancer, created_at")
+            .select("id, wallet_address, username, name, bio, email, avatar_url, is_freelancer, created_at, updated_at")
             .eq("id", id)
             .single();
 
@@ -139,6 +139,31 @@ class UserService {
             users: users || [],
             total: count || 0
         };
+    }
+
+    async updateAvatar(userId: string, avatarUrl: string | null) {
+        // First verify the user exists
+        const existingUser = await this.getUserById(userId);
+        if (!existingUser) {
+            throw new AppError("User not found", 404, "USER_NOT_FOUND");
+        }
+
+        // Update only the avatar_url field and updated_at timestamp
+        const { data, error } = await supabase
+            .from("users")
+            .update({
+                avatar_url: avatarUrl,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", userId)
+            .select("id, wallet_address, username, name, bio, email, avatar_url, is_freelancer, created_at, updated_at")
+            .single();
+
+        if (error) {
+            throw new InternalServerError("Error updating user avatar");
+        }
+
+        return data;
     }
 }
 
