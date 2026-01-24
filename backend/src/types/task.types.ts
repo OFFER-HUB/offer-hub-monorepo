@@ -12,6 +12,8 @@ export interface TaskRecord {
   outcome_description?: string;
   on_chain_tx_hash?: string;
   on_chain_task_id?: number;
+  rating?: number;
+  rating_comment?: string;
   created_at: string;
   updated_at: string;
 }
@@ -41,4 +43,9 @@ export interface BlockchainTaskResult {
   taskId: number;
   timestamp: number;
   ledger: number;
+}
+
+export interface UpdateTaskRatingDTO {
+  rating: number;
+  comment?: string;
 }
