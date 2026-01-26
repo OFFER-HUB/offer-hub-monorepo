@@ -1,3 +1,12 @@
+-- Migration: Add freelancer and escrow to projects
+-- Description: Adds freelancer_id and escrow_address columns, updates project_status enum
+-- Date: 2026-01-21
+
+-- Add missing values to project_status enum
+ALTER TYPE project_status ADD VALUE IF NOT EXISTS 'pending';
+ALTER TYPE project_status ADD VALUE IF NOT EXISTS 'open';
+ALTER TYPE project_status ADD VALUE IF NOT EXISTS 'deleted';
+
 -- Add freelancer_id and escrow_address columns to projects table
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS freelancer_id UUID REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS escrow_address TEXT;
@@ -5,8 +14,8 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS escrow_address TEXT;
 -- Create index for freelancer_id lookups
 CREATE INDEX IF NOT EXISTS idx_projects_freelancer_id ON projects(freelancer_id);
 
--- Update status constraint to include 'open' status
--- First, drop the existing constraint if it exists (PostgreSQL doesn't support IF EXISTS for constraints)
+-- Drop the redundant CHECK constraint
+-- (The enum already enforces valid status values, so CHECK constraint is unnecessary)
 DO $$ 
 BEGIN
     IF EXISTS (
@@ -17,6 +26,6 @@ BEGIN
     END IF;
 END $$;
 
--- Add constraint to ensure status transitions are valid
-ALTER TABLE projects ADD CONSTRAINT check_project_status 
-  CHECK (status IN ('pending', 'open', 'in_progress', 'completed', 'cancelled', 'deleted'));
+-- Add comments for documentation
+COMMENT ON COLUMN projects.freelancer_id IS 'Reference to the freelancer assigned to this project';
+COMMENT ON COLUMN projects.escrow_address IS 'Stellar blockchain escrow account address for this project';

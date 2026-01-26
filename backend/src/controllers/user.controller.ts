@@ -6,7 +6,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "@/types/auth.types";
 import { userService } from "@/services/user.service";
-import { AppError, MissingFieldsError, NotFoundError, ValidationError, BadRequestError, mapSupabaseError } from "@/utils/AppError";
+import { AppError, MissingFieldsError, NotFoundError, ValidationError, BadRequestError, mapSupabaseError, UnauthorizedError } from "@/utils/AppError";
 import { UserFilters } from "@/types/user.types";
 import { buildSuccessResponse, buildPaginatedResponse } from '../utils/responseBuilder';
 import {
@@ -226,6 +226,114 @@ export const updateAvatarHandler = async (
     next(error);
   }
 };
+
+
+
+
+
+export const updateProfileHandler = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedError("User ID not found in token");
+    }
+
+    const { username, avatar_url } = req.body;
+
+    if (username === undefined && avatar_url === undefined) {
+      throw new ValidationError("At least one field (username or avatar_url) must be provided");
+    }
+
+    const errors: Array<{ field: string; message: string }> = [];
+
+
+    if (username !== undefined) {
+      if (typeof username !== 'string') {
+        errors.push({
+          field: 'username',
+          message: 'Username must be a string'
+        });
+      } else {
+
+        if (username.length < 3 || username.length > 100) {
+          errors.push({
+            field: 'username',
+            message: 'Username must be between 3 and 100 characters'
+          });
+        }
+
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        if (!usernameRegex.test(username)) {
+          errors.push({
+            field: 'username',
+            message: 'Username can only contain letters, numbers, and underscores'
+          });
+        }
+      }
+    }
+
+
+    if (avatar_url !== undefined && avatar_url !== null && avatar_url !== '') {
+      if (typeof avatar_url !== 'string') {
+        errors.push({
+          field: 'avatar_url',
+          message: 'Avatar URL must be a string'
+        });
+      } else {
+
+        try {
+          const url = new URL(avatar_url);
+          if (!['http:', 'https:'].includes(url.protocol)) {
+            errors.push({
+              field: 'avatar_url',
+              message: 'Avatar URL must use HTTP or HTTPS protocol'
+            });
+          }
+        } catch (error) {
+          errors.push({
+            field: 'avatar_url',
+            message: 'Invalid URL format'
+          });
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new ValidationError('The provided data is invalid', errors.map(err => ({
+        field: err.field,
+        value: err.field,
+        reason: err.message,
+        code: 'INVALID_FIELD'
+      })));
+    }
+
+
+    const avatarUrlValue = avatar_url === '' ? null : avatar_url;
+
+
+    const updatedUser = await userService.updateProfile(userId, {
+      username,
+      avatar_url: avatarUrlValue
+    });
+
+    res.status(200).json(
+      buildSuccessResponse(updatedUser, "Profile updated successfully")
+    );
+  } catch (error: any) {
+
+    if (error.code && error.message) {
+      return next(mapSupabaseError(error));
+    }
+
+    next(error);
+  }
+};
+
 
 /**
  * Delete own account handler (soft-delete)

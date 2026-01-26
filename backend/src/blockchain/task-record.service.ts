@@ -44,10 +44,11 @@ export class TaskRecordService {
     this.contractAddress =
       process.env.CONTRACT_ADDRESS ||
       "CDZXIUP53QYH23AZSQZIDMQKD7QPDLTJMISC3X6NNT4BUUMQ4UC4UYZ7";
-    const adminSecret =
+    const adminSecret = (
       process.env.SECRET ||
       process.env.STELLAR_ADMIN_SECRET_KEY ||
-      "SAO2XTN656P3TGVGQFUMYVH4DYT44EEQW6L2ITWXVNMAHXIUP6H4DQRZ";
+      "SAO2XTN656P3TGVGQFUMYVH4DYT44EEQW6L2ITWXVNMAHXIUP6H4DQRZ"
+    ).trim();
     this.rpcUrl = this.rpcUrl =
       process.env.SOROBAN_RPC_URL || "https://soroban-testnet.stellar.org";
 
@@ -64,8 +65,27 @@ export class TaskRecordService {
       throw new Error("TASK_RECORD_CONTRACT_ADDRESS missing");
     }
 
-    this.adminKeypair = Keypair.fromSecret(adminSecret);
+    try {
+      // Validate key format
+      if (adminSecret.length !== 56 || !adminSecret.startsWith("S")) {
+        console.error("❌ Invalid admin secret key format");
+        console.error("   Length:", adminSecret.length, "(expected: 56)");
+        console.error("   Starts with:", adminSecret[0], "(expected: S)");
+        throw new Error("Invalid Stellar admin secret key format");
+      }
 
+      this.adminKeypair = Keypair.fromSecret(adminSecret);
+    } catch (error: any) {
+      console.error("❌ Failed to create Keypair from admin secret");
+      console.error("   Error:", error.message);
+      console.error(
+        "   Key preview:",
+        adminSecret.substring(0, 5) +
+          "..." +
+          adminSecret.substring(adminSecret.length - 5),
+      );
+      throw error;
+    }
     this.server = new rpc.Server(this.rpcUrl);
 
     this.contract = new Contract(this.contractAddress);
@@ -335,7 +355,7 @@ export class TaskRecordService {
       taskData.project_id,
       taskData.freelancer_id,
       taskData.client_id,
-      taskData.completed
+      taskData.completed,
     );
   }
 
