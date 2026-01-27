@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
   },
   turbopack: {
     resolveAlias: process.env.NODE_ENV === 'production' ? {
-      '@/__mocks__': false,
+      '@/__mocks__': './src/__mocks__',
     } : undefined,
   },
   async rewrites() {

@@ -7,7 +7,8 @@ import {
     Wallet,
     MessageSquare,
     LogOut,
-    Star
+    Star,
+    Briefcase
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,9 +21,9 @@ const navigationItems = [
         href: "/onboarding/dashboard",
     },
     {
-        title: "Marketplace",
-        icon: Search,
-        href: "/marketplace",
+        title: "Browse Projects",
+        icon: Briefcase,
+        href: "/projects",
     },
     {
         title: "Task History",

@@ -68,7 +68,7 @@ export class BalanceService {
       }
 
       // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock the row, update balance, 
+      // We rely on a database function to lock the row, update balance,
       // AND insert the log in one go.
       const { data, error } = await supabase.rpc('credit_available_balance', {
         p_user_id: userId,
@@ -150,7 +150,7 @@ export class BalanceService {
       }
 
       // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock both rows, update balances, 
+      // We rely on a database function to lock both rows, update balances,
       // AND insert the transaction logs in one go.
       const { data, error } = await supabase.rpc('settle_balance', {
         p_from_user_id: fromUserId,
@@ -336,7 +336,7 @@ export class BalanceService {
 
         // Check if error is about insufficient funds
         if (error.message && (
-          error.message.includes('Insufficient funds') ||
+          error.message.toLowerCase().includes('insufficient') ||
           error.message.includes('no balance record')
         )) {
           throw new InsufficientFundsError(
@@ -388,7 +388,7 @@ export class BalanceService {
     userId: string,
     amount: number,
     currency: string,
-    reference: { id: string; type: 'withdrawal' | 'escrow' },
+    reference: HoldReference,
     description?: string
   ): Promise<Balance> {
     const correlationId = crypto.randomUUID();
@@ -429,7 +429,7 @@ export class BalanceService {
         logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
 
         if (error.message && (
-          error.message.includes('Insufficient funds') ||
+          error.message.toLowerCase().includes('insufficient') ||
           error.message.includes('no balance record')
         )) {
           throw new InsufficientFundsError(
@@ -609,101 +609,6 @@ export class BalanceService {
     }
   }
 
-  /**
-   * Moves funds from available balance to held balance.
-   * Used when a client initiates a contract and funds need to be held in escrow.
-   * @param userId - The user whose funds will be held
-   * @param amount - Amount to hold (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Reference to the contract or escrow
-   * @param description - Optional description
-   * @returns Updated Balance object
-   */
-  async holdBalance(
-    userId: string,
-    amount: number,
-    currency: string,
-    reference: HoldReference,
-    description?: string
-  ): Promise<Balance> {
-    const correlationId = crypto.randomUUID();
-
-    try {
-      logger.info(
-        `[BalanceService] Starting holdBalance ${correlationId} - User: ${userId}, Amount: ${amount} ${currency}`
-      );
-
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
-      }
-
-      if (amount <= 0) {
-        throw new ValidationError("Amount must be positive");
-      }
-
-      if (!SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported`);
-      }
-
-      if (!reference.id || !reference.type) {
-        throw new ValidationError("Invalid reference data");
-      }
-
-      // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock the row, validate available funds,
-      // move funds from available to held, AND insert the log in one go.
-      const { data, error } = await supabase.rpc('hold_balance', {
-        p_user_id: userId,
-        p_amount: amount,
-        p_currency: currency,
-        p_ref_id: reference.id,
-        p_ref_type: reference.type,
-        p_description: description || ''
-      });
-
-      if (error) {
-        logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
-
-        // Check if error is about insufficient funds
-        if (error.message && (
-          error.message.includes('Insufficient available balance') ||
-          error.message.includes('no balance record')
-        )) {
-          throw new InsufficientFundsError(
-            error.message,
-            {
-              userId,
-              currency,
-              requestedAmount: amount,
-              correlationId
-            }
-          );
-        }
-
-        throw new InternalServerError(`Balance hold failed: ${error.message}`);
-      }
-
-      if (!data) {
-        throw new InternalServerError("Balance update failed: No data returned");
-      }
-
-      logger.info(`[BalanceService] Success ${correlationId} - Available: ${data.available}, Held: ${data.held}`);
-
-      return data as Balance;
-
-    } catch (err: any) {
-      if (
-        err instanceof ValidationError ||
-        err instanceof BadRequestError ||
-        err instanceof InternalServerError ||
-        err instanceof InsufficientFundsError
-      ) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
-    }
-  }
 
   /**
    * Moves funds from held balance back to available balance.
