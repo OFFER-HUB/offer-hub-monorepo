@@ -3,7 +3,7 @@ import Compressor from 'compressorjs';
 export async function compressImage(file: File, quality = 0.7, maxWidth = 2560, maxHeight = 2560): Promise<File> {
   if (!file.type.startsWith('image/')) return file;
   return new Promise((resolve, reject) => {
-    // eslint-disable-next-line no-new
+     
     new Compressor(file, {
       quality,
       maxWidth,

@@ -23,7 +23,7 @@
   "type": "commonjs",
   "dependencies": {
     "@stellar/stellar-sdk": "^13.0.0",
-    "@supabase/supabase-js": "^2.51.0",
+    "@supabase/supabase-js": "^2.91.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -52,6 +52,7 @@
     "systeminformation": "^5.27.9",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
+    "ua-parser-js": "^2.0.8",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^4.3.5"
@@ -66,6 +67,7 @@
     "@eslint/js": "^9.34.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/supertest": "^6.0.3",
+    "@types/ua-parser-js": "^0.7.39",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",

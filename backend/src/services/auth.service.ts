@@ -30,6 +30,7 @@ import {
 } from "@/utils/AppError";
 import { randomBytes } from "crypto";
 import { sanitizeUser } from "@/utils/sanitizeUser";
+import { hashIP, parseDeviceInfo } from "@/utils/auth.utils";
 import bcrypt from "bcryptjs";
 // import { v4 as uuidv4 } from "uuid";
 const uuidv4 = () => require("crypto").randomUUID();
@@ -183,6 +184,11 @@ export async function register(data: RegisterDTO, deviceInfo: DeviceInfo) {
           token_hash: tokenHashBytes,
           expires_at: refreshTokenExpiry.toISOString(),
           device_info: deviceInfo,
+          user_agent: deviceInfo.user_agent,
+          ip_hash: deviceInfo.ip_hash,
+          device_type: deviceInfo.type,
+          browser: deviceInfo.browser,
+          os: deviceInfo.os,
         },
       ]);
 
@@ -393,6 +399,11 @@ export async function registerWithEmail(
           token_hash: refreshTokenHash,
           expires_at: expiresAt.toISOString(),
           device_info: deviceInfo,
+          user_agent: deviceInfo.user_agent,
+          ip_hash: deviceInfo.ip_hash,
+          device_type: deviceInfo.type,
+          browser: deviceInfo.browser,
+          os: deviceInfo.os,
         },
       ]);
 
@@ -579,6 +590,11 @@ export async function registerWithWallet(
           token_hash: refreshTokenHash,
           expires_at: expiresAt.toISOString(),
           device_info: deviceInfo,
+          user_agent: deviceInfo.user_agent,
+          ip_hash: deviceInfo.ip_hash,
+          device_type: deviceInfo.type,
+          browser: deviceInfo.browser,
+          os: deviceInfo.os,
         },
       ]);
 
@@ -658,6 +674,11 @@ export async function login(data: LoginDTO, deviceInfo?: DeviceInfo) {
         token_hash: refreshTokenHash,
         expires_at: expiresAt.toISOString(),
         device_info: deviceInfo || {},
+        user_agent: deviceInfo?.user_agent,
+        ip_hash: deviceInfo?.ip_hash,
+        device_type: deviceInfo?.type,
+        browser: deviceInfo?.browser,
+        os: deviceInfo?.os,
       },
     ]);
 
@@ -717,6 +738,11 @@ export async function refreshSession(tokenRecord: RefreshTokenRecord) {
         expires_at: refreshTokenExpiry.toISOString(),
         is_revoked: false,
         device_info: tokenRecord.device_info,
+        user_agent: tokenRecord.user_agent,
+        ip_hash: tokenRecord.ip_hash,
+        device_type: tokenRecord.device_type,
+        browser: tokenRecord.browser,
+        os: tokenRecord.os,
       },
     ])
     .select("id")
@@ -732,6 +758,7 @@ export async function refreshSession(tokenRecord: RefreshTokenRecord) {
     .from("refresh_tokens")
     .update({
       replaced_by_token_id: newTokenRecord.id,
+      last_used_at: new Date().toISOString(),
     })
     .eq("id", tokenRecord.id)
     .eq("user_id", user.id);
@@ -1017,18 +1044,19 @@ export async function getUserSessions(
       return {
         id: session.id,
         device_info: {
-          browser: deviceInfo?.browser || "Unknown",
-          os: deviceInfo?.os || "Unknown",
-          device: deviceInfo?.type || "Unknown",
+          browser: session.browser || deviceInfo?.browser || "Unknown",
+          os: session.os || deviceInfo?.os || "Unknown",
+          device: session.device_type || deviceInfo?.type || "Unknown",
         },
-        ip_hash: deviceInfo?.ip_address
-          ? createHash("sha256")
-              .update(deviceInfo.ip_address)
-              .digest("hex")
-              .substring(0, 10) + "..."
-          : null,
+        user_agent: session.user_agent || deviceInfo?.user_agent || "Unknown",
+        ip_hash: session.ip_hash ||
+          (deviceInfo?.ip_address
+            ? createHash("sha256")
+                .update(deviceInfo.ip_address)
+                .digest("hex")
+            : null),
         created_at: session.created_at,
-        last_used_at: session.last_activity_at || session.created_at, // Refresh tokens don't track last use natively unless updated
+        last_used_at: session.last_used_at || session.created_at,
         expires_at: session.expires_at,
         is_current: is_current,
       };

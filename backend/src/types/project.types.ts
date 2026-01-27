@@ -79,9 +79,11 @@ export interface ProjectFilters {
   limit?: number;
   search?: string;
   category?: string;
-  status?: ProjectStatus;
+  status?: string;
   clientId?: string;
   freelancerId?: string;
+  minBudget?: number;
+  maxBudget?: number;
 }
 
 /**
@@ -106,4 +108,9 @@ export interface ProjectRow {
 
 export interface ProjectSkillRow {
   skill_name: string;
+  status?: string;
+  client_id?: string;
+  minBudget?: number;
+  maxBudget?: number;
+
 }

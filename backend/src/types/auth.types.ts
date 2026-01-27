@@ -643,6 +643,12 @@ export interface RefreshTokenRecord {
   token_hash?: string; // For backward compatibility
   created_at?: Date; // For backward compatibility
   device_info?: any; // JSONB
+  user_agent?: string;
+  ip_hash?: string;
+  last_used_at?: Date;
+  device_type?: string;
+  browser?: string;
+  os?: string;
 }
 
 export interface AuditLogEntry {
@@ -663,6 +669,8 @@ export interface DeviceInfo {
   version?: string;
   ip_address?: string; // For backward compatibility
   user_agent?: string; // For backward compatibility
+  ip_hash?: string;
+  last_used_at?: Date;
 }
 
 export interface JWTPayload {
