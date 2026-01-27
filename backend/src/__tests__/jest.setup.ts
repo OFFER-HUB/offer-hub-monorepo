@@ -14,6 +14,14 @@ declare global {
 // Load test environment variables
 config({ path: '.env.test' });
 
+if (!process.env.SUPABASE_URL) {
+    process.env.SUPABASE_URL = 'http://localhost:54321';
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+}
+
 // Set test environment
 process.env.NODE_ENV = 'test';
 

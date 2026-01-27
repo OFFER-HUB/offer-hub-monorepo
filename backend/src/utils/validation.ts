@@ -348,13 +348,13 @@ export const CONTRACT_CREATION_SCHEMA: Record<string, ValidationRule> = {
 };
 
 // Avatar URL validation
-export const AVATAR_IMAGE_EXTENSIONS = [
+export const AVATAR_IMAGE_EXTENSIONS = Object.freeze([
   ".jpg",
   ".jpeg",
   ".png",
   ".gif",
   ".webp",
-] as const;
+]) as readonly string[];
 export const AVATAR_URL_REGEX = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
 export const validateAvatarUrl = (url: string): boolean => {
@@ -362,12 +362,21 @@ export const validateAvatarUrl = (url: string): boolean => {
 
   const trimmedUrl = url.trim();
 
-  // Check if it's a valid URL format
+  // Check basic URL format
   if (!AVATAR_URL_REGEX.test(trimmedUrl)) return false;
 
-  // Check if URL ends with allowed image extensions
-  const urlLower = trimmedUrl.toLowerCase();
-  return AVATAR_IMAGE_EXTENSIONS.some((ext) => urlLower.endsWith(ext));
+  try {
+    const parsed = new URL(trimmedUrl);
+
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+
+    const pathnameLower = parsed.pathname.toLowerCase();
+    return AVATAR_IMAGE_EXTENSIONS.some((ext) => pathnameLower.endsWith(ext));
+  } catch {
+    return false;
+  }
 };
 
 // Profile validation schema - all fields optional for updates

@@ -373,6 +373,41 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function logoutV1(req: Request, res: Response, next: NextFunction) {
+  try {
+    const logoutAll = Boolean((req.body as any)?.logout_all);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    if (logoutAll) {
+      await authService.logoutAllUserSessions(userId);
+    } else {
+      const refreshTokenFromCookie = (req as any).cookies?.refreshToken;
+
+      if (refreshTokenFromCookie) {
+        await authService.logoutByRefreshToken(userId, refreshTokenFromCookie);
+      } else {
+        const ip = req.ip || req.connection.remoteAddress || "unknown";
+        const userAgent = req.get("User-Agent") || "unknown";
+        await authService.logoutCurrentSession(userId, ip, userAgent);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /**
  * Register new user with email and password
  * Automatically generates an invisible wallet

@@ -27,6 +27,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRoutes from "@/routes/user.routes";
 import authRoutes from "@/routes/auth.routes";
+ import authV1Routes from "@/routes/auth.v1.routes";
 import oauthRoutes from "@/routes/oauth.routes";
 import escrowInitRoutes from "@/routes/escrow-init.routes";
 import escrowBalanceRoutes from "@/routes/escrow-balance.routes";
@@ -100,6 +101,7 @@ app.get("/", (_req, res) => {
 
 // API Routes
 app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/v1/auth", authLimiter, authV1Routes);
 app.use("/api/oauth", oauthRoutes);
 app.use("/api/escrows", authenticateToken(), escrowInitRoutes);
 app.use("/api/escrows", authenticateToken(), escrowBalanceRoutes);
