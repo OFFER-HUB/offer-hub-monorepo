@@ -6,7 +6,7 @@ import { WithdrawalStatus } from "@/types/withdrawal.types";
 import { AppError } from "@/utils/AppError";
 
 export class WithdrawalStateMachine {
-    private static readonly transitions: Record<WithdrawalStatus, WithdrawalStatus[]> = {
+    private static readonly transitions: Partial<Record<WithdrawalStatus, WithdrawalStatus[]>> = {
         [WithdrawalStatus.PENDING]: [WithdrawalStatus.PROCESSING, WithdrawalStatus.CANCELLED, WithdrawalStatus.WITHDRAWAL_FAILED, WithdrawalStatus.FAILED],
         [WithdrawalStatus.PROCESSING]: [WithdrawalStatus.COMMITTED, WithdrawalStatus.WITHDRAWAL_FAILED, WithdrawalStatus.FAILED],
         [WithdrawalStatus.COMMITTED]: [],

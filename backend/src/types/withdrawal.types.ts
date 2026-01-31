@@ -1,77 +1,104 @@
 /**
- * @fileoverview Withdrawal types and enums
+ * Withdrawal types for the Offer-Hub platform
+ * Includes Airtm webhook integration and state management
  */
 
-/**
- * Withdrawal status enum representing the lifecycle of a withdrawal
- */
 export enum WithdrawalStatus {
-    // Initiation flow (from main)
-    CREATED = 'CREATED',
-    WITHDRAWAL_CREATED = 'WITHDRAWAL_CREATED',
-    PENDING_VERIFICATION = 'PENDING_VERIFICATION',
-    WITHDRAWAL_PENDING_VERIFICATION = 'WITHDRAWAL_PENDING_VERIFICATION',
-    FAILED = 'FAILED',
-    WITHDRAWAL_FAILED = 'WITHDRAWAL_FAILED',
-    WITHDRAWAL_CANCELED = 'WITHDRAWAL_CANCELED',
-    WITHDRAWAL_REFUNDED = 'WITHDRAWAL_REFUNDED',
-    WITHDRAWAL_COMPLETED = 'WITHDRAWAL_COMPLETED',
+  // Processing flow
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMMITTED = 'COMMITTED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 
-    // Processing flow (Issue #958)
-    PENDING = 'PENDING',
-    PROCESSING = 'PROCESSING',
-    COMMITTED = 'COMMITTED',
-    CANCELLED = 'CANCELLED',
+  // Initiation flow
+  CREATED = 'CREATED',
+  PENDING_VERIFICATION = 'PENDING_VERIFICATION',
+  WITHDRAWAL_CREATED = 'WITHDRAWAL_CREATED',
+  WITHDRAWAL_PENDING_VERIFICATION = 'WITHDRAWAL_PENDING_VERIFICATION',
+
+  // Outcome flow
+  WITHDRAWAL_SUCCEEDED = 'WITHDRAWAL_SUCCEEDED',
+  WITHDRAWAL_FAILED = 'WITHDRAWAL_FAILED',
+  WITHDRAWAL_CANCELED = 'WITHDRAWAL_CANCELED',
+  WITHDRAWAL_COMPLETED = 'WITHDRAWAL_COMPLETED',
+  WITHDRAWAL_REFUNDED = 'WITHDRAWAL_REFUNDED',
+
+  // Refund flow
+  REFUNDING = 'REFUNDING',
+  REFUNDED = 'REFUNDED',
 }
 
-/**
- * Withdrawal record interface matching database schema
- */
+export enum WithdrawalEvent {
+  SUBMIT = 'SUBMIT',
+  PROCESS = 'PROCESS',
+  SUCCESS = 'SUCCESS',
+  FAIL = 'FAIL',
+  REFUND = 'REFUND',
+  REFUND_COMPLETE = 'REFUND_COMPLETE',
+}
+
 export interface Withdrawal {
-    id: string;
-    user_id: string;
+  id: string;
+  user_id: string;
+  amount: number;
+  currency: string;
+  status: WithdrawalStatus;
+  destination_email?: string | null;
+  airtm_reference_id: string | null;
+  airtm_transaction_id: string | null;
+  external_payout_id?: string | null;
+  webhook_processed_at: string | null;
+  webhook_event_id: string | null;
+  failure_reason: string | null;
+  cancellation_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WithdrawalAuditLog {
+  id: string;
+  withdrawal_id: string;
+  event_type: string;
+  previous_status: WithdrawalStatus | null;
+  new_status: WithdrawalStatus;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface AirtmWebhookPayload {
+  event: 'payout.success' | 'payout.failed' | 'payout.cancelled';
+  data: {
+    reference_id: string;
+    transaction_id: string;
+    status: 'completed' | 'failed' | 'cancelled';
     amount: number;
     currency: string;
-    status: WithdrawalStatus;
-    external_payout_id?: string;
-    destination_email?: string;
-    cancellation_reason?: string;
-    created_at: string;
-    updated_at: string;
+    failure_reason?: string;
+    completed_at?: string;
+    failed_at?: string;
+  };
+  signature: string;
+  timestamp: string;
+  event_id: string;
 }
 
-/**
- * Audit log entry for withdrawal process
- */
-export interface WithdrawalAuditLog {
-    id: string;
-    withdrawal_id: string;
-    from_status: WithdrawalStatus;
-    to_status: WithdrawalStatus;
-    created_at: string;
-    metadata?: any;
+export interface WebhookProcessingResult {
+  success: boolean;
+  withdrawalId: string;
+  previousStatus: WithdrawalStatus;
+  newStatus: WithdrawalStatus;
+  isDuplicate: boolean;
 }
 
-/**
- * State transition type for withdrawal state machine
- */
-export interface WithdrawalStateTransition {
-    from: WithdrawalStatus;
-    to: WithdrawalStatus;
-    allowed: boolean;
+export interface BalanceService {
+  debitAvailable(userId: string, amount: number, referenceId: string): Promise<void>;
+  releaseHold(userId: string, holdId: string): Promise<void>;
+  initiateRefund(userId: string, amount: number, withdrawalId: string): Promise<void>;
 }
 
-/**
- * Cancel withdrawal parameters
- */
-export interface CancelWithdrawalParams {
-    withdrawalId: string;
-    reason?: string;
-}
-
-/**
- * Refund withdrawal parameters
- */
-export interface RefundWithdrawalParams {
-    withdrawalId: string;
+export interface WithdrawalStateMachine {
+  canTransition(currentStatus: WithdrawalStatus, event: WithdrawalEvent): boolean;
+  getNextStatus(currentStatus: WithdrawalStatus, event: WithdrawalEvent): WithdrawalStatus;
+  validateTransition(currentStatus: WithdrawalStatus, event: WithdrawalEvent): void;
 }

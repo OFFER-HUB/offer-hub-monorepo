@@ -44,6 +44,6 @@ export interface UserInfo {
 }
 
 export interface ContractWithUsers extends Contract {
-  freelancer?: UserInfo | UserInfo[];
-  client?: UserInfo | UserInfo[];
+  freelancer?: UserInfo | null;
+  client?: UserInfo | null;
 }

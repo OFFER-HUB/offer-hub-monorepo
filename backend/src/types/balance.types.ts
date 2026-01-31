@@ -33,7 +33,7 @@ export interface HoldReference {
 
 export interface ReleaseReference {
   id: string;
-  type: 'contract' | 'escrow' | 'withdrawal';
+  type: 'contract' | 'escrow' | 'withdrawal' | 'withdrawal_cancel' | 'withdrawal_refund';
 }
 
 export interface BalanceTransaction {

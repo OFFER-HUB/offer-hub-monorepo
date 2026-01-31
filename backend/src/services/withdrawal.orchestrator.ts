@@ -57,8 +57,13 @@ export class WithdrawalOrchestrator {
             }
 
             // 2. Check Sufficient Balance (Preliminary check)
-            const balances = await balanceService.getUserBalances(userId, currency);
-            const userBalance = balances.find(b => b.currency === currency);
+            const balances = (await balanceService.getUserBalances(
+                userId,
+                currency
+            )) as Array<{ currency: string; available: number | string }>;
+            const userBalance = balances.find(
+                (balance) => balance.currency === currency
+            );
             const available = userBalance ? Number(userBalance.available) : 0;
 
             if (available < amount) {

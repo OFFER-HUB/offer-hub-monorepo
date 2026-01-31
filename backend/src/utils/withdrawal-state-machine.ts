@@ -13,7 +13,7 @@ export class WithdrawalStateMachine {
    * Map of valid state transitions
    * Each status maps to an array of valid next statuses
    */
-  private static readonly VALID_TRANSITIONS: Record<WithdrawalStatus, WithdrawalStatus[]> = {
+  private static readonly VALID_TRANSITIONS: Partial<Record<WithdrawalStatus, WithdrawalStatus[]>> = {
     // Initiation flow
     [WithdrawalStatus.CREATED]: [
       WithdrawalStatus.PENDING_VERIFICATION,

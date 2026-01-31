@@ -4,9 +4,51 @@ import {
   UpdateContractDTO,
   Contract,
   ContractWithUsers,
+  UserInfo,
 } from "@/types/contract.types";
 import { UUID_REGEX } from "@/utils/validation";
 import { MissingFieldsError ,ValidationError,ForbiddenError,NotFoundError,InternalServerError, BadRequestError} from "@/utils/AppError";
+
+type ContractWithUsersRow = Omit<ContractWithUsers, "freelancer" | "client"> & {
+  freelancer: UserInfo | UserInfo[] | null;
+  client: UserInfo | UserInfo[] | null;
+};
+
+const normalizeContractWithUsers = (
+  contract: ContractWithUsersRow
+): ContractWithUsers => {
+  const freelancer = Array.isArray(contract.freelancer)
+    ? contract.freelancer[0]
+    : contract.freelancer;
+  const client = Array.isArray(contract.client)
+    ? contract.client[0]
+    : contract.client;
+
+  return {
+    id: contract.id,
+    contract_type: contract.contract_type,
+    project_id: contract.project_id,
+    service_request_id: contract.service_request_id,
+    freelancer_id: contract.freelancer_id,
+    client_id: contract.client_id,
+    contract_on_chain_id: contract.contract_on_chain_id,
+    escrow_status: contract.escrow_status,
+    amount_locked: contract.amount_locked,
+    created_at: contract.created_at,
+    freelancer: {
+      id: freelancer?.id ?? contract.freelancer_id,
+      name: freelancer?.name,
+      username: freelancer?.username,
+      email: freelancer?.email,
+    },
+    client: {
+      id: client?.id ?? contract.client_id,
+      name: client?.name,
+      username: client?.username,
+      email: client?.email,
+    },
+  };
+};
 class ContractService {
   async createContract(contractData: CreateContractDTO): Promise<Contract> {
     const {
@@ -302,40 +344,9 @@ class ContractService {
     }
 
     // Transform the data to include user info
-    // Supabase returns arrays for joined relations, so we need to type it as any first
-    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map((contract: any) => {
-      const freelancer = Array.isArray(contract.freelancer)
-        ? contract.freelancer[0]
-        : contract.freelancer;
-      const client = Array.isArray(contract.client)
-        ? contract.client[0]
-        : contract.client;
-
-      return {
-        id: contract.id,
-        contract_type: contract.contract_type,
-        project_id: contract.project_id,
-        service_request_id: contract.service_request_id,
-        freelancer_id: contract.freelancer_id,
-        client_id: contract.client_id,
-        contract_on_chain_id: contract.contract_on_chain_id,
-        escrow_status: contract.escrow_status,
-        amount_locked: contract.amount_locked,
-        created_at: contract.created_at,
-        freelancer: {
-          id: freelancer?.id,
-          name: freelancer?.name,
-          username: freelancer?.username,
-          email: freelancer?.email,
-        },
-        client: {
-          id: client?.id,
-          name: client?.name,
-          username: client?.username,
-          email: client?.email,
-        },
-      };
-    });
+    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map(
+      (contract: ContractWithUsersRow) => normalizeContractWithUsers(contract)
+    );
 
     return contractsWithUsers;
   }
@@ -377,40 +388,9 @@ class ContractService {
     }
 
     // Transform the data to include user info
-    // Supabase returns arrays for joined relations, so we need to type it as any first
-    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map((contract: any) => {
-      const freelancer = Array.isArray(contract.freelancer)
-        ? contract.freelancer[0]
-        : contract.freelancer;
-      const client = Array.isArray(contract.client)
-        ? contract.client[0]
-        : contract.client;
-
-      return {
-        id: contract.id,
-        contract_type: contract.contract_type,
-        project_id: contract.project_id,
-        service_request_id: contract.service_request_id,
-        freelancer_id: contract.freelancer_id,
-        client_id: contract.client_id,
-        contract_on_chain_id: contract.contract_on_chain_id,
-        escrow_status: contract.escrow_status,
-        amount_locked: contract.amount_locked,
-        created_at: contract.created_at,
-        freelancer: {
-          id: freelancer?.id,
-          name: freelancer?.name,
-          username: freelancer?.username,
-          email: freelancer?.email,
-        },
-        client: {
-          id: client?.id,
-          name: client?.name,
-          username: client?.username,
-          email: client?.email,
-        },
-      };
-    });
+    const contractsWithUsers: ContractWithUsers[] = (contracts || []).map(
+      (contract: ContractWithUsersRow) => normalizeContractWithUsers(contract)
+    );
 
     return contractsWithUsers;
   }

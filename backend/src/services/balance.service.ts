@@ -1,19 +1,7 @@
-/**
- * @fileoverview Balance Service for managing user funds
- */
-
-import { supabase } from "../lib/supabase/supabase";
-import {
-  InternalServerError,
-  ValidationError,
-  BadRequestError,
-  BusinessLogicError,
-  InsufficientFundsError
-} from "../utils/AppError";
-import { validateUUID } from "../utils/validation";
+import { supabase } from '@/lib/supabase/supabase';
 import {
   Balance,
-  Currency,
+  BalanceTransaction,
   CreditReference,
   DebitReference,
   HoldReference,
@@ -21,689 +9,540 @@ import {
   SUPPORTED_CURRENCIES,
   TransactionFilters,
   TransactionHistoryResult,
-  TRANSACTION_TYPES,
-  TransactionType
-} from "../types/balance.types";
-import { logger } from "../utils/logger";
+} from '@/types/balance.types';
+import { BalanceService as IBalanceService } from '@/types/withdrawal.types';
+import { logger } from '@/utils/logger';
+import { validateUUID } from '@/utils/validation';
+import {
+  BadRequestError,
+  BusinessLogicError,
+  InternalServerError,
+  NotFoundError,
+  InsufficientFundsError,
+  ValidationError,
+} from '@/utils/AppError';
 
-export class BalanceService {
+/**
+ * Balance Service
+ * Manages user balances, holds, debits, and refunds
+ */
+export class BalanceService implements IBalanceService {
+  private assertValidUserId(userId: string): void {
+    if (!validateUUID(userId)) {
+      throw new BadRequestError('Invalid user ID format');
+    }
+  }
+
+  private assertValidAmount(amount: number): void {
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new ValidationError('Amount must be greater than 0');
+    }
+  }
+
+  private assertValidCurrency(currency: string): void {
+    if (!SUPPORTED_CURRENCIES.includes(currency as any)) {
+      throw new ValidationError(`Unsupported currency: ${currency}`);
+    }
+  }
+
+  private assertValidReference(reference: { id: string; type: string }): void {
+    if (!reference?.id || !reference?.type) {
+      throw new ValidationError('Invalid reference');
+    }
+  }
+
   /**
-   * Adds funds to a user's available balance.
-   * * @param userId - The user to credit
-   * @param amount - Amount to credit (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Source of the credit
-   * @param description - Optional description
-   * @returns Updated Balance object
+   * Credit available balance
    */
   async creditAvailable(
     userId: string,
     amount: number,
     currency: string,
     reference: CreditReference,
-    description?: string
+    description = ''
   ): Promise<Balance> {
-    const correlationId = crypto.randomUUID();
+    this.assertValidUserId(userId);
+    this.assertValidAmount(amount);
+    this.assertValidCurrency(currency);
+    this.assertValidReference(reference);
 
-    try {
-      logger.info(
-        `[BalanceService] Starting creditAvailable ${correlationId} - User: ${userId}, Amount: ${amount} ${currency}`
-      );
+    const { data, error } = await supabase.rpc('credit_available_balance', {
+      p_user_id: userId,
+      p_amount: amount,
+      p_currency: currency,
+      p_ref_id: reference.id,
+      p_ref_type: reference.type,
+      p_description: description,
+    });
 
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
-      }
-
-      if (amount <= 0) {
-        throw new ValidationError("Amount must be positive");
-      }
-
-      if (!SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported`);
-      }
-
-      if (!reference.id || !reference.type) {
-        throw new ValidationError("Invalid reference data");
-      }
-
-      // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock the row, update balance,
-      // AND insert the log in one go.
-      const { data, error } = await supabase.rpc('credit_available_balance', {
-        p_user_id: userId,
-        p_amount: amount,
-        p_currency: currency,
-        p_ref_id: reference.id,
-        p_ref_type: reference.type,
-        p_description: description || ''
-      });
-
-      if (error) {
-        logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
-        throw new InternalServerError(`Balance credit failed: ${error.message}`);
-      }
-
-      if (!data) {
-        throw new InternalServerError("Balance update failed: No data returned");
-      }
-
-      logger.info(`[BalanceService] Success ${correlationId} - New Balance: ${data.available}`);
-
-      return data as Balance;
-
-    } catch (err: any) {
-      if (err instanceof ValidationError || err instanceof BadRequestError || err instanceof InternalServerError) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
+    if (error) {
+      logger.error('[BalanceService] creditAvailable error', error);
+      throw new InternalServerError('Failed to credit balance', error);
     }
+
+    return data as Balance;
   }
 
   /**
-   * Transfers held funds from one user to another's available balance.
-   * Used when a contract is completed successfully.
-   * @param fromUserId - The user to transfer funds from (client)
-   * @param toUserId - The user to transfer funds to (freelancer)
-   * @param amount - Amount to transfer (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Reference to the contract
-   * @returns Object containing both updated balance objects
+   * Get user balances
+   */
+  async getUserBalances(
+    userId: string,
+    currency?: string
+  ): Promise<Array<{ currency: string; available: string; held: string; total: string }>> {
+    this.assertValidUserId(userId);
+    if (currency) {
+      this.assertValidCurrency(currency);
+    }
+
+    let query = supabase
+      .from('balances')
+      .select('currency, available, held')
+      .eq('user_id', userId);
+
+    if (currency) {
+      query = query.eq('currency', currency);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new InternalServerError('Failed to fetch balances', error);
+    }
+
+    const balances = (data || []) as Array<{ currency: string; available: number; held: number }>;
+    return balances.map((balance) => {
+      const available = Number(balance.available || 0);
+      const held = Number(balance.held || 0);
+      return {
+        currency: balance.currency,
+        available: available.toFixed(2),
+        held: held.toFixed(2),
+        total: (available + held).toFixed(2),
+      };
+    });
+  }
+
+  /**
+   * Settle balance between two users
    */
   async settleBalance(
     fromUserId: string,
     toUserId: string,
     amount: number,
     currency: string,
-    reference: { id: string; type: 'contract' }
+    reference: HoldReference,
+    description = ''
   ): Promise<{ fromBalance: Balance; toBalance: Balance }> {
-    const correlationId = crypto.randomUUID();
+    this.assertValidUserId(fromUserId);
+    this.assertValidUserId(toUserId);
+    this.assertValidAmount(amount);
+    this.assertValidCurrency(currency);
+    this.assertValidReference(reference);
 
-    try {
-      logger.info(
-        `[BalanceService] Starting settleBalance ${correlationId} - From: ${fromUserId}, To: ${toUserId}, Amount: ${amount} ${currency}`
-      );
-
-      // 1. Validation
-      if (!validateUUID(fromUserId)) {
-        throw new BadRequestError("Invalid fromUser ID format");
-      }
-
-      if (!validateUUID(toUserId)) {
-        throw new BadRequestError("Invalid toUser ID format");
-      }
-
-      if (fromUserId === toUserId) {
-        throw new ValidationError("Cannot settle balance to the same user");
-      }
-
-      if (amount <= 0) {
-        throw new ValidationError("Amount must be positive");
-      }
-
-      if (!SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported. Supported currencies: ${SUPPORTED_CURRENCIES.join(', ')}`);
-      }
-
-      if (!reference.id || !reference.type) {
-        throw new ValidationError("Invalid reference data");
-      }
-
-      // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock both rows, update balances,
-      // AND insert the transaction logs in one go.
-      const { data, error } = await supabase.rpc('settle_balance', {
-        p_from_user_id: fromUserId,
-        p_to_user_id: toUserId,
-        p_amount: amount,
-        p_currency: currency,
-        p_ref_id: reference.id,
-        p_ref_type: reference.type,
-        p_description: `Settlement for contract ${reference.id}`
-      });
-
-      if (error) {
-        logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
-
-        // Check if error is about insufficient funds
-        if (error.message && error.message.includes('Insufficient held balance')) {
-          throw new BusinessLogicError(
-            error.message,
-            'INSUFFICIENT_FUNDS'
-          );
-        }
-
-        throw new InternalServerError(`Balance settlement failed: ${error.message}`);
-      }
-
-      if (!data) {
-        throw new InternalServerError("Balance settlement failed: No data returned");
-      }
-
-      // 3. Parse and validate response structure
-      if (!data.fromBalance || !data.toBalance) {
-        throw new InternalServerError("Invalid response structure from settle_balance RPC");
-      }
-
-      logger.info(
-        `[BalanceService] Success ${correlationId} - From Balance Held: ${data.fromBalance.held}, To Balance Available: ${data.toBalance.available}`
-      );
-
-      return {
-        fromBalance: data.fromBalance as Balance,
-        toBalance: data.toBalance as Balance
-      };
-
-    } catch (err: any) {
-      if (err instanceof ValidationError || err instanceof BadRequestError || err instanceof InternalServerError || err instanceof BusinessLogicError) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
+    if (fromUserId === toUserId) {
+      throw new ValidationError('Cannot settle balance to the same user');
     }
+
+    const { data, error } = await supabase.rpc('settle_balance', {
+      p_from_user_id: fromUserId,
+      p_to_user_id: toUserId,
+      p_amount: amount,
+      p_currency: currency,
+      p_ref_id: reference.id,
+      p_ref_type: reference.type,
+      p_description: description || `Settlement for ${reference.type} ${reference.id}`,
+    });
+
+    if (error) {
+      logger.error('[BalanceService] settleBalance error', error);
+      throw new BusinessLogicError('Failed to settle balance', 'SETTLE_BALANCE_FAILED');
+    }
+
+    return data as { fromBalance: Balance; toBalance: Balance };
   }
 
   /**
-   * Retrieves user balances by currency.
-   * @param userId - The user ID to get balances for
-   * @param currency - Optional currency filter (USD, XLM)
-   * @returns Array of balance objects with formatted amounts
+   * Debit available balance
+   * Called when a withdrawal is successfully processed
    */
-  async getUserBalances(
+  async debitAvailable(
     userId: string,
-    currency?: string
-  ): Promise<Array<{
-    currency: string;
-    available: string;
-    held: string;
-    total: string;
-  }>> {
-    const correlationId = crypto.randomUUID();
-
-    try {
-      logger.info(
-        `[BalanceService] Starting getUserBalances ${correlationId} - User: ${userId}, Currency: ${currency || 'all'}`
-      );
-
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
-      }
-
-      if (currency && !SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported. Supported currencies: ${SUPPORTED_CURRENCIES.join(', ')}`);
-      }
-
-      // 2. Build query
-      let query = supabase
-        .from('balances')
-        .select('currency, available, held')
-        .eq('user_id', userId);
-
-      // 3. Apply currency filter if provided
-      if (currency) {
-        query = query.eq('currency', currency);
-      }
-
-      // 4. Execute query
-      const { data, error } = await query;
-
-      if (error) {
-        logger.error(`[BalanceService] Database Error ${correlationId}`, error);
-        throw new InternalServerError(`Failed to retrieve balances: ${error.message}`);
-      }
-
-      // 5. Transform data to response format
-      const balances = (data || []).map((balance) => {
-        const available = Number(balance.available) || 0;
-        const held = Number(balance.held) || 0;
-        const total = available + held;
-
-        return {
-          currency: balance.currency,
-          available: available.toFixed(2),
-          held: held.toFixed(2),
-          total: total.toFixed(2),
-        };
-      });
-
-      logger.info(`[BalanceService] Success ${correlationId} - Found ${balances.length} balance(s)`);
-
-      return balances;
-
-    } catch (err: any) {
-      if (err instanceof ValidationError || err instanceof BadRequestError || err instanceof InternalServerError) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
-    }
-  }
-
-  /**
-   * Removes funds from a user's available balance.
-   * Used when a withdrawal is completed or when funds are spent.
-   * @param userId - The user to debit
-   * @param amount - Amount to debit (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Source of the debit
-   * @param description - Optional description
-   * @returns Updated Balance object
-   */
+    amount: number,
+    referenceId: string
+  ): Promise<void>;
   async debitAvailable(
     userId: string,
     amount: number,
     currency: string,
     reference: DebitReference,
     description?: string
-  ): Promise<Balance> {
-    const correlationId = crypto.randomUUID();
+  ): Promise<Balance>;
+  async debitAvailable(
+    userId: string,
+    amount: number,
+    currencyOrReferenceId: string,
+    reference?: DebitReference,
+    description = ''
+  ): Promise<Balance | void> {
+    // New RPC-based signature
+    if (reference) {
+      const currency = currencyOrReferenceId;
+      this.assertValidUserId(userId);
+      this.assertValidAmount(amount);
+      this.assertValidCurrency(currency);
+      this.assertValidReference(reference);
 
-    try {
-      logger.info(
-        `[BalanceService] Starting debitAvailable ${correlationId} - User: ${userId}, Amount: ${amount} ${currency}`
-      );
-
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
-      }
-
-      if (amount <= 0) {
-        throw new ValidationError("Amount must be positive");
-      }
-
-      if (!SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported`);
-      }
-
-      if (!reference.id || !reference.type) {
-        throw new ValidationError("Invalid reference data");
-      }
-
-      // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock the row, validate funds,
-      // update balance, AND insert the log in one go.
       const { data, error } = await supabase.rpc('debit_available_balance', {
         p_user_id: userId,
         p_amount: amount,
         p_currency: currency,
         p_ref_id: reference.id,
         p_ref_type: reference.type,
-        p_description: description || ''
+        p_description: description,
       });
 
       if (error) {
-        logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
-
-        // Check if error is about insufficient funds
-        if (error.message && (
-          error.message.toLowerCase().includes('insufficient') ||
-          error.message.includes('no balance record')
-        )) {
-          throw new InsufficientFundsError(
-            error.message,
-            {
-              userId,
-              currency,
-              requestedAmount: amount,
-              correlationId
-            }
-          );
-        }
-
-        throw new InternalServerError(`Balance debit failed: ${error.message}`);
+        logger.error('[BalanceService] debitAvailable error', error);
+        throw new InsufficientFundsError(
+          'Insufficient available balance',
+          { userId, currency, requestedAmount: amount }
+        );
       }
-
-      if (!data) {
-        throw new InternalServerError("Balance update failed: No data returned");
-      }
-
-      logger.info(`[BalanceService] Success ${correlationId} - New Balance: ${data.available}`);
 
       return data as Balance;
-
-    } catch (err: any) {
-      if (
-        err instanceof ValidationError ||
-        err instanceof BadRequestError ||
-        err instanceof InternalServerError ||
-        err instanceof InsufficientFundsError
-      ) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
     }
+
+    // Legacy flow (no currency provided)
+    const referenceId = currencyOrReferenceId;
+    // Fetch current balance
+    const { data: balance, error: fetchError } = await supabase
+      .from('user_balances')
+      .select('available_balance, held_balance')
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        throw new NotFoundError(
+          `Balance not found for user: ${userId}`,
+          'BALANCE_NOT_FOUND'
+        );
+      }
+      throw new InternalServerError('Error fetching user balance', fetchError);
+    }
+
+    // Validate sufficient balance
+    if (balance.available_balance < amount) {
+      throw new BusinessLogicError(
+        'Insufficient available balance',
+        'INSUFFICIENT_BALANCE'
+      );
+    }
+
+    // Update balance - deduct from available
+    const { error: updateError } = await supabase
+      .from('user_balances')
+      .update({
+        available_balance: balance.available_balance - amount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+
+    if (updateError) {
+      throw new InternalServerError('Error debiting available balance', updateError);
+    }
+
+    // Record transaction
+    await this.recordTransaction({
+      user_id: userId,
+      type: 'DEBIT',
+      amount,
+      reference_id: referenceId,
+      description: 'Withdrawal processed successfully',
+    });
   }
 
   /**
-   * Holds funds from a user's available balance.
-   * Used when initiating a withdrawal or other reserving action.
-   * @param userId - The user to hold funds from
-   * @param amount - Amount to hold (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Reference for the hold
-   * @param description - Optional description
-   * @returns Updated Balance object
+   * Hold balance
    */
   async holdBalance(
     userId: string,
     amount: number,
     currency: string,
     reference: HoldReference,
-    description?: string
+    description = ''
   ): Promise<Balance> {
-    const correlationId = crypto.randomUUID();
+    this.assertValidUserId(userId);
+    this.assertValidAmount(amount);
+    this.assertValidCurrency(currency);
+    this.assertValidReference(reference);
 
-    try {
-      logger.info(
-        `[BalanceService] Starting holdBalance ${correlationId} - User: ${userId}, Amount: ${amount} ${currency}`
+    const { data, error } = await supabase.rpc('hold_balance', {
+      p_user_id: userId,
+      p_amount: amount,
+      p_currency: currency,
+      p_ref_id: reference.id,
+      p_ref_type: reference.type,
+      p_description: description,
+    });
+
+    if (error) {
+      logger.error('[BalanceService] holdBalance error', error);
+      throw new InsufficientFundsError(
+        'Insufficient available balance',
+        { userId, currency, requestedAmount: amount }
       );
-
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
-      }
-
-      if (amount <= 0) {
-        throw new ValidationError("Amount must be positive");
-      }
-
-      if (!SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported`);
-      }
-
-      if (!reference.id || !reference.type) {
-        throw new ValidationError("Invalid reference data");
-      }
-
-      // 2. Atomic Transaction (via RPC)
-      const { data, error } = await supabase.rpc('hold_balance', {
-        p_user_id: userId,
-        p_amount: amount,
-        p_currency: currency,
-        p_ref_id: reference.id,
-        p_ref_type: reference.type,
-        p_description: description || ''
-      });
-
-      if (error) {
-        logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
-
-        if (error.message && (
-          error.message.includes('Insufficient funds') ||
-          error.message.includes('no balance record')
-        )) {
-          throw new InsufficientFundsError(
-            error.message,
-            {
-              userId,
-              currency,
-              requestedAmount: amount,
-              correlationId
-            }
-          );
-        }
-
-        throw new InternalServerError(`Balance hold failed: ${error.message}`);
-      }
-
-      if (!data) {
-        throw new InternalServerError("Balance update failed: No data returned");
-      }
-
-      logger.info(`[BalanceService] Success ${correlationId} - New Balance: ${data.available} (Held: ${data.held})`);
-
-      return data as Balance;
-
-    } catch (err: any) {
-      if (
-        err instanceof ValidationError ||
-        err instanceof BadRequestError ||
-        err instanceof InternalServerError ||
-        err instanceof InsufficientFundsError
-      ) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
     }
+
+    return data as Balance;
   }
 
   /**
-   * Retrieves transaction history for a user with filtering and pagination.
-   * @param userId - The user ID to get transaction history for
-   * @param filters - Filter and pagination options
-   * @returns Transaction history with pagination info
-   */
-  async getTransactionHistory(
-    userId: string,
-    filters: TransactionFilters
-  ): Promise<TransactionHistoryResult> {
-    const correlationId = crypto.randomUUID();
-
-    try {
-      logger.info(
-        `[BalanceService] Starting getTransactionHistory ${correlationId} - User: ${userId}, Filters: ${JSON.stringify(filters)}`
-      );
-
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
-      }
-
-      // Validate currency if provided
-      if (filters.currency && !SUPPORTED_CURRENCIES.includes(filters.currency as Currency)) {
-        throw new ValidationError(`Currency ${filters.currency} is not supported. Supported currencies: ${SUPPORTED_CURRENCIES.join(', ')}`);
-      }
-
-      // Validate transaction type if provided
-      if (filters.type && !TRANSACTION_TYPES.includes(filters.type as TransactionType)) {
-        throw new ValidationError(`Transaction type ${filters.type} is not supported. Supported types: ${TRANSACTION_TYPES.join(', ')}`);
-      }
-
-      // Validate date range
-      if (filters.from && filters.to) {
-        const fromDate = new Date(filters.from);
-        const toDate = new Date(filters.to);
-
-        if (isNaN(fromDate.getTime())) {
-          throw new ValidationError('Invalid from date format');
-        }
-
-        if (isNaN(toDate.getTime())) {
-          throw new ValidationError('Invalid to date format');
-        }
-
-        if (fromDate > toDate) {
-          throw new ValidationError('from date must be before or equal to to date');
-        }
-      } else if (filters.from) {
-        const fromDate = new Date(filters.from);
-        if (isNaN(fromDate.getTime())) {
-          throw new ValidationError('Invalid from date format');
-        }
-      } else if (filters.to) {
-        const toDate = new Date(filters.to);
-        if (isNaN(toDate.getTime())) {
-          throw new ValidationError('Invalid to date format');
-        }
-      }
-
-      // Validate pagination
-      const page = filters.page !== undefined ? filters.page : 1;
-      const limit = filters.limit !== undefined ? filters.limit : 20;
-
-      if (page < 1) {
-        throw new ValidationError('Page must be greater than 0');
-      }
-
-      if (limit < 1 || limit > 100) {
-        throw new ValidationError('Limit must be between 1 and 100');
-      }
-
-      // 2. Build query
-      let query = supabase
-        .from('balance_transactions')
-        .select('*', { count: 'exact' })
-        .eq('user_id', userId);
-
-      // Apply filters
-      if (filters.currency) {
-        query = query.eq('currency', filters.currency);
-      }
-
-      if (filters.type) {
-        query = query.eq('type', filters.type);
-      }
-
-      if (filters.from) {
-        query = query.gte('created_at', filters.from);
-      }
-
-      if (filters.to) {
-        // Add one day to include the entire 'to' date
-        const toDate = new Date(filters.to);
-        toDate.setDate(toDate.getDate() + 1);
-        query = query.lt('created_at', toDate.toISOString());
-      }
-
-      // Apply ordering (newest first)
-      query = query.order('created_at', { ascending: false });
-
-      // Apply pagination
-      const offset = (page - 1) * limit;
-      query = query.range(offset, offset + limit - 1);
-
-      // 3. Execute query
-      const { data, error, count } = await query;
-
-      if (error) {
-        logger.error(`[BalanceService] Database Error ${correlationId}`, error);
-        throw new InternalServerError(`Failed to retrieve transaction history: ${error.message}`);
-      }
-
-      const total = count || 0;
-      const pages = Math.ceil(total / limit);
-
-      logger.info(
-        `[BalanceService] Success ${correlationId} - Found ${data?.length || 0} transactions (Total: ${total})`
-      );
-
-      return {
-        transactions: data || [],
-        pagination: {
-          page,
-          limit,
-          total,
-          pages
-        }
-      };
-
-    } catch (err: any) {
-      if (
-        err instanceof ValidationError ||
-        err instanceof BadRequestError ||
-        err instanceof InternalServerError
-      ) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
-    }
-  }
-
-
-  /**
-   * Returns held funds back to a user's available balance.
-   * Used when canceling a withdrawal or refunding a failed withdrawal.
-   * @param userId - The user to release funds for
-   * @param amount - Amount to release (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Source of the release
-   * Moves funds from held balance back to available balance.
-   * Used when a contract is cancelled and funds need to be released back to the client.
-   * @param userId - The user whose funds will be released
-   * @param amount - Amount to release (must be positive)
-   * @param currency - Currency code (USD, XLM)
-   * @param reference - Reference to the contract or escrow
-   * @param description - Optional description
-   * @returns Updated Balance object
+   * Release balance
    */
   async releaseBalance(
     userId: string,
     amount: number,
     currency: string,
-    reference: CreditReference,
-    description?: string
+    reference: ReleaseReference,
+    description = ''
   ): Promise<Balance> {
-    const correlationId = crypto.randomUUID();
-    
-    try {
-      logger.info(
-        `[BalanceService] Starting releaseBalance ${correlationId} - User: ${userId}, Amount: ${amount} ${currency}`
-      );
+    this.assertValidUserId(userId);
+    this.assertValidAmount(amount);
+    this.assertValidCurrency(currency);
+    this.assertValidReference(reference);
 
-      // 1. Validation
-      if (!validateUUID(userId)) {
-        throw new BadRequestError("Invalid user ID format");
+    const { data, error } = await supabase.rpc('release_balance', {
+      p_user_id: userId,
+      p_amount: amount,
+      p_currency: currency,
+      p_ref_id: reference.id,
+      p_ref_type: reference.type,
+      p_description: description,
+    });
+
+    if (error) {
+      logger.error('[BalanceService] releaseBalance error', error);
+      throw new BusinessLogicError('Insufficient held balance', 'INSUFFICIENT_HELD');
+    }
+
+    return data as Balance;
+  }
+
+  /**
+   * Get transaction history
+   */
+  async getTransactionHistory(
+    userId: string,
+    filters: TransactionFilters
+  ): Promise<TransactionHistoryResult> {
+    this.assertValidUserId(userId);
+
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+
+    let query = supabase
+      .from('balance_transactions')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    if (filters.currency) {
+      this.assertValidCurrency(filters.currency);
+      query = query.eq('currency', filters.currency);
+    }
+
+    if (filters.type) {
+      query = query.eq('type', filters.type);
+    }
+
+    if (filters.from) {
+      query = query.gte('created_at', filters.from);
+    }
+
+    if (filters.to) {
+      query = query.lte('created_at', filters.to);
+    }
+
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
+
+    const { data, error, count } = await query.range(start, end);
+
+    if (error) {
+      throw new InternalServerError('Failed to fetch transaction history', error);
+    }
+
+    const total = count ?? 0;
+
+    return {
+      transactions: (data || []) as BalanceTransaction[],
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: limit > 0 ? Math.ceil(total / limit) : 0,
+      },
+    };
+  }
+
+  /**
+   * Release a hold on balance
+   * Called after successful withdrawal to release the held amount
+   */
+  async releaseHold(userId: string, holdId: string): Promise<void> {
+    // Fetch the hold
+    const { data: hold, error: fetchError } = await supabase
+      .from('balance_holds')
+      .select('*')
+      .eq('id', holdId)
+      .eq('user_id', userId)
+      .eq('status', 'ACTIVE')
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        throw new NotFoundError(
+          `Active hold not found: ${holdId}`,
+          'HOLD_NOT_FOUND'
+        );
       }
+      throw new InternalServerError('Error fetching hold', fetchError);
+    }
 
-      if (amount <= 0) {
-        throw new ValidationError("Amount must be positive");
+    // Update hold status to RELEASED
+    const { error: updateError } = await supabase
+      .from('balance_holds')
+      .update({
+        status: 'RELEASED',
+        released_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', holdId);
+
+    if (updateError) {
+      throw new InternalServerError('Error releasing hold', updateError);
+    }
+
+    // Update user balance - reduce held balance
+    const { data: balance, error: balanceError } = await supabase
+      .from('user_balances')
+      .select('held_balance')
+      .eq('user_id', userId)
+      .single();
+
+    if (balanceError) {
+      throw new InternalServerError('Error fetching balance', balanceError);
+    }
+
+    const { error: balanceUpdateError } = await supabase
+      .from('user_balances')
+      .update({
+        held_balance: Math.max(0, balance.held_balance - hold.amount),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+
+    if (balanceUpdateError) {
+      throw new InternalServerError('Error updating held balance', balanceUpdateError);
+    }
+  }
+
+  /**
+   * Initiate a refund
+   * Called when a withdrawal fails - returns funds to user's available balance
+   */
+  async initiateRefund(
+    userId: string,
+    amount: number,
+    withdrawalId: string
+  ): Promise<void> {
+    // Fetch current balance
+    const { data: balance, error: fetchError } = await supabase
+      .from('user_balances')
+      .select('available_balance, held_balance')
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        throw new NotFoundError(
+          `Balance not found for user: ${userId}`,
+          'BALANCE_NOT_FOUND'
+        );
       }
+      throw new InternalServerError('Error fetching user balance', fetchError);
+    }
 
-      if (!SUPPORTED_CURRENCIES.includes(currency as Currency)) {
-        throw new ValidationError(`Currency ${currency} is not supported`);
-      }
+    // Create refund record
+    const { error: refundError } = await supabase.from('refunds').insert({
+      user_id: userId,
+      withdrawal_id: withdrawalId,
+      amount,
+      status: 'PENDING',
+      created_at: new Date().toISOString(),
+    });
 
-      if (!reference.id || !reference.type) {
-        throw new ValidationError("Invalid reference data");
-      }
+    if (refundError) {
+      throw new InternalServerError('Error creating refund record', refundError);
+    }
 
-      // 2. Atomic Transaction (via RPC)
-      // We rely on a database function to lock the row, update balance,
-      // AND insert the log in one go.
-      const { data, error } = await supabase.rpc('release_balance', {
-        p_user_id: userId,
-        p_amount: amount,
-        p_currency: currency,
-        p_ref_id: reference.id,
-        p_ref_type: reference.type,
-        p_description: description || ''
-      });
+    // Release hold and return funds to available balance
+    const { error: updateError } = await supabase
+      .from('user_balances')
+      .update({
+        available_balance: balance.available_balance + amount,
+        held_balance: Math.max(0, balance.held_balance - amount),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
 
-      if (error) {
-        logger.error(`[BalanceService] RPC Error ${correlationId}`, error);
+    if (updateError) {
+      throw new InternalServerError('Error processing refund', updateError);
+    }
 
-        // Check if error is about insufficient funds
-        if (error.message && (
-          error.message.includes('Insufficient held balance') ||
-          error.message.includes('no balance record')
-        )) {
-          throw new BusinessLogicError(
-            error.message,
-            'INSUFFICIENT_HELD_FUNDS'
-          );
-        }
+    // Update refund status to COMPLETED
+    const { error: refundUpdateError } = await supabase
+      .from('refunds')
+      .update({
+        status: 'COMPLETED',
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('withdrawal_id', withdrawalId);
 
-        throw new InternalServerError(`Balance release failed: ${error.message}`);
-      }
+    if (refundUpdateError) {
+      throw new InternalServerError('Error updating refund status', refundUpdateError);
+    }
 
-      if (!data) {
-        throw new InternalServerError("Balance update failed: No data returned");
-      }
+    // Record transaction
+    await this.recordTransaction({
+      user_id: userId,
+      type: 'REFUND',
+      amount,
+      reference_id: withdrawalId,
+      description: 'Refund for failed withdrawal',
+    });
+  }
 
-      logger.info(`[BalanceService] Success ${correlationId} - Available: ${data.available}, Held: ${data.held}`);
+  /**
+   * Record a transaction
+   */
+  private async recordTransaction(transaction: {
+    user_id: string;
+    type: string;
+    amount: number;
+    reference_id: string;
+    description: string;
+  }): Promise<void> {
+    const { error } = await supabase.from('transactions').insert({
+      ...transaction,
+      created_at: new Date().toISOString(),
+    });
 
-      return data as Balance;
-
-    } catch (err: any) {
-      if (
-        err instanceof ValidationError ||
-        err instanceof BadRequestError ||
-        err instanceof InternalServerError ||
-        err instanceof BusinessLogicError
-      ) {
-        throw err;
-      }
-      throw new InternalServerError(`Unexpected error in balance service: ${err.message}`);
+    if (error) {
+      // Log but don't throw - transaction recording shouldn't break the main flow
+      console.error('Error recording transaction:', error);
     }
   }
 }

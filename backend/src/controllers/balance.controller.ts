@@ -8,7 +8,12 @@ import { AuthenticatedRequest } from "@/types/auth.types";
 import { balanceService } from "@/services/balance.service";
 import { ValidationError, BadRequestError } from "@/utils/AppError";
 import { buildListResponse, buildPaginatedResponse } from "@/utils/responseBuilder";
-import { SUPPORTED_CURRENCIES, TRANSACTION_TYPES, TransactionType } from "@/types/balance.types";
+import {
+  BalanceTransaction,
+  SUPPORTED_CURRENCIES,
+  TRANSACTION_TYPES,
+  TransactionType,
+} from "@/types/balance.types";
 import { validateIntegerRange } from "@/utils/validation";
 
 /**
@@ -138,7 +143,7 @@ export const getTransactionHistory = async (
     });
 
     // Format transactions for response
-    const formattedTransactions = result.transactions.map((tx) => ({
+    const formattedTransactions = result.transactions.map((tx: BalanceTransaction) => ({
       id: tx.id,
       type: tx.type,
       amount: Number(tx.amount).toFixed(2),

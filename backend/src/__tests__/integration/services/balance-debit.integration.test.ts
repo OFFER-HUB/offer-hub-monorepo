@@ -204,7 +204,7 @@ describe('BalanceService - debitAvailable Integration Tests', () => {
         150,
         'USD',
         mockRef
-      ).catch(e => e);
+      ).catch((e: any) => e);
 
       expect(error.errorCode).toBe('INSUFFICIENT_FUNDS');
       expect(error.details).toMatchObject({
