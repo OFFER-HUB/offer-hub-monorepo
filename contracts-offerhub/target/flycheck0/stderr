@@ -1,0 +1,4 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /Users/mac/OpenSource/offer-hub-monorepo/contracts-offerhub/contracts/emergency-contract/Cargo.toml
+workspace: /Users/mac/OpenSource/offer-hub-monorepo/contracts-offerhub/Cargo.toml
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
