@@ -1,0 +1,214 @@
+---
+title: Installation
+description: Set up OFFER-HUB Orchestrator locally with Node.js, PostgreSQL, and Redis.
+order: 2
+section: Getting Started
+---
+
+This guide walks you through setting up the OFFER-HUB Orchestrator for local development. You can also use the SDK without running your own instance - see [Using the SDK](#using-the-sdk-only) below.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Node.js** v20 or later ([nodejs.org](https://nodejs.org))
+- **npm** v10 or later
+- **Docker** and **Docker Compose** (for PostgreSQL and Redis)
+- A [Trustless Work](https://trustlesswork.com) API key (for escrow)
+
+<Callout type="note">
+  You can also use managed services like [Supabase](https://supabase.com) for PostgreSQL and [Upstash](https://upstash.com) for Redis instead of Docker.
+</Callout>
+
+## Option 1: Full Local Setup
+
+### Step 1 - Clone the Repository
+
+<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB-Orchestrator.git && cd OFFER-HUB-Orchestrator</CommandLine>
+
+### Step 2 - Install Dependencies
+
+<CommandLine>npm install</CommandLine>
+
+### Step 3 - Start Infrastructure
+
+Start PostgreSQL and Redis using Docker Compose:
+
+<CommandLine>docker compose up -d</CommandLine>
+
+This starts:
+- PostgreSQL on port `5432`
+- Redis on port `6379`
+
+### Step 4 - Configure Environment
+
+Copy the example environment file:
+
+<CommandLine>cp .env.example .env</CommandLine>
+
+Edit `.env` with your values. The minimum required variables for local development:
+
+```env
+# Server
+NODE_ENV=development
+PORT=4000
+
+# Database (Docker defaults)
+DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+DIRECT_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+
+# Redis (Docker default)
+REDIS_URL=redis://localhost:6379
+
+# Payment Provider
+PAYMENT_PROVIDER=crypto
+WALLET_ENCRYPTION_KEY=your-32-byte-hex-key
+
+# Master Key (for creating API keys)
+OFFERHUB_MASTER_KEY=your-secure-master-key
+
+# Trustless Work (get from trustlesswork.com)
+TRUSTLESS_API_KEY=your_trustless_api_key
+TRUSTLESS_API_URL=https://dev.api.trustlesswork.com
+
+# Stellar (testnet defaults)
+STELLAR_NETWORK=testnet
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_USDC_ASSET_CODE=USDC
+STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+```
+
+<Callout type="warning">
+  Generate your `WALLET_ENCRYPTION_KEY` with: `openssl rand -hex 32`
+
+  Store this key securely - losing it makes wallet private keys unrecoverable.
+</Callout>
+
+### Step 5 - Run Database Migrations
+
+Generate the Prisma client and apply migrations:
+
+<CommandLine>npm run prisma:generate && npm run prisma:migrate</CommandLine>
+
+### Step 6 - Bootstrap Platform User
+
+Create the internal platform user required for escrow operations:
+
+<CommandLine>npm run bootstrap</CommandLine>
+
+### Step 7 - Start the API
+
+<CommandLine>npm run dev</CommandLine>
+
+The API starts on `http://localhost:4000`.
+
+### Step 8 - Verify Installation
+
+Test that everything is working:
+
+<CommandLine>curl http://localhost:4000/api/v1/health</CommandLine>
+
+You should see:
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-02-25T12:00:00.000Z",
+  "services": {
+    "database": "connected",
+    "redis": "connected"
+  }
+}
+```
+
+## Option 2: Using the SDK Only
+
+If you want to integrate with an existing OFFER-HUB Orchestrator instance (hosted by you or a partner), you only need the SDK:
+
+<CommandLine>npm install @offerhub/sdk</CommandLine>
+
+Then configure it in your code:
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'https://your-orchestrator-url.com',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+// Create a user
+const user = await sdk.users.create({
+  externalUserId: 'user-123',
+  email: 'buyer@example.com'
+});
+```
+
+See the [SDK Guide](/docs/sdk/quick-start) for complete documentation.
+
+## Option 3: Using npm create (Coming Soon)
+
+<Callout type="note">
+  The installer script `npm create offer-hub-orchestrator@latest` is coming soon and will automate this entire setup process.
+</Callout>
+
+## Creating Your First API Key
+
+Once the server is running, create an API key using your master key:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/api-keys \
+  -H "Authorization: Bearer YOUR_OFFERHUB_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Marketplace", "scopes": ["read", "write"]}'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "key_abc123",
+    "key": "ohk_live_xxxxxxxxxxxx",
+    "name": "My Marketplace",
+    "scopes": ["read", "write"]
+  }
+}
+```
+
+<Callout type="danger">
+  Save the `key` value immediately - it's only shown once. Use this key for all subsequent API calls.
+</Callout>
+
+## Troubleshooting
+
+### Database Connection Failed
+
+Make sure Docker is running and the containers are up:
+
+<CommandLine>docker compose ps</CommandLine>
+
+If containers aren't running, start them:
+
+<CommandLine>docker compose up -d</CommandLine>
+
+### Prisma Migration Errors
+
+If you see migration errors, try resetting the database:
+
+<CommandLine>npm run prisma:migrate reset</CommandLine>
+
+<Callout type="warning">
+  This deletes all data. Only use in development.
+</Callout>
+
+### Port Already in Use
+
+If port 4000 is already in use, change the `PORT` in your `.env` file or stop the conflicting service.
+
+## Next Steps
+
+- [Configuration](/docs/configuration) - Learn about all environment variables
+- [Quick Start](/docs/guide/quick-start) - Create your first user and order
+- [API Reference](/docs/api-reference/overview) - Explore all endpoints
+- [SDK Guide](/docs/sdk/quick-start) - Integrate using TypeScript

@@ -1,0 +1,82 @@
+---
+title: Multi-Currency
+description: Supported assets, automatic conversion at settlement, and currency configuration in OFFER-HUB.
+order: 3
+section: Guides
+---
+
+OFFER-HUB provides native support for multiple assets, from stablecoins and native XLM to custom curated Stellar tokens, ensuring flexibility for all modern marketplaces.
+
+## Supported Assets
+
+Below is a list of the primary assets officially supported on the platform:
+
+| Name | Symbol | Type |
+| :--- | :--- | :--- |
+| USD Coin | USDC | Stablecoin |
+| Stellar Lumens | XLM | Native Asset |
+| Argentine Peso Token | ARST | Custom Stellar Token |
+| Euro Token | EURT | Custom Stellar Token |
+
+### Stablecoins
+
+The most common settlement asset is USDC, providing price stability for buyers and sellers across your marketplace.
+
+<Callout variant="tip">
+  Stablecoin settlements typically incur lower volatility risk, making them the preferred choice for escrow.
+</Callout>
+
+### Native XLM
+
+You can also use <Badge variant="primary">XLM</Badge>, the native asset of the Stellar network, which provides fast settlement and low transaction costs.
+
+### Custom Stellar Tokens
+
+OFFER-HUB can be configured to support other custom tokens issued on the Stellar network (e.g., ARST, EURT) by specifying the `issuer` address and `code` in the specific environment configuration.
+
+## Automatic Conversion at Settlement
+
+You have the ability to automatically convert assets during settlement. For example, if a buyer deposits XLM, the seller can receive USDC.
+
+<Callout variant="note">
+  Automatic conversion relies on path payments on the Stellar Decentralized Exchange (DEX). Sufficient liquidity must exist between the assets to prevent excessive slippage.
+</Callout>
+
+## Configuration
+
+To enable specific assets or set default conversion preferences, update your configuration in your integration environment.
+
+Here is an example configuring supported currencies using our SDK or API:
+
+<CodeBlock language="ts">{`
+import { OfferHubClient } from '@offer-hub/sdk';
+
+const client = new OfferHubClient({
+  apiKey: process.env.OFFER_HUB_API_KEY,
+  supportedAssets: [
+    {
+      code: 'USDC',
+      type: 'stablecoin',
+      primary: true,
+    },
+    {
+      code: 'XLM',
+      type: 'native',
+    },
+    {
+      code: 'ARST',
+      type: 'custom',
+      issuer: 'GB...ARST_ISSUER_ADDRESS...',
+    }
+  ],
+  settlementPreferences: {
+    autoConvert: true,
+    targetAssetCode: 'USDC',
+    maxSlippageBps: 50 // 0.5% max slippage
+  }
+});
+`}</CodeBlock>
+
+<Callout variant="warning">
+  Ensure that when adding `custom` tokens, the `issuer` address is completely verified and trusted to prevent spoofed tokens.
+</Callout>

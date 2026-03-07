@@ -1,0 +1,196 @@
+---
+title: SDK Quick Start
+description: Get started with the OFFER-HUB TypeScript SDK in minutes.
+order: 1
+section: SDK
+---
+
+The OFFER-HUB SDK provides a type-safe TypeScript client for integrating with the Orchestrator API. It handles authentication, retries, and provides typed errors for better error handling.
+
+## Installation
+
+<CommandLine>npm install @offerhub/sdk</CommandLine>
+
+Or with yarn:
+
+<CommandLine>yarn add @offerhub/sdk</CommandLine>
+
+## Configuration
+
+### Initialize the SDK
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL,    // e.g., http://localhost:4000
+  apiKey: process.env.OFFERHUB_API_KEY,    // e.g., ohk_live_xxx
+  timeout: 30000,                           // Optional: request timeout (default: 30s)
+  retryAttempts: 3,                         // Optional: retry count (default: 3)
+});
+```
+
+### Environment Variables
+
+Add to your `.env` file:
+
+```env
+OFFERHUB_API_URL=http://localhost:4000
+OFFERHUB_API_KEY=ohk_live_your_api_key_here
+```
+
+<Callout type="danger">
+  Never expose your API key in client-side code. The SDK is designed for server-to-server communication only.
+</Callout>
+
+## Basic Usage
+
+### Create a User
+
+```typescript
+const user = await sdk.users.create({
+  externalUserId: 'your-user-123',
+  email: 'buyer@example.com',
+  type: 'BUYER'   // or 'SELLER', 'BOTH'
+});
+
+console.log('User ID:', user.id);  // usr_abc123
+```
+
+### Get User Balance
+
+```typescript
+const balance = await sdk.balance.get(user.id);
+
+console.log('Available:', balance.available);  // "100.00"
+console.log('Reserved:', balance.reserved);    // "0.00"
+```
+
+### Create an Order
+
+```typescript
+const order = await sdk.orders.create({
+  buyerId: 'usr_buyer123',
+  sellerId: 'usr_seller456',
+  amount: '100.00',
+  currency: 'USD',
+  title: 'Logo Design',
+  description: 'Design a logo for my startup'
+});
+
+console.log('Order ID:', order.id);      // ord_xyz789
+console.log('Status:', order.status);    // ORDER_CREATED
+```
+
+### Complete Order Flow
+
+```typescript
+// 1. Reserve funds
+await sdk.orders.reserve(order.id);
+
+// 2. Create escrow on blockchain
+await sdk.escrow.create(order.id);
+
+// 3. Fund the escrow
+await sdk.escrow.fund(order.id);
+
+// 4. Release to seller when work is done
+await sdk.resolution.release(order.id, {
+  requestedBy: 'usr_buyer123'
+});
+```
+
+## Available Resources
+
+The SDK provides access to all Orchestrator resources:
+
+| Resource | Description |
+|----------|-------------|
+| `sdk.users` | Create and manage users |
+| `sdk.balance` | Check user balances |
+| `sdk.orders` | Create and manage orders |
+| `sdk.escrow` | Create and fund escrow contracts |
+| `sdk.resolution` | Release, refund, or dispute orders |
+| `sdk.disputes` | Manage disputes |
+| `sdk.wallet` | Wallet operations (deposit addresses) |
+| `sdk.withdrawals` | Create withdrawals |
+| `sdk.topups` | Top-up operations (AirTM mode) |
+
+## Idempotency
+
+For safe retries, use idempotency keys:
+
+```typescript
+// Create SDK instance with idempotency key
+const idempotentSdk = sdk.withIdempotencyKey('unique-operation-key');
+
+// This request can be safely retried
+const order = await idempotentSdk.orders.create({
+  buyerId: 'usr_buyer',
+  sellerId: 'usr_seller',
+  amount: '100.00',
+  title: 'Service'
+});
+```
+
+If you retry with the same idempotency key, you get the same response without creating a duplicate.
+
+## Error Handling
+
+The SDK provides typed errors for precise error handling:
+
+```typescript
+import {
+  InsufficientFundsError,
+  NotFoundError,
+  ValidationError,
+  InvalidTransitionError,
+  OfferHubError
+} from '@offerhub/sdk';
+
+try {
+  await sdk.orders.reserve('ord_123');
+} catch (error) {
+  if (error instanceof InsufficientFundsError) {
+    console.error(`Need ${error.required}, have ${error.available}`);
+  } else if (error instanceof NotFoundError) {
+    console.error(`${error.resourceType} not found`);
+  } else if (error instanceof ValidationError) {
+    console.error('Validation errors:', error.errors);
+  } else if (error instanceof InvalidTransitionError) {
+    console.error(`Cannot transition from ${error.currentState}`);
+  } else if (error instanceof OfferHubError) {
+    console.error('API error:', error.message);
+  }
+}
+```
+
+## TypeScript Support
+
+The SDK is fully typed. You get autocomplete and type checking:
+
+```typescript
+import type { User, Order, Balance } from '@offerhub/sdk';
+
+async function processOrder(user: User): Promise<Order> {
+  const balance: Balance = await sdk.balance.get(user.id);
+
+  if (parseFloat(balance.available) < 100) {
+    throw new Error('Insufficient funds');
+  }
+
+  return sdk.orders.create({
+    buyerId: user.id,
+    sellerId: 'usr_seller',
+    amount: '100.00',
+    title: 'Service'
+  });
+}
+```
+
+## Next Steps
+
+- [SDK Resources](/docs/sdk/resources) - All available methods
+- [Error Handling](/docs/sdk/errors) - Complete error reference
+- [Quick Start Guide](/docs/guide/quick-start) - Full integration example
+- [API Reference](/docs/api-reference/overview) - REST API documentation

@@ -1,0 +1,390 @@
+---
+title: Escrow Guide
+description: How blockchain-based escrow works in OFFER-HUB — fund locking, release flows, and dispute handling.
+order: 3
+section: Guides
+---
+
+Escrow is the core security mechanism in OFFER-HUB. When a buyer pays for a service, funds are locked in a Stellar smart contract until the work is delivered and approved. Neither party can unilaterally access the funds — the contract enforces fair resolution.
+
+<Callout type="tip">
+  Make sure you understand the [Order Lifecycle](/docs/guide/orders) before diving into escrow mechanics.
+</Callout>
+
+## How Escrow Works
+
+OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on the Stellar blockchain for non-custodial escrow. This means:
+
+1. **Funds are on-chain** — Not in OFFER-HUB's database
+2. **Contract enforces rules** — Release requires proper signatures
+3. **Transparent** — Anyone can verify escrow state on Stellar
+4. **Non-custodial** — OFFER-HUB cannot access funds without proper authorization
+
+### Escrow Participants
+
+| Role | Description |
+|------|-------------|
+| **Buyer** | Deposits funds into escrow |
+| **Seller** | Receives funds when work is approved |
+| **Platform** | OFFER-HUB's signer for dispute resolution |
+| **Arbiter** | Trustless Work's contract for on-chain enforcement |
+
+## Escrow Lifecycle
+
+### State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> ORDER_CREATED
+    ORDER_CREATED --> FUNDS_RESERVED: Off-chain lock
+
+    state "Contract Setup" as setup {
+        FUNDS_RESERVED --> ESCROW_CREATING: Init contract
+        ESCROW_CREATING --> ESCROW_CREATED: Deployed
+    }
+
+    state "Funding" as funding {
+        ESCROW_CREATED --> ESCROW_FUNDING: Send USDC
+        ESCROW_FUNDING --> ESCROW_FUNDED: Confirmed
+    }
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work begins
+
+    state "Resolution" as resolution {
+        IN_PROGRESS --> RELEASING: Buyer approves
+        IN_PROGRESS --> DISPUTING: Open dispute
+        RELEASING --> CLOSED: Released
+        DISPUTING --> DISPUTED: Under review
+        DISPUTED --> REFUNDED: Refund
+        DISPUTED --> CLOSED: Release
+    }
+
+    CLOSED --> [*]
+    REFUNDED --> [*]
+```
+
+### State Descriptions
+
+| State | Description |
+|-------|-------------|
+| `ESCROW_CREATING` | Smart contract being deployed |
+| `ESCROW_CREATED` | Contract ready, waiting for funding |
+| `ESCROW_FUNDING` | USDC transfer to contract in progress |
+| `ESCROW_FUNDED` | Funds locked, work can begin |
+| `IN_PROGRESS` | Seller is working on the order |
+| `RELEASING` | Release transaction in progress |
+| `DISPUTING` | Dispute transaction in progress |
+| `DISPUTED` | Awaiting resolution |
+| `CLOSED` | Funds released to seller |
+| `REFUNDED` | Funds returned to buyer |
+
+## Creating Escrow
+
+After reserving funds, create the escrow contract:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json"
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "ord_xyz789",
+    "status": "ESCROW_CREATING",
+    "escrow": {
+      "contractId": "CDLZFC...",
+      "status": "creating"
+    }
+  }
+}
+```
+
+The contract deployment happens asynchronously. Listen for events or poll the order status.
+
+## Funding Escrow
+
+Once the contract is created, fund it with USDC:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow/fund \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+This triggers an on-chain USDC transfer from the buyer's invisible wallet to the escrow contract.
+
+### What Happens During Funding
+
+1. **Debit buyer's balance** — Reserved funds become locked
+2. **Sign transaction** — Platform signs with buyer's encrypted key
+3. **Submit to Stellar** — USDC sent to contract address
+4. **Confirm on-chain** — Wait for ledger confirmation
+5. **Update status** — Order becomes `IN_PROGRESS`
+
+<Callout type="note">
+  Funding typically takes 5-10 seconds. The order status progresses through `ESCROW_FUNDING` → `ESCROW_FUNDED` → `IN_PROGRESS`.
+</Callout>
+
+## Releasing Funds
+
+When the buyer approves the work, release funds to the seller:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/release \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"requestedBy": "usr_buyer123"}'
+```
+
+### The 3-Transaction Release Flow
+
+Releasing funds requires three separate blockchain transactions:
+
+| Step | Transaction | Signer |
+|------|-------------|--------|
+| 1 | `complete_escrow` | Buyer approves work |
+| 2 | `release_escrow` | Platform authorizes release |
+| 3 | Claim funds | Seller receives USDC |
+
+```
+Buyer signs "complete" → Platform signs "release" → Seller claims funds
+```
+
+### Release Response
+
+```json
+{
+  "data": {
+    "id": "ord_xyz789",
+    "status": "CLOSED",
+    "resolution": {
+      "type": "released",
+      "amount": "50.00",
+      "recipient": "usr_seller456",
+      "completedAt": "2026-02-25T14:00:00.000Z"
+    }
+  }
+}
+```
+
+## Refunding (Dispute Flow)
+
+If there's a problem, the buyer can request a refund through the dispute process:
+
+### Step 1: Open Dispute
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "requestedBy": "usr_buyer123",
+    "reason": "Work not delivered as specified"
+  }'
+```
+
+### Step 2: Platform Resolves
+
+After review, the platform resolves the dispute:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "resolution": "refund",
+    "note": "Seller did not deliver agreed work"
+  }'
+```
+
+### The 2-Transaction Refund Flow
+
+| Step | Transaction | Signer |
+|------|-------------|--------|
+| 1 | `dispute_escrow` | Buyer opens dispute |
+| 2 | `resolve_dispute` | Platform refunds buyer |
+
+<Callout type="warning">
+  Disputes require platform intervention. The smart contract won't release funds until the platform signs the resolution transaction.
+</Callout>
+
+## Using the SDK
+
+The SDK simplifies escrow operations:
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+// Create and fund escrow in sequence
+const order = await sdk.orders.get('ord_xyz789');
+
+// Create escrow contract
+await sdk.escrow.create(order.id);
+
+// Wait for contract creation (or use events)
+await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
+
+// Fund the escrow
+await sdk.escrow.fund(order.id);
+
+// Wait for funding confirmation
+await sdk.orders.waitForStatus(order.id, 'IN_PROGRESS');
+
+// Later: release to seller
+await sdk.resolution.release(order.id, {
+  requestedBy: order.buyerId
+});
+```
+
+### Listening to Escrow Events
+
+```typescript
+const events = sdk.events.subscribe();
+
+events.on('order.escrow_created', (data) => {
+  console.log('Contract deployed:', data.contractId);
+});
+
+events.on('order.escrow_funded', (data) => {
+  console.log('Funds locked:', data.amount);
+});
+
+events.on('order.released', (data) => {
+  console.log('Funds released to seller');
+});
+
+events.on('order.disputed', (data) => {
+  console.log('Dispute opened:', data.reason);
+});
+```
+
+## On-Chain vs Off-Chain Balance
+
+OFFER-HUB tracks two types of balances:
+
+### Off-Chain Balance
+
+Stored in the database for fast operations:
+
+```json
+{
+  "available": "100.00",
+  "reserved": "50.00"
+}
+```
+
+- **Available** — Can be used for new orders or withdrawn
+- **Reserved** — Locked for pending orders (before escrow funding)
+
+### On-Chain Balance
+
+Actual USDC in the user's Stellar wallet:
+
+```json
+{
+  "stellar_address": "GCV24WNJ...",
+  "usdc_balance": "150.00"
+}
+```
+
+### Balance Flow During Escrow
+
+| Stage | Available | Reserved | On-Chain |
+|-------|-----------|----------|----------|
+| Initial | 100.00 | 0.00 | 100.00 |
+| After reserve | 50.00 | 50.00 | 100.00 |
+| After funding | 50.00 | 0.00 | 50.00 (in escrow) |
+| After release | 50.00 | 0.00 | 50.00 |
+
+<Callout type="note">
+  When escrow is funded, the reserved amount leaves both the off-chain balance AND the on-chain wallet. It's now in the smart contract.
+</Callout>
+
+## Platform Wallet
+
+The platform wallet is a special Stellar account that:
+
+1. **Co-signs transactions** — Required for release/refund
+2. **Collects fees** — Platform fees are sent here
+3. **Never holds user funds** — Only signs, doesn't custody
+
+Configure it in your environment:
+
+```env
+PLATFORM_USER_ID=usr_platform
+```
+
+## Error Handling
+
+### Common Escrow Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `ESCROW_ALREADY_EXISTS` | Duplicate creation attempt | Check order status first |
+| `ESCROW_NOT_FUNDED` | Trying to release unfunded escrow | Fund the escrow first |
+| `INVALID_STATE_TRANSITION` | Wrong order state | Follow the state machine |
+| `INSUFFICIENT_FUNDS` | Wallet doesn't have enough USDC | Check balance before funding |
+| `CONTRACT_ERROR` | Stellar contract failure | Check Trustless Work status |
+
+### Handling Timeouts
+
+Blockchain transactions can take time. Handle timeouts gracefully:
+
+```typescript
+try {
+  await sdk.escrow.fund(orderId);
+} catch (error) {
+  if (error.code === 'FUNDING_TIMEOUT') {
+    // Check if transaction was actually submitted
+    const order = await sdk.orders.get(orderId);
+    if (order.status === 'ESCROW_FUNDING') {
+      // Transaction pending, wait for webhook
+      console.log('Funding in progress, waiting for confirmation...');
+    }
+  }
+}
+```
+
+## Webhooks for Escrow Events
+
+Subscribe to escrow lifecycle events:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/webhooks \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks",
+    "events": [
+      "escrow.created",
+      "escrow.funded",
+      "escrow.released",
+      "escrow.disputed",
+      "escrow.refunded"
+    ],
+    "secret": "your-webhook-secret"
+  }'
+```
+
+See [Webhooks](/docs/api-reference/webhooks) for payload formats and signature verification.
+
+## Security Considerations
+
+1. **Never expose private keys** — All signing happens server-side
+2. **Verify webhook signatures** — Prevent spoofed events
+3. **Use idempotency keys** — Prevent duplicate funding
+4. **Monitor contract state** — Cross-check with Stellar explorer
+
+## Next Steps
+
+- [Disputes Guide](/docs/guide/disputes) — Handle disagreements
+- [Withdrawals Guide](/docs/guide/withdrawals) — Move funds off-platform
+- [SDK Reference](/docs/sdk/quick-start) — Full SDK documentation

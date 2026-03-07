@@ -1,0 +1,294 @@
+---
+title: Quick Start
+description: Create your first user and order in 5 minutes.
+order: 1
+section: Guides
+---
+
+This guide walks you through your first API calls with OFFER-HUB Orchestrator. By the end, you'll have created a user, checked their balance, and understand the basic flow.
+
+<Callout type="tip">
+  Make sure you've completed the [Installation](/docs/installation) first and have your API key ready.
+</Callout>
+
+## Prerequisites
+
+You need:
+- A running Orchestrator instance (`http://localhost:4000`)
+- An API key (`ohk_live_...`)
+
+## Step 1: Create a User
+
+Register a buyer in the system:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/users \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "externalUserId": "your-user-123",
+    "email": "buyer@example.com",
+    "type": "BUYER"
+  }'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "usr_abc123def456",
+    "externalUserId": "your-user-123",
+    "email": "buyer@example.com",
+    "type": "BUYER",
+    "status": "ACTIVE",
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+<Callout type="note">
+  `externalUserId` is your system's user ID. Use it to link OFFER-HUB users to your marketplace users.
+</Callout>
+
+## Step 2: Get Deposit Address
+
+Get the user's Stellar address for USDC deposits:
+
+```bash
+curl http://localhost:4000/api/v1/users/usr_abc123def456/wallet/deposit \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "provider": "crypto",
+    "method": "stellar_address",
+    "address": "GCV24WNJYX...",
+    "asset": {
+      "code": "USDC",
+      "issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+    },
+    "network": "testnet",
+    "instructions": "Send USDC to this Stellar address. Deposits are detected automatically within seconds."
+  }
+}
+```
+
+Display this address to your user. When they send USDC, the balance is credited automatically.
+
+## Step 3: Check Balance
+
+Verify the user's balance:
+
+```bash
+curl http://localhost:4000/api/v1/users/usr_abc123def456/balance \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "userId": "usr_abc123def456",
+    "available": "100.00",
+    "reserved": "0.00",
+    "currency": "USD"
+  }
+}
+```
+
+## Step 4: Create an Order
+
+Create an order between a buyer and seller:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "buyerId": "usr_buyer123",
+    "sellerId": "usr_seller456",
+    "amount": "50.00",
+    "currency": "USD",
+    "title": "Logo Design",
+    "description": "Design a logo for my startup"
+  }'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "ord_xyz789",
+    "status": "ORDER_CREATED",
+    "buyerId": "usr_buyer123",
+    "sellerId": "usr_seller456",
+    "amount": "50.00",
+    "currency": "USD",
+    "title": "Logo Design",
+    "created_at": "2026-02-25T12:05:00.000Z"
+  }
+}
+```
+
+## Step 5: Reserve Funds
+
+Lock the buyer's funds for this order:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/reserve \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "ord_xyz789",
+    "status": "FUNDS_RESERVED"
+  }
+}
+```
+
+The buyer's balance changes:
+- `available`: `50.00` (was `100.00`)
+- `reserved`: `50.00` (was `0.00`)
+
+## Step 6: Create and Fund Escrow
+
+Lock funds in a blockchain smart contract:
+
+```bash
+# Create escrow contract
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+
+# Fund the escrow (sends USDC on-chain)
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow/fund \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Order status progresses: `ESCROW_CREATING` → `ESCROW_FUNDING` → `ESCROW_FUNDED` → `IN_PROGRESS`
+
+## Step 7: Release Funds
+
+When the buyer approves the work:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/release \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"requestedBy": "usr_buyer123"}'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "ord_xyz789",
+    "status": "CLOSED"
+  }
+}
+```
+
+The seller's `available` balance is now credited with `50.00`.
+
+## Using the TypeScript SDK
+
+The same flow with the SDK:
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+// Create users
+const buyer = await sdk.users.create({
+  externalUserId: 'buyer-123',
+  email: 'buyer@example.com',
+  type: 'BUYER'
+});
+
+const seller = await sdk.users.create({
+  externalUserId: 'seller-456',
+  email: 'seller@example.com',
+  type: 'SELLER'
+});
+
+// Create order
+const order = await sdk.orders.create({
+  buyerId: buyer.id,
+  sellerId: seller.id,
+  amount: '50.00',
+  currency: 'USD',
+  title: 'Logo Design'
+});
+
+// Reserve funds
+await sdk.orders.reserve(order.id);
+
+// Create and fund escrow
+await sdk.escrow.create(order.id);
+await sdk.escrow.fund(order.id);
+
+// Release to seller
+await sdk.resolution.release(order.id, { requestedBy: buyer.id });
+```
+
+## Listening to Events
+
+Subscribe to real-time updates via SSE:
+
+```typescript
+const events = new EventSource(
+  'http://localhost:4000/api/v1/events',
+  { headers: { Authorization: 'Bearer ohk_live_...' } }
+);
+
+events.onmessage = (e) => {
+  const event = JSON.parse(e.data);
+  console.log(`Event: ${event.eventType}`, event.payload);
+
+  // Handle specific events
+  switch (event.eventType) {
+    case 'balance.credited':
+      // Update UI with new balance
+      break;
+    case 'order.escrow_funded':
+      // Show "In Progress" status
+      break;
+    case 'order.closed':
+      // Show completion
+      break;
+  }
+};
+```
+
+## Common Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `INSUFFICIENT_FUNDS` | Balance too low | Check `available` before creating order |
+| `INVALID_STATE_TRANSITION` | Wrong order status | Check current status before action |
+| `USER_NOT_FOUND` | Unknown user ID | Create user first |
+| `IDEMPOTENCY_CONFLICT` | Same key, different body | Use a new `Idempotency-Key` |
+
+## Next Steps
+
+- [Orders Guide](/docs/guide/orders) - Complete order lifecycle
+- [Escrow Guide](/docs/guide/escrow) - How smart contract escrow works
+- [Deposits Guide](/docs/guide/deposits) - Adding funds to user balances
+- [SDK Reference](/docs/sdk/quick-start) - Full SDK documentation
+- [API Reference](/docs/api-reference/overview) - All endpoints

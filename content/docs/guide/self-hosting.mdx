@@ -1,0 +1,547 @@
+---
+title: Self-Hosting
+description: Complete instructions for deploying OFFER-HUB Orchestrator on your own infrastructure using Docker.
+order: 8
+section: Guides
+---
+
+Run OFFER-HUB Orchestrator on your own server with full control over data, uptime, and configuration. This guide covers everything from initial setup to ongoing maintenance using Docker.
+
+<Callout type="tip">
+  If you haven't configured your environment variables yet, review the [Configuration](/docs/configuration) page first.
+</Callout>
+
+## Prerequisites
+
+Before you begin, make sure your host machine meets the following requirements:
+
+- **Docker** v20.10 or later
+- **Docker Compose** v2.0 or later
+- **PostgreSQL** 15+ (or managed service like Supabase, Neon, Railway)
+- **Redis** 7+ (or managed service like Upstash, Railway)
+- A registered domain name (recommended for production)
+- At least **2 GB of RAM** and **20 GB of disk space**
+
+Verify that Docker is installed and running:
+
+<CommandLine>docker --version && docker compose version</CommandLine>
+
+<Callout type="note">
+  On older installations you may need to use `docker-compose` (with a hyphen) instead of `docker compose`.
+</Callout>
+
+## Architecture Overview
+
+The OFFER-HUB deployment consists of:
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Frontend  │────▶│ Orchestrator│────▶│  PostgreSQL │
+│  (Next.js)  │     │  (NestJS)   │     │             │
+└─────────────┘     └──────┬──────┘     └─────────────┘
+                          │
+                    ┌─────┴─────┐
+                    ▼           ▼
+              ┌─────────┐ ┌───────────┐
+              │  Redis  │ │  Stellar  │
+              │ (BullMQ)│ │  Network  │
+              └─────────┘ └───────────┘
+```
+
+## Docker Setup
+
+### Project Structure
+
+Create a deployment directory:
+
+<CommandLine>mkdir offer-hub-deploy && cd offer-hub-deploy</CommandLine>
+
+Your directory will contain:
+
+```
+offer-hub-deploy/
+├── docker-compose.yml
+├── .env
+├── nginx.conf (optional)
+└── certs/ (optional, for TLS)
+```
+
+### docker-compose.yml
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: offerhub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-offerhub_secret}
+      POSTGRES_DB: offerhub_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U offerhub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - offerhub
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - offerhub
+
+  orchestrator:
+    image: offerhub/orchestrator:latest
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://offerhub:${POSTGRES_PASSWORD:-offerhub_secret}@postgres:5432/offerhub_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - offerhub
+
+  frontend:
+    image: offerhub/frontend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://orchestrator:4000
+      - NEXT_PUBLIC_STELLAR_NETWORK=${STELLAR_NETWORK:-testnet}
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - offerhub
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - orchestrator
+    restart: unless-stopped
+    networks:
+      - offerhub
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  offerhub:
+    driver: bridge
+```
+
+<Callout type="warning">
+  The `nginx` service is optional for development but strongly recommended for production. It handles TLS termination and reverse-proxying.
+</Callout>
+
+### Using External Services
+
+If you prefer managed databases, remove `postgres` and `redis` services and update the environment:
+
+```yaml
+services:
+  orchestrator:
+    image: offerhub/orchestrator:latest
+    ports:
+      - "4000:4000"
+    environment:
+      # Supabase PostgreSQL
+      - DATABASE_URL=postgresql://postgres:password@db.xxxx.supabase.co:5432/postgres?sslmode=require
+      # Upstash Redis
+      - REDIS_URL=rediss://default:xxx@us1-xxx.upstash.io:6379
+    # ... rest of config
+```
+
+### Building from Source
+
+To build images locally instead of pulling pre-built ones:
+
+<CommandLine>git clone https://github.com/OFFER-HUB/offer-hub-orchestrator.git && cd offer-hub-orchestrator</CommandLine>
+
+<CommandLine>docker build -t offerhub/orchestrator:latest .</CommandLine>
+
+## Environment Variables
+
+Create a `.env` file in the same directory as your `docker-compose.yml`.
+
+### Required Variables
+
+| Variable | Description |
+|----------|-------------|
+| `NODE_ENV` | Runtime environment: `development`, `staging`, `production` |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `OFFERHUB_MASTER_KEY` | Master key for creating API keys |
+| `WALLET_ENCRYPTION_KEY` | 64 hex chars - AES-256-GCM key for wallet encryption |
+| `TRUSTLESS_API_KEY` | Trustless Work API key for escrow |
+| `PLATFORM_USER_ID` | Platform user ID for escrow operations |
+| `PUBLIC_BASE_URL` | Your Orchestrator's public URL |
+
+### Optional Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4000` | HTTP server port |
+| `LOG_LEVEL` | `info` | Logging level: `debug`, `info`, `warn`, `error` |
+| `PAYMENT_PROVIDER` | `crypto` | Payment mode: `crypto` or `airtm` |
+| `STELLAR_NETWORK` | `testnet` | Stellar network: `testnet` or `mainnet` |
+| `STELLAR_USDC_ISSUER` | Testnet issuer | USDC asset issuer address |
+
+<Callout type="danger">
+  Never commit your `.env` file to version control. Treat every value as a secret.
+</Callout>
+
+### Example .env File
+
+```bash
+# Server
+NODE_ENV=production
+PORT=4000
+LOG_LEVEL=info
+
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://offerhub:your_password@postgres:5432/offerhub_db
+POSTGRES_PASSWORD=your_password
+
+# Redis
+REDIS_URL=redis://redis:6379
+
+# Authentication
+OFFERHUB_MASTER_KEY=your-secure-master-key-at-least-32-chars
+
+# Payment Provider
+PAYMENT_PROVIDER=crypto
+WALLET_ENCRYPTION_KEY=your-64-character-hex-key-here-generate-with-crypto-randomBytes
+
+# Trustless Work (Escrow)
+TRUSTLESS_API_KEY=your_trustless_api_key
+TRUSTLESS_WEBHOOK_SECRET=your_webhook_secret
+
+# Platform Identity
+PLATFORM_USER_ID=usr_platform
+
+# Stellar
+STELLAR_NETWORK=mainnet
+STELLAR_USDC_ISSUER=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+
+# Public URL
+PUBLIC_BASE_URL=https://api.yourdomain.com
+
+# Frontend (if running frontend in same compose)
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+NEXT_PUBLIC_STELLAR_NETWORK=mainnet
+```
+
+### Generating Secure Keys
+
+```bash
+# Generate OFFERHUB_MASTER_KEY
+openssl rand -base64 32
+
+# Generate WALLET_ENCRYPTION_KEY (64 hex characters)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+## Running in Production
+
+### Starting the Stack
+
+Once your `.env` file is ready, bring everything up in detached mode:
+
+<CommandLine>docker compose up -d</CommandLine>
+
+Watch the logs to confirm all services start cleanly:
+
+<CommandLine>docker compose logs -f</CommandLine>
+
+### Running Database Migrations
+
+Apply Prisma migrations before the first launch (or after pulling a new version):
+
+<CommandLine>docker compose exec orchestrator npx prisma migrate deploy</CommandLine>
+
+<Callout type="warning">
+  Always back up your database before running migrations in production.
+</Callout>
+
+### Setting NODE_ENV
+
+Make sure `NODE_ENV=production` is set in your `.env` file. This enables:
+
+- Optimised builds and minification
+- Stricter error handling
+- Disabled development-only logging
+- Production-level security defaults
+
+### TLS / HTTPS
+
+For production deployments you should terminate TLS at the reverse proxy. If you use the `nginx` service from the Compose file above, place your certificate and key in the `certs/` directory and update `nginx.conf` accordingly.
+
+Example `nginx.conf`:
+
+```nginx
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream orchestrator {
+        server orchestrator:4000;
+    }
+
+    upstream frontend {
+        server frontend:3000;
+    }
+
+    server {
+        listen 80;
+        server_name yourdomain.com;
+        return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        server_name yourdomain.com;
+
+        ssl_certificate /etc/nginx/certs/fullchain.pem;
+        ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+        # API routes
+        location /api {
+            proxy_pass http://orchestrator;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Frontend routes
+        location / {
+            proxy_pass http://frontend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+        }
+    }
+}
+```
+
+<Callout type="tip">
+  [Let's Encrypt](https://letsencrypt.org) with [Certbot](https://certbot.eff.org) is the easiest way to obtain free TLS certificates.
+</Callout>
+
+## Health Checks
+
+The Orchestrator exposes a `/health` endpoint that returns the current service status. The Docker Compose file already configures a health check against it.
+
+### Manual Check
+
+<CommandLine>curl http://localhost:4000/health</CommandLine>
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-02-25T12:00:00.000Z",
+  "services": {
+    "database": "healthy",
+    "redis": "healthy",
+    "stellar": "connected"
+  }
+}
+```
+
+### Container Health Status
+
+Docker reports health status directly:
+
+<CommandLine>docker compose ps</CommandLine>
+
+A healthy deployment shows `(healthy)` next to each service. If a service is `(unhealthy)`, inspect its logs:
+
+<CommandLine>docker compose logs orchestrator --tail 50</CommandLine>
+
+### Monitoring Tips
+
+- Point an uptime monitor (e.g. UptimeRobot, Betterstack) at `/health`.
+- Set up alerts for non-`200` responses or response times above **2 seconds**.
+- Monitor disk usage — logs, database, and Docker images can accumulate over time.
+- Track Redis memory usage — BullMQ jobs can grow if not cleaned up.
+
+## Background Jobs
+
+The Orchestrator uses BullMQ for background job processing:
+
+| Queue | Purpose |
+|-------|---------|
+| `blockchain-monitor` | Monitor Stellar for incoming deposits |
+| `transaction-submit` | Submit signed Stellar transactions |
+| `webhook-delivery` | Send webhooks to registered endpoints |
+| `balance-sync` | Reconcile on-chain and off-chain balances |
+
+Monitor job queues:
+
+```bash
+# View Redis keys
+docker compose exec redis redis-cli keys "bull:*"
+
+# Check queue length
+docker compose exec redis redis-cli llen "bull:webhook-delivery:wait"
+```
+
+## Updating
+
+### Pulling the Latest Images
+
+<CommandLine>docker compose pull</CommandLine>
+
+### Applying the Update
+
+<CommandLine>docker compose up -d --remove-orphans</CommandLine>
+
+This pulls the newest images, recreates only the containers that changed, and removes any services no longer defined in the Compose file.
+
+### Full Update Workflow
+
+The recommended update procedure:
+
+1. **Back up your database** before any update.
+2. Pull the latest images.
+3. Run migrations.
+4. Restart the stack.
+
+```bash
+# 1. Backup database
+docker compose exec postgres pg_dump -U offerhub offerhub_db > backup-$(date +%Y%m%d).sql
+
+# 2. Pull latest images
+docker compose pull
+
+# 3. Restart with new images
+docker compose up -d --remove-orphans
+
+# 4. Run any new migrations
+docker compose exec orchestrator npx prisma migrate deploy
+
+# 5. Verify health
+curl http://localhost:4000/health
+```
+
+### Rolling Back
+
+If something goes wrong, roll back to a specific image tag:
+
+```yaml
+services:
+  orchestrator:
+    image: offerhub/orchestrator:1.2.0   # pin to a known-good version
+```
+
+Then restart:
+
+<CommandLine>docker compose up -d</CommandLine>
+
+<Callout type="note">
+  Check the [GitHub Releases](https://github.com/OFFER-HUB/offer-hub-orchestrator/releases) page for available tags and changelogs.
+</Callout>
+
+## Security Checklist
+
+Before going to production, verify:
+
+- [ ] `NODE_ENV=production` is set
+- [ ] `OFFERHUB_MASTER_KEY` is a strong, unique value
+- [ ] `WALLET_ENCRYPTION_KEY` is backed up securely
+- [ ] Database uses SSL (`?sslmode=require`)
+- [ ] Redis uses TLS (`rediss://`)
+- [ ] HTTPS is enabled with valid certificates
+- [ ] Firewall only exposes ports 80/443
+- [ ] Database is not publicly accessible
+- [ ] Redis is not publicly accessible
+- [ ] Webhook secrets are configured
+
+## Troubleshooting
+
+### Orchestrator won't start
+
+```bash
+# Check logs
+docker compose logs orchestrator --tail 100
+
+# Common issues:
+# - DATABASE_URL invalid
+# - WALLET_ENCRYPTION_KEY wrong length
+# - Redis not reachable
+```
+
+### Database connection errors
+
+```bash
+# Test PostgreSQL connection
+docker compose exec orchestrator npx prisma db pull
+
+# Check if migrations are applied
+docker compose exec orchestrator npx prisma migrate status
+```
+
+### Webhook delivery failing
+
+```bash
+# Check webhook queue
+docker compose exec redis redis-cli lrange "bull:webhook-delivery:failed" 0 10
+
+# Verify webhook endpoint is reachable
+curl -X POST https://your-webhook-url/test
+```
+
+## Next Steps
+
+- [Configuration](/docs/configuration) — Full environment variable reference
+- [Quick Start](/docs/guide/quick-start) — Make your first API call
+- [API Reference](/docs/api-reference/overview) — Explore all endpoints
+- [Webhooks](/docs/api-reference/webhooks) — Set up event notifications

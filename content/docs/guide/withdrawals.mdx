@@ -1,0 +1,494 @@
+---
+title: Withdrawals Guide
+description: How users withdraw funds from OFFER-HUB — crypto withdrawals and AirTM payouts.
+order: 7
+section: Guides
+---
+
+When users want to move funds off the platform, they create a withdrawal request. OFFER-HUB supports withdrawals to external Stellar wallets (crypto mode) or bank accounts/local methods (AirTM mode).
+
+## Payment Providers
+
+| Provider | Destination | Speed | Fees |
+|----------|-------------|-------|------|
+| `crypto` | Stellar address | ~5 seconds | Network fee only |
+| `airtm` | Bank, mobile money | 1-48 hours | AirTM fees apply |
+
+## Withdrawal Lifecycle
+
+### State Machine
+
+```
+PENDING
+   ↓
+PROCESSING
+   ↓
+┌──┴──┐
+↓     ↓
+COMPLETED  FAILED
+```
+
+### State Descriptions
+
+| State | Description |
+|-------|-------------|
+| `PENDING` | Request created, awaiting processing |
+| `PROCESSING` | Transaction being submitted |
+| `COMPLETED` | Funds sent to destination |
+| `FAILED` | Transaction failed, funds returned to balance |
+
+## Crypto Withdrawals
+
+When `PAYMENT_PROVIDER=crypto`, withdrawals send USDC to any Stellar address.
+
+### Create Withdrawal
+
+```bash
+curl -X POST http://localhost:4000/api/v1/withdrawals \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "userId": "usr_abc123",
+    "amount": "50.00",
+    "destination": {
+      "type": "stellar",
+      "address": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "wth_xyz789",
+    "userId": "usr_abc123",
+    "amount": "50.00",
+    "currency": "USD",
+    "status": "PENDING",
+    "destination": {
+      "type": "stellar",
+      "address": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"
+    },
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+### Processing Flow
+
+1. **Validate balance** — Ensure sufficient available funds
+2. **Debit balance** — Reduce off-chain balance immediately
+3. **Build transaction** — Create Stellar payment operation
+4. **Sign transaction** — Sign with user's encrypted key
+5. **Submit to network** — Send to Stellar Horizon
+6. **Confirm on-chain** — Wait for ledger confirmation
+7. **Update status** — Mark as `COMPLETED`
+
+```
+Balance debited → Transaction signed → Submitted → Confirmed → Complete
+```
+
+<Callout type="note">
+  Crypto withdrawals typically complete within 5-10 seconds.
+</Callout>
+
+## AirTM Withdrawals
+
+When `PAYMENT_PROVIDER=airtm`, withdrawals go through AirTM's payment network.
+
+### Create Withdrawal Request
+
+```bash
+curl -X POST http://localhost:4000/api/v1/withdrawals \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "userId": "usr_abc123",
+    "amount": "50.00",
+    "destination": {
+      "type": "airtm",
+      "email": "user@example.com"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "wth_xyz789",
+    "userId": "usr_abc123",
+    "amount": "50.00",
+    "currency": "USD",
+    "status": "PENDING",
+    "destination": {
+      "type": "airtm",
+      "email": "user@example.com"
+    },
+    "airtm": {
+      "requiresCommit": true,
+      "commitUrl": "https://app.airtm.com/confirm/abc123",
+      "expiresAt": "2026-02-25T13:00:00.000Z"
+    },
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+### Commit Step (AirTM)
+
+AirTM withdrawals require user confirmation:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/withdrawals/wth_xyz789/commit \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Or redirect user to `commitUrl` for web-based confirmation.
+
+<Callout type="warning">
+  AirTM withdrawals expire if not committed. Users must complete the process within the expiration time.
+</Callout>
+
+## Getting Withdrawal Details
+
+```bash
+curl http://localhost:4000/api/v1/withdrawals/wth_xyz789 \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "wth_xyz789",
+    "userId": "usr_abc123",
+    "amount": "50.00",
+    "currency": "USD",
+    "status": "COMPLETED",
+    "destination": {
+      "type": "stellar",
+      "address": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"
+    },
+    "transaction": {
+      "hash": "abc123def456...",
+      "ledger": 12345678,
+      "completedAt": "2026-02-25T12:00:05.000Z"
+    },
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+## Listing Withdrawals
+
+```bash
+# All withdrawals for a user
+curl "http://localhost:4000/api/v1/withdrawals?user_id=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+
+# Filter by status
+curl "http://localhost:4000/api/v1/withdrawals?status=COMPLETED" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+
+# Date range
+curl "http://localhost:4000/api/v1/withdrawals?created_after=2026-02-01" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "wth_xyz789",
+      "userId": "usr_abc123",
+      "amount": "50.00",
+      "status": "COMPLETED",
+      "created_at": "2026-02-25T12:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "has_more": false,
+    "next_cursor": null
+  }
+}
+```
+
+## Using the SDK
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+// Crypto withdrawal
+const withdrawal = await sdk.withdrawals.create({
+  userId: 'usr_abc123',
+  amount: '50.00',
+  destination: {
+    type: 'stellar',
+    address: 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ'
+  }
+});
+
+console.log('Withdrawal ID:', withdrawal.id);
+console.log('Status:', withdrawal.status);
+
+// Wait for completion
+const completed = await sdk.withdrawals.waitForStatus(
+  withdrawal.id,
+  'COMPLETED'
+);
+console.log('Transaction hash:', completed.transaction.hash);
+```
+
+### AirTM Withdrawal with SDK
+
+```typescript
+// Create AirTM withdrawal
+const withdrawal = await sdk.withdrawals.create({
+  userId: 'usr_abc123',
+  amount: '50.00',
+  destination: {
+    type: 'airtm',
+    email: 'user@example.com'
+  }
+});
+
+if (withdrawal.airtm?.requiresCommit) {
+  // Option 1: Redirect user
+  window.location.href = withdrawal.airtm.commitUrl;
+
+  // Option 2: Commit programmatically
+  await sdk.withdrawals.commit(withdrawal.id);
+}
+```
+
+### Listening to Withdrawal Events
+
+```typescript
+const events = sdk.events.subscribe();
+
+events.on('withdrawal.completed', (data) => {
+  console.log(`Withdrawal ${data.withdrawalId} completed`);
+  console.log(`TX Hash: ${data.transactionHash}`);
+});
+
+events.on('withdrawal.failed', (data) => {
+  console.log(`Withdrawal ${data.withdrawalId} failed: ${data.reason}`);
+  // Notify user, funds returned to balance
+});
+```
+
+## Webhooks
+
+Subscribe to withdrawal events:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/webhooks \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks",
+    "events": ["withdrawal.completed", "withdrawal.failed"],
+    "secret": "your-webhook-secret"
+  }'
+```
+
+### Webhook Payloads
+
+**withdrawal.completed:**
+
+```json
+{
+  "id": "evt_abc123",
+  "type": "withdrawal.completed",
+  "created_at": "2026-02-25T12:00:05.000Z",
+  "data": {
+    "withdrawal_id": "wth_xyz789",
+    "user_id": "usr_abc123",
+    "amount": "50.00",
+    "currency": "USD",
+    "destination_type": "stellar",
+    "transaction_hash": "abc123def456..."
+  }
+}
+```
+
+**withdrawal.failed:**
+
+```json
+{
+  "id": "evt_def456",
+  "type": "withdrawal.failed",
+  "created_at": "2026-02-25T12:00:05.000Z",
+  "data": {
+    "withdrawal_id": "wth_xyz789",
+    "user_id": "usr_abc123",
+    "amount": "50.00",
+    "currency": "USD",
+    "reason": "Destination account does not have USDC trustline",
+    "funds_returned": true
+  }
+}
+```
+
+## Limits and Fees
+
+### Crypto Withdrawals
+
+| Limit Type | Value |
+|------------|-------|
+| Minimum | 1.00 USDC |
+| Maximum | No limit |
+| Fee | ~0.00001 XLM (network) |
+
+### AirTM Withdrawals
+
+| Limit Type | Value |
+|------------|-------|
+| Minimum | $10.00 USD |
+| Maximum | Based on AirTM tier |
+| Fee | Variable (shown at checkout) |
+
+## Rate Limiting
+
+Withdrawals have stricter rate limits to prevent abuse:
+
+| Endpoint | Limit |
+|----------|-------|
+| `POST /withdrawals` | 5 per minute per user |
+
+If exceeded:
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Too many withdrawal requests",
+    "details": {
+      "retry_after": 60
+    }
+  }
+}
+```
+
+## Error Handling
+
+### Common Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `INSUFFICIENT_FUNDS` | Balance too low | Check available balance first |
+| `INVALID_DESTINATION` | Bad Stellar address | Validate address format |
+| `DESTINATION_NO_TRUSTLINE` | Account can't receive USDC | Recipient must add trustline |
+| `WITHDRAWAL_IN_PROGRESS` | Existing pending withdrawal | Wait for current to complete |
+| `AMOUNT_BELOW_MINIMUM` | Amount too small | Increase withdrawal amount |
+
+### Handling Failed Withdrawals
+
+```typescript
+try {
+  const withdrawal = await sdk.withdrawals.create({
+    userId: 'usr_abc123',
+    amount: '50.00',
+    destination: {
+      type: 'stellar',
+      address: 'GDQP2K...'
+    }
+  });
+} catch (error) {
+  if (error.code === 'INSUFFICIENT_FUNDS') {
+    const balance = await sdk.users.getBalance('usr_abc123');
+    console.log(`Available: ${balance.available}`);
+    // Show user their actual balance
+  }
+
+  if (error.code === 'DESTINATION_NO_TRUSTLINE') {
+    // Tell user to add USDC trustline to their wallet
+    console.log('Destination wallet needs USDC trustline');
+  }
+}
+```
+
+## Idempotency
+
+All withdrawal requests require an idempotency key:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/withdrawals \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  ...
+```
+
+| Scenario | Behavior |
+|----------|----------|
+| First request | Processed normally |
+| Same key, same body | Returns original response |
+| Same key, different body | Returns `409 IDEMPOTENCY_KEY_REUSED` |
+
+Idempotency window: **24 hours**
+
+## Balance Impact
+
+When a withdrawal is created:
+
+```
+Before:
+  available: 100.00
+  reserved: 0.00
+
+After withdrawal created (50.00):
+  available: 50.00
+  reserved: 0.00
+
+If withdrawal fails:
+  available: 100.00 (funds returned)
+  reserved: 0.00
+```
+
+<Callout type="note">
+  Unlike order reservations, withdrawals debit the available balance immediately. If the transaction fails, funds are credited back.
+</Callout>
+
+## Verifying Transactions
+
+For crypto withdrawals, verify on Stellar:
+
+```typescript
+// Get withdrawal details
+const withdrawal = await sdk.withdrawals.get('wth_xyz789');
+
+if (withdrawal.status === 'COMPLETED') {
+  const txHash = withdrawal.transaction.hash;
+
+  // View on Stellar Expert (testnet)
+  const explorerUrl = `https://stellar.expert/explorer/testnet/tx/${txHash}`;
+  console.log('View transaction:', explorerUrl);
+}
+```
+
+## Security Considerations
+
+1. **Validate destination addresses** — Check format before submission
+2. **Confirm large withdrawals** — Require 2FA for amounts over threshold
+3. **Monitor patterns** — Alert on unusual withdrawal activity
+4. **Use idempotency** — Prevent duplicate withdrawals
+5. **Verify webhooks** — Check signatures before processing
+
+## Next Steps
+
+- [Deposits Guide](/docs/guide/deposits) — Adding funds to accounts
+- [Wallets Guide](/docs/guide/wallets) — Understanding invisible wallets
+- [API Reference](/docs/api-reference/overview) — Full endpoint documentation

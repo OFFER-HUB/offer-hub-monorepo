@@ -1,0 +1,379 @@
+---
+title: Deposits Guide
+description: How users add funds to their OFFER-HUB balance — crypto deposits and AirTM top-ups.
+order: 6
+section: Guides
+---
+
+Before users can create orders or fund escrow, they need balance in their account. OFFER-HUB supports two deposit methods depending on your payment provider configuration.
+
+## Payment Providers
+
+| Provider | Method | Speed | Currencies |
+|----------|--------|-------|------------|
+| `crypto` (default) | Stellar USDC transfer | ~5 seconds | USDC |
+| `airtm` | AirTM top-up | 1-24 hours | USD, local currencies |
+
+Set your provider in environment:
+
+```env
+PAYMENT_PROVIDER=crypto  # or "airtm"
+```
+
+## Crypto Deposits (Default)
+
+When `PAYMENT_PROVIDER=crypto`, users deposit by sending USDC to their Stellar address.
+
+### Step 1: Get Deposit Address
+
+```bash
+curl http://localhost:4000/api/v1/users/usr_abc123/wallet/deposit \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "provider": "crypto",
+    "method": "stellar_address",
+    "address": "GCV24WNJYXPG3QFNP6ZQMLVEMHQX5S6J2OWKGVF5U3XC6HF4QQHG7WMD",
+    "asset": {
+      "code": "USDC",
+      "issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+    },
+    "network": "testnet",
+    "instructions": "Send USDC to this Stellar address. Deposits are detected automatically within seconds."
+  }
+}
+```
+
+### Step 2: User Sends USDC
+
+The user sends USDC from any Stellar wallet:
+
+- **Lobstr** — Mobile wallet
+- **StellarTerm** — Web wallet
+- **Exchange** — Coinbase, Binance, etc. (if they support Stellar USDC)
+
+### Step 3: Automatic Detection
+
+OFFER-HUB monitors the blockchain for incoming transactions. When USDC arrives:
+
+1. **Transaction detected** — Horizon streaming catches the payment
+2. **Balance updated** — Off-chain balance incremented
+3. **Event emitted** — `balance.credited` sent via SSE/webhook
+4. **User notified** — UI can update in real-time
+
+<Callout type="note">
+  Deposits are typically credited within 5-10 seconds of the Stellar transaction being confirmed.
+</Callout>
+
+### Deposit Flow Diagram
+
+```
+User's External Wallet          OFFER-HUB
+        │                           │
+        │ 1. Send USDC              │
+        │ ─────────────────────────>│
+        │                           │
+        │   2. Detect on blockchain │
+        │                           │
+        │   3. Update balance       │
+        │                           │
+        │   4. Emit event           │
+        │ <─────────────────────────│
+        │                           │
+```
+
+## AirTM Deposits
+
+When `PAYMENT_PROVIDER=airtm`, users fund their accounts through AirTM's payment network.
+
+### Step 1: Create Top-up Request
+
+```bash
+curl -X POST http://localhost:4000/api/v1/topups \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "userId": "usr_abc123",
+    "amount": "100.00",
+    "currency": "USD"
+  }'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "top_xyz789",
+    "userId": "usr_abc123",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "pending",
+    "airtm": {
+      "paymentUrl": "https://app.airtm.com/payment/abc123",
+      "expiresAt": "2026-02-25T13:00:00.000Z"
+    },
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+### Step 2: User Completes Payment
+
+Redirect the user to the `paymentUrl` where they:
+
+1. Log into AirTM (or create an account)
+2. Choose payment method (bank, mobile money, crypto, etc.)
+3. Complete the payment
+
+### Step 3: Webhook Confirmation
+
+AirTM sends a webhook when payment completes:
+
+```json
+{
+  "event": "payment.completed",
+  "data": {
+    "topup_id": "top_xyz789",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "completed"
+  }
+}
+```
+
+OFFER-HUB:
+1. Verifies webhook signature
+2. Credits user balance
+3. Emits `balance.credited` event
+
+<Callout type="warning">
+  AirTM deposits can take 1-24 hours depending on the user's payment method. Set user expectations accordingly.
+</Callout>
+
+## Using the SDK
+
+### Crypto Deposits
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+// Get deposit address
+const deposit = await sdk.wallet.getDepositAddress('usr_abc123');
+
+// Display to user
+console.log(`Send USDC to: ${deposit.address}`);
+console.log(`Network: ${deposit.network}`);
+
+// Listen for deposit
+sdk.events.on('balance.credited', (event) => {
+  if (event.userId === 'usr_abc123') {
+    console.log(`Deposit received: ${event.amount}`);
+    // Update UI, notify user
+  }
+});
+```
+
+### AirTM Top-ups
+
+```typescript
+// Create top-up request
+const topup = await sdk.topups.create({
+  userId: 'usr_abc123',
+  amount: '100.00',
+  currency: 'USD'
+});
+
+// Redirect user to payment page
+window.location.href = topup.airtm.paymentUrl;
+
+// Or display in iframe/modal
+// <iframe src={topup.airtm.paymentUrl} />
+
+// Listen for completion
+sdk.events.on('topup.completed', (event) => {
+  if (event.topupId === topup.id) {
+    console.log('Payment received!');
+    // Update UI
+  }
+});
+```
+
+## Listening for Deposits
+
+### SSE Events
+
+Connect to the event stream:
+
+```typescript
+const events = new EventSource(
+  'http://localhost:4000/api/v1/events',
+  { headers: { Authorization: 'Bearer ohk_live_...' } }
+);
+
+events.onmessage = (e) => {
+  const event = JSON.parse(e.data);
+
+  if (event.eventType === 'balance.credited') {
+    console.log(`${event.payload.userId} received ${event.payload.amount}`);
+    // Update balance display
+    updateBalance(event.payload.userId, event.payload.newBalance);
+  }
+};
+```
+
+### Webhooks
+
+Register for balance events:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/webhooks \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks",
+    "events": ["balance.credited"],
+    "secret": "your-webhook-secret"
+  }'
+```
+
+Webhook payload:
+
+```json
+{
+  "id": "evt_abc123",
+  "type": "balance.credited",
+  "created_at": "2026-02-25T12:05:00.000Z",
+  "data": {
+    "userId": "usr_abc123",
+    "amount": "100.00",
+    "currency": "USD",
+    "source": "deposit",
+    "transactionId": "tx_stellar_abc...",
+    "newBalance": {
+      "available": "100.00",
+      "reserved": "0.00"
+    }
+  }
+}
+```
+
+## Checking Balance
+
+After a deposit, verify the updated balance:
+
+```bash
+curl http://localhost:4000/api/v1/users/usr_abc123/balance \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "userId": "usr_abc123",
+    "available": "100.00",
+    "reserved": "0.00",
+    "currency": "USD"
+  }
+}
+```
+
+## Minimum Deposits
+
+| Provider | Minimum | Reason |
+|----------|---------|--------|
+| Crypto | 0.01 USDC | Stellar transaction cost |
+| AirTM | $5.00 USD | AirTM processing minimum |
+
+<Callout type="note">
+  There's no maximum deposit limit for crypto. AirTM may have limits based on user verification level.
+</Callout>
+
+## Supported Assets
+
+### Crypto Mode
+
+Currently supported:
+
+| Asset | Network | Issuer |
+|-------|---------|--------|
+| USDC | Stellar Testnet | `GBBD47IF6...` |
+| USDC | Stellar Mainnet | `GA5ZSEJYB...` |
+
+Future support planned for:
+- EURC (Euro stablecoin)
+- Native XLM
+
+### AirTM Mode
+
+AirTM supports 200+ funding methods including:
+- Bank transfers
+- Mobile money (M-Pesa, etc.)
+- Cards (Visa, Mastercard)
+- Local payment methods
+- Crypto (converted to USD)
+
+## Error Handling
+
+### Crypto Deposit Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Deposit not detected | Wrong asset or network | Verify USDC issuer matches |
+| Trustline missing | Account not set up | Contact support |
+| Memo required | Exchange withdrawal | Some exchanges require memo |
+
+### AirTM Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `TOPUP_EXPIRED` | Payment URL expired | Create new top-up |
+| `PAYMENT_FAILED` | User's payment method failed | Try different method |
+| `AMOUNT_BELOW_MINIMUM` | Amount too small | Increase to $5+ |
+
+## Best Practices
+
+### For Developers
+
+1. **Always display network** — Make sure users know testnet vs mainnet
+2. **Show asset details** — Display USDC issuer for verification
+3. **Real-time updates** — Use SSE for instant balance updates
+4. **Clear instructions** — Guide users through deposit flow
+
+### For Users
+
+1. **Double-check address** — Copy-paste, don't type
+2. **Verify network** — Testnet deposits won't show on mainnet
+3. **Start small** — Test with small amount first
+4. **Keep transaction ID** — For support if needed
+
+## Testnet Funding
+
+For development, get testnet USDC:
+
+1. **Get testnet XLM** — Use [Stellar Friendbot](https://friendbot.stellar.org)
+2. **Get testnet USDC** — Use Circle's testnet faucet or contact OFFER-HUB
+
+```bash
+# Fund testnet account with XLM
+curl "https://friendbot.stellar.org?addr=GCV24WNJYX..."
+```
+
+## Next Steps
+
+- [Wallets Guide](/docs/guide/wallets) — Understanding invisible wallets
+- [Withdrawals Guide](/docs/guide/withdrawals) — Moving funds off-platform
+- [Orders Guide](/docs/guide/orders) — Creating your first order

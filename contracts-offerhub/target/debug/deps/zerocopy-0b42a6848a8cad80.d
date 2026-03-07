@@ -1,0 +1,13 @@
+C:\Users\Ajulu Casmir\Documents\offer-hub-monorepo\contracts-offerhub\target\debug\deps\zerocopy-0b42a6848a8cad80.d: C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\lib.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\macros.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\macro_util.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\post_monomorphization_compile_fail_tests.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\util.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\third_party\rust\layout.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\wrappers.rs
+
+C:\Users\Ajulu Casmir\Documents\offer-hub-monorepo\contracts-offerhub\target\debug\deps\libzerocopy-0b42a6848a8cad80.rmeta: C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\lib.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\macros.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\macro_util.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\post_monomorphization_compile_fail_tests.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\util.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\third_party\rust\layout.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\wrappers.rs
+
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\lib.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\macros.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\macro_util.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\post_monomorphization_compile_fail_tests.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\util.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\third_party\rust\layout.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerocopy-0.7.35\src\wrappers.rs:
+
+# env-dep:CARGO_PKG_VERSION=0.7.35

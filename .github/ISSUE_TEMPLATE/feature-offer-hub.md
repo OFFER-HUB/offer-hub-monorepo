@@ -22,11 +22,10 @@ assignees: ''
 - [ ] Add unit tests for new functionalities
 - [ ] Update documentation if needed
 
-## 🔧 Technical Details
+## 🔧 Context AI
 
-- **Contract affected:** [Contract name]
-- **Priority:** [Critical/High/Medium/Low]
-- **Files to modify:** [List of files]
+- [DOCS](https://github.com/OFFER-HUB/offer-hub/tree/main/docs)
+- [DOCS](https://github.com/OFFER-HUB/offer-hub-monorepo/tree/main/docs)
 
 ## 📋 Additional Notes
 

@@ -1,0 +1,266 @@
+---
+title: Style Guide
+description: Design system colors, typography, and component styling for OFFER-HUB.
+order: 11
+section: Guide
+---
+
+This guide documents the OFFER-HUB design system, including colors, typography, and component styling for both light and dark modes.
+
+## Color System
+
+OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically adapt when switching between light and dark modes.
+
+### Background Colors
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--color-bg-base` | `#F1F3F7` | `#1a1a2e` | Page background |
+| `--color-bg-elevated` | `#ffffff` | `#25253d` | Cards, modals, elevated surfaces |
+| `--color-bg-sunken` | `#e8eaef` | `#12121f` | Inset areas, input backgrounds |
+
+### Text Colors
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--color-text-primary` | `#19213D` | `#f1f3f7` | Headings, primary text |
+| `--color-text-secondary` | `#6D758F` | `#a0a6b8` | Body text, descriptions |
+| `--color-text-muted` | `#9ca3af` | `#6D758F` | Placeholder text, hints |
+
+### Brand Colors
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--color-primary` | `#149A9B` | `#1fb8b9` | Primary buttons, links, accents |
+| `--color-primary-hover` | `#0d7377` | `#25d4d5` | Primary hover states |
+| `--color-secondary` | `#002333` | `#002333` | Secondary elements |
+| `--color-accent` | `#15949C` | `#15949C` | Accent highlights |
+
+### Semantic Colors
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--color-success` | `#16a34a` | `#16a34a` | Success states |
+| `--color-warning` | `#d97706` | `#d97706` | Warning states |
+| `--color-error` | `#FF0000` | `#FF0000` | Error states |
+
+### Shadow Colors (Neumorphic)
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--shadow-dark` | `#d1d5db` | `#0f0f1a` | Dark shadow in neumorphic effects |
+| `--shadow-light` | `#ffffff` | `#252540` | Light shadow in neumorphic effects |
+
+### Border Colors
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--color-border` | `#d1d5db` | `#3d3d5c` | Borders, dividers |
+
+---
+
+## Tailwind Utility Classes
+
+Use these Tailwind classes for theme-aware styling:
+
+### Backgrounds
+
+```jsx
+// Page background
+<div className="bg-bg-base" />
+
+// Card/elevated surface
+<div className="bg-bg-elevated" />
+
+// Sunken/inset area
+<div className="bg-bg-sunken" />
+```
+
+### Text
+
+```jsx
+// Primary text (headings)
+<h1 className="text-content-primary" />
+
+// Secondary text (body)
+<p className="text-content-secondary" />
+
+// Muted text (hints)
+<span className="text-content-muted" />
+```
+
+### Brand Colors
+
+```jsx
+// Primary color
+<button className="bg-theme-primary hover:bg-theme-primary-hover" />
+
+// Accent color
+<span className="text-theme-accent" />
+```
+
+### Neumorphic Shadows
+
+```jsx
+// Raised surface
+<div className="shadow-neu-raised" />
+
+// Small raised surface
+<div className="shadow-neu-raised-sm" />
+
+// Sunken/pressed surface
+<div className="shadow-neu-sunken" />
+
+// Subtle sunken
+<div className="shadow-neu-sunken-subtle" />
+```
+
+### Borders
+
+```jsx
+<div className="border border-theme-border" />
+```
+
+---
+
+## Typography
+
+### Font Family
+
+OFFER-HUB uses **Inter** as the primary font:
+
+```css
+font-family: var(--font-inter), Roboto, Outfit, sans-serif;
+```
+
+### Font Weights
+
+| Weight | Class | Usage |
+|--------|-------|-------|
+| 400 | `font-normal` | Body text |
+| 500 | `font-medium` | Emphasis, labels |
+| 700 | `font-bold` | Headings, buttons |
+| 900 | `font-black` | Hero titles |
+
+### Text Sizes
+
+| Size | Class | Usage |
+|------|-------|-------|
+| 12px | `text-xs` | Small labels |
+| 13px | `text-[13px]` | Nav links |
+| 14px | `text-sm` | Body text, buttons |
+| 16px | `text-base` | Default body |
+| 18-24px | `text-lg` to `text-2xl` | Subheadings |
+| 32-48px | `text-3xl` to `text-5xl` | Section titles |
+| 56-72px | `text-6xl` to `text-7xl` | Hero titles |
+
+---
+
+## Component Styling
+
+### Buttons
+
+#### Primary Button (Neumorphic)
+
+```jsx
+<button className="btn-neumorphic-primary px-6 py-2 rounded-full text-sm font-semibold">
+  Button Text
+</button>
+```
+
+#### Secondary Button (Neumorphic)
+
+```jsx
+<button className="btn-neumorphic-secondary px-6 py-2 rounded-full text-sm font-semibold">
+  Button Text
+</button>
+```
+
+### Cards
+
+```jsx
+<div className="bg-bg-elevated shadow-neu-raised rounded-2xl p-6">
+  <h3 className="text-content-primary font-bold">Card Title</h3>
+  <p className="text-content-secondary">Card description</p>
+</div>
+```
+
+### Inputs
+
+```jsx
+<input
+  type="text"
+  className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl px-4 py-3 text-content-primary placeholder:text-content-muted border-none outline-none"
+  placeholder="Enter text..."
+/>
+```
+
+---
+
+## Z-Index Scale
+
+| Value | Usage |
+|-------|-------|
+| `-1` | Background effects (dot grid) |
+| `0` | Default content |
+| `10` | Elevated cards |
+| `50` | Sticky elements |
+| `100` | Dropdowns |
+| `499` | Mobile menu backdrop |
+| `500` | Navbar |
+| `501` | Mobile menu panel |
+
+<Callout type="warning">
+  Ensure content cards have a higher z-index than background effects (like the dot grid) to prevent visual overlap.
+</Callout>
+
+---
+
+## Dark Mode Implementation
+
+### Using the Theme Toggle
+
+The theme can be toggled using the `useTheme` hook:
+
+```tsx
+import { useTheme } from '@/components/providers/ThemeProvider';
+
+function MyComponent() {
+  const { resolvedTheme, toggleTheme } = useTheme();
+
+  return (
+    <button onClick={toggleTheme}>
+      Current theme: {resolvedTheme}
+    </button>
+  );
+}
+```
+
+### Theme Persistence
+
+Theme preference is automatically saved to `localStorage` under the key `offer-hub-theme` and persists across sessions.
+
+### System Preference
+
+When set to "system", the theme automatically follows the user's OS preference and updates in real-time if changed.
+
+---
+
+## Migration Guide
+
+When migrating components to support dark mode, replace hardcoded colors with theme-aware alternatives:
+
+| Before (Hardcoded) | After (Theme-aware) |
+|--------------------|---------------------|
+| `bg-[#F1F3F7]` | `bg-bg-base` |
+| `bg-white` | `bg-bg-elevated` |
+| `text-[#19213D]` | `text-content-primary` |
+| `text-[#6D758F]` | `text-content-secondary` |
+| `text-[#149A9B]` | `text-theme-primary` |
+| `border-[#d1d5db]` | `border-theme-border` |
+| `style={{ background: "#F1F3F7" }}` | `className="bg-bg-base"` |
+| `style={{ color: "#19213D" }}` | `className="text-content-primary"` |
+
+<Callout type="note">
+  Always test components in both light and dark modes after migration to ensure proper contrast and visibility.
+</Callout>

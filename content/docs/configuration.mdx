@@ -1,0 +1,276 @@
+---
+title: Configuration
+description: Complete reference for all environment variables and configuration options.
+order: 3
+section: Getting Started
+---
+
+OFFER-HUB Orchestrator is configured through environment variables in `.env`. This page documents every available option.
+
+## Quick Start
+
+Copy the example file and fill in your values:
+
+<CommandLine>cp .env.example .env</CommandLine>
+
+## Required Variables
+
+These must be set for the application to start:
+
+```env
+# Server
+NODE_ENV=development
+PORT=4000
+
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://user:password@host:5432/database
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Authentication
+OFFERHUB_MASTER_KEY=your-secure-master-key
+
+# Payment Provider
+PAYMENT_PROVIDER=crypto
+WALLET_ENCRYPTION_KEY=your-32-byte-hex-key  # Required for crypto mode
+
+# Trustless Work (Escrow)
+TRUSTLESS_API_KEY=your_trustless_api_key
+
+# Stellar
+STELLAR_NETWORK=testnet
+
+# Public URL
+PUBLIC_BASE_URL=http://localhost:4000
+```
+
+## Server Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `NODE_ENV` | Yes | `development` | Runtime environment: `development`, `staging`, `production` |
+| `PORT` | No | `4000` | HTTP server port |
+| `LOG_LEVEL` | No | `info` | Logging level: `debug`, `info`, `warn`, `error` |
+
+## Database (PostgreSQL)
+
+| Variable | Required | Example | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | `postgresql://user:pass@host:5432/db` | Prisma connection string |
+
+### Examples by Provider
+
+```env
+# Supabase (use direct connection, port 5432)
+DATABASE_URL=postgresql://postgres:password@db.xxxx.supabase.co:5432/postgres?sslmode=require
+
+# Railway
+DATABASE_URL=postgresql://postgres:password@containers-us-west-xxx.railway.app:5432/railway
+
+# Neon
+DATABASE_URL=postgresql://user:password@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+
+# Local Docker
+DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+```
+
+<Callout type="warning">
+  When using Supabase, always use the **direct connection URL** (port 5432), not the pooler (port 6543). Prisma migrations require the direct connection.
+</Callout>
+
+## Redis
+
+| Variable | Required | Example | Description |
+|----------|----------|---------|-------------|
+| `REDIS_URL` | Yes | `redis://:pass@host:6379` | Redis connection string |
+
+### What Redis is Used For
+
+| Feature | Description |
+|---------|-------------|
+| BullMQ | Background job queues and processing |
+| Rate Limiting | API request throttling |
+| Idempotency | Duplicate request prevention |
+| Caching | Performance optimization |
+
+### Examples by Provider
+
+```env
+# Upstash
+REDIS_URL=redis://default:xxx@us1-xxx.upstash.io:6379
+
+# Railway
+REDIS_URL=redis://default:xxx@containers-us-west-xxx.railway.app:6379
+
+# Local Docker
+REDIS_URL=redis://localhost:6379
+```
+
+## Authentication
+
+| Variable | Required | Example | Description |
+|----------|----------|---------|-------------|
+| `OFFERHUB_MASTER_KEY` | Yes | `ohk_master_xxx` | Master key for creating API keys |
+
+### Generating a Secure Master Key
+
+```bash
+# Generate 32-byte random key
+openssl rand -base64 32
+
+# Or use Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+## Payment Provider
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode: `crypto` or `airtm` |
+
+### Crypto-Native Mode (Default)
+
+When `PAYMENT_PROVIDER=crypto`:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `WALLET_ENCRYPTION_KEY` | Yes | 64 hex characters - AES-256-GCM key for encrypting Stellar private keys |
+
+#### Generating WALLET_ENCRYPTION_KEY
+
+<CommandLine>node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</CommandLine>
+
+<Callout type="danger">
+  This key protects all user wallet private keys. If lost, wallet access is permanently lost. Store securely and back up.
+</Callout>
+
+### AirTM Mode (Optional)
+
+<Callout type="warning">
+  **Not Currently Functional** — AirTM integration is not available at this time. This section is for reference only. Use `PAYMENT_PROVIDER=crypto` (the default) for production deployments.
+</Callout>
+
+When `PAYMENT_PROVIDER=airtm`:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `AIRTM_ENV` | Yes | `sandbox` or `prod` |
+| `AIRTM_API_KEY` | Yes | AirTM API key |
+| `AIRTM_API_SECRET` | Yes | AirTM API secret |
+| `AIRTM_WEBHOOK_SECRET` | Recommended | HMAC secret for webhook verification |
+
+<Callout type="note">
+  AirTM requires Enterprise API access. Contact AirTM for credentials.
+</Callout>
+
+## Trustless Work (Escrow)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `TRUSTLESS_API_KEY` | Yes | Trustless Work API key |
+| `TRUSTLESS_WEBHOOK_SECRET` | Recommended | HMAC secret for webhook verification |
+| `TRUSTLESS_API_URL` | No | Override API base URL (auto-detected by default) |
+| `PLATFORM_USER_ID` | Yes | Platform user ID for escrow operations |
+
+Get credentials at [trustlesswork.com](https://trustlesswork.com).
+
+## Stellar Network
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `STELLAR_NETWORK` | No | `testnet` | Stellar network: `testnet` or `mainnet` |
+| `STELLAR_HORIZON_URL` | No | Auto | Horizon server URL |
+| `STELLAR_USDC_ASSET_CODE` | No | `USDC` | USDC asset code |
+| `STELLAR_USDC_ISSUER` | Yes | See below | USDC issuer address |
+
+### Network Details
+
+| Network | Horizon URL | USDC Issuer |
+|---------|-------------|-------------|
+| `testnet` | `https://horizon-testnet.stellar.org` | `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5` |
+| `mainnet` | `https://horizon.stellar.org` | `GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN` |
+
+<Callout type="note">
+  Use `testnet` for development and testing. Switch to `mainnet` for production.
+</Callout>
+
+## Public URL
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PUBLIC_BASE_URL` | Yes | Your Orchestrator's public URL (for webhooks and callbacks) |
+
+## Frontend Variables
+
+For the Next.js frontend, prefix with `NEXT_PUBLIC_`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SITE_URL=https://offer-hub.tech
+```
+
+## Complete .env Template
+
+Copy this for a complete setup:
+
+```env
+# Server
+NODE_ENV=development
+PORT=4000
+LOG_LEVEL=debug
+
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Authentication
+OFFERHUB_MASTER_KEY=change-me-in-production
+
+# Payment Provider
+PAYMENT_PROVIDER=crypto
+WALLET_ENCRYPTION_KEY=  # Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# AirTM (only if PAYMENT_PROVIDER=airtm)
+# AIRTM_ENV=sandbox
+# AIRTM_API_KEY=
+# AIRTM_API_SECRET=
+# AIRTM_WEBHOOK_SECRET=
+
+# Trustless Work
+TRUSTLESS_API_KEY=
+TRUSTLESS_WEBHOOK_SECRET=
+
+# Platform Identity
+PLATFORM_USER_ID=
+
+# Stellar
+STELLAR_NETWORK=testnet
+STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+
+# Public URL
+PUBLIC_BASE_URL=http://localhost:4000
+```
+
+## Security Best Practices
+
+1. **Never commit `.env` files** - Add to `.gitignore`
+2. **Use different keys per environment** - Dev, staging, prod should have separate credentials
+3. **Rotate keys periodically** - Especially `OFFERHUB_MASTER_KEY`
+4. **Use TLS for Redis** - Use `rediss://` in production
+5. **Require SSL for database** - Use `?sslmode=require`
+6. **Store secrets in vault** - Use platform secrets (Railway, Render) or HashiCorp Vault
+
+<Callout type="danger">
+  Never commit your `.env` file to version control. It is already listed in `.gitignore`.
+</Callout>
+
+## Next Steps
+
+- [Quick Start](/docs/guide/quick-start) - Create your first user and order
+- [API Reference](/docs/api-reference/overview) - Explore all endpoints
+- [Deployment](/docs/guide/self-hosting) - Deploy to production

@@ -1,0 +1,339 @@
+---
+title: Orders Guide
+description: Complete guide to the order lifecycle - from creation to settlement.
+order: 2
+section: Guides
+---
+
+Orders are the core of OFFER-HUB. They represent a transaction between a buyer and seller, with funds protected by escrow until work is completed.
+
+## Order Lifecycle
+
+Every order follows a strict state machine:
+
+```mermaid
+stateDiagram-v2
+    [*] --> ORDER_CREATED
+    ORDER_CREATED --> FUNDS_RESERVED: Reserve funds
+    FUNDS_RESERVED --> ESCROW_CREATING: Create escrow
+    ESCROW_CREATING --> ESCROW_CREATED
+    ESCROW_CREATED --> ESCROW_FUNDING: Fund escrow
+    ESCROW_FUNDING --> ESCROW_FUNDED
+    ESCROW_FUNDED --> IN_PROGRESS: Work begins
+
+    IN_PROGRESS --> RELEASE_REQUESTED: Buyer approves
+    IN_PROGRESS --> REFUND_REQUESTED: Request refund
+    IN_PROGRESS --> DISPUTED: Open dispute
+
+    RELEASE_REQUESTED --> RELEASED
+    REFUND_REQUESTED --> REFUNDED
+    DISPUTED --> RESOLVED
+
+    RELEASED --> CLOSED
+    REFUNDED --> CLOSED
+    RESOLVED --> CLOSED
+
+    CLOSED --> [*]
+```
+
+## Creating an Order
+
+### Basic Order
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders \
+  -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "buyerId": "usr_buyer123",
+    "sellerId": "usr_seller456",
+    "amount": "100.00",
+    "currency": "USD",
+    "title": "Logo Design",
+    "description": "Design a modern logo for my tech startup"
+  }'
+```
+
+### With SDK
+
+```typescript
+const order = await sdk.orders.create({
+  buyerId: 'usr_buyer123',
+  sellerId: 'usr_seller456',
+  amount: '100.00',
+  currency: 'USD',
+  title: 'Logo Design',
+  description: 'Design a modern logo for my tech startup'
+});
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ord_xyz789",
+    "status": "ORDER_CREATED",
+    "buyerId": "usr_buyer123",
+    "sellerId": "usr_seller456",
+    "amount": "100.00",
+    "currency": "USD",
+    "title": "Logo Design",
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+## Order with Milestones
+
+For large projects, break payment into milestones:
+
+```typescript
+const order = await sdk.orders.create({
+  buyerId: 'usr_buyer123',
+  sellerId: 'usr_seller456',
+  amount: '5000.00',
+  currency: 'USD',
+  title: 'Mobile App Development',
+  milestones: [
+    { ref: 'design', title: 'UI/UX Design', amount: '1000.00' },
+    { ref: 'backend', title: 'Backend Development', amount: '2000.00' },
+    { ref: 'frontend', title: 'Frontend Development', amount: '1500.00' },
+    { ref: 'testing', title: 'Testing & Launch', amount: '500.00' }
+  ]
+});
+```
+
+<Callout type="note">
+  Milestone amounts must add up to the total order amount.
+</Callout>
+
+## Reserving Funds
+
+Before creating escrow, reserve the buyer's funds:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/reserve \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+This moves funds from `available` to `reserved`:
+
+| Before | After |
+|--------|-------|
+| `available: 100.00` | `available: 0.00` |
+| `reserved: 0.00` | `reserved: 100.00` |
+
+## Creating and Funding Escrow
+
+### Create Escrow Contract
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+This creates a smart contract on Stellar via Trustless Work.
+
+### Fund the Escrow
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow/fund \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+This sends USDC from the buyer's invisible wallet to the smart contract on-chain.
+
+<Callout type="warning">
+  Funding is irreversible until release or refund. The order status becomes `ESCROW_FUNDED`, then `IN_PROGRESS`.
+</Callout>
+
+## Releasing Funds (Happy Path)
+
+When the buyer approves the work:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/release \
+  -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"requestedBy": "usr_buyer123"}'
+```
+
+This executes 3 on-chain transactions:
+1. Release from contract to platform
+2. Transfer to seller's wallet
+3. Credit seller's balance
+
+The seller's `available` balance is credited with the order amount.
+
+## Refunding (Without Dispute)
+
+For direct refund from an `IN_PROGRESS` order:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/refund \
+  -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "Seller cancelled the order"}'
+```
+
+This refunds 100% to the buyer.
+
+## Canceling an Order
+
+From `ORDER_CREATED` or `FUNDS_RESERVED` status:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/cancel \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+<Callout type="note">
+  You cannot cancel after escrow is funded (`ESCROW_FUNDED` or later).
+</Callout>
+
+## Handling Disputes
+
+### Open a Dispute
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
+  -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "openedBy": "BUYER",
+    "reason": "QUALITY_ISSUE"
+  }'
+```
+
+Reasons: `NOT_DELIVERED`, `QUALITY_ISSUE`, `OTHER`
+
+### Resolve a Dispute
+
+```bash
+# Full release to seller
+curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
+  -H "Authorization: Bearer ohk_live_..." \
+  -d '{"decision": "FULL_RELEASE"}'
+
+# Full refund to buyer
+curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
+  -H "Authorization: Bearer ohk_live_..." \
+  -d '{"decision": "FULL_REFUND"}'
+
+# Split between both
+curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
+  -H "Authorization: Bearer ohk_live_..." \
+  -d '{
+    "decision": "SPLIT",
+    "releaseAmount": "80.00",
+    "refundAmount": "20.00",
+    "note": "80% of work was completed"
+  }'
+```
+
+## Listing Orders
+
+```bash
+# All orders
+curl "http://localhost:4000/api/v1/orders" \
+  -H "Authorization: Bearer ohk_live_..."
+
+# Filter by status
+curl "http://localhost:4000/api/v1/orders?status=IN_PROGRESS" \
+  -H "Authorization: Bearer ohk_live_..."
+
+# Filter by buyer
+curl "http://localhost:4000/api/v1/orders?buyer_id=usr_buyer123" \
+  -H "Authorization: Bearer ohk_live_..."
+
+# Pagination
+curl "http://localhost:4000/api/v1/orders?limit=20&cursor=ord_lastid" \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+## Events
+
+Subscribe to order events via SSE:
+
+```typescript
+const events = new EventSource(
+  'http://localhost:4000/api/v1/events',
+  { headers: { Authorization: 'Bearer ohk_live_...' } }
+);
+
+events.onmessage = (e) => {
+  const event = JSON.parse(e.data);
+
+  switch (event.eventType) {
+    case 'order.created':
+      console.log('New order:', event.payload.orderId);
+      break;
+    case 'order.funds_reserved':
+      console.log('Funds reserved for:', event.payload.orderId);
+      break;
+    case 'order.escrow_funded':
+      console.log('Escrow funded:', event.payload.orderId);
+      break;
+    case 'order.released':
+      console.log('Funds released:', event.payload.orderId);
+      break;
+    case 'order.refunded':
+      console.log('Funds refunded:', event.payload.orderId);
+      break;
+    case 'order.closed':
+      console.log('Order closed:', event.payload.orderId);
+      break;
+  }
+};
+```
+
+## Best Practices
+
+### 1. Always Check Balance First
+
+```typescript
+const balance = await sdk.balance.get(buyerId);
+const amount = parseFloat(orderAmount);
+
+if (parseFloat(balance.available) < amount) {
+  throw new Error('Insufficient funds');
+}
+```
+
+### 2. Use Idempotency Keys
+
+```typescript
+const idempotentSdk = sdk.withIdempotencyKey(generateUUID());
+const order = await idempotentSdk.orders.create({ ... });
+```
+
+### 3. Handle All States
+
+```typescript
+switch (order.status) {
+  case 'ORDER_CREATED':
+    // Show "Waiting for funds" UI
+    break;
+  case 'FUNDS_RESERVED':
+    // Show "Creating escrow" UI
+    break;
+  case 'IN_PROGRESS':
+    // Show "Work in progress" UI
+    break;
+  case 'DISPUTED':
+    // Show "Under review" UI
+    break;
+  case 'CLOSED':
+    // Show "Completed" UI
+    break;
+}
+```
+
+## Next Steps
+
+- [Escrow Guide](/docs/guide/escrow) - How blockchain escrow works
+- [Disputes Guide](/docs/guide/disputes) - Handling disputes
+- [Events Reference](/docs/guide/events) - All order events
+- [API Reference](/docs/api-reference/overview) - Full endpoint documentation

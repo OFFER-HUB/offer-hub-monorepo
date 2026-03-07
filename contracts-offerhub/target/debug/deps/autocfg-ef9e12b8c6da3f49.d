@@ -1,0 +1,10 @@
+C:\Users\Ajulu Casmir\Documents\offer-hub-monorepo\contracts-offerhub\target\debug\deps\autocfg-ef9e12b8c6da3f49.d: C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\lib.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\error.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\rustc.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\version.rs
+
+C:\Users\Ajulu Casmir\Documents\offer-hub-monorepo\contracts-offerhub\target\debug\deps\libautocfg-ef9e12b8c6da3f49.rlib: C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\lib.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\error.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\rustc.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\version.rs
+
+C:\Users\Ajulu Casmir\Documents\offer-hub-monorepo\contracts-offerhub\target\debug\deps\libautocfg-ef9e12b8c6da3f49.rmeta: C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\lib.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\error.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\rustc.rs C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\version.rs
+
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\lib.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\error.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\rustc.rs:
+C:\Users\Ajulu\ Casmir\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.4.0\src\version.rs:

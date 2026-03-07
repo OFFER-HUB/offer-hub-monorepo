@@ -1,25 +1,25 @@
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-import HeroSection from "@/components/home/hero-section";
-import CategoriesSection from "@/components/home/categories-section";
-import FreelancersSection from "@/components/home/freelancers-section";
-import HowItWorksSection from "@/components/home/how-it-works-section";
-import TestimonialsSection from "@/components/home/testimonials-section";
-import CTASection from "@/components/home/cta-section";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import HeroSection from "@/components/HeroSection";
+import StatsSection from "@/components/StatsSection";
+import SupportedBySection from "@/components/SupportedBySection";
+import FeaturesSection from "@/components/FeaturesSection";
+import HowItWorksSection from "@/components/HowItWorksSection";
+import RegistrationForm from "@/components/community/RegistrationForm";
+import LoadingBar from "@/components/ui/LoadingBar";
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <main>
-        <HeroSection />
-        <CategoriesSection />
-        <FreelancersSection />
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <CTASection />
-      </main>
+    <>
+      <LoadingBar />
+      <Navbar />
+      <HeroSection />
+      <SupportedBySection />
+      <StatsSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <RegistrationForm />
       <Footer />
-    </div>
+    </>
   );
 }

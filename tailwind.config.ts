@@ -1,125 +1,82 @@
 import type { Config } from "tailwindcss";
 
-export default {
-  darkMode: ["class"],
+const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./content/**/*.{md,mdx}",
   ],
   theme: {
     extend: {
-      colors: {
-        inputBackground: "#DEEFE7",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        "light-gray": "#E1E4ED",
-        "neutral-800": "#19213D",
-        "neutral-500": "#B4B9C9",
-        "neutral-400": "#E1E4ED",
-        "neutral-300": "#F1F3F7",
-        "neutral-600": "#6D758F",
-        "custom-red": "#FF0000",
-        primary: {
-          "50": "#e4f7f7",
-          "100": "#c0ebeb",
-          "200": "#96dfdf",
-          "300": "#6cd3d3",
-          "400": "#43c7c7",
-          "500": "#159A9C",
-          "600": "#118787",
-          "700": "#0d6e6e",
-          "800": "#095555",
-          "900": "#043c3c",
-          "950": "#022727",
-        },
-        secondary: {
-          "50": "#e8f1f4",
-          "100": "#cddde5",
-          "200": "#adc6d4",
-          "300": "#8cafd3",
-          "400": "#6a98c1",
-          "500": "#002333",
-          "600": "#001e2b",
-          "700": "#001722",
-          "800": "#00101a",
-          "900": "#000a11",
-          "950": "#00060b",
-          "1000": "#149A9B"
-        },
-        success: {
-          DEFAULT: '#16a34a',
-          foreground: '#ffffff',
-        },
-        warning: {
-          DEFAULT: '#d97706',
-          foreground: '#ffffff',
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
-        },
+      fontFamily: {
+        sans: ["var(--font-inter)", "Roboto", "Outfit", "sans-serif"],
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+      colors: {
+        // Legacy colors (kept for backwards compatibility during migration)
+        primary: {
+          DEFAULT: "#149A9B",
+          hover: "#0d7377",
+        },
+        secondary: "#002333",
+        accent: "#15949C",
+        background: "#F1F3F7",
+        "text-primary": "#19213D",
+        "text-secondary": "#6D758F",
+        success: "#16a34a",
+        warning: "#d97706",
+        error: "#FF0000",
+
+        // Theme-aware colors (use these for dark mode support)
+        "theme-primary": "var(--color-primary)",
+        "theme-primary-hover": "var(--color-primary-hover)",
+        "theme-secondary": "var(--color-secondary)",
+        "theme-accent": "var(--color-accent)",
+        "bg-base": "var(--color-bg-base)",
+        "bg-elevated": "var(--color-bg-elevated)",
+        "bg-sunken": "var(--color-bg-sunken)",
+        "content-primary": "var(--color-text-primary)",
+        "content-secondary": "var(--color-text-secondary)",
+        "content-muted": "var(--color-text-muted)",
+        "theme-success": "var(--color-success)",
+        "theme-warning": "var(--color-warning)",
+        "theme-error": "var(--color-error)",
+        "theme-border": "var(--color-border)",
       },
       keyframes: {
-        progress: {
-          "0%": { transform: "translateX(0) scaleX(0)" },
-          "40%": { transform: "translateX(0) scaleX(0.4)" },
-          "100%": { transform: "translateX(100%) scaleX(0.5)" },
+        fadeInUp: {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+        fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        progress: "progress 1s infinite linear",
+        fadeInUp: "fadeInUp 400ms ease-out both",
+        fadeIn: "fadeIn 300ms ease-out both",
+      },
+      boxShadow: {
+        // Legacy shadows (kept for backwards compatibility)
+        raised: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "raised-sm": "3px 3px 6px #d1d5db, -3px -3px 6px #ffffff",
+        sunken: "inset 4px 4px 8px #d1d5db, inset -4px -4px 8px #ffffff",
+        "sunken-subtle": "inset 2px 2px 4px #d1d5db, inset -2px -2px 4px #ffffff",
+        neu: "4px 4px 8px #d1d5db, -4px -4px 8px #ffffff",
+        "neu-inset": "inset 4px 4px 8px #d1d5db, inset -4px -4px 8px #ffffff",
+
+        // Theme-aware neumorphic shadows (use these for dark mode support)
+        "neu-raised": "6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)",
+        "neu-raised-sm": "3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)",
+        "neu-raised-hover": "2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light)",
+        "neu-sunken": "inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)",
+        "neu-sunken-subtle": "inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+  plugins: [require("@tailwindcss/typography")],
+};
+
+export default config;

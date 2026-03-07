@@ -1,0 +1,41 @@
+{
+  "name": "@offer-hub/mcp-docs-server",
+  "version": "1.0.0",
+  "description": "MCP server that exposes OFFER-HUB documentation to AI assistants",
+  "type": "module",
+  "main": "./build/index.js",
+  "bin": {
+    "offer-hub-docs": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "dev": "tsc --watch",
+    "start": "node build/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "offer-hub",
+    "documentation",
+    "ai-assistant"
+  ],
+  "author": "OFFER-HUB Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "glob": "^11.0.0",
+    "gray-matter": "^4.0.3",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

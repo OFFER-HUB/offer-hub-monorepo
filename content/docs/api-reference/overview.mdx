@@ -1,0 +1,323 @@
+---
+title: API Overview
+description: Introduction to the OFFER-HUB REST API — authentication, headers, response format, and error handling.
+order: 1
+section: API Reference
+---
+
+The OFFER-HUB Orchestrator exposes a RESTful JSON API. All endpoints are prefixed with `/api/v1`.
+
+## Base URL
+
+```
+https://{your-orchestrator-domain}/api/v1
+```
+
+For local development:
+
+```
+http://localhost:4000/api/v1
+```
+
+## Authentication
+
+All requests require authentication via a Bearer token (API Key).
+
+### Request Header
+
+```http
+Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+### Getting an API Key
+
+Create an API key using your master key:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/api-keys \
+  -H "Authorization: Bearer YOUR_OFFERHUB_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Marketplace", "scopes": ["read", "write"]}'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "key_abc123",
+    "key": "ohk_live_xxxxxxxxxxxx",
+    "name": "My Marketplace",
+    "scopes": ["read", "write"]
+  }
+}
+```
+
+<Callout type="danger">
+  Save the `key` value immediately - it's only shown once!
+</Callout>
+
+### API Key Scopes
+
+| Scope | Permissions |
+|-------|-------------|
+| `read` | All GET endpoints |
+| `write` | POST to create/modify resources |
+| `support` | Resolve disputes, add comments |
+
+## Common Headers
+
+### Request Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `Authorization` | Yes | `Bearer {api_key}` |
+| `Content-Type` | Yes (POST/PUT) | `application/json` |
+| `Idempotency-Key` | Conditional | UUID for state-changing POSTs |
+| `X-Request-ID` | No | UUID for correlation/debugging |
+
+### Response Headers
+
+| Header | Description |
+|--------|-------------|
+| `X-Request-ID` | Echo of request ID or auto-generated |
+| `X-Idempotency-Key` | Echo of key if applied |
+| `X-RateLimit-Limit` | Request limit |
+| `X-RateLimit-Remaining` | Remaining requests |
+| `X-RateLimit-Reset` | Reset timestamp |
+
+## Response Format
+
+### Success Response
+
+```json
+{
+  "id": "ord_abc123",
+  "status": "ORDER_CREATED",
+  "amount": "100.00",
+  "currency": "USD",
+  "created_at": "2026-01-12T10:00:00.000Z",
+  "updated_at": "2026-01-12T10:00:00.000Z"
+}
+```
+
+### List Response
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "has_more": true,
+    "next_cursor": "ord_abc123"
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_FUNDS",
+    "message": "Available balance is less than requested amount",
+    "details": {
+      "available": "50.00",
+      "requested": "100.00"
+    }
+  }
+}
+```
+
+## Error Codes
+
+| Code | HTTP | When to Use |
+|------|------|-------------|
+| `VALIDATION_ERROR` | 400 | Invalid fields in request |
+| `UNAUTHORIZED` | 401 | Missing or invalid API key |
+| `INSUFFICIENT_SCOPE` | 403 | API key lacks required scope |
+| `USER_NOT_FOUND` | 404 | User does not exist |
+| `ORDER_NOT_FOUND` | 404 | Order does not exist |
+| `INVALID_STATE` | 409 | Invalid state transition |
+| `IDEMPOTENCY_KEY_REUSED` | 409 | Same key with different body |
+| `INSUFFICIENT_FUNDS` | 422 | Balance too low |
+| `RATE_LIMITED` | 429 | Too many requests |
+| `PROVIDER_TIMEOUT` | 504 | External provider timeout |
+
+<Callout type="note">
+  All error messages are safe to display to end users. Internal details are logged server-side only.
+</Callout>
+
+## Pagination
+
+List endpoints support cursor-based pagination:
+
+### Request
+
+```
+GET /orders?limit=20&cursor=ord_xyz789
+```
+
+| Param | Default | Max | Description |
+|-------|---------|-----|-------------|
+| `limit` | 20 | 100 | Items per page |
+| `cursor` | - | - | ID of last item from previous page |
+
+### Response
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "has_more": true,
+    "next_cursor": "ord_abc123"
+  }
+}
+```
+
+## Filters
+
+List endpoints accept query parameter filters:
+
+```
+GET /orders?status=IN_PROGRESS&buyer_id=usr_abc&created_after=2026-01-01
+```
+
+| Filter | Type | Example |
+|--------|------|---------|
+| `status` | string | `IN_PROGRESS` |
+| `buyer_id` | string | `usr_abc123` |
+| `seller_id` | string | `usr_xyz789` |
+| `created_after` | ISO date | `2026-01-01T00:00:00Z` |
+| `created_before` | ISO date | `2026-01-31T23:59:59Z` |
+
+## Idempotency
+
+All state-changing POSTs accept `Idempotency-Key` to prevent duplicate operations:
+
+```http
+POST /orders
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{...}
+```
+
+### Behavior
+
+1. **First request**: Processed normally
+2. **Repeated request** (same key): Returns original response
+3. **Different body + same key**: Returns `409 IDEMPOTENCY_KEY_REUSED`
+
+### Idempotency Windows
+
+| Resource | Window |
+|----------|--------|
+| Top-ups | 24 hours |
+| Withdrawals | 24 hours |
+| Orders | 7 days |
+| Escrow ops | 7 days |
+| Disputes | Forever |
+
+## Rate Limiting
+
+| Endpoint | Limit |
+|----------|-------|
+| General | 100 req/min per API key |
+| POST /topups | 10 req/min per user |
+| POST /withdrawals | 5 req/min per user |
+| GET /events | 1 SSE connection per user |
+
+### Response When Exceeded
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 60
+
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Too many requests",
+    "details": {
+      "retry_after": 60
+    }
+  }
+}
+```
+
+## Available Endpoints
+
+### Auth & Config
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/auth/api-keys` | POST | Create API key |
+| `/auth/api-keys` | GET | List API keys |
+| `/health` | GET | Health check |
+
+### Users
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/users` | POST | Create user |
+| `/users` | GET | List users |
+| `/users/{id}` | GET | Get user |
+| `/users/{id}/balance` | GET | Get balance |
+| `/users/{id}/wallet/deposit` | GET | Get deposit address |
+
+### Orders
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/orders` | POST | Create order |
+| `/orders` | GET | List orders |
+| `/orders/{id}` | GET | Get order |
+| `/orders/{id}/reserve` | POST | Reserve funds |
+| `/orders/{id}/cancel` | POST | Cancel order |
+
+### Escrow
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/orders/{id}/escrow` | POST | Create escrow |
+| `/orders/{id}/escrow/fund` | POST | Fund escrow |
+
+### Resolution
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/orders/{id}/resolution/release` | POST | Release to seller |
+| `/orders/{id}/resolution/refund` | POST | Refund to buyer |
+| `/orders/{id}/resolution/dispute` | POST | Open dispute |
+| `/disputes/{id}/resolve` | POST | Resolve dispute |
+
+### Withdrawals
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/withdrawals` | POST | Create withdrawal |
+| `/withdrawals/{id}` | GET | Get withdrawal |
+| `/withdrawals/{id}/commit` | POST | Commit withdrawal (AirTM) |
+
+### Events
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/events` | GET | SSE event stream |
+
+## Versioning
+
+The API uses path versioning:
+
+```
+/api/v1/orders
+/api/v2/orders  (future)
+```
+
+- `v1` is the current stable version
+- Deprecated versions will have 6 months notice
+
+## Next Steps
+
+- [Webhooks](/docs/api-reference/webhooks) - Receive event notifications
+- [Quick Start](/docs/guide/quick-start) - Your first API call
+- [SDK Guide](/docs/sdk/quick-start) - Use the TypeScript SDK

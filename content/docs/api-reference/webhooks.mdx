@@ -1,0 +1,262 @@
+---
+title: Webhooks
+description: Receive real-time event notifications from OFFER-HUB via HTTP webhooks.
+order: 2
+section: API Reference
+---
+
+## Overview
+
+Webhooks let your application receive real-time notifications when events occur in OFFER-HUB — escrow lifecycle changes, balance updates, order state changes, and more. You register an HTTP endpoint; OFFER-HUB sends a `POST` request with a JSON payload and an `X-OfferHub-Signature` header so you can verify authenticity.
+
+<Callout type="note">
+  Your endpoint must respond with a **2xx** status within **10 seconds**. Process heavy work asynchronously after acknowledging receipt.
+</Callout>
+
+## Configuring a Webhook Endpoint
+
+Register a webhook by creating a subscription with your URL, the events you want, and a signing secret.
+
+<Badge variant="primary">POST</Badge> `/api/v1/webhooks`
+
+```bash
+curl -X POST http://localhost:4000/api/v1/webhooks -H "Content-Type: application/json" -d '{"url": "https://your-app.com/webhooks/offerhub", "events": ["escrow.created", "escrow.released"], "secret": "your-signing-secret"}'
+```
+
+Request body:
+
+```json
+{
+  "url": "https://your-app.com/webhooks/offerhub",
+  "events": ["escrow.created", "escrow.funded", "escrow.released", "escrow.disputed", "escrow.refunded"],
+  "secret": "your-signing-secret"
+}
+```
+
+A successful response returns the webhook object with its `id`:
+
+```json
+{
+  "code": 201,
+  "ok": true,
+  "data": {
+    "id": "wh_01ABCDEF",
+    "url": "https://your-app.com/webhooks/offerhub",
+    "events": ["escrow.created", "escrow.funded", "escrow.released", "escrow.disputed", "escrow.refunded"],
+    "created_at": "2026-01-01T00:00:00.000Z"
+  }
+}
+```
+
+## Event Types
+
+OFFER-HUB emits the following webhook events. Subscribe only to the ones your integration needs.
+
+| Event | Trigger |
+|-------|---------|
+| `escrow.created` | New escrow contract created |
+| `escrow.funded` | Escrow has received on-chain funds |
+| `escrow.released` | Seller paid; escrow completed |
+| `escrow.disputed` | Dispute opened on an escrow |
+| `escrow.refunded` | Escrow refunded to buyer |
+
+## Payload Structure
+
+All webhook events share a common envelope: `id`, `type`, `created_at`, and `data`. The `data` object varies by event type.
+
+### Common envelope
+
+```json
+{
+  "id": "evt_01XYZ",
+  "type": "escrow.created",
+  "created_at": "2026-01-01T12:00:00.000Z",
+  "data": {}
+}
+```
+
+### escrow.created
+
+Emitted when a new escrow is created.
+
+```json
+{
+  "id": "evt_01ABC",
+  "type": "escrow.created",
+  "created_at": "2026-01-01T12:00:00.000Z",
+  "data": {
+    "escrow_id": "esc_01XYZ",
+    "contract_id": "abc123...",
+    "buyer_id": "user_01",
+    "seller_id": "user_02",
+    "amount": "100.00",
+    "currency": "XLM",
+    "order_id": "ord_01",
+    "status": "pending"
+  }
+}
+```
+
+### escrow.funded
+
+Emitted when the escrow has received funds on-chain.
+
+```json
+{
+  "id": "evt_02DEF",
+  "type": "escrow.funded",
+  "created_at": "2026-01-01T12:05:00.000Z",
+  "data": {
+    "escrow_id": "esc_01XYZ",
+    "contract_id": "abc123...",
+    "amount": "100.00",
+    "currency": "XLM",
+    "funded_at": "2026-01-01T12:05:00.000Z",
+    "status": "funded"
+  }
+}
+```
+
+### escrow.released
+
+Emitted when the escrow is released and the seller is paid.
+
+```json
+{
+  "id": "evt_03GHI",
+  "type": "escrow.released",
+  "created_at": "2026-01-01T14:00:00.000Z",
+  "data": {
+    "escrow_id": "esc_01XYZ",
+    "contract_id": "abc123...",
+    "seller_id": "user_02",
+    "amount": "100.00",
+    "currency": "XLM",
+    "released_at": "2026-01-01T14:00:00.000Z",
+    "status": "released",
+    "order_id": "ord_01"
+  }
+}
+```
+
+### escrow.disputed
+
+Emitted when a dispute is opened on the escrow.
+
+```json
+{
+  "id": "evt_04JKL",
+  "type": "escrow.disputed",
+  "created_at": "2026-01-01T13:00:00.000Z",
+  "data": {
+    "escrow_id": "esc_01XYZ",
+    "contract_id": "abc123...",
+    "dispute_id": "dsp_01",
+    "opened_by": "user_01",
+    "reason": "Item not received",
+    "status": "disputed",
+    "order_id": "ord_01"
+  }
+}
+```
+
+### escrow.refunded
+
+Emitted when the escrow is refunded to the buyer.
+
+```json
+{
+  "id": "evt_05MNO",
+  "type": "escrow.refunded",
+  "created_at": "2026-01-01T15:00:00.000Z",
+  "data": {
+    "escrow_id": "esc_01XYZ",
+    "contract_id": "abc123...",
+    "buyer_id": "user_01",
+    "amount": "100.00",
+    "currency": "XLM",
+    "refunded_at": "2026-01-01T15:00:00.000Z",
+    "status": "refunded",
+    "order_id": "ord_01"
+  }
+}
+```
+
+## Signature Verification
+
+Every webhook request includes an `X-OfferHub-Signature` header. Verify it using your webhook secret and the raw request body to ensure the payload came from OFFER-HUB and was not modified.
+
+The signature is the HMAC SHA-256 of the raw body, prefixed with `sha256=`.
+
+```ts
+import crypto from "crypto";
+
+function verifyWebhookSignature(
+  rawBody: string,
+  signatureHeader: string,
+  secret: string
+): boolean {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(rawBody, "utf8")
+    .digest("hex");
+  const expectedHeader = "sha256=" + expected;
+  if (signatureHeader.length !== expectedHeader.length) return false;
+  return crypto.timingSafeEqual(
+    Buffer.from(signatureHeader, "utf8"),
+    Buffer.from(expectedHeader, "utf8")
+  );
+}
+
+// Usage: read raw body before JSON parsing, then:
+// const isValid = verifyWebhookSignature(req.rawBody, req.headers["x-offerhub-signature"], secret);
+```
+
+<Callout type="danger">
+  Always verify the signature before processing a webhook payload. Skipping this step exposes your application to spoofed events.
+</Callout>
+
+<Callout type="warning">
+  Use the **raw request body** (string or buffer) for verification, not the parsed JSON. Re-serializing the body can change formatting and break the signature.
+</Callout>
+
+## Retry Logic
+
+OFFER-HUB retries failed webhook deliveries with exponential back-off. A delivery is considered failed if your endpoint returns a non-2xx status or does not respond within 10 seconds.
+
+| Attempt | Delay after previous attempt |
+|---------|------------------------------|
+| 1st retry | 30 seconds |
+| 2nd retry | 5 minutes |
+| 3rd retry | 30 minutes |
+| 4th retry | 2 hours |
+| 5th retry | 24 hours |
+
+After 5 failed attempts the webhook subscription is disabled. Re-enable it from your dashboard or by re-registering the endpoint.
+
+<Callout type="note">
+  Return **200** or **204** as soon as you have received and validated the payload. Queue or process the event asynchronously to stay within the 10-second timeout.
+</Callout>
+
+## Testing Locally
+
+Your development server is not reachable from the internet. Use a tunnel to expose it so OFFER-HUB can deliver webhooks.
+
+### Using a tunnel
+
+<CommandLine>npx localtunnel --port 3000</CommandLine>
+
+Use the provided URL (e.g. `https://random-subdomain.loca.lt`) as your webhook URL when registering:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/webhooks -H "Content-Type: application/json" -d '{"url": "https://your-tunnel.loca.lt/webhooks", "events": ["escrow.released"], "secret": "test-secret"}'
+```
+
+### Alternative tools
+
+- **[ngrok](https://ngrok.com)** — `ngrok http 3000`
+- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps)** — for a stable hostname
+
+<Callout type="tip">
+  Use the same signing secret in development as in your tunnel config so you can verify signatures locally.
+</Callout>

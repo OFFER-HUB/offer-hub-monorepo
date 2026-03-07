@@ -1,0 +1,243 @@
+---
+title: Orchestrator
+description: Understand OFFER-HUB's core payment orchestration architecture and how it processes transactions.
+order: 1
+section: Guides
+---
+
+The Orchestrator is the central engine of OFFER-HUB. It coordinates every step of a transaction — from the moment a buyer deposits USDC to the moment a seller withdraws funds — enforcing rules, managing state, and communicating with the Stellar blockchain so your marketplace never has to.
+
+<Callout variant="tip">
+  This guide covers the internal architecture. If you just want to make your first API call, go to [Quick Start](/docs/guide/quick-start) instead.
+</Callout>
+
+## What is the Orchestrator
+
+The Orchestrator is a state machine-driven backend service that sits between your marketplace and the Stellar blockchain. It is responsible for:
+
+- Managing buyer and seller **internal balances**
+- Locking funds into **Soroban smart contracts** via Trustless Work
+- Enforcing valid **escrow state transitions**
+- Emitting **real-time events** on every state change
+- Handling **dispute resolution** and **refund flows**
+
+Your marketplace communicates with the Orchestrator via REST API. The Orchestrator handles everything on-chain.
+
+<Callout variant="note">
+  The Orchestrator is intentionally narrow in scope. It handles payments, escrow, and balances. Authentication, listings, and communication are your marketplace's responsibility.
+</Callout>
+
+## Architecture Overview
+
+```
+┌──────────────────────────────────────┐
+│           Your Marketplace           │
+│  ┌────────────┐    ┌───────────────┐ │
+│  │  Frontend  │───▶│    Backend    │ │
+│  └────────────┘    └──────┬────────┘ │
+└────────────────────────────┼─────────┘
+                             │ REST API
+                             ▼
+┌──────────────────────────────────────┐
+│        OFFER-HUB Orchestrator        │
+│                                      │
+│  ┌─────────────┐  ┌───────────────┐  │
+│  │   Balance   │  │ Escrow Engine │  │
+│  │   Ledger    │  │ State Machine │  │
+│  └─────────────┘  └───────────────┘  │
+│  ┌─────────────┐  ┌───────────────┐  │
+│  │  SSE Event  │  │ Idempotency   │  │
+│  │   Stream    │  │  Key Store    │  │
+│  └─────────────┘  └───────────────┘  │
+└──────────────┬───────────────────────┘
+               │
+   ┌───────────┴────────────┐
+   ▼                        ▼
+┌──────────────┐   ┌─────────────────────┐
+│   Stellar    │   │   Trustless Work    │
+│  Network     │   │  Soroban Contracts  │
+│  (USDC)      │   │  (Non-custodial)    │
+└──────────────┘   └─────────────────────┘
+```
+
+### Key Components
+
+**Balance Ledger** — tracks `available` and `reserved` balances for every user. All operations are atomic to prevent double-spending.
+
+**Escrow Engine** — manages the lifecycle of each escrow from creation to settlement or dispute, enforcing valid state transitions.
+
+**SSE Event Stream** — emits a domain event on every state change so your marketplace can react in real time.
+
+**Idempotency Key Store** — caches responses to prevent duplicate operations when requests are retried.
+
+## How it Processes Transactions
+
+Every transaction follows the same linear flow:
+
+### 1. Buyer Deposits
+
+The buyer sends USDC to their assigned Stellar address. The Orchestrator detects the on-chain payment and credits the buyer's `available` balance.
+
+### 2. Order Created
+
+The buyer places an order. Funds move from `available` to `reserved` in the internal ledger — no longer spendable but not yet on-chain.
+
+```
+const order = await client.orders.create({
+  buyerId: "usr_123",
+  sellerId: "usr_456",
+  amount: "75.00",
+  idempotencyKey: "order_abc_001",
+})
+```
+
+### 3. Escrow Funded On-Chain
+
+The Orchestrator signs and submits a Stellar transaction that locks the USDC into a Soroban smart contract via Trustless Work. The escrow state moves to `FUNDED`.
+
+<Callout variant="note">
+  At this point funds are held by the smart contract — not by OFFER-HUB. The Orchestrator cannot unilaterally move them. Only valid contract calls can release, dispute, or refund.
+</Callout>
+
+### 4. Work is Delivered
+
+Your marketplace manages communication, deliverables, and reviews. The Orchestrator waits.
+
+### 5. Settlement
+
+The buyer approves the delivery. The Orchestrator submits transactions to release USDC from the smart contract to the seller's Stellar address.
+
+```
+const release = await client.orders.release({
+  orderId: "ord_789",
+  approvedBy: "usr_123",
+  idempotencyKey: "release_abc_001",
+})
+```
+
+### 6. Seller Withdraws
+
+The seller requests a withdrawal. The Orchestrator signs a Stellar payment transaction sending USDC to any Stellar address.
+
+<CommandLine>POST /api/withdrawals</CommandLine>
+
+## Escrow State Machine
+
+Every escrow moves through a strict set of states. Invalid transitions are rejected with a `409 Conflict` error.
+
+```
+           ┌─────────┐
+           │ CREATED │
+           └────┬────┘
+                │ fund()
+                ▼
+           ┌─────────┐
+           │ FUNDED  │
+           └────┬────┘
+                │
+     ┌──────────┼──────────┐
+     │          │          │
+  release()  dispute()  refund()
+     │          │          │
+     ▼          ▼          ▼
+┌──────────┐ ┌─────────┐ ┌──────────┐
+│ RELEASED │ │DISPUTED │ │ REFUNDED │
+└──────────┘ └────┬────┘ └──────────┘
+                  │
+       ┌──────────┴──────────┐
+       │                     │
+  resolveToSeller()    resolveToSplit()
+       │                     │
+       ▼                     ▼
+  ┌──────────┐          ┌─────────┐
+  │ RELEASED │          │  SPLIT  │
+  └──────────┘          └─────────┘
+```
+
+| State | Description |
+|-------|-------------|
+| `CREATED` | Order exists in the ledger, funds reserved but not yet on-chain |
+| `FUNDED` | USDC is locked in the Soroban smart contract |
+| `RELEASED` | Funds sent to seller, escrow is complete |
+| `DISPUTED` | Buyer opened a dispute, funds frozen pending resolution |
+| `REFUNDED` | Funds returned to buyer's available balance |
+| `SPLIT` | Dispute resolved with partial payment to both parties |
+
+<Callout variant="warning">
+  Once an escrow reaches `RELEASED`, `REFUNDED`, or `SPLIT` it is terminal — no further transitions are allowed.
+</Callout>
+
+## Error Handling
+
+The Orchestrator uses standard HTTP status codes and structured error responses.
+
+| Code | HTTP | Description |
+|------|------|-------------|
+| `INSUFFICIENT_BALANCE` | 422 | Buyer's available balance is too low |
+| `INVALID_STATE_TRANSITION` | 409 | Transition not allowed from the current state |
+| `DUPLICATE_IDEMPOTENCY_KEY` | 200 | Already processed — cached response returned |
+| `STELLAR_TX_FAILED` | 502 | On-chain transaction rejected by Stellar |
+| `ESCROW_NOT_FOUND` | 404 | No escrow found with the given ID |
+
+### Retrying Failed Requests
+
+Always include an `Idempotency-Key` header on state-changing requests. Retrying with the same key is safe — the Orchestrator returns the cached result instead of processing twice.
+
+```
+const response = await fetch("/api/orders", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Idempotency-Key": "order_abc_001",
+  },
+  body: JSON.stringify(orderPayload),
+})
+```
+
+<Callout variant="danger">
+  Never generate a new idempotency key when retrying a failed request. A new key will create a duplicate operation.
+</Callout>
+
+## Configuration Options
+
+```bash
+# Blockchain
+STELLAR_NETWORK=mainnet
+STELLAR_HORIZON_URL=https://horizon.stellar.org
+TRUSTLESS_WORK_API_URL=https://api.trustlesswork.com
+
+# Payment Provider
+PAYMENT_PROVIDER=crypto
+
+# Escrow timing
+ESCROW_DISPUTE_WINDOW_HOURS=72
+ESCROW_AUTO_RELEASE_HOURS=168
+
+# Security
+WALLET_ENCRYPTION_KEY=your-aes-256-key
+
+# Events
+SSE_KEEPALIVE_INTERVAL_MS=30000
+```
+
+### Stellar and USDC
+
+<Badge variant="primary">USDC</Badge> <Badge variant="success">Stellar</Badge>
+
+The Orchestrator is built exclusively for USDC on Stellar. Stellar was chosen for its low fees (fractions of a cent), fast finality (3-5 seconds), and native USDC support via Circle. Smart contracts run on Soroban, managed through the Trustless Work protocol.
+
+<Callout variant="note">
+  For local development, set `STELLAR_NETWORK=testnet`. You can fund test wallets using the [Stellar Friendbot](https://friendbot.stellar.org).
+</Callout>
+
+### Switching to AirTM
+
+```bash
+PAYMENT_PROVIDER=airtm
+AIRTM_API_KEY=your-airtm-key
+AIRTM_WEBHOOK_SECRET=your-webhook-secret
+```
+
+<Callout variant="warning">
+  AirTM requires users to complete KYC on their platform. Crypto mode has no KYC requirement.
+</Callout>
