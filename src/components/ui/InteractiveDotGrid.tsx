@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 interface InteractiveDotGridProps {
     opacity?: number;
@@ -209,7 +209,7 @@ export function InteractiveDotGrid({
                 inset: 0,
                 width: "100vw",
                 height: "100vh",
-                zIndex: 0,
+                zIndex: -1,
                 display: "block",
             }}
         />
