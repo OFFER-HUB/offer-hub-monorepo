@@ -68,12 +68,19 @@ export function CommandLine({
   return (
     <div
       className={cn(
-        "my-4 rounded-xl border border-white/10 bg-[#0f172a] text-sm font-mono text-slate-100",
+        // Layout & shape
+        "my-4 rounded-xl",
+        // Theme-aware background + neumorphic sunken effect
+        "bg-bg-sunken shadow-neu-sunken-subtle",
+        // Theme-aware border
+        "border border-theme-border",
+        // Typography base
+        "text-sm font-mono",
         className,
       )}
     >
       {label && (
-        <div className="flex items-center justify-between px-4 pt-3 pb-1 text-xs text-slate-300">
+        <div className="flex items-center justify-between px-4 pt-3 pb-1 text-xs text-content-muted">
           <span>{label}</span>
         </div>
       )}
@@ -82,14 +89,14 @@ export function CommandLine({
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Terminal
             size={14}
-            className="flex-shrink-0 text-primary"
+            className="flex-shrink-0 text-theme-primary"
             aria-hidden="true"
           />
-          <span className="text-sm text-primary flex-shrink-0">
+          <span className="text-sm text-theme-primary flex-shrink-0">
             {promptSymbol}
           </span>
           <div className="relative flex-1 overflow-x-auto">
-            <code className="block whitespace-nowrap text-sm text-slate-100 pr-2">
+            <code className="block whitespace-nowrap text-sm text-content-primary pr-2">
               {trimmed}
             </code>
           </div>
@@ -102,7 +109,9 @@ export function CommandLine({
           className={cn(
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium flex-shrink-0",
             "transition-all duration-200",
-            copied ? "text-emerald-400" : "text-slate-300 hover:text-slate-50",
+            copied
+              ? "text-theme-success"
+              : "text-content-secondary hover:text-content-primary",
           )}
         >
           {copied ? (

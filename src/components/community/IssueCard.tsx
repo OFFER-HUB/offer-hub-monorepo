@@ -46,22 +46,19 @@ export default function IssueCard({
 
   return (
     <article
-      className="rounded-2xl p-5 shadow-raised transition-shadow duration-300 hover:shadow-raised-sm"
-      style={{ background: "#F1F3F7" }}
+      className="rounded-2xl p-5 shadow-neu-raised transition-shadow duration-300 hover:shadow-neu-raised-sm bg-bg-base"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <GitPullRequestArrow
             size={18}
-            className="mt-0.5 shrink-0"
-            style={{ color: "#149A9B" }}
+            className="mt-0.5 shrink-0 text-theme-primary"
           />
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-[#149A9B] 
-            line-clamp-2 text-[#19213D] dark:text-[#b8bfd0]"
+            className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-theme-primary line-clamp-2 text-content-primary"
           >
             {title}
           </a>
@@ -79,8 +76,7 @@ export default function IssueCard({
           {labels.slice(0, 3).map((label) => (
             <span
               key={label}
-              className="rounded-full px-2 py-0.5 text-[11px] font-medium shadow-raised-sm"
-              style={{ color: "#6D758F", border: "1px solid #d1d5db" }}
+              className="rounded-full px-2 py-0.5 text-[11px] font-medium shadow-neu-raised-sm text-content-secondary border border-theme-border"
             >
               {label}
             </span>
@@ -89,15 +85,14 @@ export default function IssueCard({
       )}
 
       <div className="mt-4 flex items-center justify-between pl-7">
-        <span className="text-xs" style={{ color: "#6D758F" }}>
+        <span className="text-xs text-content-secondary">
           #{number} · {createdAt}
         </span>
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-xs font-medium transition-colors duration-200 hover:text-[#149A9B]"
-          style={{ color: "#6D758F" }}
+          className="flex items-center gap-1 text-xs font-medium transition-colors duration-200 hover:text-theme-primary text-content-secondary"
         >
           View
           <ExternalLink size={11} />

@@ -22,14 +22,14 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
   const isGoodFirstIssue = issue.labels.some(l => l.toLowerCase().includes('good') || l.toLowerCase().includes('help'));
 
   return (
-    <article className="group relative flex flex-col justify-between rounded-2xl bg-[#F1F3F7] p-6 shadow-[4px_4px_8px_#d1d5db,-4px_-4px_8px_#ffffff] transition-shadow duration-300 hover:shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff]">
+    <article className="group relative flex flex-col justify-between rounded-2xl bg-bg-base p-6 shadow-neu-raised transition-shadow duration-300 hover:shadow-neu-raised-hover">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#F1F3F7] text-[10px] font-semibold text-[#6D758F] tracking-wider shadow-[inset_2px_2px_4px_#d1d5db,inset_-2px_-2px_4px_#ffffff] uppercase">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-bg-base text-[10px] font-semibold text-content-secondary tracking-wider shadow-neu-sunken-subtle uppercase">
             #{issue.number}
           </div>
           {isGoodFirstIssue && (
-            <span className="text-[9px] font-bold text-[#149A9B] uppercase tracking-widest bg-[#DEEFE7] px-1.5 py-0.5 rounded shadow-sm">
+            <span className="text-[9px] font-bold text-theme-primary uppercase tracking-widest bg-green-500/10 dark:bg-green-500/20 px-1.5 py-0.5 rounded shadow-sm">
               Starter
             </span>
           )}
@@ -39,7 +39,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-[15px] font-semiboldtext-[#19213D] dark:text-[#b8bfd0] hover:text-[#149A9B] transition-colors leading-snug line-clamp-2 mb-4 tracking-tight"
+          className="block text-[15px] font-semibold text-content-primary hover:text-theme-primary transition-colors leading-snug line-clamp-2 mb-4 tracking-tight"
         >
           {issue.title}
         </a>
@@ -49,9 +49,9 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
             {issue.labels.slice(0, 2).map((label) => (
               <span
                 key={label}
-                className="flex items-center gap-1 text-[10px] font-medium text-[#6D758F] px-2 py-1 bg-[#F1F3F7] rounded-lg shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff]"
+                className="flex items-center gap-1 text-[10px] font-medium text-content-secondary px-2 py-1 bg-bg-base rounded-lg shadow-neu-raised-sm"
               >
-                <Tag size={9} className="text-[#149A9B]" />
+                <Tag size={9} className="text-theme-primary" />
                 {label}
               </span>
             ))}
@@ -59,14 +59,14 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-[#D1D5DB]/20">
+      <div className="flex items-center justify-between pt-4 border-t border-theme-border/20">
         <div className="flex flex-col">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#6D758F]/60 mb-0.5">Priority</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-content-muted mb-0.5">Priority</span>
           <span className={cn(
             "text-[10px] font-bold uppercase tracking-widest",
             issue.priority === 'High' ? 'text-red-500' :
               issue.priority === 'Low' ? 'text-emerald-500' :
-                'text-[#149A9B]'
+                'text-theme-primary'
           )}>
             {issue.priority}
           </span>
@@ -120,7 +120,7 @@ const OpenIssuesSection = ({ issues }: OpenIssuesSectionProps) => {
           <div className="mt-16 text-center">
             <button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#149A9B] hover:gap-3 transition-all group"
+              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary hover:gap-3 transition-all group"
             >
               Load more issues
               <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />

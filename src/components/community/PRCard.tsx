@@ -48,22 +48,19 @@ export default function PRCard({
 
   return (
     <article
-      className="rounded-2xl p-5 shadow-raised h-full transition-shadow duration-300 hover:shadow-raised-hover"
-      style={{ background: "#F1F3F7" }}
+      className="rounded-2xl p-5 shadow-neu-raised h-full transition-shadow duration-300 hover:shadow-neu-raised-hover bg-bg-base"
     >
       <div className="flex items-start justify-between gap-3">
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-[#149A9B] 
-          text-[#19213D] dark:text-[#b8bfd0]"
+          className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-theme-primary text-content-primary"
         >
           {title}
         </a>
         <span
-          className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-          style={{ background: "rgba(20,154,155,0.12)", color: "#149A9B" }}
+          className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold bg-theme-primary/10 text-theme-primary"
         >
           Merged
         </span>
@@ -73,18 +70,17 @@ export default function PRCard({
         <img
           src={authorAvatar}
           alt={`${author} avatar`}
-          className="h-7 w-7 rounded-full object-cover shadow-raised-sm"
+          className="h-7 w-7 rounded-full object-cover shadow-neu-raised-sm"
           loading="lazy"
         />
-        <p className="text-xs" style={{ color: "#6D758F" }}>
+        <p className="text-xs text-content-secondary">
           {author}
         </p>
-        <span className="text-xs" style={{ color: "#6D758F" }}>
+        <span className="text-xs text-content-secondary">
           •
         </span>
         <time
-          className="text-xs"
-          style={{ color: "#6D758F" }}
+          className="text-xs text-content-secondary"
           dateTime={mergedDate.iso}
         >
           {mergedDate.label}
@@ -96,8 +92,7 @@ export default function PRCard({
           {labels.map((label) => (
             <span
               key={label}
-              className="rounded-full px-2 py-0.5 text-[11px] font-medium shadow-raised-sm"
-              style={{ color: "#6D758F", border: "1px solid #d1d5db" }}
+              className="rounded-full px-2 py-0.5 text-[11px] font-medium shadow-neu-raised-sm text-content-secondary border border-theme-border"
             >
               {label}
             </span>

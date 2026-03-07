@@ -54,18 +54,17 @@ export function Navbar() {
       {/*
        * NEUMORPHIC NAVBAR
        * ─────────────────
-       * Background = #F1F3F7 (identical to the page) → the container is invisible.
+       * Background = bg-bg-base (theme-aware) → the container is invisible.
        * Depth comes exclusively from the bottom-projected dual shadow (dark ↘ / light ↖).
        * Buttons share the same base color and "emerge" via their own shadows.
        */}
       <header
         className={cn(
-          "fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl xl:max-w-7xl md:w-full z-[500] transition-all duration-300 ease-out rounded-full",
+          "fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl xl:max-w-7xl md:w-full z-[500] transition-all duration-300 ease-out rounded-full bg-bg-base",
           isScrolled
-            ? "shadow-[8px_8px_16px_#d1d5db,-8px_-8px_16px_#ffffff] py-1"
-            : "shadow-[4px_4px_8px_#d1d5db,-4px_-4px_8px_#ffffff] py-2"
+            ? "shadow-neu-raised-scrolled py-1"
+            : "shadow-neu-raised py-2"
         )}
-        style={{ background: "#F1F3F7" }}
       >
         <nav className="px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
@@ -88,10 +87,10 @@ export function Navbar() {
                 href="/"
                 className={cn(
                   "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
-                  "transition-all duration-300 ease-out bg-[#F1F3F7]",
+                  "transition-all duration-300 ease-out bg-bg-base",
                   pathname === "/"
-                    ? "text-[#19213D] shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
-                    : "text-[#6D758F] hover:text-[#19213D] hover:shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
+                    ? "text-content-primary shadow-neu-sunken-subtle"
+                    : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
                 )}
               >
                 Home
@@ -107,10 +106,10 @@ export function Navbar() {
                     href={link.href}
                     className={cn(
                       "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
-                      "transition-all duration-300 ease-out bg-[#F1F3F7]",
+                      "transition-all duration-300 ease-out bg-bg-base",
                       isActive
-                        ? "text-[#19213D] shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
-                        : "text-[#6D758F] hover:text-[#19213D] hover:shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
+                        ? "text-content-primary shadow-neu-sunken-subtle"
+                        : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
                     )}
                   >
                     {link.label}
@@ -135,8 +134,7 @@ export function Navbar() {
             {/* ── Mobile hamburger ── */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-full transition-all duration-300 ease-out shadow-[4px_4px_8px_#d1d5db,-4px_-4px_8px_#ffffff] hover:shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
-              style={{ background: "#F1F3F7", color: "#6D758F" }}
+              className="lg:hidden p-2 rounded-full transition-all duration-300 ease-out bg-bg-base text-content-secondary shadow-neu-raised hover:shadow-neu-sunken-subtle"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -150,14 +148,13 @@ export function Navbar() {
         <>
           {/* Backdrop */}
           <div
-            className="lg:hidden fixed inset-0 z-[499] bg-[#19213D]/20 backdrop-blur-sm animate-fadeIn"
+            className="lg:hidden fixed inset-0 z-[499] bg-black/20 dark:bg-black/40 backdrop-blur-sm animate-fadeIn"
             onClick={() => setIsMenuOpen(false)}
           />
 
           {/* Menu panel */}
           <div
-            className="lg:hidden fixed top-24 left-4 right-4 z-[501] p-6 rounded-3xl shadow-[8px_8px_16px_#d1d5db,-8px_-8px_16px_#ffffff] animate-fadeInUp"
-            style={{ background: "#F1F3F7" }}
+            className="lg:hidden fixed top-24 left-4 right-4 z-[501] p-6 rounded-3xl bg-bg-base shadow-neu-raised-scrolled animate-fadeInUp"
           >
             <div className="flex flex-col gap-2">
               <Link
@@ -165,8 +162,8 @@ export function Navbar() {
                 className={cn(
                   "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
                   pathname === "/"
-                    ? "text-[#19213D] bg-white/50 shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
-                    : "text-[#6D758F] hover:text-[#19213D] hover:bg-white/30"
+                    ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
+                    : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"
                 )}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -184,8 +181,8 @@ export function Navbar() {
                     className={cn(
                       "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
                       isActive
-                        ? "text-[#19213D] bg-white/50 shadow-[inset_2px_2px_5px_#d1d5db,inset_-2px_-2px_5px_#ffffff]"
-                        : "text-[#6D758F] hover:text-[#19213D] hover:bg-white/30"
+                        ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
+                        : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"
                     )}
                     onClick={() => setIsMenuOpen(false)}
                   >
