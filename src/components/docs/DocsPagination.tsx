@@ -36,8 +36,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
               Previous
             </span>
             <span
-              className="text-sm font-semibold transition-colors"
-              style={{ color: "#19213D" }}
+              className="text-sm font-semibold transition-colors text-[#19213D] dark:text-[#b8bfd0]"
             >
               {prev.title}
             </span>
@@ -60,8 +59,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
               Next
             </span>
             <span
-              className="text-sm font-semibold transition-colors group-hover:text-[#149A9B]"
-              style={{ color: "#19213D" }}
+              className="text-sm font-semibold transition-colors group-hover:text-[#149A9B] text-[#19213D] dark:text-[#b8bfd0]"
             >
               {next.title}
             </span>

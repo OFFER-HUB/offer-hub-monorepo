@@ -36,7 +36,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
         )}
 
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-[#19213D] truncate tracking-tight">
+          <h3 className="text-base font-boldtext-[#19213D] dark:text-[#b8bfd0] truncate tracking-tight">
             {person.name || person.username}
           </h3>
           <p className="text-xs font-medium text-[#149A9B]">

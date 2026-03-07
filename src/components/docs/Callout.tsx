@@ -61,7 +61,7 @@ export function Callout({ type = "note", children }: CalloutProps) {
         {config.icon}
         {config.label}
       </div>
-      <div className="text-sm leading-relaxed" style={{ color: "#19213D" }}>
+      <div className="text-sm leading-relaxed text-[#19213D] dark:text-[#b8bfd0]">
         {children}
       </div>
     </div>

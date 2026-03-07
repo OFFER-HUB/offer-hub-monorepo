@@ -163,7 +163,7 @@ export default function DocsPage() {
                                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110 group-hover:bg-[#149A9B] group-hover:text-white" style={{ background: "#F1F3F7", color: "#149A9B" }}>
                                     {section.icon}
                                 </div>
-                                <h3 className="text-2xl font-black mb-4 group-hover:text-[#149A9B] transition-colors leading-tight tracking-tight" style={{ color: "#19213D" }}>
+                                <h3 className="text-2xl font-black mb-4 group-hover:text-[#149A9B] transition-colors leading-tight tracking-tight text-[#19213D] dark:text-[#b8bfd0]">
                                     {section.title}
                                 </h3>
                                 <p className="text-[15px] leading-relaxed mb-8 font-medium" style={{ color: "#6D758F" }}>

@@ -27,7 +27,7 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
             <p className="mb-6 text-[11px] font-black uppercase tracking-[0.4em] text-[#149A9B]">
               Community Network
             </p>
-            <h1 className="text-5xl font-black tracking-tighter text-[#19213D] md:text-7xl leading-[1.05]">
+            <h1 className="text-5xl font-black tracking-tightertext-[#19213D] dark:text-[#b8bfd0] md:text-7xl leading-[1.05]">
               Building the Future <br />of <span className="text-[#149A9B]">Payments</span>
             </h1>
             <p className="mt-8 max-w-xl text-lg font-medium leading-relaxed text-[#6D758F]">
@@ -63,7 +63,7 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#6D758F]/60">
                     {stat.label}
                   </p>
-                  <p className="mt-1 text-3xl font-black text-[#19213D] tracking-tight">
+                  <p className="mt-1 text-3xl font-blacktext-[#19213D] dark:text-[#b8bfd0] tracking-tight">
                     {stats[stat.label.toLowerCase().replace(" ", "") as keyof typeof stats] || stat.value}
                   </p>
                 </div>

@@ -26,8 +26,7 @@ export const MDX_COMPONENTS: MDXComponents = {
     return (
       <h2
         id={id}
-        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 flex items-center gap-3 tracking-tight"
-        style={{ color: "#19213D" }}
+        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 flex items-center gap-3 tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
         {...props}
       >
         <span className="w-1 h-6 rounded-full bg-[#149A9B]" />
@@ -46,8 +45,7 @@ export const MDX_COMPONENTS: MDXComponents = {
     return (
       <h3
         id={id}
-        className="text-xl font-extrabold mt-10 mb-4 scroll-mt-32 tracking-tight"
-        style={{ color: "#19213D" }}
+        className="text-xl font-extrabold mt-10 mb-4 scroll-mt-32 tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
         {...props}
       >
         {children}
@@ -131,7 +129,7 @@ export const MDX_COMPONENTS: MDXComponents = {
 
   // Strong
   strong: ({ children }) => (
-    <strong className="font-extrabold" style={{ color: "#19213D" }}>
+    <strong className="font-extrabold text-[#19213D] dark:text-[#b8bfd0]">
       {children}
     </strong>
   ),
@@ -167,7 +165,7 @@ export const MDX_COMPONENTS: MDXComponents = {
     </th>
   ),
   td: ({ children }) => (
-    <td className="px-8 py-5 text-[#19213D] font-medium leading-relaxed">
+    <td className="px-8 py-5text-[#19213D] dark:text-[#b8bfd0] font-medium leading-relaxed">
       {children}
     </td>
   ),

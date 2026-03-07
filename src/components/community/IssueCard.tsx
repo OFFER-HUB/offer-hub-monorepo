@@ -60,8 +60,8 @@ export default function IssueCard({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-[#149A9B] line-clamp-2"
-            style={{ color: "#19213D" }}
+            className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-[#149A9B] 
+            line-clamp-2 text-[#19213D] dark:text-[#b8bfd0]"
           >
             {title}
           </a>

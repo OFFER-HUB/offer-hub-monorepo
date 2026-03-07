@@ -39,7 +39,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-[15px] font-semibold text-[#19213D] hover:text-[#149A9B] transition-colors leading-snug line-clamp-2 mb-4 tracking-tight"
+          className="block text-[15px] font-semiboldtext-[#19213D] dark:text-[#b8bfd0] hover:text-[#149A9B] transition-colors leading-snug line-clamp-2 mb-4 tracking-tight"
         >
           {issue.title}
         </a>

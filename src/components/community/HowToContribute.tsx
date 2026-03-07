@@ -27,7 +27,7 @@ export default function HowToContribute() {
                     <p className="text-xs font-medium uppercase tracking-[0.4em] mb-4" style={{ color: "#149A9B" }}>
                         How to Contribute
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6" style={{ color: "#19213D" }}>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-[#19213D] dark:text-[#b8bfd0]">
                         Join the OFFER HUB Community
                     </h2>
                     <p className="text-lg text-secondary max-w-2xl mx-auto" style={{ color: "#6D758F" }}>
@@ -49,7 +49,7 @@ export default function HowToContribute() {
                                     </span>
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <h3 className="text-xl font-bold" style={{ color: "#19213D" }}>{step.title}</h3>
+                                    <h3 className="text-xl font-bold text-[#19213D] dark:text-[#b8bfd0]">{step.title}</h3>
                                     <p className="text-sm font-light leading-relaxed max-w-xs mx-auto" style={{ color: "#6D758F" }}>
                                         {step.description}
                                     </p>
@@ -61,7 +61,7 @@ export default function HowToContribute() {
 
                 {/* Contribution Types */}
                 <div className="mb-24">
-                    <h3 className="text-2xl font-bold tracking-tight text-center mb-12" style={{ color: "#19213D" }}>
+                    <h3 className="text-2xl font-bold tracking-tight text-center mb-12 text-[#19213D] dark:text-[#b8bfd0]">
                         Ways to Contribute
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -76,7 +76,7 @@ export default function HowToContribute() {
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sunken" style={{ background: "#F1F3F7" }}>
                                         <Icon className="w-5 h-5" style={{ color: "#149A9B" }} />
                                     </div>
-                                    <h4 className="text-lg font-bold" style={{ color: "#19213D" }}>{type.title}</h4>
+                                    <h4 className="text-lg font-bold text-[#19213D] dark:text-[#b8bfd0]">{type.title}</h4>
                                     <p className="text-sm font-light leading-relaxed" style={{ color: "#6D758F" }}>
                                         {type.description}
                                     </p>
@@ -100,8 +100,8 @@ export default function HowToContribute() {
                     </Link>
                     <Link
                         href="/docs"
-                        className="px-8 py-4 rounded-xl font-medium shadow-raised hover:shadow-raised-hover transition-all duration-300 flex items-center gap-2"
-                        style={{ background: "#F1F3F7", color: "#19213D" }}
+                        className="px-8 py-4 rounded-xl font-medium shadow-raised hover:shadow-raised-hover transition-all duration-300 flex items-center gap-2  text-[#19213D] dark:text-[#b8bfd0]"
+                        style={{ background: "#F1F3F7", }}
                     >
                         Read contribution guide
                         <BookOpen className="w-4 h-4" />

@@ -56,8 +56,8 @@ export default function PRCard({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-[#149A9B]"
-          style={{ color: "#19213D" }}
+          className="text-sm font-semibold leading-snug transition-colors duration-200 hover:text-[#149A9B] 
+          text-[#19213D] dark:text-[#b8bfd0]"
         >
           {title}
         </a>

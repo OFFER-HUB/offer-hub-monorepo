@@ -95,8 +95,7 @@ export default function UseCasesPage() {
                         </div>
 
                         <h1
-                            className="text-5xl md:text-7xl font-black tracking-tight mb-8 animate-fadeInUp"
-                            style={{ color: "#19213D" }}
+                            className="text-5xl md:text-7xl font-black tracking-tight mb-8 animate-fadeInUp text-[#19213D] dark:text-[#b8bfd0]"
                         >
                             Powering the Future of <br className="hidden md:block" /> Independent Work
                         </h1>
@@ -151,7 +150,7 @@ export default function UseCasesPage() {
                                 <div className="w-16 h-16 rounded-2xl shadow-sunken-subtle bg-[#F1F3F7] flex items-center justify-center mb-8 group-hover:shadow-sunken transition-all duration-300">
                                     <ShieldCheck size={28} style={{ color: "#149A9B" }} />
                                 </div>
-                                <h3 className="text-xl font-bold mb-4" style={{ color: "#19213D" }}>Trustless Escrow</h3>
+                                <h3 className="text-xl font-bold mb-4  text-[#19213D] dark:text-[#b8bfd0]">Trustless Escrow</h3>
                                 <p className="text-sm font-medium leading-relaxed" style={{ color: "#6D758F" }}>
                                     Lock client funds into secure smart contracts at project kick-off. Funds are guaranteed to exist, protecting both the freelancer and the client.
                                 </p>
@@ -162,7 +161,7 @@ export default function UseCasesPage() {
                                 <div className="w-16 h-16 rounded-2xl shadow-sunken-subtle bg-[#F1F3F7] flex items-center justify-center mb-8 group-hover:shadow-sunken transition-all duration-300">
                                     <Zap size={28} style={{ color: "#149A9B" }} />
                                 </div>
-                                <h3 className="text-xl font-bold mb-4" style={{ color: "#19213D" }}>Milestone Automation</h3>
+                                <h3 className="text-xl font-bold mb-4  text-[#19213D] dark:text-[#b8bfd0]">Milestone Automation</h3>
                                 <p className="text-sm font-medium leading-relaxed" style={{ color: "#6D758F" }}>
                                     Trigger partial or full payments automatically when APIs dictate completion of deliverables, removing manual invoice friction.
                                 </p>
@@ -173,7 +172,7 @@ export default function UseCasesPage() {
                                 <div className="w-16 h-16 rounded-2xl shadow-sunken-subtle bg-[#F1F3F7] flex items-center justify-center mb-8 group-hover:shadow-sunken transition-all duration-300">
                                     <Globe size={28} style={{ color: "#149A9B" }} />
                                 </div>
-                                <h3 className="text-xl font-bold mb-4" style={{ color: "#19213D" }}>Global Payouts</h3>
+                                <h3 className="text-xl font-bold mb-4 text-[#19213D] dark:text-[#b8bfd0]">Global Payouts</h3>
                                 <p className="text-sm font-medium leading-relaxed" style={{ color: "#6D758F" }}>
                                     Settle funds instantly in USDC or fiat-backed stablecoins directly to the freelancer&apos;s wallet, bypassing multi-day bank transfer delays and high FX fees.
                                 </p>
@@ -190,8 +189,7 @@ export default function UseCasesPage() {
                         </div>
 
                         <h2
-                            className="text-4xl md:text-5xl font-black mb-6 tracking-tight"
-                            style={{ color: "#19213D" }}
+                            className="text-4xl md:text-5xl font-black mb-6 tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
                         >
                             How it works under the hood
                         </h2>

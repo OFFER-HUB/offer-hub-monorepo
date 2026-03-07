@@ -57,8 +57,7 @@ export default function ContributorGrid({ contributors }: ContributorGridProps) 
                 {getInitials(contributor.name)}
               </div>
               <h3
-                className="mt-4 text-base font-bold"
-                style={{ color: "#19213D" }}
+                className="mt-4 text-base font-bold text-[#19213D] dark:text-[#b8bfd0]"
               >
                 {contributor.name}
               </h3>

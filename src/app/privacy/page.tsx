@@ -51,7 +51,7 @@ export default function PrivacyPage() {
             Data Governance
           </p>
           <h1
-            className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-[#19213D] leading-none mb-6"
+            className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tightertext-[#19213D] dark:text-[#b8bfd0] leading-none mb-6"
           >
             Privacy & <span className="text-[#149A9B]">Transparency</span>
           </h1>
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
                 </div>
                 <div>
                   <h3
-                    className={`font-black tracking-tight mb-4 ${feature.large ? "text-2xl" : "text-xl"} text-[#19213D]`}
+                    className={`font-black tracking-tight mb-4 ${feature.large ? "text-2xl" : "text-xl"}text-[#19213D] dark:text-[#b8bfd0]`}
                   >
                     {feature.title}
                   </h3>
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
               <Mail size={24} className="text-[#149A9B]" />
             </div>
             <div>
-              <h2 className="text-3xl font-black text-[#19213D] tracking-tight mb-4">Get in Touch</h2>
+              <h2 className="text-3xl font-blacktext-[#19213D] dark:text-[#b8bfd0] tracking-tight mb-4">Get in Touch</h2>
               <p
                 className="font-medium leading-relaxed text-base text-[#6D758F]"
               >

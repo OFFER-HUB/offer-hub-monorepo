@@ -31,7 +31,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
               href={pr.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-black text-[#19213D] leading-tight hover:text-[#149A9B] transition-colors"
+              className="text-sm font-blacktext-[#19213D] dark:text-[#b8bfd0] leading-tight hover:text-[#149A9B] transition-colors"
             >
               {pr.title}
             </a>
@@ -84,7 +84,7 @@ const RecentPRsSection = ({ pullRequests }: RecentPRsSectionProps) => {
                   <Timer size={18} className="text-[#149A9B]" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-widest text-[#19213D] mb-1">Update Frequency</p>
+                  <p className="text-[11px] font-black uppercase tracking-widesttext-[#19213D] dark:text-[#b8bfd0] mb-1">Update Frequency</p>
                   <p className="text-sm font-medium text-[#6D758F]">New commits merged every 2.4 hours on average.</p>
                 </div>
               </div>

@@ -68,7 +68,7 @@ export default function RegistrationForm() {
                 <div className="w-20 h-20 rounded-3xl bg-[#F1F3F7] shadow-raised flex items-center justify-center mb-8 animate-fadeInScale">
                     <CheckCircle2 size={40} className="text-[#149A9B]" />
                 </div>
-                <h2 className="text-3xl font-black text-[#19213D] tracking-tight mb-4">You&apos;re on the list!</h2>
+                <h2 className="text-3xl font-black text-[#19213D] dark:text-[#b8bfd0] tracking-tight mb-4">You&apos;re on the list!</h2>
                 <p className="text-[#6D758F] max-w-sm font-medium">We&apos;ll reach out shortly to discuss your integration with Offer Hub.</p>
             </div>
         );
@@ -79,7 +79,7 @@ export default function RegistrationForm() {
             <div className="mx-auto max-w-2xl px-6">
                 <div className="text-center mb-16">
                     <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#149A9B] mb-4">Join the ecosystem</p>
-                    <h2 className="text-4xl font-black text-[#19213D] tracking-tighter sm:text-5xl leading-none">
+                    <h2 className="text-4xl font-black text-[#19213D] dark:text-[#b8bfd0] tracking-tighter sm:text-5xl leading-none">
                         Scale your <span className="text-[#149A9B]">Vision</span>
                     </h2>
                     <p className="mt-6 text-lg text-[#6D758F] font-medium leading-relaxed">
@@ -102,7 +102,7 @@ export default function RegistrationForm() {
                         <label className="text-[10px] font-black uppercase tracking-widest text-[#6D758F] ml-2">Full Name</label>
                         <div className="relative group">
                             <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#6D758F]/40 group-focus-within:text-[#149A9B] transition-colors" />
-                            <input required type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed" />
+                            <input required type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] dark:text-[#b8bfd0] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                     </div>
 
@@ -110,7 +110,7 @@ export default function RegistrationForm() {
                         <label className="text-[10px] font-black uppercase tracking-widest text-[#6D758F] ml-2">Email Address</label>
                         <div className="relative group">
                             <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#6D758F]/40 group-focus-within:text-[#149A9B] transition-colors" />
-                            <input required type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed" />
+                            <input required type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] dark:text-[#b8bfd0] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                     </div>
 
@@ -118,7 +118,7 @@ export default function RegistrationForm() {
                         <label className="text-[10px] font-black uppercase tracking-widest text-[#6D758F] ml-2">For what would you use Offer Hub?</label>
                         <div className="relative group">
                             <MessageSquare size={16} className="absolute left-5 top-6 text-[#6D758F]/40 group-focus-within:text-[#149A9B] transition-colors" />
-                            <textarea required rows={3} name="purpose" value={formData.purpose} onChange={handleInputChange} placeholder="Tell us about your marketplace or project..." disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium resize-none disabled:opacity-50 disabled:cursor-not-allowed" />
+                            <textarea required rows={3} name="purpose" value={formData.purpose} onChange={handleInputChange} placeholder="Tell us about your marketplace or project..." disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] dark:text-[#b8bfd0] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium resize-none disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                     </div>
 
@@ -126,7 +126,7 @@ export default function RegistrationForm() {
                         <label className="text-[10px] font-black uppercase tracking-widest text-[#6D758F] ml-2">How did you hear about us?</label>
                         <div className="relative group">
                             <Send size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#6D758F]/40 group-focus-within:text-[#149A9B] transition-colors" />
-                            <input required type="text" name="referral" value={formData.referral} onChange={handleInputChange} placeholder="X, Telegram, Friend, etc." disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed" />
+                            <input required type="text" name="referral" value={formData.referral} onChange={handleInputChange} placeholder="X, Telegram, Friend, etc." disabled={isLoading} className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F1F3F7] shadow-sunken-subtle text-sm text-[#19213D] dark:text-[#b8bfd0] placeholder-[#6D758F]/30 focus:outline-none focus:shadow-sunken transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                     </div>
 

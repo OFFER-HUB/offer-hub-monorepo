@@ -32,8 +32,7 @@ export default function HowItWorksSection() {
             How it works
           </p>
           <h2
-            className="text-4xl md:text-5xl font-black tracking-tight"
-            style={{ color: "#19213D" }}
+            className="text-4xl md:text-5xl font-black tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
           >
             Up and running in three steps
           </h2>
@@ -65,7 +64,7 @@ export default function HowItWorksSection() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <h3 className="text-xl font-bold" style={{ color: "#19213D" }}>
+                <h3 className="text-xl font-bold text-[#19213D] dark:text-[#b8bfd0]">
                   {step.title}
                 </h3>
                 <p

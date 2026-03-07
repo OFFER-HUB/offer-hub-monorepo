@@ -114,11 +114,10 @@ export function FloatingCTA() {
       <style>{rotatingBorderStyles}</style>
 
       <div
-        className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ease-out ${
-          isVisible
+        className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ease-out ${isVisible
             ? "opacity-100 translate-y-0 scale-100"
             : "opacity-0 translate-y-4 scale-95"
-        }`}
+          }`}
       >
         {/* Main CTA Card */}
         <div className="relative group">
@@ -144,7 +143,7 @@ export function FloatingCTA() {
                   <p className="text-xs font-bold uppercase tracking-wider text-[#149A9B] mb-1">
                     Early Access
                   </p>
-                  <p className="text-sm font-bold text-[#19213D] leading-tight">
+                  <p className="text-sm font-boldtext-[#19213D] dark:text-[#b8bfd0] leading-tight">
                     Join the Waitlist
                   </p>
                   <p className="text-xs text-[#6D758F] mt-1 leading-relaxed">

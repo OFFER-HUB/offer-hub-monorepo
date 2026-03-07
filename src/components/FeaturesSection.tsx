@@ -97,8 +97,7 @@ export default function FeaturesSection() {
             Why OFFER HUB
           </p>
           <h2
-            className="text-4xl md:text-5xl font-black tracking-tight"
-            style={{ color: "#19213D" }}
+            className="text-4xl md:text-5xl font-black tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
           >
             Built for modern marketplaces
           </h2>
@@ -117,9 +116,8 @@ export default function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className={`${
-                  feature.large ? "md:col-span-2" : ""
-                } p-8 rounded-2xl shadow-raised flex flex-col gap-4`}
+                className={`${feature.large ? "md:col-span-2" : ""
+                  } p-8 rounded-2xl shadow-raised flex flex-col gap-4`}
                 style={{ background: feature.gradient }}
               >
                 <div
@@ -129,8 +127,7 @@ export default function FeaturesSection() {
                   <Icon size={18} style={{ color: feature.iconColor }} />
                 </div>
                 <h3
-                  className={`font-bold ${feature.large ? "text-2xl" : "text-lg"}`}
-                  style={{ color: "#19213D" }}
+                  className={`font-bold ${feature.large ? "text-2xl" : "text-lg"}  text-[#19213D] dark:text-[#b8bfd0]`}
                 >
                   {feature.title}
                 </h3>

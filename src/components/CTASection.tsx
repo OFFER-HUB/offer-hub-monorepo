@@ -10,8 +10,7 @@ export default function CTASection() {
             Get started today
           </p>
           <h2
-            className="text-4xl md:text-5xl font-black tracking-tight leading-tight"
-            style={{ color: "#19213D" }}
+            className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-[#19213D] dark:text-[#b8bfd0]"
           >
             The payments layer your marketplace deserves
           </h2>

@@ -130,8 +130,7 @@ export function Footer() {
                   className="flex flex-col gap-4 min-w-[100px]"
                 >
                   <h4
-                    className="text-sm font-semibold"
-                    style={{ color: "#19213D" }}
+                    className="text-sm font-semibold text-[#19213D] dark:text-[#b8bfd0]"
                   >
                     {col.heading}
                   </h4>

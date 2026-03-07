@@ -56,8 +56,7 @@ function PRCardInline({ pr }: { pr: PullRequest }) {
 
       {/* Title */}
       <h3
-        className="text-sm font-semibold leading-snug mb-3"
-        style={{ color: "#19213D" }}
+        className="text-sm font-semibold leading-snug mb-3 text-[#19213D] dark:text-[#b8bfd0]"
       >
         {pr.title}
       </h3>
@@ -210,8 +209,7 @@ export default function RecentPRsFeed({ pullRequests }: RecentPRsFeedProps) {
             Open Source · Community
           </p>
           <h2
-            className="text-4xl md:text-5xl font-black tracking-tight"
-            style={{ color: "#19213D" }}
+            className="text-4xl md:text-5xl font-black tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
           >
             Recent Contributions
           </h2>
@@ -242,12 +240,12 @@ export default function RecentPRsFeed({ pullRequests }: RecentPRsFeedProps) {
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-semibold text-white transition-all duration-[400ms] ease-out shadow-raised hover:shadow-raised-hover active:shadow-sunken-subtle"
             style={{ background: "#149A9B" }}
             onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLAnchorElement).style.background =
-                "#0d7377")
+            ((e.currentTarget as HTMLAnchorElement).style.background =
+              "#0d7377")
             }
             onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLAnchorElement).style.background =
-                "#149A9B")
+            ((e.currentTarget as HTMLAnchorElement).style.background =
+              "#149A9B")
             }
           >
             View all PRs

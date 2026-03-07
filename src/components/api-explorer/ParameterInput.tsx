@@ -27,8 +27,7 @@ export function ParameterInput({
     <div className="space-y-1.5">
       <label htmlFor={inputId} className="flex items-center gap-2">
         <span
-          className="text-sm font-semibold font-mono"
-          style={{ color: "#19213D" }}
+          className="text-sm font-semibold font-mono text-[#19213D] dark:text-[#b8bfd0]"
         >
           {name}
         </span>
@@ -54,9 +53,10 @@ export function ParameterInput({
           className={cn(
             "w-full rounded-xl border px-3 py-2 text-sm",
             "outline-none transition-all duration-200",
-            "focus:ring-2 focus:ring-[#149A9B] focus:border-transparent"
+            "focus:ring-2 focus:ring-[#149A9B] focus:border-transparent",
+            "text-[#19213D] dark:text-[#b8bfd0]"
           )}
-          style={{ borderColor: "#e5e7eb", color: "#19213D" }}
+          style={{ borderColor: "#e5e7eb", }}
         >
           <option value="">Select...</option>
           {options.map((opt) => (
@@ -75,9 +75,10 @@ export function ParameterInput({
           className={cn(
             "w-full rounded-xl border px-3 py-2 text-sm",
             "outline-none transition-all duration-200",
-            "focus:ring-2 focus:ring-[#149A9B] focus:border-transparent"
+            "focus:ring-2 focus:ring-[#149A9B] focus:border-transparent",
+            "text-[#19213D] dark:text-[#b8bfd0]"
           )}
-          style={{ borderColor: "#e5e7eb", color: "#19213D" }}
+          style={{ borderColor: "#e5e7eb" }}
         />
       )}
     </div>

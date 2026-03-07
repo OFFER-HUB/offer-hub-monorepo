@@ -90,7 +90,7 @@ export default function PricingPage() {
             >
               Pricing
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-8" style={{ color: "#19213D" }}>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-8 text-[#19213D] dark:text-[#b8bfd0]">
               Open by default. <br className="hidden md:block" /> Scalable by design.
             </h1>
             <p className="text-lg md:text-xl font-medium leading-relaxed" style={{ color: "#6D758F" }}>
@@ -117,7 +117,7 @@ export default function PricingPage() {
                     <Icon className="w-7 h-7 text-[#149A9B]" />
                   </div>
 
-                  <h2 className="mt-5 text-2xl font-bold text-[#19213D]">{tier.name}</h2>
+                  <h2 className="mt-5 text-2xl font-boldtext-[#19213D] dark:text-[#b8bfd0]">{tier.name}</h2>
                   <p className="mt-2 text-sm font-semibold uppercase tracking-[0.22em] text-[#149A9B]">
                     {tier.priceLabel}
                   </p>
@@ -125,7 +125,7 @@ export default function PricingPage() {
 
                   <ul className="mt-6 space-y-3 flex-grow">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-[#19213D]">
+                      <li key={feature} className="flex items-start gap-2 text-smtext-[#19213D] dark:text-[#b8bfd0]">
                         <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#149A9B] shrink-0" />
                         <span>{feature}</span>
                       </li>

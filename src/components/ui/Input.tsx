@@ -30,7 +30,7 @@ export function Input({
             {label && (
                 <label
                     htmlFor={inputId}
-                    className="text-sm font-medium text-[#19213D]"
+                    className="text-sm font-mediumtext-[#19213D] dark:text-[#b8bfd0]"
                 >
                     {label}
                 </label>
@@ -46,7 +46,7 @@ export function Input({
                     aria-invalid={error ? "true" : undefined}
                     aria-describedby={error ? errorId : ariaDescribedBy}
                     className={cn(
-                        "w-full rounded-xl bg-[#F1F3F7] px-4 py-3 text-[#19213D]",
+                        "w-full rounded-xl bg-[#F1F3F7] px-4 py-3text-[#19213D] dark:text-[#b8bfd0]",
                         "shadow-[inset_4px_4px_8px_#d1d5db,inset_-4px_-4px_8px_#ffffff]",
                         "placeholder:text-[#6D758F]",
                         "focus:outline-none focus:ring-2 focus:ring-[#149A9B]",

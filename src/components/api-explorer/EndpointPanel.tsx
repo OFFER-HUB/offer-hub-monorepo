@@ -87,8 +87,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
       >
         <MethodBadge method={endpoint.method} />
         <span
-          className="text-sm font-mono font-medium"
-          style={{ color: "#19213D" }}
+          className="text-sm font-mono font-medium text-[#19213D] dark:text-[#b8bfd0]"
         >
           {endpoint.path}
         </span>
@@ -133,8 +132,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
               {endpoint.pathParams && endpoint.pathParams.length > 0 && (
                 <div className="space-y-3">
                   <h4
-                    className="text-xs font-semibold uppercase tracking-widest"
-                    style={{ color: "#19213D" }}
+                    className="text-xs font-semibold uppercase tracking-widest text-[#19213D] dark:text-[#b8bfd0]"
                   >
                     Path Parameters
                   </h4>
@@ -155,8 +153,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
               {endpoint.queryParams && endpoint.queryParams.length > 0 && (
                 <div className="space-y-3">
                   <h4
-                    className="text-xs font-semibold uppercase tracking-widest"
-                    style={{ color: "#19213D" }}
+                    className="text-xs font-semibold uppercase tracking-widest text-[#19213D] dark:text-[#b8bfd0]"
                   >
                     Query Parameters
                   </h4>
@@ -177,8 +174,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
               {endpoint.requestBody && (
                 <div className="space-y-2">
                   <h4
-                    className="text-xs font-semibold uppercase tracking-widest"
-                    style={{ color: "#19213D" }}
+                    className="text-xs font-semibold uppercase tracking-widest text-[#19213D] dark:text-[#b8bfd0]"
                   >
                     Request Body
                     <span
@@ -195,9 +191,10 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
                     className={cn(
                       "w-full rounded-xl border px-3 py-2 text-sm font-mono",
                       "outline-none transition-all duration-200 resize-y",
-                      "focus:ring-2 focus:ring-[#149A9B] focus:border-transparent"
+                      "focus:ring-2 focus:ring-[#149A9B] focus:border-transparent",
+                      "text-[#19213D] dark:text-[#b8bfd0]"
                     )}
-                    style={{ borderColor: "#e5e7eb", color: "#19213D" }}
+                    style={{ borderColor: "#e5e7eb"}}
                   />
                 </div>
               )}
@@ -207,8 +204,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
           {/* Constructed URL */}
           <div className="space-y-1.5">
             <h4
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "#19213D" }}
+              className="text-xs font-semibold uppercase tracking-widest text-[#19213D] dark:text-[#b8bfd0]"
             >
               Request URL
             </h4>

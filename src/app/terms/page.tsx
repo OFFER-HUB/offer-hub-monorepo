@@ -14,7 +14,7 @@ export default function TermsOfServicePage() {
           {/* Header */}
           <header className="text-center mb-20 animate-fadeInUp">
             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#149A9B] mb-4">Legal Framework</p>
-            <h1 className="text-4xl md:text-6xl font-black text-[#19213D] tracking-tighter leading-none mb-6">
+            <h1 className="text-4xl md:text-6xl font-blacktext-[#19213D] dark:text-[#b8bfd0] tracking-tighter leading-none mb-6">
               Platform <span className="text-[#149A9B]">Terms</span>
             </h1>
             <p className="text-lg text-[#6D758F] font-medium max-w-2xl mx-auto leading-relaxed">
@@ -85,7 +85,7 @@ export default function TermsOfServicePage() {
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F1F3F7] shadow-sunken-subtle text-[#149A9B]">
                       <Icon size={20} />
                     </div>
-                    <h2 className="text-2xl font-black text-[#19213D] tracking-tight">{section.title}</h2>
+                    <h2 className="text-2xl font-blacktext-[#19213D] dark:text-[#b8bfd0] tracking-tight">{section.title}</h2>
                   </div>
 
                   <p className="text-base font-medium leading-relaxed text-[#6D758F] mb-6">
@@ -95,7 +95,7 @@ export default function TermsOfServicePage() {
                   {section.bullets && (
                     <ul className="space-y-4">
                       {section.bullets.map((bullet, i) => (
-                        <li key={i} className="flex items-start gap-4 text-sm font-medium text-[#19213D]">
+                        <li key={i} className="flex items-start gap-4 text-sm font-mediumtext-[#19213D] dark:text-[#b8bfd0]">
                           <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#149A9B] shrink-0" />
                           <span>{bullet}</span>
                         </li>

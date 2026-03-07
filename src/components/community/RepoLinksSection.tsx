@@ -39,7 +39,7 @@ export default function RepoLinksSection() {
                                 </div>
 
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-[#19213D] flex items-center gap-2">
+                                    <h3 className="text-sm font-black uppercase tracking-widesttext-[#19213D] dark:text-[#b8bfd0] flex items-center gap-2">
                                         {repo.name}
                                         <FolderGit2 size={12} className="text-[#6D758F]/40" />
                                     </h3>

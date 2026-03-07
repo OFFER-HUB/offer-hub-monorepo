@@ -22,7 +22,7 @@ const config: Config = {
         secondary: "#002333",
         accent: "#15949C",
         background: "#F1F3F7",
-        "text-primary": "#19213D",
+        // "text-primary": "#19213D", // clashing with globals.css
         "text-secondary": "#6D758F",
         success: "#16a34a",
         warning: "#d97706",

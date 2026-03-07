@@ -37,7 +37,7 @@ export default async function DocPage({ params }: PageProps) {
     <article className="min-w-0">
       {/* Page header */}
       <div className="mb-12 pb-8 border-b border-[#D1D5DB]/30">
-        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight" style={{ color: "#19213D" }}>
+        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-[#19213D] dark:text-[#b8bfd0]">
           {doc.frontmatter.title}
         </h1>
         {doc.frontmatter.description && (

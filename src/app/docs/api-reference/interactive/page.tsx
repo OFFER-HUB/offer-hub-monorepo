@@ -10,8 +10,7 @@ export default function InteractiveExplorerPage() {
       <header className="mb-10">
         <div className="flex items-center gap-3 flex-wrap">
           <h1
-            className="text-3xl sm:text-4xl font-extrabold tracking-tight"
-            style={{ color: "#19213D" }}
+            className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#19213D] dark:text-[#b8bfd0]"
           >
             Interactive API Explorer
           </h1>
@@ -38,8 +37,7 @@ export default function InteractiveExplorerPage() {
           <section key={category.name}>
             <div className="mb-4">
               <h2
-                className="text-xl font-bold"
-                style={{ color: "#19213D" }}
+                className="text-xl font-bold text-[#19213D] dark:text-[#b8bfd0]"
               >
                 {category.name}
               </h2>

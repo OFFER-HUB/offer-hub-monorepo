@@ -58,7 +58,7 @@ export default function ChangelogPage() {
           {/* Header */}
           <header className="text-center mb-24 animate-fadeInUp">
             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#149A9B] mb-4">Evolution</p>
-            <h1 className="text-4xl md:text-6xl font-black text-[#19213D] tracking-tighter leading-none mb-6">
+            <h1 className="text-4xl md:text-6xl font-blacktext-[#19213D] dark:text-[#b8bfd0] tracking-tighter leading-none mb-6">
               Platform <span className="text-[#149A9B]">Updates</span>
             </h1>
             <p className="text-lg text-[#6D758F] font-medium max-w-2xl mx-auto leading-relaxed">
@@ -87,7 +87,7 @@ export default function ChangelogPage() {
                   <div
                     className={`hidden md:block w-5/12 ${index % 2 === 0 ? "text-left" : "text-right"}`}
                   >
-                    <span className="text-sm font-black text-[#19213D] uppercase tracking-widest opacity-40">
+                    <span className="text-sm font-blacktext-[#19213D] dark:text-[#b8bfd0] uppercase tracking-widest opacity-40">
                       {entry.date}
                     </span>
                   </div>
@@ -97,7 +97,7 @@ export default function ChangelogPage() {
                     <div className="bg-[#F1F3F7] rounded-[2.5rem] p-8 md:p-10 shadow-raised hover:shadow-raised-hover transition-all duration-500 ease-out group">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black text-[#19213D] tracking-tight group-hover:text-[#149A9B] transition-colors">
+                          <span className="text-2xl font-blacktext-[#19213D] dark:text-[#b8bfd0] tracking-tight group-hover:text-[#149A9B] transition-colors">
                             {entry.version}
                           </span>
                           <span
@@ -111,7 +111,7 @@ export default function ChangelogPage() {
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-bold text-[#19213D] mb-4">
+                      <h3 className="text-lg font-boldtext-[#19213D] dark:text-[#b8bfd0] mb-4">
                         {entry.title}
                       </h3>
                       <p className="text-[#6D758F] text-sm font-medium leading-relaxed mb-6">
@@ -122,7 +122,7 @@ export default function ChangelogPage() {
                         {entry.changes.map((change, i) => (
                           <li
                             key={i}
-                            className="flex items-start gap-3 text-sm font-medium text-[#19213D]/80"
+                            className="flex items-start gap-3 text-sm font-mediumtext-[#19213D] dark:text-[#b8bfd0]/80"
                           >
                             <span className="mt-2 h-1 w-1 rounded-full bg-[#149A9B] shrink-0" />
                             <span>{change}</span>

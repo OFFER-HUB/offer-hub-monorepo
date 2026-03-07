@@ -44,7 +44,7 @@
 
   /* Text */
   --color-text-primary: #f1f3f7;
-  --color-text-secondary: #a0a6b8;
+  --color-text-secondary: #b8bfd0;
   --color-text-muted: #6D758F;
 
   /* Brand */
@@ -87,6 +87,7 @@ body::before {
 }
 
 @layer utilities {
+
   /* Custom scrollbar utilities */
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -279,18 +280,37 @@ body::before {
 
 /* CSS-only fade-in-up animation (replaces framer-motion whileInView) */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fadeIn {
