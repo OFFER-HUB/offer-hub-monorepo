@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Copy, Check, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface CodeBlockProps {
   code?: string;
@@ -23,19 +24,30 @@ const LANGUAGE_ALIASES: Record<string, string> = {
 // Global cache — persists across renders and component instances
 const highlightCache = new Map<string, string>();
 
+function escapeHtml(text: string) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 export function CodeBlock({
   code: codeProp,
   children,
   language = "typescript",
   className
 }: CodeBlockProps) {
+  const { resolvedTheme } = useTheme();
   const normalizedLang = LANGUAGE_ALIASES[language] || language;
+  const shikiTheme = resolvedTheme === "dark" ? "github-dark" : "github-light";
   const [copied, setCopied] = useState(false);
   const [highlightedCode, setHighlightedCode] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const rawCode = (codeProp || children || "").trim();
-  const cacheKey = `${normalizedLang}:${rawCode}`;
+  const cacheKey = `${shikiTheme}:${normalizedLang}:${rawCode}`;
 
   useEffect(() => {
     // Return cached result immediately — no Shiki load needed
@@ -53,13 +65,13 @@ export function CodeBlock({
         if (entries[0]?.isIntersecting) {
           observer.disconnect();
           import("shiki").then(({ codeToHtml }) => {
-            codeToHtml(rawCode, { lang: normalizedLang, theme: "github-light" })
+            codeToHtml(rawCode, { lang: normalizedLang, theme: shikiTheme })
               .then((html) => {
                 highlightCache.set(cacheKey, html);
                 if (isMounted) setHighlightedCode(html);
               })
               .catch(() => {
-                const fallback = `<pre><code>${rawCode}</code></pre>`;
+                const fallback = `<pre><code>${escapeHtml(rawCode)}</code></pre>`;
                 highlightCache.set(cacheKey, fallback);
                 if (isMounted) setHighlightedCode(fallback);
               });
@@ -77,7 +89,7 @@ export function CodeBlock({
       isMounted = false;
       observer.disconnect();
     };
-  }, [cacheKey, rawCode, normalizedLang]);
+  }, [cacheKey, rawCode, normalizedLang, shikiTheme]);
 
   async function handleCopy() {
     try {
@@ -93,21 +105,21 @@ export function CodeBlock({
     <div
       ref={containerRef}
       className={cn(
-        "relative rounded-3xl overflow-hidden my-10 border border-[#D1D5DB]/30 shadow-[0_15px_40px_rgba(0,0,0,0.02)] bg-white group transition-all duration-300 hover:shadow-xl hover:border-[#D1D5DB]/50",
+        "relative rounded-3xl overflow-hidden my-10 border border-theme-border/40 bg-bg-elevated shadow-neu-raised-sm group transition-all duration-300 hover:border-theme-primary/30 hover:shadow-neu-raised-hover",
         className
       )}
     >
       {/* Header bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-[#F9FAFB] border-b border-[#D1D5DB]/30">
+      <div className="flex items-center justify-between px-6 py-4 bg-bg-sunken/55 border-b border-theme-border/45">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-[#D1D5DB]/40 shadow-sm transition-all duration-300 group-hover:bg-[#149A9B]/5 group-hover:border-[#149A9B]/30">
-            <Code2 size={16} className="text-[#6D758F] group-hover:text-[#149A9B]" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-elevated border border-theme-border/50 shadow-neu-raised-sm transition-all duration-300 group-hover:bg-theme-primary/10 group-hover:border-theme-primary/30">
+            <Code2 size={16} className="text-content-secondary group-hover:text-theme-primary" />
           </div>
           <div>
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] font-mono text-[#6D758F]/50">
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] font-mono text-content-secondary/70">
               {language}
             </span>
-            <div className="h-0.5 w-4 bg-[#149A9B]/40 rounded-full mt-0.5" />
+            <div className="h-0.5 w-4 bg-theme-primary/50 rounded-full mt-0.5" />
           </div>
         </div>
 
@@ -118,8 +130,8 @@ export function CodeBlock({
           className={cn(
             "relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-[10.5px] font-black uppercase tracking-widest transition-all duration-300",
             copied
-              ? "text-white bg-[#149A9B] shadow-lg shadow-[#149A9B]/20"
-              : "text-[#6D758F] bg-white border border-[#D1D5DB]/50 shadow-sm hover:text-[#19213D] hover:border-[#D1D5DB]/80 hover:shadow-md active:scale-95"
+              ? "text-white bg-theme-primary shadow-lg shadow-theme-primary/25"
+              : "text-content-secondary bg-bg-elevated border border-theme-border/70 shadow-neu-raised-sm hover:text-content-primary hover:border-theme-primary/40 hover:bg-bg-sunken/40 active:scale-95"
           )}
         >
           <span className="flex items-center gap-2">
@@ -130,14 +142,14 @@ export function CodeBlock({
       </div>
 
       {/* Code Area */}
-      <div className="p-8 overflow-x-auto text-[14px] leading-[1.8] min-h-[5rem] scrollbar-thin scrollbar-thumb-[#D1D5DB] scrollbar-track-transparent selection:bg-[#149A9B]/10 selection:text-[#149A9B]">
+      <div className="p-8 overflow-x-auto text-[14px] leading-[1.8] min-h-[5rem] text-content-primary scrollbar-thin scrollbar-track-transparent selection:bg-theme-primary/20 selection:text-content-primary">
         {highlightedCode ? (
           <div
             dangerouslySetInnerHTML={{ __html: highlightedCode }}
-            className="shiki-container [&>pre]:!bg-transparent [&>pre]:!p-0 [&>pre]:!m-0 [&>pre]:!outline-none"
+            className="shiki-container [&>pre]:!bg-transparent [&>pre]:!p-0 [&>pre]:!m-0 [&>pre]:!outline-none [&_.line-number]:text-content-muted"
           />
         ) : (
-          <pre className="text-[#6D758F]/40 font-mono font-medium">
+          <pre className="text-content-secondary/70 font-mono font-medium">
             <code>{rawCode}</code>
           </pre>
         )}
@@ -145,19 +157,30 @@ export function CodeBlock({
 
       <style jsx global>{`
         .shiki-container pre {
-          color: #19213D;
+          color: var(--color-text-primary);
+        }
+        .shiki-container .line {
+          color: inherit;
+        }
+        .shiki-container .line-number,
+        .shiki-container [data-line]::before {
+          color: var(--color-text-muted);
+          opacity: 0.85;
+        }
+        .shiki-container [data-line]::before {
+          margin-right: 1rem;
         }
         .scrollbar-thin::-webkit-scrollbar {
           height: 8px;
           width: 8px;
         }
         .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: #E5E7EB;
+          background: var(--color-border);
           border-radius: 20px;
-          border: 2px solid white;
+          border: 2px solid var(--color-bg-elevated);
         }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: #D1D5DB;
+          background: var(--color-text-muted);
         }
       `}</style>
     </div>

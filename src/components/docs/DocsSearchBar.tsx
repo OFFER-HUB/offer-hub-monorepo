@@ -91,7 +91,7 @@ export default function DocsSearchBar() {
         indices.forEach(([start, end]: [number, number], idx: number) => {
             parts.push(text.slice(lastIndex, start));
             parts.push(
-                <span key={idx} className="bg-[rgba(20,154,155,0.15)] text-[#149A9B] rounded px-0.5">
+                <span key={idx} className="bg-theme-primary/15 text-theme-primary rounded px-0.5">
                     {text.slice(start, end + 1)}
                 </span>
             );
@@ -113,20 +113,21 @@ export default function DocsSearchBar() {
                     onKeyDown={handleKeyDown}
                     icon={<Search size={20} />}
                     iconPosition="left"
+                    className="!bg-bg-sunken !shadow-neu-sunken-subtle !text-content-primary !placeholder:text-content-secondary focus:!ring-theme-primary"
                     rightElement={
                         query ? (
                             <button
                                 onClick={() => { setQuery(""); setResults([]); setIsOpen(false); }}
-                                className="text-[#6D758F] hover:text-[#19213D] transition-colors flex items-center justify-center h-full px-2"
+                                className="text-content-secondary hover:text-content-primary transition-colors flex items-center justify-center h-full px-2"
                             >
                                 <X size={18} />
                             </button>
                         ) : (
-                            <div className="flex items-center gap-1.5 pr-2 pointer-events-none text-[#6D758F]">
-                                <kbd className="flex items-center justify-center min-w-[24px] h-[24px] text-[11px] font-sans font-medium rounded-md shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff] bg-[#F1F3F7]">
+                            <div className="flex items-center gap-1.5 pr-2 pointer-events-none text-content-secondary">
+                                <kbd className="flex items-center justify-center min-w-[24px] h-[24px] text-[11px] font-sans font-medium rounded-md shadow-neu-raised-sm bg-bg-base text-content-primary">
                                     ⌘
                                 </kbd>
-                                <kbd className="flex items-center justify-center min-w-[24px] h-[24px] text-[11px] font-sans font-medium rounded-md shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff] bg-[#F1F3F7]">
+                                <kbd className="flex items-center justify-center min-w-[24px] h-[24px] text-[11px] font-sans font-medium rounded-md shadow-neu-raised-sm bg-bg-base text-content-primary">
                                     K
                                 </kbd>
                             </div>
@@ -136,7 +137,7 @@ export default function DocsSearchBar() {
             </div>
 
             {isOpen && results.length > 0 && (
-                <div className="absolute top-full mt-3 w-full rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200" style={{ background: "rgba(255, 255, 255, 0.95)", backdropFilter: "blur(12px)" }}>
+                <div className="absolute top-full mt-3 w-full rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200 bg-bg-elevated/95 border border-theme-border/40 shadow-neu-raised backdrop-blur-xl">
                     <div className="max-h-[450px] overflow-y-auto">
                         {results.map((result, idx) => (
                             <div
@@ -150,37 +151,36 @@ export default function DocsSearchBar() {
                                 className="p-4 flex items-start gap-4 cursor-pointer transition-colors"
                                 style={{
                                     backgroundColor: activeIndex === idx ? "rgba(20, 154, 155, 0.08)" : "transparent",
-                                    color: activeIndex === idx ? "#149A9B" : "#6D758F"
                                 }}
                             >
-                                <div className="mt-1 p-2 rounded-lg" style={{ background: activeIndex === idx ? "rgba(20, 154, 155, 0.12)" : "rgba(241, 243, 247, 0.8)" }}>
-                                    <FileText size={18} style={{ color: activeIndex === idx ? "#149A9B" : "#9CA3AF" }} />
+                                <div className={`mt-1 p-2 rounded-lg ${activeIndex === idx ? "bg-theme-primary/10 shadow-neu-sunken-subtle" : "bg-bg-base shadow-neu-raised-sm"}`}>
+                                    <FileText size={18} className={activeIndex === idx ? "text-theme-primary" : "text-content-secondary"} />
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-sm font-semibold text-gray-900">
+                                        <span className={`text-sm font-semibold ${activeIndex === idx ? "text-theme-primary" : "text-content-primary"}`}>
                                             {highlightMatch(result.item.title, result.matches, "title")}
                                         </span>
-                                        <ChevronRight size={14} className="text-gray-300" />
-                                        <span className="text-sm font-medium text-gray-500">
+                                        <ChevronRight size={14} className="text-content-secondary/40" />
+                                        <span className="text-sm font-medium text-content-secondary">
                                             {highlightMatch(result.item.section, result.matches, "section")}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                                    <p className="text-sm text-content-secondary line-clamp-2 leading-relaxed">
                                         {highlightMatch(result.item.content, result.matches, "content")}
                                     </p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className="p-3 flex justify-between items-center text-[10px] font-bold tracking-wider uppercase" style={{ background: "rgba(241, 243, 247, 0.6)", color: "#9CA3AF", borderTop: "1px solid rgba(209, 213, 219, 0.3)" }}>
+                    <div className="p-3 flex justify-between items-center text-[10px] font-bold tracking-wider uppercase bg-bg-sunken/60 text-content-secondary border-t border-theme-border/40">
                         <span>{results.length} results found</span>
                         <div className="flex gap-3">
                             <span className="flex items-center gap-1">
-                                <kbd className="px-1 py-0.5 rounded" style={{ background: "rgba(255, 255, 255, 0.8)", border: "1px solid rgba(209, 213, 219, 0.3)" }}>↑↓</kbd> Navigate
+                                <kbd className="px-1 py-0.5 rounded bg-bg-base border border-theme-border/40 text-content-primary">↑↓</kbd> Navigate
                             </span>
                             <span className="flex items-center gap-1">
-                                <kbd className="px-1 py-0.5 rounded" style={{ background: "rgba(255, 255, 255, 0.8)", border: "1px solid rgba(209, 213, 219, 0.3)" }}>↵</kbd> Select
+                                <kbd className="px-1 py-0.5 rounded bg-bg-base border border-theme-border/40 text-content-primary">↵</kbd> Select
                             </span>
                         </div>
                     </div>
@@ -188,9 +188,9 @@ export default function DocsSearchBar() {
             )}
 
             {isOpen && query.length > 1 && results.length === 0 && (
-                <div className="absolute top-full mt-3 w-full rounded-2xl p-8 text-center z-50 animate-in fade-in slide-in-from-top-2" style={{ background: "rgba(255, 255, 255, 0.95)", backdropFilter: "blur(12px)" }}>
-                    <p style={{ color: "#6D758F" }}>No results found for &quot;<span className="font-semibold">{query}</span>&quot;</p>
-                    <p className="text-sm mt-1" style={{ color: "#9CA3AF" }}>Try a different search term</p>
+                <div className="absolute top-full mt-3 w-full rounded-2xl p-8 text-center z-[100] animate-in fade-in slide-in-from-top-2 bg-bg-elevated/95 border border-theme-border/40 shadow-neu-raised backdrop-blur-xl">
+                    <p className="text-content-secondary">No results found for &quot;<span className="font-semibold text-content-primary">{query}</span>&quot;</p>
+                    <p className="text-sm mt-1 text-content-secondary/80">Try a different search term</p>
                 </div>
             )}
         </div>

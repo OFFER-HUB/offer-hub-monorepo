@@ -84,16 +84,13 @@ export default function PricingPage() {
       <main className="flex-grow pt-28 pb-20">
         <section className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto flex flex-col items-center">
-            <div
-              className="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8 shadow-[inset_2px_2px_5px_rgba(255,255,255,0.8),inset_-2px_-2px_5px_rgba(0,0,0,0.05),4px_4px_8px_#d1d5db,-4px_-4px_8px_#ffffff]"
-              style={{ color: "#149A9B", background: "#F1F3F7" }}
-            >
+            <div className="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8 bg-bg-base shadow-neu-raised text-theme-primary">
               Pricing
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-8" style={{ color: "#19213D" }}>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-8 text-content-primary">
               Open by default. <br className="hidden md:block" /> Scalable by design.
             </h1>
-            <p className="text-lg md:text-xl font-medium leading-relaxed" style={{ color: "#6D758F" }}>
+            <p className="text-lg md:text-xl font-medium leading-relaxed text-content-secondary">
               OFFER-HUB keeps core access free for builders and lets teams self-host without
               licensing fees. If you need enterprise-level support, our team can tailor a
               support model around your rollout.
@@ -106,27 +103,27 @@ export default function PricingPage() {
               const ctaClassName =
                 tier.ctaStyle === "primary"
                   ? "btn-neumorphic-primary"
-                  : "btn-neumorphic-secondary text-[#149A9B]";
+                  : "bg-bg-base shadow-neu-raised text-theme-primary";
 
               return (
                 <article
                   key={tier.name}
-                  className="rounded-[2.5rem] p-10 bg-[#F1F3F7] shadow-raised hover:shadow-raised-hover transition-all duration-[400ms] ease-out flex flex-col group"
+                  className="bg-bg-elevated shadow-neu-raised rounded-[2.5rem] p-10 hover:shadow-neu-raised-hover transition-all duration-[400ms] ease-out flex flex-col group"
                 >
-                  <div className="w-16 h-16 rounded-2xl shadow-sunken-subtle bg-[#F1F3F7] flex items-center justify-center mb-2 group-hover:shadow-sunken transition-all duration-300">
-                    <Icon className="w-7 h-7 text-[#149A9B]" />
+                  <div className="w-16 h-16 rounded-2xl bg-bg-base shadow-neu-sunken-subtle flex items-center justify-center mb-2 group-hover:shadow-neu-sunken transition-all duration-300">
+                    <Icon className="w-7 h-7 text-theme-primary" />
                   </div>
 
-                  <h2 className="mt-5 text-2xl font-bold text-[#19213D]">{tier.name}</h2>
-                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.22em] text-[#149A9B]">
+                  <h2 className="mt-5 text-2xl font-bold text-content-primary">{tier.name}</h2>
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.22em] text-theme-primary">
                     {tier.priceLabel}
                   </p>
-                  <p className="mt-4 text-sm leading-relaxed text-[#6D758F]">{tier.description}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-content-secondary">{tier.description}</p>
 
                   <ul className="mt-6 space-y-3 flex-grow">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-[#19213D]">
-                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#149A9B] shrink-0" />
+                      <li key={feature} className="flex items-start gap-2 text-sm text-content-primary">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-theme-primary shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -146,10 +143,10 @@ export default function PricingPage() {
             })}
           </div>
 
-          <p className="mt-10 text-center text-sm text-[#6D758F]">
+          <p className="mt-10 text-center text-sm text-content-secondary">
             Need help choosing the right setup? Reach us through our
             {" "}
-            <Link href="/contact" className="text-[#149A9B] font-semibold hover:underline">
+            <Link href="/contact" className="text-theme-primary font-semibold hover:underline">
               contact channel
             </Link>
             {" "}

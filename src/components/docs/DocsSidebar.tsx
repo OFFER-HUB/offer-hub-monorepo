@@ -20,19 +20,19 @@ interface DocsSidebarProps {
 
 const getIconForSlug = (slug: string, isActive: boolean) => {
   const s = slug.toLowerCase();
-  const color = isActive ? "#149A9B" : "#6D758F";
+  const iconClass = isActive ? "text-theme-primary" : "text-content-secondary";
 
-  if (s.includes("api") || s.includes("dev") || s.includes("code")) return <Code size={16} color={color} />;
-  if (s.includes("start") || s.includes("intro") || s.includes("welcome")) return <Rocket size={16} color={color} />;
-  if (s.includes("escrow") || s.includes("contract")) return <Shield size={16} color={color} />;
-  if (s.includes("sdk") || s.includes("tool")) return <Box size={16} color={color} />;
-  if (s.includes("config") || s.includes("setting")) return <Settings size={16} color={color} />;
-  if (s.includes("flow") || s.includes("lifecycle")) return <Workflow size={16} color={color} />;
-  if (s.includes("helper") || s.includes("util")) return <Zap size={16} color={color} />;
-  if (s.includes("design") || s.includes("ui") || s.includes("view")) return <Layers size={16} color={color} />;
-  if (s.includes("network") || s.includes("stellar")) return <Compass size={16} color={color} />;
+  if (s.includes("api") || s.includes("dev") || s.includes("code")) return <Code size={16} className={iconClass} />;
+  if (s.includes("start") || s.includes("intro") || s.includes("welcome")) return <Rocket size={16} className={iconClass} />;
+  if (s.includes("escrow") || s.includes("contract")) return <Shield size={16} className={iconClass} />;
+  if (s.includes("sdk") || s.includes("tool")) return <Box size={16} className={iconClass} />;
+  if (s.includes("config") || s.includes("setting")) return <Settings size={16} className={iconClass} />;
+  if (s.includes("flow") || s.includes("lifecycle")) return <Workflow size={16} className={iconClass} />;
+  if (s.includes("helper") || s.includes("util")) return <Zap size={16} className={iconClass} />;
+  if (s.includes("design") || s.includes("ui") || s.includes("view")) return <Layers size={16} className={iconClass} />;
+  if (s.includes("network") || s.includes("stellar")) return <Compass size={16} className={iconClass} />;
 
-  return <FileText size={16} color={color} />;
+  return <FileText size={16} className={iconClass} />;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,13 +50,13 @@ export function DocsSidebar({ nav, className }: DocsSidebarProps) {
     <nav
       aria-label="Documentation navigation"
       className={cn(
-        "w-full rounded-3xl p-5 shadow-[8px_8px_16px_#d1d5db,-8px_-8px_16px_#ffffff] bg-[#F1F3F7] flex flex-col",
+        "w-full rounded-3xl p-5 shadow-neu-raised bg-bg-base flex flex-col",
         className
       )}
     >
       <div className="flex-1 space-y-6 overflow-y-auto scrollbar-thin pr-1">
         <div>
-          <div className="px-5 mb-3 text-[11px] font-extrabold uppercase tracking-widest text-[#6D758F]">
+          <div className="px-5 mb-3 text-[11px] font-extrabold uppercase tracking-widest text-content-primary">
             Overview
           </div>
           <ul role="list" className="space-y-1.5">
@@ -82,7 +82,7 @@ export function DocsSidebar({ nav, className }: DocsSidebarProps) {
 
           return (
             <div key={section.section} className="mt-6">
-              <div className="px-5 mb-3 text-[11px] font-extrabold uppercase tracking-widest text-[#6D758F]">
+              <div className="px-5 mb-3 text-[11px] font-extrabold uppercase tracking-widest text-content-primary">
                 {section.section}
               </div>
               <ul role="list" className="space-y-1.5">
@@ -112,14 +112,14 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         aria-current={isActive ? "page" : undefined}
         className={cn(
           "group flex items-center gap-3.5 text-sm py-2.5 px-5 rounded-2xl transition-all duration-300 font-medium",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#149A9B] focus-visible:ring-offset-2",
-          "bg-[#F1F3F7]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
+          "bg-bg-base",
           isActive
-            ? "shadow-[inset_4px_4px_8px_#d1d5db,inset_-4px_-4px_8px_#ffffff] text-[#149A9B]"
-            : "text-[#6D758F] shadow-none hover:shadow-[4px_4px_8px_#d1d5db,-4px_-4px_8px_#ffffff] hover:text-[#19213D]"
+            ? "bg-bg-sunken shadow-neu-sunken-subtle text-theme-primary"
+            : "text-content-secondary shadow-none hover:shadow-neu-raised-sm hover:text-content-primary"
         )}
       >
-        <span className={cn("flex-shrink-0 transition-colors duration-300", isActive ? "text-[#149A9B]" : "text-[#6D758F] group-hover:text-[#19213D]")}>
+        <span className={cn("flex-shrink-0 transition-colors duration-300", isActive ? "text-theme-primary" : "text-content-secondary group-hover:text-content-primary")}>
           {icon}
         </span>
         <span className="truncate">{label}</span>

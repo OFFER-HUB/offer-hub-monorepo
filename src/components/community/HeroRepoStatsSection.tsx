@@ -27,10 +27,10 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
             <p className="mb-6 text-[11px] font-black uppercase tracking-[0.4em] text-[#149A9B]">
               Community Network
             </p>
-            <h1 className="text-5xl font-black tracking-tighter text-[#19213D] md:text-7xl leading-[1.05]">
-              Building the Future <br />of <span className="text-[#149A9B]">Payments</span>
+            <h1 className="text-5xl font-black tracking-tighter text-content-primary md:text-7xl leading-[1.05]">
+              Building the Future <br />of <span className="text-theme-primary">Payments</span>
             </h1>
-            <p className="mt-8 max-w-xl text-lg font-medium leading-relaxed text-[#6D758F]">
+            <p className="mt-8 max-w-xl text-lg font-medium leading-relaxed text-content-secondary">
               A global decentralized community of {stats.contributors} contributors
               shipping modular infrastructure every day.
             </p>
@@ -52,18 +52,18 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
               {repoStats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="group rounded-3xl bg-[#F1F3F7] p-6 shadow-raised transition-all duration-500 hover:scale-[1.02]"
+                  className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-6 transition-all duration-500 hover:scale-[1.02]"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-2.5 rounded-xl bg-[#F1F3F7] shadow-sunken-subtle">
+                    <div className="p-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle">
                       <stat.icon size={18} className={`${stat.color} transition-transform group-hover:scale-110`} />
                     </div>
-                    <div className="h-1 w-4 rounded-full bg-black/5" />
+                    <div className="h-1 w-4 rounded-full bg-theme-primary/20" />
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#6D758F]/60">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary">
                     {stat.label}
                   </p>
-                  <p className="mt-1 text-3xl font-black text-[#19213D] tracking-tight">
+                  <p className="mt-1 text-3xl font-black text-content-primary tracking-tight">
                     {stats[stat.label.toLowerCase().replace(" ", "") as keyof typeof stats] || stat.value}
                   </p>
                 </div>

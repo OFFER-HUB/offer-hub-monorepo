@@ -64,19 +64,10 @@ export function Footer() {
   }, []);
 
   return (
-    <footer
-      className="bg-transparent pt-4 pb-0 relative"
-    >
+    <footer className="bg-transparent pt-4 pb-0 relative">
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        {/* ── White card ── */}
-        <div
-          className="rounded-3xl px-10 py-10"
-          style={{
-            background: "#ffffff",
-            boxShadow:
-              "0 4px 32px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
+        {/* ── Card ── */}
+        <div className="rounded-3xl px-10 py-10 bg-bg-elevated shadow-neu-raised">
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
             {/* Left — logo + desc + socials */}
             <div className="flex flex-col gap-5 md:w-64 flex-shrink-0">
@@ -89,10 +80,7 @@ export function Footer() {
                   className="h-7 w-auto object-contain"
                 />
               </Link>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "#6D758F" }}
-              >
+              <p className="text-sm leading-relaxed text-content-secondary">
                 Empowering freelancers and businesses with secure,
                 blockchain-powered solutions — making work easier to find,
                 manage, and pay.
@@ -105,16 +93,7 @@ export function Footer() {
                     aria-label={s.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="transition-colors duration-200"
-                    style={{ color: "#6D758F" }}
-                    onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLAnchorElement).style.color =
-                      "#19213D")
-                    }
-                    onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLAnchorElement).style.color =
-                      "#6D758F")
-                    }
+                    className="text-content-secondary hover:text-content-primary transition-colors duration-200"
                   >
                     <s.icon size={18} />
                   </a>
@@ -125,14 +104,8 @@ export function Footer() {
             {/* Right — nav columns */}
             <div className="flex flex-1 gap-8 md:gap-12 flex-wrap">
               {navColumns.map((col) => (
-                <div
-                  key={col.heading}
-                  className="flex flex-col gap-4 min-w-[100px]"
-                >
-                  <h4
-                    className="text-sm font-semibold"
-                    style={{ color: "#19213D" }}
-                  >
+                <div key={col.heading} className="flex flex-col gap-4 min-w-[100px]">
+                  <h4 className="text-sm font-semibold text-content-primary">
                     {col.heading}
                   </h4>
                   <ul className="flex flex-col gap-3">
@@ -140,18 +113,7 @@ export function Footer() {
                       <li key={link.label}>
                         <a
                           href={link.href}
-                          className="text-sm transition-colors duration-200"
-                          style={{ color: "#6D758F" }}
-                          onMouseEnter={(e) =>
-                          ((
-                            e.currentTarget as HTMLAnchorElement
-                          ).style.color = "#19213D")
-                          }
-                          onMouseLeave={(e) =>
-                          ((
-                            e.currentTarget as HTMLAnchorElement
-                          ).style.color = "#6D758F")
-                          }
+                          className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
                         >
                           {link.label}
                         </a>
@@ -164,14 +126,11 @@ export function Footer() {
           </div>
 
           {/* Divider + bottom bar */}
-          <div
-            className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 border-t"
-            style={{ borderColor: "#e5e7eb" }}
-          >
-            <p className="text-xs" style={{ color: "#9ca3af" }}>
+          <div className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-theme-border">
+            <p className="text-xs text-content-muted">
               © {new Date().getFullYear()} OFFER-HUB. All rights reserved.
             </p>
-            <p className="text-xs" style={{ color: "#9ca3af" }}>
+            <p className="text-xs text-content-muted">
               Powered by Stellar Blockchain
             </p>
           </div>
@@ -185,11 +144,11 @@ export function Footer() {
       >
         <div
           ref={textRef}
-          className="select-none pointer-events-none leading-none mt-2 whitespace-nowrap mx-auto"
+          className="select-none pointer-events-none leading-none mt-2 whitespace-nowrap mx-auto text-theme-primary"
           style={{
             fontWeight: 900,
             letterSpacing: "-0.03em",
-            color: "rgba(25,33,61,0.12)",
+            opacity: 0.3,
             WebkitMaskImage:
               "linear-gradient(to bottom, black 0%, black 30%, transparent 75%)",
             maskImage:
