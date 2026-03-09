@@ -19,7 +19,7 @@ interface ContributorsSectionProps {
 // Memoized contributor card to prevent unnecessary re-renders
 const ContributorCard = memo(function ContributorCard({ person }: { person: ContributorData }) {
   return (
-    <article className="group relative rounded-2xl bg-[#F1F3F7] p-5 shadow-[4px_4px_8px_#d1d5db,-4px_-4px_8px_#ffffff] transition-shadow duration-300 hover:shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff]">
+    <article className="group relative rounded-2xl bg-bg-elevated p-5 shadow-neu-raised transition-shadow duration-300 hover:shadow-neu-raised-hover">
       <div className="flex flex-col items-center text-center gap-3">
         {person.avatar ? (
           <img
@@ -27,24 +27,24 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
             alt={person.name}
             loading="lazy"
             decoding="async"
-            className="w-14 h-14 rounded-full object-cover shadow-sm"
+            className="w-14 h-14 rounded-full object-cover shadow-neu-sunken-subtle"
           />
         ) : (
-          <div className="w-14 h-14 rounded-full bg-[#F1F3F7] flex items-center justify-center">
-            <Users size={20} className="text-[#6D758F]" />
+          <div className="w-14 h-14 rounded-full bg-bg-elevated flex items-center justify-center shadow-neu-sunken-subtle">
+            <Users size={20} className="text-content-secondary" />
           </div>
         )}
 
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-[#19213D] truncate tracking-tight">
+          <h3 className="text-base font-bold text-content-primary truncate tracking-tight">
             {person.name || person.username}
           </h3>
-          <p className="text-xs font-medium text-[#149A9B]">
+          <p className="text-xs font-medium text-content-primary">
             @{person.username}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#6D758F]/60">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-theme-primary">
           <GitCommit size={12} />
           <span>{person.commits} commits</span>
         </div>
@@ -54,7 +54,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
             href={person.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 text-[10px] font-bold text-[#149A9B] hover:underline"
+            className="mt-1 text-[10px] font-bold text-theme-primary hover:underline"
           >
             View Profile
           </a>
@@ -94,13 +94,12 @@ const ContributorsSection = ({ contributors }: ContributorsSectionProps) => {
           <div className="mt-12 text-center">
             <button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-2.5 px-7 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-raised hover:shadow-raised-hover active:shadow-sunken-subtle"
-              style={{ background: "#149A9B" }}
+              className="inline-flex items-center gap-2.5 px-7 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-300 btn-neumorphic-primary"
             >
               Show more ({totalContributors - displayCount} remaining)
               <ChevronDown size={16} />
             </button>
-            <p className="mt-3 text-xs text-[#6D758F]">
+            <p className="mt-3 text-xs text-content-secondary">
               Showing {displayCount} of {totalContributors} contributors
             </p>
           </div>

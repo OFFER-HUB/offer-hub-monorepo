@@ -47,31 +47,20 @@ export default function ContributorGrid({ contributors }: ContributorGridProps) 
           {data.map((contributor) => (
             <article
               key={contributor.username}
-              className="rounded-2xl p-6 shadow-raised flex flex-col items-center text-center"
-              style={{ background: "#F1F3F7" }}
+              className="rounded-2xl p-6 shadow-neu-raised bg-bg-elevated flex flex-col items-center text-center transition-shadow duration-300 hover:shadow-neu-raised-hover"
             >
               <div
-                className="w-16 h-16 rounded-full shadow-raised-sm flex items-center justify-center text-lg font-bold text-white"
-                style={{ background: "#149A9B" }}
+                className="w-16 h-16 rounded-full shadow-neu-sunken-subtle bg-theme-primary flex items-center justify-center text-lg font-bold text-white"
               >
                 {getInitials(contributor.name)}
               </div>
-              <h3
-                className="mt-4 text-base font-bold"
-                style={{ color: "#19213D" }}
-              >
+              <h3 className="mt-4 text-base font-bold text-content-primary">
                 {contributor.name}
               </h3>
-              <p
-                className="mt-1 text-xs font-light"
-                style={{ color: "#6D758F" }}
-              >
+              <p className="mt-1 text-xs font-light text-content-secondary">
                 {contributor.area}
               </p>
-              <p
-                className="mt-3 text-sm font-medium"
-                style={{ color: "#149A9B" }}
-              >
+              <p className="mt-3 text-sm font-medium text-theme-primary">
                 {contributor.commits} commits
               </p>
             </article>
@@ -83,8 +72,7 @@ export default function ContributorGrid({ contributors }: ContributorGridProps) 
             href="https://github.com/OFFER-HUB/offer-hub-monorepo/graphs/contributors"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-[400ms] ease-out border hover:shadow-raised-hover"
-            style={{ color: "#149A9B", borderColor: "#149A9B" }}
+            className="inline-block px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-[400ms] ease-out border border-theme-primary text-theme-primary hover:shadow-neu-raised-hover"
           >
             View all on GitHub
           </a>
