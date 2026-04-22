@@ -50,7 +50,7 @@ export default function SupportedBySection() {
                   alt={`${partner.name} logo`}
                   width={partner.width}
                   height={partner.height}
-                  className="object-contain dark:invert dark:brightness-0 dark:invert"
+                  className="object-contain dark:invert dark:brightness-0"
                   priority
                 />
               </Link>
