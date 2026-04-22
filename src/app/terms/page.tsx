@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import LoadingBar from "@/components/ui/LoadingBar";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
@@ -860,6 +861,7 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen flex flex-col bg-bg-base text-content-primary">
       <Navbar />
+      <LoadingBar />
 
       <main className="flex-grow pt-32 pb-24 px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
