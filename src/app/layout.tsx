@@ -21,9 +21,61 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OFFER-HUB",
+  metadataBase: new URL("https://offer-hub.tech"),
+  title: {
+    default: "OFFER-HUB — Secure Non-Custodial Escrow for Marketplaces",
+    template: "%s | OFFER-HUB",
+  },
   description:
-    "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments without building complex payment infrastructure.",
+    "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments powered by Stellar smart contracts — without building complex payment infrastructure.",
+  keywords: [
+    "escrow",
+    "marketplace",
+    "Stellar",
+    "smart contracts",
+    "freelance",
+    "payments",
+    "blockchain",
+    "non-custodial",
+    "open source",
+  ],
+  authors: [{ name: "OFFER-HUB", url: "https://offer-hub.tech" }],
+  creator: "OFFER-HUB",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://offer-hub.tech",
+    siteName: "OFFER-HUB",
+    title: "OFFER-HUB — Secure Non-Custodial Escrow for Marketplaces",
+    description:
+      "Build trustless commerce with non-custodial escrow powered by Stellar smart contracts. Open-source, self-hostable, enterprise-ready.",
+    images: [
+      {
+        url: "/OFFER-HUB-logo.png",
+        width: 512,
+        height: 512,
+        alt: "OFFER-HUB Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "OFFER-HUB — Secure Non-Custodial Escrow for Marketplaces",
+    description:
+      "Build trustless commerce with non-custodial escrow powered by Stellar smart contracts.",
+    images: ["/OFFER-HUB-logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: "/favicon.ico",
   },
