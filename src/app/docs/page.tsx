@@ -142,7 +142,7 @@ export default function DocsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {docSections.map((section, idx) => (
               <Link
-                key={section.link}
+                key={idx}
                 href={section.link}
                 className={cn(
                   "group p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
