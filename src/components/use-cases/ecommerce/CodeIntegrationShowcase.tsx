@@ -30,7 +30,7 @@ const CODE_TABS: CodeTab[] = [
     code: `import { OfferHub } from "@offerhub/sdk";
 
 // Initialize SDK — The Orchestrator mirrors your backend state
-const oh = new OfferHub({ apiKey: process.env.OFFERHUB_API_KEY! });
+const oh = new OfferHub({ apiKey: "oh_live_xxxxxxxxxxxx" });
 
 // Order Creation: creates an escrow-safe purchase with a delivery window
 const order = await oh.orders.create({
@@ -59,7 +59,7 @@ await oh.escrows.fund(order.id, {
 
 // Client-side SDK (public key only, safe to expose in the browser)
 const oh = new OfferHub({
-  apiKey: process.env.NEXT_PUBLIC_OFFERHUB_KEY,
+  apiKey: "oh_pub_xxxxxxxxxxxx",
 });
 
 // Buyer confirms delivery — triggers automatic fund release to the seller.
