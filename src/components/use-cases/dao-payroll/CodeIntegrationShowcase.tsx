@@ -71,7 +71,7 @@ await oh.escrows.fund(payroll.id, {
 
 // Governance dashboard SDK (public key only, safe in the browser)
 const oh = new OfferHub({
-  apiKey: process.env.NEXT_PUBLIC_OFFERHUB_KEY,
+  apiKey: "oh_demo_xxxxxxxxxxxx",  // Replace with your API key
 });
 
 // After governance vote passes, verify contributor milestone
