@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import DocsSearchBar from "@/components/docs/DocsSearchBar";
-import { Book, Code, Shield, LifeBuoy, Terminal, Zap } from "lucide-react";
+import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
@@ -175,31 +175,12 @@ export default function DocsPage() {
             Can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex justify-center items-center gap-8">
-            <Link href="/help" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">Help Center</Link>
+            <Link href="https://github.com/OFFER-HUB/offer-hub-monorepo/discussions" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">Community Support</Link>
             <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
             <Link href="https://github.com/OFFER-HUB/offer-hub-monorepo/issues" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">GitHub Issues</Link>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function ChevronRight({ size = 16, className = "" }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
   );
 }
