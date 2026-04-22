@@ -1,15 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
-import Link from "next/link";
 
-interface ErrorProps {
+export default function Error({
+  error,
+  reset,
+}: {
   error: Error & { digest?: string };
   reset: () => void;
-}
-
-export default function Error({ error, reset }: ErrorProps) {
+}) {
   return (
     <main className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-4">
       <motion.div
@@ -42,7 +43,7 @@ export default function Error({ error, reset }: ErrorProps) {
             }}
           >
             <AlertTriangle
-              size={48}
+              size={56}
               style={{ color: "var(--color-primary)" }}
               strokeWidth={1.5}
             />
@@ -53,46 +54,38 @@ export default function Error({ error, reset }: ErrorProps) {
             className="text-xl font-bold mb-3 leading-snug"
             style={{ color: "var(--color-text-primary)" }}
           >
-            Something went wrong
+            Something went wrong.
           </h1>
 
           {/* Subtext */}
           <p
-            className="text-sm leading-relaxed mb-2"
+            className="text-sm leading-relaxed mb-8"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            An unexpected error occurred while rendering this page. You can try
-            again or return to the homepage.
+            An unexpected error occurred while processing your request. You can
+            try again or return to the homepage.
           </p>
 
-          {error.digest && (
-            <p
-              className="text-xs mb-8 font-mono"
-              style={{ color: "var(--color-text-secondary)", opacity: 0.5 }}
-            >
-              Error ID: {error.digest}
-            </p>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-4">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
             <button
-              onClick={reset}
-              className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold"
+              type="button"
+              onClick={() => reset()}
+              className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold flex-1"
             >
               Try Again
             </button>
             <Link
               href="/"
-              className="px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+              className="px-8 py-3 rounded-xl text-sm font-semibold text-center flex-1 transition-all duration-200"
               style={{
-                background: "var(--color-bg-sunken)",
                 color: "var(--color-text-secondary)",
+                background: "var(--color-bg-sunken)",
                 boxShadow:
-                  "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
+                  "inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)",
               }}
             >
-              Go Home
+              Return Home
             </Link>
           </div>
         </motion.div>
