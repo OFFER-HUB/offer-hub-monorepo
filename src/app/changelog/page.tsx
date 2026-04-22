@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+
+export const metadata: Metadata = {
+  title: "Changelog",
+  description:
+    "Track the evolution of OFFER-HUB — platform updates, new features, and release notes from the official GitHub releases.",
+  openGraph: {
+    title: "Changelog | OFFER-HUB",
+    description:
+      "Track the evolution of OFFER-HUB — platform updates, new features, and release notes.",
+  },
+};
 
 interface GitHubRelease {
   tag_name: string;
