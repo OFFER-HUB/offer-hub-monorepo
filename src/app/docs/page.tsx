@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import DocsSearchBar from "@/components/docs/DocsSearchBar";
-import { Book, Code, Shield, LifeBuoy, Terminal, Zap } from "lucide-react";
+import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
@@ -142,7 +142,7 @@ export default function DocsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {docSections.map((section, idx) => (
               <Link
-                key={idx}
+                key={section.link}
                 href={section.link}
                 className={cn(
                   "group p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
@@ -182,24 +182,5 @@ export default function DocsPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function ChevronRight({ size = 16, className = "" }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
   );
 }
