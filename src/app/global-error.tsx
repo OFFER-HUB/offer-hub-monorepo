@@ -2,12 +2,13 @@
 
 import { AlertTriangle } from "lucide-react";
 
-interface GlobalErrorProps {
+export default function GlobalError({
+  error,
+  reset,
+}: {
   error: Error & { digest?: string };
   reset: () => void;
-}
-
-export default function GlobalError({ error, reset }: GlobalErrorProps) {
+}) {
   return (
     <html lang="en">
       <body
@@ -17,7 +18,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f1f3f7",
+          background: "#F1F3F7",
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         }}
@@ -28,9 +29,12 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             maxWidth: "28rem",
             padding: "2.5rem",
             borderRadius: "1.5rem",
-            background: "#f1f3f7",
+            background: "#F1F3F7",
             boxShadow:
-              "10px 10px 20px #d1d3d7, -10px -10px 20px #ffffff",
+              "10px 10px 20px rgba(0,0,0,0.12), -10px -10px 20px rgba(255,255,255,0.85)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             textAlign: "center",
           }}
         >
@@ -43,68 +47,57 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 1.5rem",
-              background: "#e6e8ec",
+              marginBottom: "1.5rem",
+              background: "#E8EAEE",
               boxShadow:
-                "inset 10px 10px 20px #d1d3d7, inset -10px -10px 20px #ffffff",
+                "inset 10px 10px 20px rgba(0,0,0,0.08), inset -10px -10px 20px rgba(255,255,255,0.85)",
             }}
           >
-            <AlertTriangle size={48} color="#149A9B" strokeWidth={1.5} />
+            <AlertTriangle
+              size={56}
+              color="#149A9B"
+              strokeWidth={1.5}
+            />
           </div>
 
-          {/* Headline */}
           <h1
             style={{
               fontSize: "1.25rem",
               fontWeight: 700,
               marginBottom: "0.75rem",
-              color: "#1a1a2e",
+              color: "#1A1A1B",
             }}
           >
-            Critical Error
+            A critical error occurred.
           </h1>
 
-          {/* Subtext */}
           <p
             style={{
               fontSize: "0.875rem",
               lineHeight: 1.6,
-              marginBottom: "0.5rem",
-              color: "#6b7280",
+              marginBottom: "2rem",
+              color: "#6D758F",
             }}
           >
-            A critical error occurred in the application. The root layout could
-            not render. Please try again.
+            The application encountered an unexpected error. Please try
+            reloading the page.
           </p>
 
-          {error.digest && (
-            <p
-              style={{
-                fontSize: "0.75rem",
-                fontFamily: "monospace",
-                marginBottom: "2rem",
-                color: "#9ca3af",
-              }}
-            >
-              Error ID: {error.digest}
-            </p>
-          )}
-
-          {/* Buttons */}
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: "0.75rem", width: "100%" }}>
             <button
-              onClick={reset}
+              type="button"
+              onClick={() => reset()}
               style={{
+                flex: 1,
                 padding: "0.75rem 2rem",
                 borderRadius: "0.75rem",
+                border: "none",
                 fontSize: "0.875rem",
                 fontWeight: 600,
-                border: "none",
                 cursor: "pointer",
+                color: "#fff",
                 background: "#149A9B",
-                color: "#ffffff",
-                boxShadow: "4px 4px 8px #d1d3d7, -4px -4px 8px #ffffff",
-                transition: "all 0.3s ease",
+                boxShadow: "0 4px 14px rgba(20,154,155,0.35)",
               }}
             >
               Try Again
@@ -112,19 +105,20 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             <a
               href="/"
               style={{
+                flex: 1,
                 padding: "0.75rem 2rem",
                 borderRadius: "0.75rem",
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 textDecoration: "none",
-                background: "#e6e8ec",
-                color: "#6b7280",
+                textAlign: "center",
+                color: "#6D758F",
+                background: "#E8EAEE",
                 boxShadow:
-                  "inset 3px 3px 6px #d1d3d7, inset -3px -3px 6px #ffffff",
-                transition: "all 0.3s ease",
+                  "inset 4px 4px 8px rgba(0,0,0,0.06), inset -4px -4px 8px rgba(255,255,255,0.7)",
               }}
             >
-              Go Home
+              Return Home
             </a>
           </div>
         </div>
