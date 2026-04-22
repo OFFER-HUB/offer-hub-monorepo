@@ -8,15 +8,13 @@ import { MethodBadge } from "./MethodBadge";
 import { ParameterInput } from "./ParameterInput";
 import { ResponseViewer } from "./ResponseViewer";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
 
 interface EndpointPanelProps {
   endpoint: ApiEndpoint;
 }
 
 export function EndpointPanel({ endpoint }: EndpointPanelProps) {
-  const isMissingApiUrl = !process.env.NEXT_PUBLIC_API_BASE_URL;
   const [isOpen, setIsOpen] = useState(false);
   const [pathValues, setPathValues] = useState<Record<string, string>>({});
   const [queryValues, setQueryValues] = useState<Record<string, string>>({});
@@ -116,23 +114,6 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
           ref={contentRef}
           className="px-5 pb-6 pt-4 space-y-5 border-t border-theme-border/20"
         >
-          {/* Missing API URL Warning */}
-          {isMissingApiUrl && (
-            <div
-              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm"
-              style={{
-                background: "var(--color-bg-sunken)",
-                boxShadow: "inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light)",
-                color: "#f59e0b",
-              }}
-            >
-              <span className="font-semibold">⚠️ API URL not configured.</span>
-              <span className="text-content-secondary">
-                Set <code className="font-mono text-xs">NEXT_PUBLIC_API_BASE_URL</code> in your environment. Falling back to localhost.
-              </span>
-            </div>
-          )}
-
           {/* Description */}
           <p className="text-sm text-content-secondary leading-relaxed">
             {endpoint.description}
