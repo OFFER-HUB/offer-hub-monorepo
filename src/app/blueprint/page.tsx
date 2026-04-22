@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import LoadingBar from "@/components/ui/LoadingBar";
+
+export const metadata: Metadata = {
+  title: "Blueprint",
+  description:
+    "Explore the OFFER-HUB architectural blueprint — orchestrator design, marketplace templates, and platform evolution timeline.",
+  openGraph: {
+    title: "Blueprint | OFFER-HUB",
+    description:
+      "Explore the OFFER-HUB architectural blueprint and platform evolution.",
+  },
+};
 
 import BlueprintHero from "@/components/blueprint/BlueprintHero";
 import BlueprintSectionNav from "@/components/blueprint/BlueprintSectionNav";
