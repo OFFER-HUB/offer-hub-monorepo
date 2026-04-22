@@ -5,6 +5,7 @@ import type { ComponentType } from "react";
 
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import LoadingBar from "@/components/ui/LoadingBar";
 
 export const metadata: Metadata = {
   title: "Pricing | OFFER-HUB",
@@ -81,6 +82,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
+      <LoadingBar />
 
       <main className="flex-grow pt-28 pb-20">
         <section className="max-w-7xl mx-auto px-6 lg:px-8">
