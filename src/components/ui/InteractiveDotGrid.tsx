@@ -35,6 +35,9 @@ export function InteractiveDotGrid({
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
+        // Respect prefers-reduced-motion: render static grid only
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
         const effectRadius = 160;
         const maxRepulsion = 25;
         const baseRadius = 1.8;
@@ -186,17 +189,22 @@ export function InteractiveDotGrid({
         };
 
         window.addEventListener("resize", handleResize);
-        window.addEventListener("mousemove", handleMouseMove, { passive: true });
-        document.body.addEventListener("mouseleave", handleMouseLeave);
+
+        if (!prefersReducedMotion) {
+            window.addEventListener("mousemove", handleMouseMove, { passive: true });
+            document.body.addEventListener("mouseleave", handleMouseLeave);
+        }
 
         initGrid();
 
         return () => {
             clearTimeout(resizeTimer);
             window.removeEventListener("resize", handleResize);
-            window.removeEventListener("mousemove", handleMouseMove);
-            document.body.removeEventListener("mouseleave", handleMouseLeave);
-            cancelAnimationFrame(animationFrameRef.current);
+            if (!prefersReducedMotion) {
+                window.removeEventListener("mousemove", handleMouseMove);
+                document.body.removeEventListener("mouseleave", handleMouseLeave);
+                cancelAnimationFrame(animationFrameRef.current);
+            }
         };
     }, [dotColor, gridSize, opacity]);
 
