@@ -57,9 +57,9 @@ await oh.escrows.fund(order.id, {
     docLabel: "SDK Guide",
     code: `import { OfferHub } from "@offerhub/sdk";
 
-// Client-side SDK (public key only, safe to expose in the browser)
+// Client-side SDK (publishable key only, safe to expose in the browser)
 const oh = new OfferHub({
-  apiKey: process.env.NEXT_PUBLIC_OFFERHUB_KEY,
+  apiKey: "oh_pub_xxxxxxxxxxxxxxxxxxxx",
 });
 
 // Buyer confirms delivery — triggers automatic fund release to the seller.
