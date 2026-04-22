@@ -99,7 +99,7 @@ export default function DocsSearchBar() {
         let lastIndex = 0;
         const parts: React.ReactNode[] = [];
 
-        indices.forEach(([start, end]: [number, number]) => {
+        indices.forEach(([start, end]: [number, number], idx: number) => {
             parts.push(text.slice(lastIndex, start));
             parts.push(
                 <span key={`${start}-${end}`} className="bg-theme-primary/15 text-theme-primary rounded px-0.5">
