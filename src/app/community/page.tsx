@@ -206,31 +206,14 @@ async function fetchGitHubData() {
     console.error('Error fetching GitHub data:', error);
     return {
       stats: {
-        stars: "8.2k",
-        forks: "1.4k",
-        contributors: "168",
-        openIssues: "128",
+        stars: "—",
+        forks: "—",
+        contributors: "—",
+        openIssues: "—",
       },
-      contributors: [
-        { name: "Ada M.", username: "ada-m", avatar: "", commits: 248, profileUrl: "" },
-        { name: "Dami O.", username: "dami-o", avatar: "", commits: 133, profileUrl: "" },
-        { name: "Hassan K.", username: "hassan-k", avatar: "", commits: 92, profileUrl: "" },
-        { name: "Lina S.", username: "lina-s", avatar: "", commits: 87, profileUrl: "" },
-        { name: "Marta P.", username: "marta-p", avatar: "", commits: 76, profileUrl: "" },
-        { name: "Tomi A.", username: "tomi-a", avatar: "", commits: 70, profileUrl: "" },
-      ],
-      pullRequests: [
-        { number: 1042, title: "feat: add account-level escrow analytics", author: "contributor1", timestamp: "2 days ago", url: "", status: "Merged" },
-        { number: 1039, title: "refactor: simplify wallet sync flow", author: "contributor2", timestamp: "3 days ago", url: "", status: "Merged" },
-        { number: 1036, title: "fix: resolve pagination edge case in jobs feed", author: "contributor3", timestamp: "5 days ago", url: "", status: "Merged" },
-        { number: 1033, title: "docs: add validator onboarding guide", author: "contributor4", timestamp: "1 week ago", url: "", status: "Merged" },
-      ],
-      issues: [
-        { number: 1055, title: "Improve CI cache invalidation strategy", priority: "Medium", url: "", labels: [] },
-        { number: 1051, title: "Add e2e tests for payout cancellation", priority: "High", url: "", labels: [] },
-        { number: 1048, title: "Expose webhook replay in dashboard", priority: "Low", url: "", labels: [] },
-        { number: 1046, title: "Polish mobile nav focus styles", priority: "Low", url: "", labels: [] },
-      ],
+      contributors: [],
+      pullRequests: [],
+      issues: [],
     } as { stats: RepoStats; contributors: ContributorData[]; pullRequests: PullRequestData[]; issues: IssueData[] };
   }
 }
