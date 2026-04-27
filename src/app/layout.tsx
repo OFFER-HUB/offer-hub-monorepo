@@ -65,22 +65,30 @@ export const metadata: Metadata = {
 
   // ── Open Graph ────────────────────────────────────────────────────────────
   openGraph: {
-    title: "OFFER-HUB",
+    title: "OFFER-HUB – Secure Non-Custodial Escrow Payments",
     description:
       "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments without building complex payment infrastructure.",
+    url: "https://offer-hub.tech",
     siteName: "OFFER-HUB",
-    images: [{ url: "/android-chrome-512x512.png", width: 512, height: 512 }],
+    images: [
+      {
+        url: "https://offer-hub.tech/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "OFFER-HUB – Secure Non-Custodial Escrow Payments",
+      },
+    ],
     locale: "en_US",
     type: "website",
   },
 
   // ── Twitter / X card ─────────────────────────────────────────────────────
   twitter: {
-    card: "summary",
-    title: "OFFER-HUB",
+    card: "summary_large_image",
+    title: "OFFER-HUB – Secure Non-Custodial Escrow Payments",
     description:
       "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments without building complex payment infrastructure.",
-    images: ["/android-chrome-512x512.png"],
+    images: ["https://offer-hub.tech/og-image.png"],
   },
 };
 
