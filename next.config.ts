@@ -1,5 +1,25 @@
 import type { NextConfig } from "next";
 
+// Validate CORS configuration at build time
+const getCorsOrigin = () => {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  // In production, NEXT_PUBLIC_SITE_URL is required
+  if (process.env.NODE_ENV === "production") {
+    if (!siteUrl) {
+      throw new Error(
+        "NEXT_PUBLIC_SITE_URL is required in production environment. " +
+          "Please set it in your environment variables. " +
+          "Example: https://offer-hub.tech",
+      );
+    }
+    return siteUrl;
+  }
+
+  // In development, use localhost:3000 as default
+  return siteUrl || "http://localhost:3000";
+};
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -9,7 +29,7 @@ const nextConfig: NextConfig = {
           { key: "Access-Control-Allow-Credentials", value: "true" },
           {
             key: "Access-Control-Allow-Origin",
-            value: process.env.NEXT_PUBLIC_SITE_URL || "*",
+            value: getCorsOrigin(),
           },
           {
             key: "Access-Control-Allow-Methods",
