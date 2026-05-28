@@ -104,13 +104,23 @@ const emptyGeo = {
 export async function getGeolocation() {
   const CACHE_KEY = 'geo_cache';
 
+  // 1. Create the controller BEFORE the try block
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout>;
+
   try {
     const cached = sessionStorage.getItem(CACHE_KEY);
     if (cached) {
       return JSON.parse(cached);
     }
 
-    const response = await fetch('https://ipapi.co/json/');
+    // 2. Set the timeout — abort after 3000ms
+    timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    // 3. Pass signal to fetch
+    const response = await fetch('https://ipapi.co/json/', {
+      signal: controller.signal,
+    });
     if (!response.ok) throw new Error('Failed to fetch geolocation');
 
     const data = await response.json();
@@ -126,9 +136,14 @@ export async function getGeolocation() {
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(geo));
     return geo;
   } catch {
+    // AbortError (from controller.abort()) is a subclass of Error
+    // and is caught here — no special handling needed
     // Cache the empty result so we don't retry on every navigation
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(emptyGeo));
     return emptyGeo;
+  } finally {
+    // 6. Always clear the timeout to prevent memory leaks
+    clearTimeout(timeoutId);
   }
 }
 
