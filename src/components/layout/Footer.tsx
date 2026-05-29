@@ -28,6 +28,7 @@ const navColumns = [
     links: [
       { href: "/terms", label: "Terms of Service" },
       { href: "/privacy", label: "Privacy Policy" },
+      { href: "#", label: "Cookie Preferences", isCookieLink: true },
     ],
   },
 ];
@@ -113,12 +114,26 @@ export function Footer() {
                   <ul className="flex flex-col gap-3">
                     {col.links.map((link) => (
                       <li key={link.label}>
-                        <a
-                          href={link.href}
-                          className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
-                        >
-                          {link.label}
-                        </a>
+                        {"isCookieLink" in link && link.isCookieLink ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              window.dispatchEvent(
+                                new CustomEvent("cookie-preferences-open")
+                              )
+                            }
+                            className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
+                          >
+                            {link.label}
+                          </button>
+                        ) : (
+                          <a
+                            href={link.href}
+                            className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
+                          >
+                            {link.label}
+                          </a>
+                        )}
                       </li>
                     ))}
                   </ul>

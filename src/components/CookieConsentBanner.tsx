@@ -12,6 +12,11 @@ export default function CookieConsentBanner() {
     if (!localStorage.getItem(CONSENT_KEY)) {
       setVisible(true);
     }
+
+    const handleReopen = () => setVisible(true);
+    window.addEventListener("cookie-preferences-open", handleReopen);
+    return () =>
+      window.removeEventListener("cookie-preferences-open", handleReopen);
   }, []);
 
   const accept = () => {
