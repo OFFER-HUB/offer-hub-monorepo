@@ -1,36 +1,14 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 
-// Generate a unique visitor ID (fingerprint)
+// Generate a unique visitor ID
 export function generateVisitorId(): string {
-  const getOrCreateVisitorId = () => {
-    if (localStorage.getItem('cookie_consent') !== 'accepted') return '';
-    const stored = localStorage.getItem('visitor_id');
-    if (stored) return stored;
+  if (localStorage.getItem('cookie_consent') !== 'accepted') return '';
+  const stored = localStorage.getItem('visitor_id');
+  if (stored) return stored;
 
-    // Create fingerprint from available browser data
-    const fingerprint = [
-      navigator.userAgent,
-      navigator.language,
-      new Date().getTimezoneOffset(),
-      screen.width,
-      screen.height,
-      screen.colorDepth,
-    ].join('|');
-
-    // Simple hash function
-    let hash = 0;
-    for (let i = 0; i < fingerprint.length; i++) {
-      const char = fingerprint.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-
-    const visitorId = `visitor_${Math.abs(hash)}_${Date.now()}`;
-    localStorage.setItem('visitor_id', visitorId);
-    return visitorId;
-  };
-
-  return getOrCreateVisitorId();
+  const visitorId = crypto.randomUUID();
+  localStorage.setItem('visitor_id', visitorId);
+  return visitorId;
 }
 
 // Get device type
@@ -74,7 +52,7 @@ export function getSessionId(): string {
   const stored = sessionStorage.getItem('session_id');
   if (stored) return stored;
 
-  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const sessionId = crypto.randomUUID();
   sessionStorage.setItem('session_id', sessionId);
   return sessionId;
 }
