@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
-  title: "OFFER-HUB — Trustless Payments Orchestrator for Marketplaces",
+  title: {
+    absolute: "OFFER-HUB — Trustless Payments Orchestrator for Marketplaces",
+  },
   description:
     "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments without building complex payment infrastructure from scratch.",
   keywords: [

@@ -8,7 +8,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import LoadingBar from "@/components/ui/LoadingBar";
 
 export const metadata: Metadata = {
-  title: "Pricing | OFFER-HUB",
+  title: "Pricing",
   description:
     "OFFER-HUB pricing: open source core for free, free self-hosting, and enterprise support available on request.",
 };
