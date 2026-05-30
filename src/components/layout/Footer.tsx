@@ -14,6 +14,7 @@ const navColumns = [
       { href: "/pricing", label: "Pricing" },
       { href: "/docs", label: "Docs" },
       { href: "/community", label: "Community" },
+      { href: "/wallet", label: "Wallet" },
     ],
   },
   {

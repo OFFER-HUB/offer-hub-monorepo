@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/docs", label: "Docs" },
   { href: "/community", label: "Community" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/wallet", label: "Wallet" },
 ];
 
 export function Navbar() {
