@@ -15,20 +15,20 @@
 ### Real Profile
 - [x] Profile completed with real information
 - [x] Profile photo uploaded
-- [x] Screenshot attached: `/public/offer-hub01.png`
+- [x] Screenshot attached: `public/offer-hub01.png`
 
 ### Real Service Published
 - [x] Service created with genuine offering
 - [x] Professional title and description
 - [x] Real image uploaded
 - [x] Real price and delivery time set
-- [x] Screenshot attached: `/public/offerhub-02.png`
+- [x] Screenshot attached: `public/offerhub-02.png`
 
 ### Real Offer Published
 - [x] Offer created with genuine need
 - [x] Professional title and description
 - [x] Real budget and timeline set
-- [x] Screenshot attached: `/public/offerhub-02.png`
+- [x] Screenshot attached: `public/offerhub-02.png`
 
 ---
 
@@ -39,28 +39,28 @@
 - **Expected Result**: The applications management panel should load, showing a clear, organized list of all job offers the user has applied to.
 - **Actual Result**: Navigated successfully. The "My Applications" page loaded without errors, utilizing a modern, clean table view displaying active submissions.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub03.png`
+- **Screenshot**: `public/offerhub03.png`
 
 ### Step 2: Confirm Presence of Submitted Application
 - **Action**: Scroll or filter the list to find the proposal submitted for the active offer tested in the previous step.
 - **Expected Result**: The application list should prominently feature the recently applied offer, displaying correct columns for project title, proposal date, and bid amount.
 - **Actual Result**: The new application was found at the top of the list. The project title, bid price, and creation date match the submission details perfectly.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub03.png`
+- **Screenshot**: `public/offerhub03.png`
 
 ### Step 3: Verify Status Indicator and Styling (Pending, Accepted, Rejected)
 - **Action**: Examine the status field or badge next to the application entry.
 - **Expected Result**: The status should be explicitly displayed (e.g. "Pending"), and visually styled with appropriate color coding matching standard UI patterns (yellow/amber for pending, green for accepted, red for rejected).
 - **Actual Result**: A prominent status badge is displayed next to the entry showing "Pending". The styling uses a custom yellow badge that is distinct and easily readable, enhancing visual feedback.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub03.png`
+- **Screenshot**: `public/offerhub03.png`
 
 ### Step 4: Inspect Application Detail and Proposal Message
 - **Action**: Click on the application record or select the "View Details" action button for that specific application.
 - **Expected Result**: The system should present a detailed view showing the full text of the proposal message submitted to the client, along with all associated parameters.
 - **Actual Result**: The details drawer/view opened, displaying the complete proposal message as submitted. All details are fully correct and readable.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub03.png`
+- **Screenshot**: `public/offerhub03.png`
 
 ---
 

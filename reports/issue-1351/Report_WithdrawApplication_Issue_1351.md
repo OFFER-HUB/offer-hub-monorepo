@@ -15,20 +15,20 @@
 ### Real Profile
 - [x] Profile completed with real information
 - [x] Profile photo uploaded
-- [x] Screenshot attached: `/public/offer-hub01.png`
+- [x] Screenshot attached: `public/offer-hub01.png`
 
 ### Real Service Published
 - [x] Service created with genuine offering
 - [x] Professional title and description
 - [x] Real image uploaded
 - [x] Real price and delivery time set
-- [x] Screenshot attached: `/public/offerhub-02.png`
+- [x] Screenshot attached: `public/offerhub-02.png`
 
 ### Real Offer Published
 - [x] Offer created with genuine need
 - [x] Professional title and description
 - [x] Real budget and timeline set
-- [x] Screenshot attached: `/public/offerhub-02.png`
+- [x] Screenshot attached: `public/offerhub-02.png`
 
 ---
 
@@ -39,28 +39,28 @@
 - **Expected Result**: The pending application row should include a clear "Withdraw" or "Cancel" button or action option.
 - **Actual Result**: Located the pending application. A gray/red styled "Withdraw" button is visible and active on the right side of the row.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub03.png`
+- **Screenshot**: `public/offerhub03.png`
 
 ### Step 2: Trigger Withdrawal and Inspect Confirmation Dialog
 - **Action**: Click the "Withdraw" button.
 - **Expected Result**: A confirmation dialog or warning pop-up should launch to prevent accidental withdrawals, asking the user to confirm their intent.
 - **Actual Result**: A modal window opened, displaying the warning: "Are you sure you want to withdraw your proposal? This action cannot be undone and the client will be notified." All visual options ("Yes, Withdraw" and "Cancel") are present.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub04.png`
+- **Screenshot**: `public/offerhub04.png`
 
 ### Step 3: Confirm Withdrawal Action
 - **Action**: Click the "Yes, Withdraw" confirmation button in the modal.
 - **Expected Result**: The application status change should be submitted to the backend, a success message displayed, and the modal closed.
 - **Actual Result**: The withdrawal request was sent and accepted. A success toast "Application withdrawn successfully" appeared, and the confirmation dialog dismissed immediately.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub04.png`
+- **Screenshot**: `public/offerhub04.png`
 
 ### Step 4: Verify Application Status or Removal in the List
 - **Action**: Review the "My Applications" list to confirm that the withdrawn application is either completely removed or marked accordingly.
 - **Expected Result**: The application should be removed from the list, or its status badge updated to "Withdrawn" in a disabled/grayed-out state.
 - **Actual Result**: The application list updated in real-time. The withdrawn proposal status changed to "Withdrawn" and the "Withdraw" button is disabled/removed. Refreshing the page persists this state.
 - **Status**: ✅ Pass
-- **Screenshot**: `/public/offerhub04.png`
+- **Screenshot**: `public/offerhub04.png`
 
 ---
 
