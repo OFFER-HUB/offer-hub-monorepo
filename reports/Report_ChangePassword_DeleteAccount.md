@@ -19,7 +19,7 @@
 
 ### Screenshot: Completed Profile
 
-## ![alt text](image.png)
+Screenshot embedded in PR description.
 
 ## Service Listing
 
@@ -33,7 +33,7 @@
 
 ### Screenshot: Published Service
 
-## ![alt text](image-1.png)
+Screenshot embedded in PR description.
 
 ## Offer Listing
 
@@ -46,7 +46,7 @@
 
 ### Screenshot: Published Offer
 
----![alt text](image-2.png)
+Screenshot embedded in PR description.
 
 ## Test Case 1: Change Password
 
@@ -81,22 +81,22 @@ However, after submitting, the system returned an error stating:
 
 This indicates a possible issue where the form inputs are not being properly captured or sent to the backend, despite being filled on the UI.
 
-![alt text](image-3.png)
+Screenshot embedded in PR description.
 
 ### Screenshot: Settings Page
 
-![alt text](image-4.png)
+Screenshot embedded in PR description.
 
 ### Screenshot: Successful Change
 
 failed: i did not receieve a success message
 
-![alt text](image-5.png)
+Screenshot embedded in PR description.
 
 ### Screenshot: Login with New Password
 
 rememeber i dint not received a success!!
-![alt text](image-6.png)
+Screenshot embedded in PR description.
 
 ---
 
@@ -134,23 +134,23 @@ rememeber i dint not received a success!!
 ### Screenshot: Delete Account Section
 
 [Paste screenshot showing delete account option]
-![alt text](image-8.png)
+Screenshot embedded in PR description.
 
-![alt text](image-7.png)
+Screenshot embedded in PR description.
 
 ### Screenshot: Confirmation Dialog
 
 [Paste screenshot showing confirmation dialog]
-![alt text](image-9.png)
+Screenshot embedded in PR description.
 
 ### Screenshot: Successful Deletion
 
-![alt text](image-10.png) failed: delete account failed i was not able to delete accoungt and this is the error it showed
+failed: delete account failed i was not able to delete accoungt and this is the error it showed
 [Paste screenshot showing success message]
 
 ### Screenshot: Login Failed
 
-![alt text](image-11.png) success: i was still able to sign in with my credentials
+success: i was still able to sign in with my credentials
 
 [Paste screenshot showing login failed message after account deletion]
 
@@ -163,7 +163,7 @@ rememeber i dint not received a success!!
 - **Input**: Correct username, incorrect current password, valid new password
 - **Expected**: Error message "Current password is incorrect"
 - **Result**: ✓ PASS / ✗ FAIL
-- **Screenshot**: [![alt text](image-12.png)]
+- **Screenshot**: Embedded in PR description.
 
 ### Test: Mismatched New Passwords
 
@@ -177,21 +177,21 @@ rememeber i dint not received a success!!
 - **Input**: Valid current password, new password with less than 8 characters
 - **Expected**: Error message "Password must be at least 8 characters"
 - **Result**: ✓ PASS / ✗ FAIL
-- **Screenshot**: [![alt text](image-13.png)] note: password too short is same as invalid passowrd
+- **Screenshot**: Embedded in PR description. note: password too short is same as invalid passowrd
 
 ### Test: Delete Account - Wrong Password
 
 - **Input**: Incorrect password, correct confirmation text
 - **Expected**: Error message "Incorrect password. Account deletion cancelled"
 - **Result**: ✓ PASS / ✗ FAIL
-- **Screenshot**: [![alt text](image-14.png)] note: it is still showing our former error
+- **Screenshot**: Embedded in PR description. note: it is still showing our former error
 
 ### Test: Delete Account - Wrong Confirmation
 
 - **Input**: Correct password, incorrect confirmation text
 - **Expected**: Error message "Please confirm by typing 'DELETE MY ACCOUNT'"
 - **Result**: ✓ PASS / ✗ FAIL
-- **Screenshot**: [![alt text](image-15.png)] note still on the error message
+- **Screenshot**: Embedded in PR description. note still on the error message
 
 ---
 
