@@ -18,6 +18,27 @@ const navLinks = [
   { href: "/pricing", label: "Pricing" },
 ];
 
+/**
+ * Returns true when a nav link should render in its active/selected state.
+ *
+ * Rules (evaluated in order):
+ *  1. Hash links (e.g. /#features, /#how-it-works) are active only on the
+ *     home page — `pathname.startsWith("/")` would otherwise match every route.
+ *  2. Non-root full-path links (e.g. /docs, /community) are active when the
+ *     current pathname begins with that href (covers nested routes like
+ *     /docs/getting-started).
+ *  3. Exact "/" matches only the home route.
+ */
+function isLinkActive(href: string, pathname: string): boolean {
+  // Rule 1: hash anchors belong to the home page only
+  if (href.includes("#")) return pathname === "/";
+
+  // Rule 2 & 3: prefix match for full-path links, exact match for "/"
+  if (href.startsWith("/") && href.length > 1) return pathname.startsWith(href);
+
+  return pathname === href;
+}
+
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,14 +54,13 @@ export function Navbar() {
       const menuEl = menuRef.current;
       if (!menuEl) return;
 
-      // Find all focusable elements within the mobile menu
-      const focusableSelectors = 'a[href], button:not([disabled]), [tabIndex]:not([tabIndex="-1"])';
+      const focusableSelectors =
+        'a[href], button:not([disabled]), [tabIndex]:not([tabIndex="-1"])';
       const focusableElements = Array.from(
         menuEl.querySelectorAll<HTMLElement>(focusableSelectors)
       );
 
       if (focusableElements.length > 0) {
-        // Focus the first element automatically
         focusableElements[0].focus();
       }
 
@@ -53,17 +73,14 @@ export function Navbar() {
         if (e.key === "Tab") {
           const firstEl = focusableElements[0];
           const lastEl = focusableElements[focusableElements.length - 1];
-
           if (!firstEl || !lastEl) return;
 
           if (e.shiftKey) {
-            // Shift + Tab: wrap from first to last
             if (document.activeElement === firstEl) {
               lastEl.focus();
               e.preventDefault();
             }
           } else {
-            // Tab: wrap from last to first
             if (document.activeElement === lastEl) {
               firstEl.focus();
               e.preventDefault();
@@ -73,11 +90,8 @@ export function Navbar() {
       };
 
       document.addEventListener("keydown", handleKeyDown);
-      return () => {
-        document.removeEventListener("keydown", handleKeyDown);
-      };
+      return () => document.removeEventListener("keydown", handleKeyDown);
     } else if (wasMenuOpen.current) {
-      // Only return focus if the menu was open and is now closing
       toggleRef.current?.focus();
       wasMenuOpen.current = false;
     }
@@ -98,7 +112,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -114,13 +127,6 @@ export function Navbar() {
 
   return (
     <>
-      {/*
-       * NEUMORPHIC NAVBAR
-       * ─────────────────
-       * Background = bg-bg-base (theme-aware) → the container is invisible.
-       * Depth comes exclusively from the bottom-projected dual shadow (dark ↘ / light ↖).
-       * Buttons share the same base color and "emerge" via their own shadows.
-       */}
       <header
         className={cn(
           "fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl xl:max-w-7xl md:w-full z-[500] transition-all duration-300 ease-out rounded-full bg-bg-base print:hidden",
@@ -135,7 +141,11 @@ export function Navbar() {
             {/* ── Logo ── */}
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
               <Image
-                src={resolvedTheme === "dark" ? "/OFFER-HUB-logo-to-darkmode.png" : "/OFFER-HUB-logo.png"}
+                src={
+                  resolvedTheme === "dark"
+                    ? "/OFFER-HUB-logo-to-darkmode.png"
+                    : "/OFFER-HUB-logo.png"
+                }
                 alt="OFFER-HUB"
                 width={180}
                 height={48}
@@ -151,34 +161,28 @@ export function Navbar() {
                 className={cn(
                   "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
                   "transition-all duration-300 ease-out bg-bg-base",
-                  pathname === "/"
+                  isLinkActive("/", pathname)
                     ? "text-content-primary shadow-neu-sunken-subtle"
                     : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
                 )}
               >
                 Home
               </Link>
-              {navLinks.map((link) => {
-                const isActive = link.href.startsWith("/") && link.href.length > 1
-                  ? pathname.startsWith(link.href)
-                  : pathname === link.href;
-
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
-                      "transition-all duration-300 ease-out bg-bg-base",
-                      isActive
-                        ? "text-content-primary shadow-neu-sunken-subtle"
-                        : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
+                    "transition-all duration-300 ease-out bg-bg-base",
+                    isLinkActive(link.href, pathname)
+                      ? "text-content-primary shadow-neu-sunken-subtle"
+                      : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
 
             {/* ── Desktop CTAs ── */}
@@ -189,10 +193,12 @@ export function Navbar() {
                 className="px-6 py-2 rounded-full text-sm font-semibold btn-neumorphic-primary flex items-center gap-2 group"
               >
                 Join Waitlist
-                <Send size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <Send
+                  size={14}
+                  className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                />
               </a>
             </div>
-
 
             {/* ── Mobile hamburger ── */}
             <button
@@ -207,7 +213,7 @@ export function Navbar() {
         </nav>
       </header>
 
-      {/* ── Mobile menu overlay (outside the pill navbar) ── */}
+      {/* ── Mobile menu overlay ── */}
       {isMenuOpen && (
         <>
           {/* Backdrop */}
@@ -228,7 +234,7 @@ export function Navbar() {
                 href="/"
                 className={cn(
                   "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
-                  pathname === "/"
+                  isLinkActive("/", pathname)
                     ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
                     : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"
                 )}
@@ -236,27 +242,21 @@ export function Navbar() {
               >
                 Home
               </Link>
-              {navLinks.map((link) => {
-                const isActive = link.href.startsWith("/") && link.href.length > 1
-                  ? pathname.startsWith(link.href)
-                  : pathname === link.href;
-
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
-                      isActive
-                        ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
-                        : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"
-                    )}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
+                    isLinkActive(link.href, pathname)
+                      ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
+                      : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"
+                  )}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
 
             <div className="mt-6 pt-6 border-t border-[#d1d5db]/50 flex flex-col gap-4">

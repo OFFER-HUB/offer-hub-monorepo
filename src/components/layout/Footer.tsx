@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Twitter, Send, Github, Disc3 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
+const COOKIE_PREFERENCES_EVENT = "cookie-preferences-open";
+
 const navColumns = [
   {
     heading: "Platform",
@@ -29,6 +31,7 @@ const navColumns = [
       { href: "/terms", label: "Terms of Service" },
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/accessibility", label: "Accessibility" },
+      { href: "#", label: "Cookie Preferences" },
     ],
   },
 ];
@@ -63,31 +66,36 @@ export function Footer() {
     document.fonts.ready.then(fit);
     const ro = new ResizeObserver(fit);
     ro.observe(wrap);
+
     return () => ro.disconnect();
   }, []);
 
   return (
     <footer className="bg-transparent pt-4 pb-0 relative">
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        {/* ── Card ── */}
         <div className="rounded-3xl px-10 py-12 bg-bg-elevated shadow-neu-raised">
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
-            {/* Left — logo + desc + socials */}
             <div className="flex flex-col gap-6 md:w-72 flex-shrink-0">
               <Link href="/" className="flex items-center gap-2.5">
                 <Image
-                  src={resolvedTheme === "dark" ? "/OFFER-HUB-logo-to-darkmode.png" : "/OFFER-HUB-logo.png"}
+                  src={
+                    resolvedTheme === "dark"
+                      ? "/OFFER-HUB-logo-to-darkmode.png"
+                      : "/OFFER-HUB-logo.png"
+                  }
                   alt="OFFER-HUB"
                   width={160}
                   height={42}
                   className="h-9 w-auto object-contain"
                 />
               </Link>
+
               <p className="text-sm leading-relaxed text-content-secondary">
                 Empowering freelancers and businesses with secure,
                 blockchain-powered solutions — making work easier to find,
                 manage, and pay.
               </p>
+
               <div className="flex items-center gap-4">
                 {socialLinks.map((s) => (
                   <a
@@ -104,18 +112,30 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Right — nav columns */}
             <div className="flex flex-1 gap-8 md:gap-12 flex-wrap">
               {navColumns.map((col) => (
-                <div key={col.heading} className="flex flex-col gap-4 min-w-[100px]">
+                <div
+                  key={col.heading}
+                  className="flex flex-col gap-4 min-w-[100px]"
+                >
                   <h4 className="text-sm font-semibold text-content-primary">
                     {col.heading}
                   </h4>
+
                   <ul className="flex flex-col gap-3">
                     {col.links.map((link) => (
                       <li key={link.label}>
                         <a
                           href={link.href}
+                          onClick={(e) => {
+                            if (link.label === "Cookie Preferences") {
+                              e.preventDefault();
+
+                              window.dispatchEvent(
+                                new CustomEvent(COOKIE_PREFERENCES_EVENT)
+                              );
+                            }
+                          }}
                           className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
                         >
                           {link.label}
@@ -128,11 +148,11 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Divider + bottom bar */}
           <div className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-theme-border">
             <p className="text-xs text-content-muted">
               © {new Date().getFullYear()} OFFER-HUB. All rights reserved.
             </p>
+
             <p className="text-xs text-content-muted">
               Powered by Stellar Blockchain
             </p>
@@ -140,7 +160,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* ── Watermark ── */}
       <div
         ref={wrapRef}
         className="max-w-6xl mx-auto px-6 lg:px-8 overflow-hidden"

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const CONSENT_KEY = "cookie_consent";
+const COOKIE_PREFERENCES_EVENT = "cookie-preferences-open";
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
@@ -12,6 +13,19 @@ export default function CookieConsentBanner() {
     if (!localStorage.getItem(CONSENT_KEY)) {
       setVisible(true);
     }
+
+    const handleOpenPreferences = () => {
+      setVisible(true);
+    };
+
+    window.addEventListener(COOKIE_PREFERENCES_EVENT, handleOpenPreferences);
+
+    return () => {
+      window.removeEventListener(
+        COOKIE_PREFERENCES_EVENT,
+        handleOpenPreferences
+      );
+    };
   }, []);
 
   const accept = () => {
@@ -37,6 +51,7 @@ export default function CookieConsentBanner() {
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary">
           Privacy Notice
         </p>
+
         <p className="text-sm leading-relaxed text-content-secondary">
           We use cookies and analytics to improve your experience. Read our{" "}
           <Link
@@ -47,6 +62,7 @@ export default function CookieConsentBanner() {
           </Link>{" "}
           to learn what data is collected and how it is used.
         </p>
+
         <div className="flex gap-3">
           <button
             type="button"
@@ -55,6 +71,7 @@ export default function CookieConsentBanner() {
           >
             Accept all
           </button>
+
           <button
             type="button"
             onClick={reject}

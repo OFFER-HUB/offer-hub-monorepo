@@ -88,21 +88,30 @@ export async function getGeolocation() {
       return JSON.parse(cached);
     }
 
-    const response = await fetch('https://ipapi.co/json/');
-    if (!response.ok) throw new Error('Failed to fetch geolocation');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    const data = await response.json();
-    const geo = {
-      ip: data.ip,
-      country: data.country_name,
-      country_code: data.country_code,
-      city: data.city,
-      region: data.region,
-      timezone: data.timezone,
-    };
+    try {
+      const response = await fetch('https://ipapi.co/json/', {
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error('Failed to fetch geolocation');
 
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(geo));
-    return geo;
+      const data = await response.json();
+      const geo = {
+        ip: data.ip,
+        country: data.country_name,
+        country_code: data.country_code,
+        city: data.city,
+        region: data.region,
+        timezone: data.timezone,
+      };
+
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(geo));
+      return geo;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
     // Cache the empty result so we don't retry on every navigation
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(emptyGeo));

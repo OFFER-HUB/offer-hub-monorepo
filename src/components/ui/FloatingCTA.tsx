@@ -7,47 +7,6 @@ import { X, ArrowRight } from "lucide-react";
 const STORAGE_KEY = "offer-hub-cta-dismissed";
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Inline styles for the rotating border animation
-const rotatingBorderStyles = `
-  @keyframes rotate-border {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .animated-border-wrapper {
-    position: relative;
-    border-radius: 1rem;
-    padding: 2px;
-    overflow: hidden;
-  }
-
-  .animated-border-wrapper::before {
-    content: "";
-    position: absolute;
-    inset: -150%;
-    background: conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      transparent 340deg,
-      var(--color-primary) 345deg,
-      var(--color-primary-hover) 355deg,
-      transparent 360deg
-    );
-    animation: rotate-border 3s linear infinite;
-  }
-
-  .animated-border-inner {
-    position: relative;
-    background: var(--color-bg-base);
-    border-radius: calc(1rem - 2px);
-    z-index: 1;
-  }
-`;
-
 export function FloatingCTA() {
   const pathname = usePathname();
   const router = useRouter();
@@ -109,11 +68,7 @@ export function FloatingCTA() {
   if (!isAnimating) return null;
 
   return (
-    <>
-      {/* Inject animation styles */}
-      <style>{rotatingBorderStyles}</style>
-
-      <div
+    <div
         className={`fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 transition-all duration-300 ease-out print:hidden ${isVisible
           ? "opacity-100 translate-y-0 scale-100"
           : "opacity-0 translate-y-4 scale-95"
@@ -165,6 +120,5 @@ export function FloatingCTA() {
           </div>
         </div>
       </div>
-    </>
   );
 }

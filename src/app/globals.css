@@ -574,3 +574,45 @@ body::before {
     break-inside: avoid !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   FLOATING CTA - Rotating Border Animation
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes rotate-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animated-border-wrapper {
+  position: relative;
+  border-radius: 1rem;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.animated-border-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 340deg,
+    var(--color-primary) 345deg,
+    var(--color-primary-hover) 355deg,
+    transparent 360deg
+  );
+  animation: rotate-border 3s linear infinite;
+}
+
+.animated-border-inner {
+  position: relative;
+  background: var(--color-bg-base);
+  border-radius: calc(1rem - 2px);
+  z-index: 1;
+}
