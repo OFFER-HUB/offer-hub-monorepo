@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!doc) notFound();
 
   return {
-    title: `${doc.frontmatter.title} — OFFER-HUB Docs`,
+    title: doc.frontmatter.title,
     description: doc.frontmatter.description,
   };
 }
