@@ -10,9 +10,11 @@ Reports should be named following this pattern:
 Report_[FeatureName]_Issue_[Number].md
 ```
 
+
 Example: `Report_AvailabilitySettings_Issue_1362.md`
 
 Reports for a given issue live under `reports/issue-[number]/`.
+
 
 ## Report Template
 

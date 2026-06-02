@@ -1,36 +1,14 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 
-// Generate a unique visitor ID (fingerprint)
+// Generate a unique visitor ID
 export function generateVisitorId(): string {
-  const getOrCreateVisitorId = () => {
-    if (localStorage.getItem('cookie_consent') !== 'accepted') return '';
-    const stored = localStorage.getItem('visitor_id');
-    if (stored) return stored;
+  if (localStorage.getItem('cookie_consent') !== 'accepted') return '';
+  const stored = localStorage.getItem('visitor_id');
+  if (stored) return stored;
 
-    // Create fingerprint from available browser data
-    const fingerprint = [
-      navigator.userAgent,
-      navigator.language,
-      new Date().getTimezoneOffset(),
-      screen.width,
-      screen.height,
-      screen.colorDepth,
-    ].join('|');
-
-    // Simple hash function
-    let hash = 0;
-    for (let i = 0; i < fingerprint.length; i++) {
-      const char = fingerprint.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-
-    const visitorId = `visitor_${Math.abs(hash)}_${Date.now()}`;
-    localStorage.setItem('visitor_id', visitorId);
-    return visitorId;
-  };
-
-  return getOrCreateVisitorId();
+  const visitorId = `visitor_${crypto.randomUUID()}`;
+  localStorage.setItem('visitor_id', visitorId);
+  return visitorId;
 }
 
 // Get device type
@@ -74,7 +52,7 @@ export function getSessionId(): string {
   const stored = sessionStorage.getItem('session_id');
   if (stored) return stored;
 
-  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const sessionId = `session_${crypto.randomUUID()}`;
   sessionStorage.setItem('session_id', sessionId);
   return sessionId;
 }
@@ -110,21 +88,30 @@ export async function getGeolocation() {
       return JSON.parse(cached);
     }
 
-    const response = await fetch('https://ipapi.co/json/');
-    if (!response.ok) throw new Error('Failed to fetch geolocation');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    const data = await response.json();
-    const geo = {
-      ip: data.ip,
-      country: data.country_name,
-      country_code: data.country_code,
-      city: data.city,
-      region: data.region,
-      timezone: data.timezone,
-    };
+    try {
+      const response = await fetch('https://ipapi.co/json/', {
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error('Failed to fetch geolocation');
 
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(geo));
-    return geo;
+      const data = await response.json();
+      const geo = {
+        ip: data.ip,
+        country: data.country_name,
+        country_code: data.country_code,
+        city: data.city,
+        region: data.region,
+        timezone: data.timezone,
+      };
+
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(geo));
+      return geo;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
     // Cache the empty result so we don't retry on every navigation
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(emptyGeo));

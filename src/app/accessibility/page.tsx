@@ -3,7 +3,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import LoadingBar from "@/components/ui/LoadingBar";
-import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, Zap, MessageSquare } from "lucide-react";
+import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, MessageSquare } from "lucide-react";
 
 const features = [
      {

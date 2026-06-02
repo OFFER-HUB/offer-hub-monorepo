@@ -20,6 +20,8 @@ export default function DocsSearchBar() {
     const [results, setResults] = useState<FuseResult<SearchResult>[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
+    const [isMac, setIsMac] = useState<boolean | null>(null);
+    const [inputFocused, setInputFocused] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
@@ -76,6 +78,13 @@ export default function DocsSearchBar() {
         return () => document.removeEventListener("keydown", handleKeyDown);
     }, []);
 
+    // Detect OS for keyboard shortcut display
+    useEffect(() => {
+        const userAgent = navigator.userAgent || navigator.platform;
+        const isMacOS = /Mac|iPhone|iPad|iPod/.test(userAgent);
+        setIsMac(isMacOS);
+    }, []);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -129,6 +138,8 @@ export default function DocsSearchBar() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        onFocus={() => setInputFocused(true)}
+                        onBlur={() => setInputFocused(false)}
                         role="combobox"
                         aria-expanded={isOpen && results.length > 0}
                         aria-haspopup="listbox"
@@ -145,16 +156,13 @@ export default function DocsSearchBar() {
                         >
                             <X size={18} />
                         </button>
-                    ) : (
-                        <div className="flex items-center gap-1.5 pointer-events-none text-content-secondary">
-                            <kbd className="flex items-center justify-center min-w-[24px] h-[24px] text-[11px] font-sans font-medium rounded-md shadow-neu-raised-sm bg-bg-base text-content-primary">
-                                ⌘
-                            </kbd>
-                            <kbd className="flex items-center justify-center min-w-[24px] h-[24px] text-[11px] font-sans font-medium rounded-md shadow-neu-raised-sm bg-bg-base text-content-primary">
-                                K
-                            </kbd>
+                    ) : !inputFocused && isMac !== null ? (
+                        <div className="flex items-center gap-1 pointer-events-none text-content-secondary px-2 py-1 rounded-md bg-bg-base shadow-neu-raised-sm">
+                            <span className="text-[11px] font-medium text-content-secondary">
+                                {isMac ? '⌘K' : 'Ctrl K'}
+                            </span>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </div>
 
