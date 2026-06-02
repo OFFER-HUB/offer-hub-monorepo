@@ -30,7 +30,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         }
       },
       {
-        rootMargin: "-100px 0px -40% 0px",
+        rootMargin: "-72px 0px -60% 0px",
         threshold: [0, 1],
       }
     );

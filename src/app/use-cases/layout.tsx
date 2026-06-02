@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Industry Use Cases — OFFER HUB",
+    title: "Industry Use Cases",
     description: "Explore how OFFER HUB's non-custodial escrow orchestrates payment workflows across Freelance, eCommerce, DAOs, and Real Estate.",
     keywords: [
         "use cases",
