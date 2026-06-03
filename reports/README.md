@@ -1,143 +1,82 @@
-# Account Security Features Testing Guide
+# Reports Directory
 
-## Overview
+This directory contains manual test reports for the Offer Hub project.
 
-This guide outlines the manual testing requirements for the new account security features: **Change Password** and **Delete Account**.
+## Report Naming Convention
 
-These features are critical for user account security and GDPR compliance. All testing must be completed with real user data as per the [Mandatory Real-Data Requirements](../README.md).
-
-## Features Implemented
-
-### 1. Change Password
-
-- **Endpoint**: `POST /api/auth/change-password`
-- **Access**: Authenticated users only (Bearer token required)
-- **Validation**:
-  - Current password must be correct
-  - New password must be at least 8 characters
-  - Confirmation password must match new password
-- **Response**: Success message or detailed error
-
-### 2. Delete Account
-
-- **Endpoint**: `POST /api/auth/delete-account`
-- **Access**: Authenticated users only (Bearer token required)
-- **Validation**:
-  - Password verification required
-  - Confirmation text must match "DELETE MY ACCOUNT" exactly
-  - GDPR Article 17 (Right to Erasure) compliant
-- **Response**: Account permanently deleted, user logged out
-
-### 3. Settings Page
-
-- **URL**: `/settings`
-- **Access**: Authenticated users only
-- **Sections**:
-  - Security: Change Password form with validation
-  - Danger Zone: Delete Account with multi-step confirmation
-  - Security Best Practices: Educational information
-  - Important Information: Warnings about account deletion
-
-## Before You Start
-
-### Prerequisites
-
-1. ✓ A real email address you own
-2. ✓ Real profile information (first name, last name, username)
-3. ✓ A real profile photo/avatar
-4. ✓ A service offering something you genuinely provide
-5. ✓ An offer for something you genuinely need
-6. ✓ Screenshots of all above
-
-### Authentication Setup
-
-1. Register a new account on https://www.offer-hub.org
-2. Complete your profile with real data
-3. Publish a real service
-4. Publish a real offer
-5. Ensure you can log in and access settings
-
-## Testing Workflow
-
-### Step 1: Navigate to Settings
-
-1. Log in to your account
-2. Go to `/settings` (or find the Settings link in your account menu)
-3. Verify the settings page loads correctly
-
-### Step 2: Test Change Password
-
-Follow the test cases in [Report_ChangePassword_DeleteAccount.md](./Report_ChangePassword_DeleteAccount.md)
-
-**Key Test Scenarios**:
-
-- ✓ Valid password change
-- ✗ Wrong current password
-- ✗ Mismatched confirmation passwords
-- ✗ Password too short
-
-### Step 3: Test Delete Account
-
-Follow the test cases in [Report_ChangePassword_DeleteAccount.md](./Report_ChangePassword_DeleteAccount.md)
-
-**Key Test Scenarios**:
-
-- ✓ Valid account deletion
-- ✗ Wrong password
-- ✗ Wrong confirmation text
-- ✓ Cannot login after deletion
-
-## Reporting Issues
-
-When reporting test failures, include:
-
-1. **Exact Steps to Reproduce**: Step-by-step instructions
-2. **Expected vs Actual**: What should happen vs what actually happened
-3. **Error Message**: Any error messages shown
-4. **Screenshot**: Visual evidence of the issue
-5. **Browser/OS**: What you're testing on
-
-## File Structure
+Reports should be named following this pattern:
 
 ```
-reports/
-├── Report_ChangePassword_DeleteAccount.md  # Testing checklist and results
-├── README.md                               # This file
-└── issue-#/                                # Issue-specific reports
-    ├── Report_ChangePassword_Issue_#.md
-    └── Report_DeleteAccount_Issue_#.md
+Report_[FeatureName]_Issue_[Number].md
 ```
 
-## Acceptance Criteria
 
-All of the following must be completed before PR can be merged:
+Example: `Report_AvailabilitySettings_Issue_1362.md`
 
-- [ ] Real profile created with all information
-- [ ] Profile screenshot attached
-- [ ] Real service published
-- [ ] Service screenshot attached
-- [ ] Real offer published
-- [ ] Offer screenshot attached
-- [ ] Change password test passes
-- [ ] Change password error handling works
-- [ ] Delete account test passes
-- [ ] Delete account confirmation works
-- [ ] User cannot login after account deletion
-- [ ] Test report completed and submitted
-- [ ] All screenshots attached to PR
+Reports for a given issue live under `reports/issue-[number]/`.
 
-## Important Notes
 
-⚠️ **No fake/placeholder data** - All test data must be real and professional
-⚠️ **Real profile photo** - Not a default avatar or placeholder
-⚠️ **Real service** - Something you genuinely offer
-⚠️ **Real offer** - Something you genuinely need
-⚠️ **Full test report** - All tests must be run and documented
+## Report Template
 
-## Questions?
+```markdown
+# Manual Test Report: [Feature Name]
 
-Refer to:
+## Issue Information
+- **Issue Number**: #[Number]
+- **Title**: [Issue Title]
+- **Date**: [YYYY-MM-DD]
+- **Tester**: [Your Name/Username]
 
-- [CONTRIBUTING.md](../docs/CONTRIBUTING.md) - General contribution guidelines
-- [DEVELOPER-GUIDE.md](../docs/DEVELOPER-GUIDE.md) - Development setup
-- [Privacy Policy](../src/app/privacy/page.tsx) - Data handling information
+## Test Environment
+- **URL**: https://www.offer-hub.org
+- **Browser**: [Browser Name and Version]
+- **Device**: [Desktop/Mobile/Tablet]
+
+## Contributor Verification
+### Real Profile
+- [ ] Profile completed with real information
+- [ ] Profile photo uploaded
+- [ ] Screenshot attached: [filename]
+
+### Real Service Published
+- [ ] Service created with genuine offering
+- [ ] Professional title and description
+- [ ] Real image uploaded
+- [ ] Real price and delivery time set
+- [ ] Screenshot attached: [filename]
+
+### Real Offer Published
+- [ ] Offer created with genuine need
+- [ ] Professional title and description
+- [ ] Real budget and timeline set
+- [ ] Screenshot attached: [filename]
+
+## Test Steps
+
+### Step 1: [Step Description]
+- **Action**: [What was done]
+- **Expected Result**: [What should happen]
+- **Actual Result**: [What actually happened]
+- **Status**: ✅ Pass / ❌ Fail
+- **Screenshot**: [filename]
+
+## Test Results Summary
+- **Total Steps**: [Number]
+- **Passed**: [Number]
+- **Failed**: [Number]
+- **Overall Status**: ✅ Pass / ❌ Fail
+
+## Issues Found
+- [Description of any issues found during testing]
+
+## Recommendations
+- [Any recommendations for improvements]
+```
+
+## Screenshots
+
+All screenshots should be:
+- Clear and readable
+- Named descriptively (e.g., `step1_availability_page.png`)
+- Attached to the PR description
+- Referenced in the report
