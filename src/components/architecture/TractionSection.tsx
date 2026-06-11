@@ -20,7 +20,7 @@ export default function TractionSection() {
         <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
           <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
           <p className="text-sm text-content-secondary leading-relaxed">
-            The SCF Integration Track requires verifiable traction. This section shows OfferHub's current testnet status, team readiness, and the market context that validates the integration investment.
+            The SCF Integration Track requires verifiable traction. This section shows OfferHub&apos;s current testnet status, team readiness, and the market context that validates the integration investment.
           </p>
         </div>
 

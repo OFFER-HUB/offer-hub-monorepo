@@ -20,7 +20,7 @@ export default function WhyStellarSection() {
         <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
           <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
           <p className="text-sm text-content-secondary leading-relaxed">
-            This section answers the SCF panel's core question: why is Stellar the right foundation for OfferHub, and what value does this integration bring to the Stellar ecosystem?
+            This section answers the SCF panel&apos;s core question: why is Stellar the right foundation for OfferHub, and what value does this integration bring to the Stellar ecosystem?
           </p>
         </div>
 
@@ -32,7 +32,7 @@ export default function WhyStellarSection() {
             </div>
             <h3 className="text-base font-bold text-content-primary">USDC on Stellar</h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              Stellar's native USDC support means freelancers receive payment in a stable, internationally liquid asset — no wrapping, no bridge risk, no slippage. Every escrow is denominated in USDC, eliminating currency volatility from the payment contract.
+              Stellar&apos;s native USDC support means freelancers receive payment in a stable, internationally liquid asset — no wrapping, no bridge risk, no slippage. Every escrow is denominated in USDC, eliminating currency volatility from the payment contract.
             </p>
           </div>
 
@@ -52,7 +52,7 @@ export default function WhyStellarSection() {
             </div>
             <h3 className="text-base font-bold text-content-primary">Soroban smart contracts (TrustlessWork)</h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              Soroban enables programmable, audited escrow logic on Stellar. OfferHub integrates TrustlessWork's open-source Soroban contracts rather than building from scratch — leveraging already-audited code and contributing to Stellar's composable DeFi layer.
+              Soroban enables programmable, audited escrow logic on Stellar. OfferHub integrates TrustlessWork&apos;s open-source Soroban contracts rather than building from scratch — leveraging already-audited code and contributing to Stellar&apos;s composable DeFi layer.
             </p>
           </div>
 
@@ -62,7 +62,7 @@ export default function WhyStellarSection() {
             </div>
             <h3 className="text-base font-bold text-content-primary">Non-custodial by design</h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              Stellar Wallets Kit allows client-side transaction signing. Funds never pass through OfferHub's servers. This is the correct model for a marketplace handling freelancer payments at scale — OfferHub cannot freeze, redirect, or lose user funds.
+              Stellar Wallets Kit allows client-side transaction signing. Funds never pass through OfferHub&apos;s servers. This is the correct model for a marketplace handling freelancer payments at scale — OfferHub cannot freeze, redirect, or lose user funds.
             </p>
           </div>
 
