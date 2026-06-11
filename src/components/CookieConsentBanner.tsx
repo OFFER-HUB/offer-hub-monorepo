@@ -47,7 +47,7 @@ export default function CookieConsentBanner() {
       aria-label="Cookie consent"
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-fadeInUp"
     >
-      <div className="rounded-3xl bg-bg-elevated shadow-neu-raised px-6 py-5 flex flex-col gap-4 border border-theme-border/20">
+      <div className="rounded-3xl bg-bg-elevated shadow-neu-raised px-6 py-5 flex flex-col gap-4">
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary">
           Privacy Notice
         </p>
