@@ -43,15 +43,16 @@ export default function CookieConsentBanner() {
   return (
     <div
       role="region"
-      aria-label="Cookie consent"
+      aria-labelledby="cookie-heading"
+      aria-describedby="cookie-desc"
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-fadeInUp"
     >
       <div className="rounded-3xl bg-bg-elevated shadow-neu-raised px-6 py-5 flex flex-col gap-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary">
+        <p id="cookie-heading" className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary">
           Privacy Notice
         </p>
 
-        <p className="text-sm leading-relaxed text-content-secondary">
+        <p id="cookie-desc" className="text-sm leading-relaxed text-content-secondary">
           We use cookies and analytics to improve your experience. Read our{" "}
           <Link
             href="/privacy"
