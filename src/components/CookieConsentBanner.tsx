@@ -42,8 +42,7 @@ export default function CookieConsentBanner() {
 
   return (
     <div
-      role="dialog"
-      aria-modal="false"
+      role="region"
       aria-label="Cookie consent"
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-fadeInUp"
     >
