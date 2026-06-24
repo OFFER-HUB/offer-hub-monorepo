@@ -43,7 +43,7 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 href="https://github.com/OFFER-HUB/offer-hub-monorepo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-4 rounded-xl bg-[#19213D] text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-[#19213D]/20 hover:bg-black transition-all"
+                className="px-8 py-4 rounded-xl bg-content-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black transition-all"
               >
                 Star on GitHub
               </a>
