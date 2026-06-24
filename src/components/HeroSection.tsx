@@ -199,8 +199,8 @@ export default function HeroSection() {
 
       {/* ── Scroll indicator ── */}
       <div
-        className="animate-fadeIn absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        style={{ color: "rgba(0,35,51,0.30)", animationDelay: "900ms" }}
+        className="animate-fadeIn absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-theme-secondary/30"
+        style={{ animationDelay: "900ms" }}
       >
         <span className="text-[10px] uppercase tracking-[0.35em] font-medium">
           Scroll
