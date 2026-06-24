@@ -121,7 +121,7 @@ export default function HeroSection() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 45% at 50% 50%, rgba(20,154,155,0.07) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 45% at 50% 50%, color-mix(in srgb, var(--color-primary) 7%, transparent) 0%, transparent 70%)",
         }}
       />
 
@@ -129,8 +129,8 @@ export default function HeroSection() {
       <div className="relative z-10 flex flex-col items-center text-center px-4 w-full pt-28">
         {/* Eyebrow — key value props from product docs */}
         <p
-          className="animate-fadeIn text-xs font-medium uppercase tracking-[0.4em] mb-10"
-          style={{ color: "#149A9B", animationDelay: "100ms" }}
+          className="animate-fadeIn text-xs font-medium uppercase tracking-[0.4em] mb-10 text-theme-primary"
+          style={{ animationDelay: "100ms" }}
         >
           Self-Hosted · Non-Custodial · Open Source
         </p>
@@ -152,7 +152,7 @@ export default function HeroSection() {
             color: "transparent",
             // backgroundColor is the absolute base — always visible through letters
             // even when no blob covers a given area, this solid teal shows through
-            backgroundColor: "#149A9B",
+            backgroundColor: "var(--color-primary)",
             willChange: "background-image",
           }}
         >
