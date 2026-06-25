@@ -529,7 +529,14 @@ export default function StellarImpactCards({
   const [mode, setMode] = useState<"offerhub" | "traditional">("offerhub");
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto space-y-6 animate-fadeInScale">
+    <div
+      className={cn(
+        "animate-fadeInScale",
+        variant === "detailed"
+          ? "relative w-full max-w-5xl mx-auto space-y-6"
+          : "w-full flex flex-col items-center gap-6 md:gap-8",
+      )}
+    >
       {variant === "detailed" && showHeader && (
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -552,9 +559,7 @@ export default function StellarImpactCards({
       )}
 
       {variant === "simple" && (
-        <div className="w-full flex flex-col items-center gap-6 md:gap-8">
-          <ModeToggleSimple mode={mode} onChange={setMode} toggleId={toggleId} />
-        </div>
+        <ModeToggleSimple mode={mode} onChange={setMode} toggleId={toggleId} />
       )}
 
       {variant === "detailed" ? (
