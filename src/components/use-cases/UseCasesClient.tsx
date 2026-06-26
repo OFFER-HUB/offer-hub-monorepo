@@ -2,33 +2,36 @@
 
 // ── Freelance imports ──
 import FreelanceHero from "@/components/use-cases/freelance/FreelanceHero";
-import FreelanceEscrowFlowDiagram from "@/components/use-cases/freelance/EscrowFlowDiagram";
 import FreelanceStellarImpactCards from "@/components/use-cases/freelance/StellarImpactCards";
 import FreelanceCodeIntegrationShowcase from "@/components/use-cases/freelance/CodeIntegrationShowcase";
 
 // ── eCommerce imports ──
 import EcommerceHero from "@/components/use-cases/ecommerce/EcommerceHero";
-import EcommerceEscrowFlowDiagram from "@/components/use-cases/ecommerce/EscrowFlowDiagram";
 import EcommerceStellarImpactCards from "@/components/use-cases/ecommerce/StellarImpactCards";
 import EcommerceCodeIntegrationShowcase from "@/components/use-cases/ecommerce/CodeIntegrationShowcase";
 
 // ── DAO Payroll imports ──
 import DaoPayrollHero from "@/components/use-cases/dao-payroll/DaoPayrollHero";
-import DaoPayrollEscrowFlowDiagram from "@/components/use-cases/dao-payroll/EscrowFlowDiagram";
 import DaoPayrollStellarImpactCards from "@/components/use-cases/dao-payroll/StellarImpactCards";
 import DaoPayrollCodeIntegrationShowcase from "@/components/use-cases/dao-payroll/CodeIntegrationShowcase";
 
 // ── Real Estate imports ──
 import RealEstateHero from "@/components/use-cases/real-estate/RealEstateHero";
-import RealEstateEscrowFlowDiagram from "@/components/use-cases/real-estate/EscrowFlowDiagram";
 import RealEstateStellarImpactCards from "@/components/use-cases/real-estate/StellarImpactCards";
 import RealEstateCodeIntegrationShowcase from "@/components/use-cases/real-estate/CodeIntegrationShowcase";
 
 // ── Service Platforms imports ──
 import ServicePlatformsHero from "@/components/use-cases/service-platforms/ServicePlatformsHero";
-import ServicePlatformsEscrowFlowDiagram from "@/components/use-cases/service-platforms/EscrowFlowDiagram";
 import ServicePlatformsStellarImpactCards from "@/components/use-cases/service-platforms/StellarImpactCards";
 import ServicePlatformsCodeIntegrationShowcase from "@/components/use-cases/service-platforms/CodeIntegrationShowcase";
+
+// ── Shared EscrowFlowDiagram ──
+import EscrowFlowDiagram from "@/components/use-cases/shared/EscrowFlowDiagram";
+import { FREELANCE_ESCROW_STEPS } from "@/components/use-cases/freelance/escrow-steps";
+import { ECOMMERCE_ESCROW_STEPS } from "@/components/use-cases/ecommerce/escrow-steps";
+import { DAO_PAYROLL_ESCROW_STEPS } from "@/components/use-cases/dao-payroll/escrow-steps";
+import { REAL_ESTATE_ESCROW_STEPS } from "@/components/use-cases/real-estate/escrow-steps";
+import { SERVICE_PLATFORMS_ESCROW_STEPS } from "@/components/use-cases/service-platforms/escrow-steps";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -487,12 +490,20 @@ export default function UseCasesClient() {
               by OFFER HUB APIs.
             </p>
 
-            {activeUseCase === "freelance" && <FreelanceEscrowFlowDiagram />}
-            {activeUseCase === "ecommerce" && <EcommerceEscrowFlowDiagram />}
-            {activeUseCase === "dao-payroll" && <DaoPayrollEscrowFlowDiagram />}
-            {activeUseCase === "real-estate" && <RealEstateEscrowFlowDiagram />}
+            {activeUseCase === "freelance" && (
+              <EscrowFlowDiagram steps={FREELANCE_ESCROW_STEPS} gradientId="freelance-pulse-grad" />
+            )}
+            {activeUseCase === "ecommerce" && (
+              <EscrowFlowDiagram steps={ECOMMERCE_ESCROW_STEPS} gradientId="ecommerce-pulse-grad" />
+            )}
+            {activeUseCase === "dao-payroll" && (
+              <EscrowFlowDiagram steps={DAO_PAYROLL_ESCROW_STEPS} gradientId="dao-payroll-pulse-grad" />
+            )}
+            {activeUseCase === "real-estate" && (
+              <EscrowFlowDiagram steps={REAL_ESTATE_ESCROW_STEPS} gradientId="real-estate-pulse-grad" />
+            )}
             {activeUseCase === "service-platforms" && (
-              <ServicePlatformsEscrowFlowDiagram />
+              <EscrowFlowDiagram steps={SERVICE_PLATFORMS_ESCROW_STEPS} gradientId="service-platforms-pulse-grad" />
             )}
           </div>
         </section>

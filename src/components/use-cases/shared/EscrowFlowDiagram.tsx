@@ -2,12 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, ShieldCheck, Layers, Zap } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-/* ── Data model ── */
+/* ── Types ── */
 
-interface EscrowStep {
+export interface EscrowStep {
   stepNumber: number;
   label: string;
   status: "CREATED" | "FUNDED" | "AWAITING_RELEASE" | "SUCCEEDED";
@@ -18,54 +17,12 @@ interface EscrowStep {
   isOnChain: boolean;
 }
 
-const ESCROW_STEPS: EscrowStep[] = [
-  {
-    stepNumber: 1,
-    label: "Proposal & Signing",
-    status: "CREATED",
-    icon: Lock,
-    apiMethod: "POST /escrow/init",
-    apiSnippet: "client.escrows.init({ buyer, seller, milestones })",
-    description:
-      "Both parties agree on milestones, deliverables, and payment terms. The escrow contract is initialized off-chain.",
-    isOnChain: false,
-  },
-  {
-    stepNumber: 2,
-    label: "Funding the Vault",
-    status: "FUNDED",
-    icon: ShieldCheck,
-    apiMethod: "POST /escrow/:id/fund",
-    apiSnippet: "client.escrows.fund(escrowId, { amount, asset: 'USDC' })",
-    description:
-      "The buyer deposits funds into the on-chain escrow vault. Assets are locked and verifiable on Stellar.",
-    isOnChain: true,
-  },
-  {
-    stepNumber: 3,
-    label: "Milestone Validation",
-    status: "AWAITING_RELEASE",
-    icon: Layers,
-    apiMethod: "POST /resolution/release",
-    apiSnippet: "client.milestones.approve(milestoneId)",
-    description:
-      "Work is submitted and verified against the agreed criteria. The platform validates completion off-chain.",
-    isOnChain: false,
-  },
-  {
-    stepNumber: 4,
-    label: "Atomic Release",
-    status: "SUCCEEDED",
-    icon: Zap,
-    apiMethod: "POST /resolution/release",
-    apiSnippet: "client.escrows.release(escrowId)",
-    description:
-      "Funds are atomically released to the freelancer on-chain. Settlement is instant and irreversible.",
-    isOnChain: true,
-  },
-];
+export interface EscrowFlowDiagramProps {
+  steps: EscrowStep[];
+  gradientId: string;
+}
 
-/* ── Status badge colour map ── */
+/* ── Status styles ── */
 
 const STATUS_STYLES: Record<EscrowStep["status"], string> = {
   CREATED: "bg-content-muted/12 text-content-secondary",
@@ -137,7 +94,7 @@ function StepCard({
         onDeactivate();
       }
     },
-    [onDeactivate]
+    [onDeactivate],
   );
 
   return (
@@ -152,7 +109,7 @@ function StepCard({
         "animate-fadeInUp",
         isActive
           ? "shadow-neu-raised-hover"
-          : "shadow-neu-raised hover:shadow-neu-raised-hover"
+          : "shadow-neu-raised hover:shadow-neu-raised-hover",
       )}
       style={{ animationDelay: `${index * 150}ms` }}
       onMouseEnter={onActivate}
@@ -161,9 +118,7 @@ function StepCard({
       onFocus={onActivate}
       onBlur={handleBlur}
     >
-      {/* Header row */}
       <div className="flex items-center gap-3 mb-3">
-        {/* Icon container */}
         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl shadow-neu-sunken-subtle bg-bg-base flex items-center justify-center flex-shrink-0 text-theme-primary">
           <Icon size={20} />
         </div>
@@ -178,15 +133,14 @@ function StepCard({
         </div>
       </div>
 
-      {/* Status badge */}
       <div className="flex items-center gap-2 mb-1">
         <span
           className={cn(
             "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium shadow-neu-raised-sm",
-            STATUS_STYLES[step.status]
+            STATUS_STYLES[step.status],
           )}
         >
-          {step.status.replace("_", " ")}
+          {step.status.replace(/_/g, " ")}
         </span>
         {step.isOnChain && (
           <span className="text-[10px] font-bold text-theme-primary opacity-70">
@@ -195,7 +149,6 @@ function StepCard({
         )}
       </div>
 
-      {/* Expandable detail panel */}
       <AnimatePresence>
         {isActive && <HoverDetailPanel step={step} />}
       </AnimatePresence>
@@ -243,12 +196,18 @@ function ConnectorLine({ vertical }: { vertical: boolean }) {
   );
 }
 
-function BlockchainPulse({ active }: { active: boolean }) {
+function BlockchainPulse({
+  active,
+  gradientId,
+}: {
+  active: boolean;
+  gradientId: string;
+}) {
   return (
     <div
       className={cn(
         "hidden md:block absolute inset-0 pointer-events-none transition-opacity duration-500",
-        active ? "opacity-100" : "opacity-0"
+        active ? "opacity-100" : "opacity-0",
       )}
     >
       <svg
@@ -257,23 +216,31 @@ function BlockchainPulse({ active }: { active: boolean }) {
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          <radialGradient id="pulse-grad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+          <radialGradient id={gradientId} cx="50%" cy="50%" r="50%">
+            <stop
+              offset="0%"
+              stopColor="var(--color-primary)"
+              stopOpacity="0.08"
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--color-primary)"
+              stopOpacity="0"
+            />
           </radialGradient>
         </defs>
         <circle
           cx="400"
           cy="250"
           r="200"
-          fill="url(#pulse-grad)"
+          fill={`url(#${gradientId})`}
           className="animate-blockchainPulse"
         />
         <circle
           cx="400"
           cy="250"
           r="300"
-          fill="url(#pulse-grad)"
+          fill={`url(#${gradientId})`}
           className="animate-blockchainPulse"
           style={{ animationDelay: "0.4s" }}
         />
@@ -281,7 +248,7 @@ function BlockchainPulse({ active }: { active: boolean }) {
           cx="400"
           cy="250"
           r="400"
-          fill="url(#pulse-grad)"
+          fill={`url(#${gradientId})`}
           className="animate-blockchainPulse"
           style={{ animationDelay: "0.8s" }}
         />
@@ -292,7 +259,10 @@ function BlockchainPulse({ active }: { active: boolean }) {
 
 /* ── Main component ── */
 
-export default function EscrowFlowDiagram() {
+export default function EscrowFlowDiagram({
+  steps,
+  gradientId,
+}: EscrowFlowDiagramProps) {
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -305,25 +275,21 @@ export default function EscrowFlowDiagram() {
   }, []);
 
   const isOnChainActive =
-    activeStep !== null && ESCROW_STEPS[activeStep - 1]?.isOnChain;
+    activeStep !== null && steps[activeStep - 1]?.isOnChain;
 
   return (
     <div className="relative min-h-[400px] md:min-h-[550px] rounded-[3rem] shadow-neu-sunken w-full max-w-5xl mx-auto bg-bg-base p-6 md:p-12 animate-fadeInScale overflow-hidden">
-      {/* Blockchain pulse background */}
-      <BlockchainPulse active={!!isOnChainActive} />
+      <BlockchainPulse active={!!isOnChainActive} gradientId={gradientId} />
 
-      {/* Steps layout */}
       <div
         className={cn(
           "relative z-10 flex gap-3 h-full",
-          isMobile ? "flex-col" : "flex-row items-start"
+          isMobile ? "flex-col" : "flex-row items-start",
         )}
       >
-        {ESCROW_STEPS.map((step, i) => (
+        {steps.map((step, i) => (
           <div key={step.stepNumber} className="contents">
-            {/* Connector before step (skip first) */}
             {i > 0 && <ConnectorLine vertical={isMobile} />}
-
             <StepCard
               step={step}
               index={i}
