@@ -210,10 +210,11 @@ export default function RegistrationForm() {
                     )}
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Full Name</label>
+                        <label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Full Name</label>
                         <div className="relative group">
                             <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
                             <input
+                                id="name"
                                 required
                                 type="text"
                                 name="name"
@@ -228,10 +229,11 @@ export default function RegistrationForm() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Email Address</label>
+                        <label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Email Address</label>
                         <div className="relative group">
                             <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
                             <input
+                                id="email"
                                 required
                                 type="email"
                                 name="email"
@@ -247,7 +249,7 @@ export default function RegistrationForm() {
 
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center ml-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-content-secondary">For what would you use Offer Hub?</label>
+                            <label htmlFor="purpose" className="text-[10px] font-black uppercase tracking-widest text-content-secondary">For what would you use Offer Hub?</label>
                             <span className={`text-[10px] font-bold tracking-wider transition-colors duration-200 ${
                                 formData.purpose.length >= 480
                                     ? "text-red-500"
@@ -261,6 +263,7 @@ export default function RegistrationForm() {
                         <div className="relative group">
                             <MessageSquare size={16} className="absolute left-5 top-6 text-content-muted group-focus-within:text-theme-primary transition-colors" />
                             <textarea
+                                id="purpose"
                                 required
                                 rows={3}
                                 name="purpose"
@@ -275,10 +278,11 @@ export default function RegistrationForm() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">How did you hear about us?</label>
+                        <label htmlFor="referral" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">How did you hear about us?</label>
                         <div className="relative group">
                             <Send size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
                             <input
+                                id="referral"
                                 required
                                 type="text"
                                 name="referral"
