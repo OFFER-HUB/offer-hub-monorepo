@@ -20,11 +20,16 @@ export function FloatingCTA() {
     // Check if dismissed recently
     const dismissedAt = localStorage.getItem(STORAGE_KEY);
     if (dismissedAt) {
-      const elapsed = Date.now() - parseInt(dismissedAt, 10);
-      if (elapsed < DISMISS_DURATION) {
-        return;
+      const parsed = parseInt(dismissedAt, 10);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        localStorage.removeItem(STORAGE_KEY);
+      } else {
+        const elapsed = Date.now() - parsed;
+        if (elapsed < DISMISS_DURATION) {
+          return;
+        }
+        localStorage.removeItem(STORAGE_KEY);
       }
-      localStorage.removeItem(STORAGE_KEY);
     }
 
     // Show CTA after a delay for better UX

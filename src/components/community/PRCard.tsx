@@ -110,15 +110,3 @@ export default function PRCard({
   );
 }
 
-export const MOCK_PR_CARD_PROPS: PRCardProps = {
-  title: "feat: add PR card component with merged status support",
-  author: "octocat",
-  authorAvatar: "https://avatars.githubusercontent.com/u/583231?v=4",
-  mergedAt: "2026-02-20T13:24:00.000Z",
-  url: "https://github.com/OFFER-HUB/offer-hub-monorepo/pull/1016",
-  labels: ["enhancement", "frontend", "community"],
-};
-
-export function PRCardMockPreview() {
-  return <PRCard {...MOCK_PR_CARD_PROPS} />;
-}
