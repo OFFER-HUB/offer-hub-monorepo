@@ -1,5 +1,25 @@
-import { DollarSign, Clock, ShieldCheck } from "lucide-react";
+import { DollarSign, Clock, ShieldCheck, Zap, Globe } from "lucide-react";
 import type { DetailedMetricCard } from "../shared/StellarImpactCards";
+import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Features grid content (rendered in the #features section) ──
+export const featureCards: FeatureCard[] = [
+  {
+    icon: ShieldCheck,
+    title: "Trustless Escrow",
+    body: "Lock client funds into secure smart contracts at project kick-off. Funds are guaranteed to exist, protecting both the freelancer and the client.",
+  },
+  {
+    icon: Zap,
+    title: "Milestone Automation",
+    body: "Trigger partial or full payments automatically when APIs dictate completion of deliverables, removing manual invoice friction.",
+  },
+  {
+    icon: Globe,
+    title: "Global Payouts",
+    body: "Settle funds instantly in USDC or fiat-backed stablecoins directly to the freelancer's wallet, bypassing multi-day bank transfer delays and high FX fees.",
+  },
+];
 
 export const stellarImpactCardsData: DetailedMetricCard[] = [
   {

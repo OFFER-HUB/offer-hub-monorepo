@@ -1,5 +1,25 @@
-import { ShieldCheck, Zap, PackageCheck } from "lucide-react";
+import { ShieldCheck, Zap, PackageCheck, Globe } from "lucide-react";
 import type { DetailedMetricCard } from "../shared/StellarImpactCards";
+import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Features grid content (rendered in the #features section) ──
+export const featureCards: FeatureCard[] = [
+  {
+    icon: ShieldCheck,
+    title: "Buyer & Seller Protection",
+    body: "Buyer funds are locked on-chain before the seller ships. Neither party can be defrauded — the escrow is the source of truth for every order.",
+  },
+  {
+    icon: Zap,
+    title: "Automatic Release on Delivery",
+    body: "Funds release the moment delivery is confirmed — by tracking API, signature scan, or a buyer click — removing payout batch delays entirely.",
+  },
+  {
+    icon: Globe,
+    title: "On-Chain Dispute Resolution",
+    body: "If an order is missing or misrepresented, the buyer opens a structured on-chain dispute. The outcome — release, refund, or split — is transparent and final.",
+  },
+];
 
 export const stellarImpactCardsData: DetailedMetricCard[] = [
   {

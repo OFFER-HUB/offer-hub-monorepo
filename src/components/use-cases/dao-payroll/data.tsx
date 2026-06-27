@@ -1,5 +1,25 @@
-import { Eye, Zap, DollarSign, ShieldCheck } from "lucide-react";
+import { Eye, Zap, DollarSign, ShieldCheck, Coins, Globe } from "lucide-react";
 import type { DetailedMetricCard } from "../shared/StellarImpactCards";
+import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Features grid content (rendered in the #features section) ──
+export const featureCards: FeatureCard[] = [
+  {
+    icon: Coins,
+    title: "Governance-Gated Releases",
+    body: "DAO votes directly trigger payroll disbursements. No multisig delays — a passed proposal automatically releases contributor funds from the vault.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Contributor Trust",
+    body: "Budget is locked on-chain at the start of each epoch. Contributors can start work knowing their payment is already secured in escrow.",
+  },
+  {
+    icon: Globe,
+    title: "Multi-Currency Payouts",
+    body: "Pay contributors globally in USDC, XLM, or any Stellar-issued asset. No bank accounts required. Settlement completes in under 5 seconds.",
+  },
+];
 
 export const stellarImpactCardsData: DetailedMetricCard[] = [
   {
