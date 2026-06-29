@@ -108,7 +108,7 @@ export default function ContactForm() {
           <label htmlFor="company" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Company Name</label>
           <div className="relative group">
             <Building2 size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-            <input id="company" name="company" value={formData.company} onChange={handleInputChange} required className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.company ? 'ring-1 ring-red-400' : ''}`} placeholder="Company, LLC" disabled={isLoading} />
+            <input id="company" name="company" value={formData.company} onChange={handleInputChange} required className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.company ? 'ring-1 ring-red-400' : ''}`} placeholder="Company, LLC" disabled={isLoading} />
             {errors.company && <p className="text-xs text-red-600 mt-1 pl-2">{errors.company}</p>}
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function ContactForm() {
           <label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Contact Name</label>
           <div className="relative group">
             <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-            <input id="name" name="name" value={formData.name} onChange={handleInputChange} required className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.name ? 'ring-1 ring-red-400' : ''}`} placeholder="Jane Doe" disabled={isLoading} />
+            <input id="name" name="name" value={formData.name} onChange={handleInputChange} required className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.name ? 'ring-1 ring-red-400' : ''}`} placeholder="Jane Doe" disabled={isLoading} />
             {errors.name && <p className="text-xs text-red-600 mt-1 pl-2">{errors.name}</p>}
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function ContactForm() {
         <label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Work Email</label>
         <div className="relative group">
           <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-          <input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.email ? 'ring-1 ring-red-400' : ''}`} placeholder="you@company.com" disabled={isLoading} />
+          <input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.email ? 'ring-1 ring-red-400' : ''}`} placeholder="you@company.com" disabled={isLoading} />
           {errors.email && <p className="text-xs text-red-600 mt-1 pl-2">{errors.email}</p>}
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function ContactForm() {
         <label htmlFor="message" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Use case / Message (optional)</label>
         <div className="relative group">
           <MessageSquare size={16} className="absolute left-5 top-6 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-          <textarea id="message" name="message" rows={4} value={formData.message} onChange={handleInputChange} placeholder="Tell us about your integration, expected volume, or key requirements..." disabled={isLoading} className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium resize-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary" />
+          <textarea id="message" name="message" rows={4} value={formData.message} onChange={handleInputChange} placeholder="Tell us about your integration, expected volume, or key requirements..." disabled={isLoading} className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium resize-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-theme-primary" />
         </div>
       </div>
 
