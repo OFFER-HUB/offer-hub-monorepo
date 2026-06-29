@@ -98,7 +98,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-content-secondary hover:bg-[#149A9B]/5 hover:text-[#149A9B] transition-all"
                 aria-label="Open docs navigation"
               >
-                <Menu size={20} />
+                <Menu size={20} aria-hidden="true" />
               </button>
 
               {isHub ? (
@@ -175,7 +175,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 className="inline-flex items-center justify-center p-2 rounded-lg text-content-secondary hover:bg-bg-elevated hover:text-content-primary transition-all"
                 aria-label="Close docs navigation"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
             <div className="h-[calc(100%-6rem)] overflow-y-auto pr-2 no-scrollbar">
@@ -301,19 +301,19 @@ function DocActionsMenu({ slug }: { slug: string }) {
       {/* ── Export as ── */}
       <span className="text-[11px] font-bold uppercase tracking-widest text-content-secondary/60 mr-1">Export as</span>
 
-      <button type="button" title="Download Markdown" onClick={handleExportMarkdown} className={NEU_ICON_BTN}>
-        <FileCode2 size={17} />
+      <button type="button" title="Download Markdown" aria-label="Download Markdown" onClick={handleExportMarkdown} className={NEU_ICON_BTN}>
+        <FileCode2 size={17} aria-hidden="true" />
       </button>
 
       <ExportJSON slug={slug} title={slug} />
 
       <button
-        type="button" title="Export PDF"
+        type="button" title="Export PDF" aria-label="Export PDF"
         disabled={isExportingPdf}
         onClick={handleExportPdf}
         className={NEU_ICON_BTN + " disabled:opacity-50"}
       >
-        <FileText size={17} />
+        <FileText size={17} aria-hidden="true" />
       </button>
 
       {/* ── Divider ── */}
@@ -324,9 +324,10 @@ function DocActionsMenu({ slug }: { slug: string }) {
         href={`${DOCS_REPO_BASE}/${slug}.mdx`}
         target="_blank" rel="noopener noreferrer"
         title="Edit on GitHub"
+        aria-label="Edit on GitHub"
         className={NEU_ICON_BTN}
       >
-        <Github size={17} />
+        <Github size={17} aria-hidden="true" />
       </a>
 
       {/* ── Divider ── */}
@@ -339,7 +340,7 @@ function DocActionsMenu({ slug }: { slug: string }) {
         onClick={handleCopyMarkdown}
         className={NEU_PILL}
       >
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4" aria-hidden="true">
           {copyStatus ? (
             <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
           ) : (

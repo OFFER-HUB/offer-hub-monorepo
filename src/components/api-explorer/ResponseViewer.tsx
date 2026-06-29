@@ -63,7 +63,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
             copied ? "text-green-400" : "text-white/40 hover:text-white/80"
           )}
         >
-          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
           {copied ? "Copied!" : "Copy"}
         </button>
       </div>

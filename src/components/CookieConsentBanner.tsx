@@ -42,13 +42,17 @@ export default function CookieConsentBanner() {
 
   return (
     <div
-      role="dialog"
-      aria-modal="false"
-      aria-label="Cookie consent"
+      role="region"
+      aria-labelledby="cookie-consent-title"
+      aria-live="polite"
+      aria-atomic="true"
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-fadeInUp"
     >
       <div className="rounded-3xl bg-bg-elevated shadow-neu-raised px-6 py-5 flex flex-col gap-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary">
+        <p
+          id="cookie-consent-title"
+          className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary"
+        >
           Privacy Notice
         </p>
 

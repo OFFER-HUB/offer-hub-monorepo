@@ -15,10 +15,10 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
   const statsUnavailable = stats === null;
 
   const repoStats = [
-    { label: "Stars", value: stats?.stars ?? "N/A", icon: Star, color: "text-[#149A9B]" },
-    { label: "Forks", value: stats?.forks ?? "N/A", icon: GitFork, color: "text-[#19213D]" },
-    { label: "Contributors", value: stats?.contributors ?? "N/A", icon: Users, color: "text-[#149A9B]" },
-    { label: "Open Issues", value: stats?.openIssues ?? "N/A", icon: AlertCircle, color: "text-[#19213D]" },
+    { label: "Stars", value: stats?.stars ?? "N/A", icon: Star, color: "text-theme-primary" },
+    { label: "Forks", value: stats?.forks ?? "N/A", icon: GitFork, color: "text-content-primary" },
+    { label: "Contributors", value: stats?.contributors ?? "N/A", icon: Users, color: "text-theme-primary" },
+    { label: "Open Issues", value: stats?.openIssues ?? "N/A", icon: AlertCircle, color: "text-content-primary" },
   ];
 
   return (
@@ -26,7 +26,7 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 items-center">
           <div className="lg:col-span-7">
-            <p className="mb-6 text-[11px] font-black uppercase tracking-[0.4em] text-[#149A9B]">
+            <p className="mb-6 text-[11px] font-black uppercase tracking-[0.4em] text-theme-primary">
               Community Network
             </p>
             <h1 className="text-5xl font-black tracking-tighter text-content-primary md:text-7xl leading-[1.05]">
@@ -43,7 +43,7 @@ const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 href="https://github.com/OFFER-HUB/offer-hub-monorepo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-4 rounded-xl bg-[#19213D] text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-[#19213D]/20 hover:bg-black transition-all"
+                className="px-8 py-4 rounded-xl bg-content-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black transition-all"
               >
                 Star on GitHub
               </a>

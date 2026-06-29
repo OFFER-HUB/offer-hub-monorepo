@@ -97,6 +97,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
         </span>
         <ChevronDown
           size={16}
+          aria-hidden="true"
           className={cn(
             "ml-auto flex-shrink-0 text-content-secondary transition-transform duration-300 ease-out",
             isOpen && "rotate-0",
@@ -200,7 +201,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
             disabled={loading}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-neumorphic-primary disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200"
           >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+            {loading ? <Loader2 size={16} aria-hidden="true" className="animate-spin" /> : <Play size={16} aria-hidden="true" />}
             {loading ? "Sending..." : "Try it"}
           </button>
 
