@@ -27,12 +27,12 @@ export default function CTASection() {
           >
             Book a demo
           </Link>
-          <a
+          <Link
             href="/#waitlist-form"
             className="px-8 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-secondary text-theme-primary"
           >
             Start Free Trial
-          </a>
+          </Link>
         </div>
       </div>
     </section>
