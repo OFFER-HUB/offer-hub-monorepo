@@ -72,7 +72,7 @@ export default function WhyStellarSection() {
             </div>
             <h3 className="text-base font-bold text-content-primary">LATAM off-ramp coverage</h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              BlindPay and Abroad together cover 11 payout corridors across 6 LATAM countries — all settled from on-chain USDC. This makes Stellar the settlement layer for a population where 47% of the workforce is unbanked and traditional payment rails are unreliable or inaccessible.
+              BlindPay covers 7 payout corridors across 6 LATAM countries — all settled from on-chain USDC. This makes Stellar the settlement layer for a population where 47% of the workforce is unbanked and traditional payment rails are unreliable or inaccessible.
             </p>
           </div>
 
@@ -82,7 +82,7 @@ export default function WhyStellarSection() {
             </div>
             <h3 className="text-base font-bold text-content-primary">Ecosystem value OfferHub adds</h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              OfferHub brings real freelance transaction volume to Stellar mainnet. Every completed order is an on-chain USDC escrow release followed by a fiat settlement via a Stellar anchor. Open-sourcing the SWK + BlindPay + Abroad adapters in T3 creates reusable building blocks for any future Stellar marketplace.
+              OfferHub brings real freelance transaction volume to Stellar mainnet. Every completed order is an on-chain USDC escrow release followed by a fiat settlement via a Stellar anchor. Open-sourcing the SWK + BlindPay adapters in T3 creates reusable building blocks for any future Stellar marketplace.
             </p>
           </div>
 
