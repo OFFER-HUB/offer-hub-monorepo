@@ -26,7 +26,7 @@ export default function CTASection() {
             Book a demo
           </a>
           <a
-            href="/register"
+            href="/#waitlist-form"
             className="px-8 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-secondary text-theme-primary"
           >
             Start Free Trial
