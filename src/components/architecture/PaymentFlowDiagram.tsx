@@ -16,7 +16,7 @@ sequenceDiagram
     participant SWK as SWK
     participant NestJS as NestJS (OfferHub API)
     participant TW as TrustlessWork (escrow)
-    participant Offramp as BlindPay/Abroad
+    participant Offramp as BlindPay
 
     Client->>NestJS: POST /orders (USDC reserved)
     NestJS->>TW: deployEscrow(buyer, seller, amount)
@@ -32,7 +32,7 @@ sequenceDiagram
     SWK->>TW: release_escrow
     TW-->>NestJS: webhook: escrow_released
     NestJS->>Offramp: POST /payout (USDC → fiat)
-    Offramp-->>Client: fiat settled (SPEI / Pix / Nequi...)
+    Offramp-->>Client: fiat settled (SPEI / Pix / PSE...)
   `;
 
   const stateChart = `

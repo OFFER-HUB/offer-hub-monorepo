@@ -1,5 +1,25 @@
-import { ShieldCheck, Clock, Eye } from "lucide-react";
+import { ShieldCheck, Clock, Eye, Building2, Zap } from "lucide-react";
 import type { DetailedMetricCard } from "../shared/StellarImpactCards";
+import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Features grid content (rendered in the #features section) ──
+export const featureCards: FeatureCard[] = [
+  {
+    icon: Building2,
+    title: "Tokenised Escrow",
+    body: "Earnest money and closing funds are held in programmable on-chain escrow, eliminating the need for a third-party title company for each step.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Condition-Based Releases",
+    body: "Funds only release when contingencies are met: inspection approval, title clearance, mortgage funding. Automated and auditable at every stage.",
+  },
+  {
+    icon: Zap,
+    title: "Instant Cross-Border Closing",
+    body: "International buyers settle in USDC with no wire delays or correspondent bank fees. Foreign national transactions close in the same time as domestic ones.",
+  },
+];
 
 export const stellarImpactCardsData: DetailedMetricCard[] = [
   {

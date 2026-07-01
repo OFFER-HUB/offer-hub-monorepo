@@ -15,7 +15,7 @@ import TractionSection from "@/components/architecture/TractionSection";
 export const metadata: Metadata = {
   title: "Technical Architecture",
   description:
-    "Complete technical architecture of OFFER-HUB: non-custodial escrow on Stellar, Stellar Wallets Kit integration, BlindPay and Abroad off-ramp corridors across 7 LATAM markets. SCF Build Award #44.",
+    "Complete technical architecture of OFFER-HUB: non-custodial escrow on Stellar, Stellar Wallets Kit integration, BlindPay off-ramp corridors across 7 LATAM markets. SCF Build Award #44.",
   keywords: [
     "architecture",
     "stellar",
@@ -23,7 +23,6 @@ export const metadata: Metadata = {
     "escrow",
     "TrustlessWork",
     "BlindPay",
-    "Abroad",
     "SCF",
     "OFFER-HUB",
     "USDC",

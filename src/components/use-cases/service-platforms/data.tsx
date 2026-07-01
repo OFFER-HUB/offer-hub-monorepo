@@ -1,5 +1,25 @@
-import { Zap, ShieldCheck, Eye } from "lucide-react";
+import { Zap, ShieldCheck, Eye, Briefcase, Globe } from "lucide-react";
 import type { SimpleMetricCard } from "../shared/StellarImpactCards";
+import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Features grid content (rendered in the #features section) ──
+export const featureCards: FeatureCard[] = [
+  {
+    icon: Briefcase,
+    title: "SOW-Backed Contracts",
+    body: "Every engagement starts with a statement of work locked on-chain. Scope, milestones, and payment terms are immutable once both parties sign.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Milestone-Gated Payments",
+    body: "Providers receive each tranche only after the corresponding deliverable is approved, eliminating late or non-payment risk for service professionals.",
+  },
+  {
+    icon: Globe,
+    title: "Structured Dispute Resolution",
+    body: "Built-in on-chain arbitration ensures every dispute has a clear, auditable outcome — release, refund, or split — visible to all stakeholders.",
+  },
+];
 
 export const stellarImpactCardsData: SimpleMetricCard[] = [
   {

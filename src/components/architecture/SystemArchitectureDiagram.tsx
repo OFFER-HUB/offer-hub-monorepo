@@ -21,7 +21,7 @@ flowchart TD
     API["NestJS API<br/><small>Auth · Orders · Escrow · Payments · Webhooks · Off-ramp</small>"]:::backend
     Data["Data Layer<br/><small>PostgreSQL · Redis · BullMQ</small>"]:::subtle
     Stellar["Stellar<br/><small>Soroban Contracts · TrustlessWork · USDC</small>"]:::subtle
-    Offramp["Off-ramp<br/><small>BlindPay · Abroad</small>"]:::highlight
+    Offramp["Off-ramp<br/><small>BlindPay (7 corridors)</small>"]:::highlight
 
     Client -->|HTTPS / REST| API
     Client -->|Client-side Soroban signing| Wallet
@@ -52,7 +52,7 @@ flowchart TD
           <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-6 flex gap-3 items-start">
             <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
             <p className="text-sm text-content-secondary leading-relaxed">
-              This flowchart maps every layer of the OfferHub stack — from the browser and Stellar Wallets Kit on the client side, through the NestJS orchestration API and PostgreSQL/Redis data layer, down to Soroban smart contracts on Stellar and the BlindPay/Abroad off-ramp providers. Arrows show the protocol or method used at each boundary. Teal nodes are the three SCF Integration Track building blocks.
+              This flowchart maps every layer of the OfferHub stack — from the browser and Stellar Wallets Kit on the client side, through the NestJS orchestration API and PostgreSQL/Redis data layer, down to Soroban smart contracts on Stellar and the BlindPay off-ramp provider. Arrows show the protocol or method used at each boundary. Teal nodes are the two SCF Integration Track building blocks.
             </p>
           </div>
 

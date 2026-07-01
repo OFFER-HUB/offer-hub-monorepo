@@ -20,7 +20,7 @@ export default function IntegrationsMap() {
         <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
           <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
           <p className="text-sm text-content-secondary leading-relaxed">
-            OfferHub uses three building blocks from the official SCF Integration List. Stellar Wallets Kit handles non-custodial wallet connection and client-side Soroban signing. BlindPay routes USDC to bank accounts across 7 LATAM corridors via SPEI, Pix, PSE, and Transfer 3.0. Abroad delivers funds to mobile wallets (Nequi, Daviplata, Bre-B) for unbanked users. The NestJS orchestrator selects the off-ramp route automatically based on freelancer country and payout preference.
+            OfferHub uses two building blocks from the official SCF Integration List. Stellar Wallets Kit handles non-custodial wallet connection and client-side Soroban signing. BlindPay routes USDC to bank accounts across 7 LATAM corridors via SPEI, Pix, PSE, and Transfer 3.0. The NestJS orchestrator selects the corridor automatically based on freelancer country and payout preference.
           </p>
         </div>
 
@@ -45,11 +45,8 @@ export default function IntegrationsMap() {
             {/* Hub to SWK (Left) */}
             <path d="M 500 300 Q 350 300 250 300" fill="none" stroke="#149A9B" strokeWidth="2" opacity="0.4" className="anim-line-left" />
             
-            {/* Hub to BlindPay (Top Right) */}
-            <path d="M 500 300 Q 650 200 750 150" fill="none" stroke="#149A9B" strokeWidth="2" opacity="0.4" className="anim-line-right" />
-            
-            {/* Hub to Abroad (Bottom Right) */}
-            <path d="M 500 300 Q 650 400 750 450" fill="none" stroke="#149A9B" strokeWidth="2" opacity="0.4" className="anim-line-right" />
+            {/* Hub to BlindPay (Right) */}
+            <path d="M 500 300 Q 650 300 750 300" fill="none" stroke="#149A9B" strokeWidth="2" opacity="0.4" className="anim-line-right" />
           </svg>
 
           {/* Mobile Connectors */}
@@ -95,8 +92,8 @@ export default function IntegrationsMap() {
             </div>
           </div>
 
-          {/* Right Top Spoke: BlindPay */}
-          <div className="relative z-10 w-full md:absolute md:right-[5%] md:top-[10%] md:w-[340px]">
+          {/* Right Spoke: BlindPay */}
+          <div className="relative z-10 w-full md:absolute md:right-[5%] md:top-1/2 md:-translate-y-1/2 md:w-[340px]">
             <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-bold text-content-primary">BlindPay</h3>
@@ -118,41 +115,14 @@ export default function IntegrationsMap() {
             </div>
           </div>
 
-          {/* Right Bottom Spoke: Abroad */}
-          <div className="relative z-10 w-full md:absolute md:right-[5%] md:bottom-[10%] md:w-[340px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-content-primary">Abroad</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-base shadow-neu-sunken px-2 py-1 rounded-full text-theme-primary">SCF Integration #3</span>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="text-[10px] bg-bg-base shadow-neu-sunken-subtle px-2 py-1 rounded-md text-content-muted">Circle Alliance</span>
-                <span className="text-[10px] bg-bg-base shadow-neu-sunken-subtle px-2 py-1 rounded-md text-content-muted">47% unbanked</span>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                {['Nequi', 'Daviplata', 'Bre-B', 'Pix'].map(c => (
-                  <div key={c} className="text-xs font-medium text-center bg-bg-base shadow-neu-raised-sm rounded-xl py-3 text-content-primary">
-                    {c}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* Stats Strip */}
         <div className="mt-16 flex justify-center">
           <div className="rounded-2xl bg-bg-elevated shadow-neu-raised-sm border border-[var(--color-border)] px-8 py-4 inline-flex flex-wrap justify-center items-center gap-4 text-sm font-medium text-content-secondary">
-            <span>3 SCF Integrations</span>
+            <span>2 SCF Integrations</span>
             <span className="text-[var(--color-border)]">•</span>
-            <span>7 BlindPay Corridors</span>
-            <span className="text-[var(--color-border)]">•</span>
-            <span>4 Abroad Methods</span>
-            <span className="text-[var(--color-border)]">•</span>
-            <span className="text-theme-primary font-bold">11 Total Corridors</span>
+            <span className="text-theme-primary font-bold">7 BlindPay Corridors</span>
           </div>
         </div>
 

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function CTASection() {
   return (
     <section className="py-28 bg-transparent">
@@ -19,18 +21,18 @@ export default function CTASection() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 animate-fadeIn" style={{ animationDelay: "0.2s" }}>
-          <a
+          <Link
             href="/contact"
             className="px-8 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-primary"
           >
             Book a demo
-          </a>
-          <a
-            href="/register"
+          </Link>
+          <Link
+            href="/#waitlist-form"
             className="px-8 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-secondary text-theme-primary"
           >
             Start Free Trial
-          </a>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, Shield, Zap, Lock } from "lucide-react";
 
 const features = [
@@ -41,19 +42,20 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <a
-              href="/register"
+            <Link
+              href="/#waitlist-form"
               className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-xl text-base font-medium transition-all duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
               Start Building Free
               <ArrowRight size={18} />
-            </a>
-            <a
+            </Link>
+
+            <Link
               href="#docs"
-              className="w-full sm:w-auto bg-background text-text-primary px-8 py-4 rounded-xl text-base font-medium transition-all duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 border border-gray-200"
+              className="w-full sm:w-auto bg-background text-text-primary px-8 py-4 rounded-xl text-base font-medium transition-all duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 border border-gray-200 flex items-center justify-center"
             >
               View Documentation
-            </a>
+            </Link>
           </div>
         </div>
 
