@@ -3,14 +3,15 @@ import type { ReactNode } from "react";
 import EcommerceHero from "./EcommerceHero";
 import EscrowFlowDiagram from "../shared/EscrowFlowDiagram";
 import { ESCROW_STEPS } from "./escrow-steps";
-import EcommerceCodeIntegrationShowcase from "./CodeIntegrationShowcase";
 import {
   featureCards,
   stellarImpactCardsData,
   stellarImpactSummary,
 } from "./data";
+import { description, sdkCards, tabs } from "./code-tabs";
 
 import StellarImpactCards from "../shared/StellarImpactCards";
+import CodeIntegrationShowcase from "../shared/CodeIntegrationShowcase";
 import {
   FeaturesGrid,
   MetricsSection,
@@ -50,7 +51,11 @@ export default function EcommerceSection({
       </ArchitectureSection>
 
       <SdkSection>
-        <EcommerceCodeIntegrationShowcase />
+        <CodeIntegrationShowcase
+          description={description}
+          tabs={tabs}
+          sdkCards={sdkCards}
+        />
       </SdkSection>
     </>
   );
