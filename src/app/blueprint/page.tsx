@@ -3,8 +3,12 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import LoadingBar from "@/components/ui/LoadingBar";
 
+import SectionNav from "@/components/shared/SectionNav";
+import {
+  BLUEPRINT_SECTIONS,
+  BLUEPRINT_SCROLL_MARGIN_PX,
+} from "@/lib/blueprint-nav";
 import BlueprintHero from "@/components/blueprint/BlueprintHero";
-import BlueprintSectionNav from "@/components/blueprint/BlueprintSectionNav";
 import OrchestratorShowcase from "@/components/blueprint/OrchestratorShowcase";
 import MarketplaceTemplate from "@/components/blueprint/MarketplaceTemplate";
 import EvolutionTimeline from "@/components/blueprint/EvolutionTimeline";
@@ -32,7 +36,12 @@ export default function BlueprintPage() {
 
       <main className="flex-grow">
         <BlueprintHero />
-        <BlueprintSectionNav />
+        <SectionNav
+          sections={BLUEPRINT_SECTIONS}
+          layoutId="blueprintNavActivePill"
+          scrollMarginPx={BLUEPRINT_SCROLL_MARGIN_PX}
+          ariaLabel="Blueprint sections"
+        />
         <OrchestratorShowcase />
         <MarketplaceTemplate />
         <EvolutionTimeline />

@@ -3,8 +3,12 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import LoadingBar from "@/components/ui/LoadingBar";
 
+import SectionNav from "@/components/shared/SectionNav";
+import {
+  ARCHITECTURE_SECTIONS,
+  ARCHITECTURE_SCROLL_MARGIN_PX,
+} from "@/lib/architecture-nav";
 import ArchitectureHero from "@/components/architecture/ArchitectureHero";
-import ArchitectureSectionNav from "@/components/architecture/ArchitectureSectionNav";
 import SystemArchitectureDiagram from "@/components/architecture/SystemArchitectureDiagram";
 import PaymentFlowDiagram from "@/components/architecture/PaymentFlowDiagram";
 import IntegrationsMap from "@/components/architecture/IntegrationsMap";
@@ -38,7 +42,12 @@ export default function ArchitecturePage() {
 
       <main className="flex-grow">
         <ArchitectureHero />
-        <ArchitectureSectionNav />
+        <SectionNav
+          sections={ARCHITECTURE_SECTIONS}
+          layoutId="architectureNavActivePill"
+          scrollMarginPx={ARCHITECTURE_SCROLL_MARGIN_PX}
+          ariaLabel="Architecture sections"
+        />
         <SystemArchitectureDiagram />
         <PaymentFlowDiagram />
         <IntegrationsMap />
