@@ -10,10 +10,11 @@ import RegistrationForm from "@/components/community/RegistrationForm";
 import LoadingBar from "@/components/ui/LoadingBar";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const revalidate = 600;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Community",
   description:
     "Join the OFFER-HUB open-source community. Explore contributors, open issues, recent pull requests, and learn how to get involved.",
@@ -25,7 +26,9 @@ export const metadata: Metadata = {
     "OFFER-HUB",
     "contribute",
   ],
-};
+  path: "/community",
+  ogImageAlt: "OFFER-HUB Community — contributors, issues, and pull requests",
+});
 
 interface RepoStats {
   stars: string;

@@ -1,10 +1,28 @@
 import fs from "fs";
 import path from "path";
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import LoadingBar from "@/components/ui/LoadingBar";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { MDX_PRIVACY_COMPONENTS } from "@/components/mdx/PrivacyComponents";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Privacy Policy",
+  description:
+    "How OFFER-HUB collects, uses, and protects your data. Privacy is a feature, not an afterthought — read our full data governance and transparency policy.",
+  keywords: [
+    "privacy policy",
+    "data governance",
+    "GDPR",
+    "data protection",
+    "transparency",
+    "OFFER-HUB",
+  ],
+  path: "/privacy",
+  ogImageAlt: "OFFER-HUB Privacy Policy — data governance and transparency",
+});
 
 export default async function PrivacyPage() {
   const content = fs.readFileSync(path.join(process.cwd(), "src/content/privacy.mdx"), "utf-8");

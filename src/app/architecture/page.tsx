@@ -11,8 +11,9 @@ import IntegrationsMap from "@/components/architecture/IntegrationsMap";
 import SCFTrancheRoadmap from "@/components/architecture/SCFTrancheRoadmap";
 import WhyStellarSection from "@/components/architecture/WhyStellarSection";
 import TractionSection from "@/components/architecture/TractionSection";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Technical Architecture",
   description:
     "Complete technical architecture of OFFER-HUB: non-custodial escrow on Stellar, Stellar Wallets Kit integration, BlindPay off-ramp corridors across 7 LATAM markets. SCF Build Award #44.",
@@ -28,7 +29,10 @@ export const metadata: Metadata = {
     "USDC",
     "LATAM",
   ],
-};
+  path: "/architecture",
+  ogImageAlt:
+    "OFFER-HUB Technical Architecture — non-custodial escrow on Stellar",
+});
 
 export default function ArchitecturePage() {
   return (

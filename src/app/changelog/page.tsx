@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Changelog",
   description:
     "Track every release and update to the OFFER-HUB platform — new features, improvements, and fixes across the ecosystem.",
@@ -13,7 +14,9 @@ export const metadata: Metadata = {
     "OFFER-HUB",
     "version history",
   ],
-};
+  path: "/changelog",
+  ogImageAlt: "OFFER-HUB Changelog — releases, improvements, and fixes",
+});
 
 interface GitHubRelease {
   tag_name: string;
