@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   TrendingUp,
   ShieldCheck,
@@ -9,6 +9,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+
 
 /* ── Types ── */
 
@@ -133,6 +134,7 @@ function AnimatedText({ value, mode }: { value: string; mode: "offerhub" | "trad
 /* ── GrowthBadge (detailed variant) ── */
 
 function GrowthBadge({ label, value }: { label: string; value: string }) {
+  const shouldReduceMotion = useReducedMotion();
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -140,8 +142,9 @@ function GrowthBadge({ label, value }: { label: string; value: string }) {
       transition={{ delay: 0.4, duration: 0.4 }}
       className="flex items-center gap-1.5 bg-theme-success/10 rounded-full px-3 py-1 w-fit"
     >
+      
       <motion.div
-        animate={{ y: [0, -2, 0] }}
+        animate={shouldReduceMotion ? {} : { y: [0, -2, 0] }}
         transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
       >
         <TrendingUp size={12} className="text-theme-success" />

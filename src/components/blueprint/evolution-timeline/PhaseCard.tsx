@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { NEU_ELEVATED, NEU_SUNKEN, statusConfig } from "./config";
 import type { Phase } from "./types";
@@ -14,6 +14,7 @@ interface PhaseCardProps {
 
 export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
   const cfg = statusConfig(phase.status);
   const Icon = phase.icon;
   const StatusIcon = cfg.icon;
@@ -56,7 +57,7 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
         {isInProgress && (
           <motion.div
             className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-[var(--color-primary)]/50"
-            animate={{ opacity: [0.3, 0.8, 0.3] }}
+            animate={shouldReduceMotion ? {} : { opacity: [0.3, 0.8, 0.3] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
         )}

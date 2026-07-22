@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { DOMAINS, NEU_ELEVATED, NEU_SUNKEN, statusConfig } from "./config";
 import { PHASES } from "./data";
 import { ConnectorDot } from "./ConnectorDot";
@@ -9,10 +9,11 @@ import { PhaseCard } from "./PhaseCard";
 import { TimelineLine } from "./TimelineLine";
 import type { PhaseDomain, PhaseStatus } from "./types";
 
+
 export default function EvolutionTimelineView() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeDomain, setActiveDomain] = useState<"all" | PhaseDomain>("all");
-
+  const shouldReduceMotion = useReducedMotion();
   const filtered =
     activeDomain === "all"
       ? PHASES
@@ -47,7 +48,7 @@ export default function EvolutionTimelineView() {
             className={`inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/30 px-4 py-1.5 text-[12px] font-semibold uppercase tracking-widest text-[var(--color-primary)] ${NEU_SUNKEN}`}
           >
             <motion.span
-              animate={{ opacity: [1, 0.3, 1] }}
+              animate={shouldReduceMotion ? {} : { opacity: [1, 0.3, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
               className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]"
             />

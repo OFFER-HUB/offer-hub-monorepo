@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, FileText, Orbit, Sparkles } from "lucide-react";
 
 const HERO_METADATA = [
@@ -46,6 +46,7 @@ const TECH_DOC_URL =
 
 function NetworkPattern() {
   const nodeMap = new Map(NETWORK_NODES.map((node) => [node.id, node]));
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -97,7 +98,7 @@ function NetworkPattern() {
               cy={node.y}
               r={node.size / 2 + 1.8}
               fill="rgba(20,154,155,0.08)"
-              animate={{ scale: [1, 1.3, 1] }}
+              animate={shouldReduceMotion ? {} : { scale: [1, 1.3, 1] }}
               transition={{
                 duration: 2.8,
                 delay: node.delay,
