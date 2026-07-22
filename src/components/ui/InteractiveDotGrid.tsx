@@ -203,6 +203,7 @@ export function InteractiveDotGrid({
     return (
         <canvas
             ref={canvasRef}
+            aria-hidden="true"
             className="pointer-events-none"
             style={{
                 position: "fixed",

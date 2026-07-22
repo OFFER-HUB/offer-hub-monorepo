@@ -2,10 +2,14 @@ import type { ReactNode } from "react";
 
 import DaoPayrollHero from "./DaoPayrollHero";
 import DaoPayrollEscrowFlowDiagram from "./EscrowFlowDiagram";
-import DaoPayrollStellarImpactCards from "./StellarImpactCards";
 import DaoPayrollCodeIntegrationShowcase from "./CodeIntegrationShowcase";
-import { featureCards } from "./data";
+import {
+  featureCards,
+  stellarImpactCardsData,
+  stellarImpactSummary,
+} from "./data";
 
+import StellarImpactCards from "../shared/StellarImpactCards";
 import {
   FeaturesGrid,
   MetricsSection,
@@ -32,7 +36,12 @@ export default function DaoPayrollSection({
       <FeaturesGrid features={featureCards} />
 
       <MetricsSection>
-        <DaoPayrollStellarImpactCards />
+        <StellarImpactCards
+          variant="detailed"
+          cards={stellarImpactCardsData}
+          toggleId="dao-payroll"
+          summaryContent={{ offerhub: stellarImpactSummary }}
+        />
       </MetricsSection>
 
       <ArchitectureSection>

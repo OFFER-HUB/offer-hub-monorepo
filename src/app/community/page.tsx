@@ -10,8 +10,11 @@ import RegistrationForm from "@/components/community/RegistrationForm";
 import LoadingBar from "@/components/ui/LoadingBar";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const revalidate = 600;
+
+export const metadata: Metadata = buildPageMetadata({
   title: "Community",
   description:
     "Join the OFFER-HUB open-source community. Explore contributors, open issues, recent pull requests, and learn how to get involved.",
@@ -23,7 +26,9 @@ export const metadata: Metadata = {
     "OFFER-HUB",
     "contribute",
   ],
-};
+  path: "/community",
+  ogImageAlt: "OFFER-HUB Community — contributors, issues, and pull requests",
+});
 
 interface RepoStats {
   stars: string;
@@ -119,13 +124,6 @@ const REPOS = [
   'OFFER-HUB/OFFER-HUB-Frontend'
 ];
 
-// In-memory cache for GitHub data (survives hot reloads in dev)
-let githubCache: { data: ReturnType<typeof processGitHubData> | null; timestamp: number } = {
-  data: null,
-  timestamp: 0,
-};
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
-
 function processGitHubData(validData: NonNullable<Awaited<ReturnType<typeof fetchRepoData>>>[]): CommunityData {
   const totalStars = validData.reduce((acc, d) => acc + d.repo.stargazers_count, 0);
   const totalForks = validData.reduce((acc, d) => acc + d.repo.forks_count, 0);
@@ -190,7 +188,7 @@ function processGitHubData(validData: NonNullable<Awaited<ReturnType<typeof fetc
 }
 
 async function fetchRepoData(repo: string) {
-  const cacheOpts = { next: { revalidate: 7200 } };
+  const cacheOpts = { next: { revalidate: 600 } };
   const [repoRes, contribRes, prRes, issueRes] = await Promise.all([
     fetch(`https://api.github.com/repos/${repo}`, cacheOpts),
     fetch(`https://api.github.com/repos/${repo}/contributors?per_page=100`, cacheOpts),
@@ -209,11 +207,6 @@ async function fetchRepoData(repo: string) {
 }
 
 async function fetchGitHubData() {
-  // Return cached data if still fresh
-  if (githubCache.data && Date.now() - githubCache.timestamp < CACHE_TTL) {
-    return githubCache.data;
-  }
-
   try {
     const allPills = await Promise.all(REPOS.map(fetchRepoData));
 
@@ -221,9 +214,7 @@ async function fetchGitHubData() {
 
     if (validData.length === 0) throw new Error('Failed to fetch any repo data');
 
-    const result = processGitHubData(validData);
-    githubCache = { data: result, timestamp: Date.now() };
-    return result;
+    return processGitHubData(validData);
   } catch (error) {
     console.error('Error fetching GitHub data:', error);
     return {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
@@ -39,6 +39,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
+  const drawerRef = useRef<HTMLElement>(null);
 
   const isHub = pathname === "/docs" || pathname === "/docs/";
 
@@ -61,6 +62,36 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   useEffect(() => {
     setIsDrawerOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+    const drawerEl = drawerRef.current;
+    if (!drawerEl) return;
+
+    const focusableSelectors =
+      'a[href], button:not([disabled]), [tabIndex]:not([tabIndex="-1"])';
+    const focusableElements = Array.from(
+      drawerEl.querySelectorAll<HTMLElement>(focusableSelectors)
+    );
+    focusableElements[0]?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setIsDrawerOpen(false); return; }
+      if (e.key === "Tab") {
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+        if (!first || !last) return;
+        if (e.shiftKey) {
+          if (document.activeElement === first) { last.focus(); e.preventDefault(); }
+        } else {
+          if (document.activeElement === last) { first.focus(); e.preventDefault(); }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isDrawerOpen]);
 
   useEffect(() => {
     if (isHub) return;
@@ -163,6 +194,10 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
             onClick={() => setIsDrawerOpen(false)}
           />
           <aside
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Documentation navigation"
             className="relative h-full w-80 max-w-[85vw] p-8 bg-bg-base shadow-neu-raised rounded-r-[30px] print:hidden"
           >
             <div className="mb-8 flex items-center justify-between pb-4 border-b border-theme-border/40">

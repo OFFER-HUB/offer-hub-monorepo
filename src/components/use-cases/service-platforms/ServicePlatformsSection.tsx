@@ -2,10 +2,14 @@ import type { ReactNode } from "react";
 
 import ServicePlatformsHero from "./ServicePlatformsHero";
 import ServicePlatformsEscrowFlowDiagram from "./EscrowFlowDiagram";
-import ServicePlatformsStellarImpactCards from "./StellarImpactCards";
 import ServicePlatformsCodeIntegrationShowcase from "./CodeIntegrationShowcase";
-import { featureCards } from "./data";
+import {
+  featureCards,
+  stellarImpactCardsData,
+  stellarImpactSummary,
+} from "./data";
 
+import StellarImpactCards from "../shared/StellarImpactCards";
 import {
   FeaturesGrid,
   MetricsSection,
@@ -32,7 +36,13 @@ export default function ServicePlatformsSection({
       <FeaturesGrid features={featureCards} />
 
       <MetricsSection>
-        <ServicePlatformsStellarImpactCards />
+        <StellarImpactCards
+          variant="simple"
+          cards={stellarImpactCardsData}
+          toggleId="service-platforms"
+          showHeader={false}
+          summaryContent={stellarImpactSummary}
+        />
       </MetricsSection>
 
       <ArchitectureSection>

@@ -29,7 +29,7 @@ const navLinks = [
  *     /docs/getting-started).
  *  3. Exact "/" matches only the home route.
  */
-function isLinkActive(href: string, pathname: string): boolean {
+export function isLinkActive(href: string, pathname: string): boolean {
   // Rule 1: hash anchors belong to the home page only
   if (href.includes("#")) return pathname === "/";
 
@@ -219,11 +219,10 @@ export function Navbar() {
       {isMenuOpen && (
         <>
           {/* Backdrop */}
-          <button
-            className="lg:hidden fixed inset-0 z-[499] bg-black/20 dark:bg-black/40 backdrop-blur-sm animate-fadeIn w-full h-full border-none p-0 cursor-default outline-none"
+          <div
+            aria-hidden="true"
+            className="lg:hidden fixed inset-0 z-[499] bg-black/20 dark:bg-black/40 backdrop-blur-sm animate-fadeIn cursor-pointer"
             onClick={() => setIsMenuOpen(false)}
-            aria-label="Close menu"
-            tabIndex={-1}
           />
 
           {/* Menu panel */}

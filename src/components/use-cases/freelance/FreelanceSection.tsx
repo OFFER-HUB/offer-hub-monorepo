@@ -2,10 +2,14 @@ import type { ReactNode } from "react";
 
 import FreelanceHero from "./FreelanceHero";
 import FreelanceEscrowFlowDiagram from "./EscrowFlowDiagram";
-import FreelanceStellarImpactCards from "./StellarImpactCards";
 import FreelanceCodeIntegrationShowcase from "./CodeIntegrationShowcase";
-import { featureCards } from "./data";
+import {
+  featureCards,
+  stellarImpactCardsData,
+  stellarImpactSummary,
+} from "./data";
 
+import StellarImpactCards from "../shared/StellarImpactCards";
 import {
   FeaturesGrid,
   MetricsSection,
@@ -35,7 +39,12 @@ export default function FreelanceSection({
       <FeaturesGrid features={featureCards} />
 
       <MetricsSection>
-        <FreelanceStellarImpactCards />
+        <StellarImpactCards
+          variant="detailed"
+          cards={stellarImpactCardsData}
+          toggleId="freelance"
+          summaryContent={{ offerhub: stellarImpactSummary }}
+        />
       </MetricsSection>
 
       <ArchitectureSection>

@@ -2,10 +2,14 @@ import type { ReactNode } from "react";
 
 import RealEstateHero from "./RealEstateHero";
 import RealEstateEscrowFlowDiagram from "./EscrowFlowDiagram";
-import RealEstateStellarImpactCards from "./StellarImpactCards";
 import RealEstateCodeIntegrationShowcase from "./CodeIntegrationShowcase";
-import { featureCards } from "./data";
+import {
+  featureCards,
+  stellarImpactCardsData,
+  stellarImpactSummary,
+} from "./data";
 
+import StellarImpactCards from "../shared/StellarImpactCards";
 import {
   FeaturesGrid,
   MetricsSection,
@@ -32,7 +36,12 @@ export default function RealEstateSection({
       <FeaturesGrid features={featureCards} />
 
       <MetricsSection>
-        <RealEstateStellarImpactCards />
+        <StellarImpactCards
+          variant="detailed"
+          cards={stellarImpactCardsData}
+          toggleId="real-estate"
+          summaryContent={{ offerhub: stellarImpactSummary }}
+        />
       </MetricsSection>
 
       <ArchitectureSection>

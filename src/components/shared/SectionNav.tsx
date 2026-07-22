@@ -3,10 +3,25 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { motion, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { BLUEPRINT_SECTIONS, BLUEPRINT_SCROLL_MARGIN_PX } from "@/lib/blueprint-nav";
 
-export default function BlueprintSectionNav() {
-  const [activeSection, setActiveSection] = useState("vision");
+export type SectionNavItem = { id: string; label: string };
+
+type SectionNavProps = {
+  sections: readonly SectionNavItem[];
+  /** Must be unique per page so the pill never animates across route changes */
+  layoutId: string;
+  /** Clears the fixed Navbar + this sticky nav when scrolling to an anchor */
+  scrollMarginPx: number;
+  ariaLabel?: string;
+};
+
+export default function SectionNav({
+  sections,
+  layoutId,
+  scrollMarginPx,
+  ariaLabel = "Section navigation",
+}: SectionNavProps) {
+  const [activeSection, setActiveSection] = useState(sections[0]?.id ?? "");
   const [isNavPinned, setIsNavPinned] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +39,7 @@ export default function BlueprintSectionNav() {
       { threshold: [0.08, 0.25, 0.45, 0.65], rootMargin: "-14% 0px -14% 0px" }
     );
 
-    BLUEPRINT_SECTIONS.forEach(({ id }) => {
+    sections.forEach(({ id }) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
@@ -49,13 +64,13 @@ export default function BlueprintSectionNav() {
       observer.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [sections]);
 
   const scrollToId = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const el = document.getElementById(id);
     if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - BLUEPRINT_SCROLL_MARGIN_PX;
+    const top = el.getBoundingClientRect().top + window.scrollY - scrollMarginPx;
     window.scrollTo({ top, behavior: "smooth" });
   };
 
@@ -74,23 +89,29 @@ export default function BlueprintSectionNav() {
             isNavPinned ? "shadow-neu-raised-scrolled" : "shadow-neu-raised"
           )}
         >
-          <LayoutGroup id="blueprintSectionNav">
-            <nav className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5">
-              {BLUEPRINT_SECTIONS.map(({ id, label }) => {
+          <LayoutGroup id={layoutId}>
+            <nav
+              aria-label={ariaLabel}
+              className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5"
+            >
+              {sections.map(({ id, label }) => {
                 const isActive = activeSection === id;
                 return (
                   <a
                     key={id}
                     href={`#${id}`}
                     onClick={(e) => scrollToId(e, id)}
+                    aria-current={isActive ? "true" : undefined}
                     className={cn(
                       "relative px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300",
-                      isActive ? "text-theme-primary z-10" : "text-content-secondary hover:text-content-primary"
+                      isActive
+                        ? "text-theme-primary z-10"
+                        : "text-content-secondary hover:text-content-primary"
                     )}
                   >
                     {isActive ? (
                       <motion.span
-                        layoutId="blueprintNavActivePill"
+                        layoutId={layoutId}
                         className="absolute inset-0 rounded-xl bg-bg-base shadow-neu-sunken -z-10"
                         transition={{ type: "spring", stiffness: 420, damping: 34 }}
                       />

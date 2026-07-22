@@ -2,10 +2,14 @@ import type { ReactNode } from "react";
 
 import EcommerceHero from "./EcommerceHero";
 import EcommerceEscrowFlowDiagram from "./EscrowFlowDiagram";
-import EcommerceStellarImpactCards from "./StellarImpactCards";
 import EcommerceCodeIntegrationShowcase from "./CodeIntegrationShowcase";
-import { featureCards } from "./data";
+import {
+  featureCards,
+  stellarImpactCardsData,
+  stellarImpactSummary,
+} from "./data";
 
+import StellarImpactCards from "../shared/StellarImpactCards";
 import {
   FeaturesGrid,
   MetricsSection,
@@ -32,7 +36,12 @@ export default function EcommerceSection({
       <FeaturesGrid features={featureCards} />
 
       <MetricsSection>
-        <EcommerceStellarImpactCards />
+        <StellarImpactCards
+          variant="detailed"
+          cards={stellarImpactCardsData}
+          toggleId="ecommerce"
+          summaryContent={{ offerhub: stellarImpactSummary }}
+        />
       </MetricsSection>
 
       <ArchitectureSection>

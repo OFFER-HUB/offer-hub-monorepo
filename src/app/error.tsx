@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 
 export default function Error({
@@ -11,17 +11,19 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
         className="w-full max-w-md"
       >
         {/* Floating card */}
         <motion.div
-          animate={{ y: [0, -12, 0] }}
+          animate={shouldReduceMotion ? {} : { y: [0, -12, 0] }}
           transition={{
             duration: 4,
             ease: "easeInOut" as const,

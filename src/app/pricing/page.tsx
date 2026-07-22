@@ -6,12 +6,23 @@ import type { ComponentType } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import LoadingBar from "@/components/ui/LoadingBar";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
   description:
     "OFFER-HUB pricing: open source core for free, free self-hosting, and enterprise support available on request.",
-};
+  keywords: [
+    "pricing",
+    "open source",
+    "self-hosting",
+    "enterprise",
+    "escrow pricing",
+    "OFFER-HUB",
+  ],
+  path: "/pricing",
+  ogImageAlt: "OFFER-HUB Pricing — open source core, free self-hosting, enterprise support",
+});
 
 type PricingTier = {
   name: string;

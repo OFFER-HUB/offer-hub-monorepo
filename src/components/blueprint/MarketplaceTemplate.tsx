@@ -191,7 +191,7 @@ export default function MarketplaceTemplate() {
                 <button
                   key={v}
                   onClick={() => setView(v)}
-                  className="relative px-5 py-2 rounded-full text-xs font-semibold transition-colors duration-200 focus:outline-none"
+                  className="relative px-5 py-2 rounded-full text-xs font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
                   style={
                     view === v
                       ? {

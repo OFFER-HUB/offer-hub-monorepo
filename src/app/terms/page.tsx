@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import type { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { Navbar } from "@/components/layout/Navbar";
@@ -7,6 +8,23 @@ import { Footer } from "@/components/layout/Footer";
 import LoadingBar from "@/components/ui/LoadingBar";
 import { TERMS_MDX_COMPONENTS } from "@/components/terms/terms-mdx-components";
 import { TermsPageHeader } from "@/components/terms/TermsPageHeader";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Terms of Service",
+  description:
+    "The terms governing use of the OFFER-HUB platform — acceptable use, escrow responsibilities, liability, and the legal framework behind our payment orchestration.",
+  keywords: [
+    "terms of service",
+    "terms and conditions",
+    "legal",
+    "acceptable use",
+    "escrow terms",
+    "OFFER-HUB",
+  ],
+  path: "/terms",
+  ogImageAlt: "OFFER-HUB Terms of Service",
+});
 
 export default async function TermsOfServicePage() {
   const source = fs.readFileSync(

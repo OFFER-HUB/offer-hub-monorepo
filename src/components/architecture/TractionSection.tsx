@@ -72,7 +72,7 @@ export default function TractionSection() {
                 </li>
                 <li className="flex gap-3 items-start">
                   <CheckCircle2 size={16} className="text-theme-primary shrink-0 mt-0.5" />
-                  <span>BlindPay and Abroad onboarding initiated — estimated 1–2 weeks to production</span>
+                  <span>BlindPay onboarding initiated — estimated 1–2 weeks to production</span>
                 </li>
               </ul>
             </div>
@@ -93,12 +93,12 @@ export default function TractionSection() {
               </div>
               <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex items-center justify-between">
                 <span className="text-3xl md:text-4xl font-black text-theme-primary">7</span>
-                <span className="text-sm text-content-muted text-right max-w-[150px]">Countries covered by BlindPay + Abroad corridors</span>
+                <span className="text-sm text-content-muted text-right max-w-[150px]">Countries covered by BlindPay corridors</span>
               </div>
             </div>
 
             <div className="rounded-2xl bg-bg-base shadow-neu-sunken p-5 text-sm text-content-secondary leading-relaxed mt-2">
-              Traditional platforms (Upwork, Fiverr) cannot pay unbanked LATAM freelancers directly. OfferHub + Stellar + BlindPay + Abroad closes this gap: any freelancer with a mobile wallet receives USDC-settled payments in seconds, converted to local fiat via established licensed corridors.
+              Traditional platforms (Upwork, Fiverr) cannot pay unbanked LATAM freelancers directly. OfferHub + Stellar + BlindPay closes this gap: any freelancer with a mobile wallet receives USDC-settled payments in seconds, converted to local fiat via established licensed corridors.
             </div>
           </div>
 

@@ -232,6 +232,7 @@ export default function UseCasesClient() {
                   ref={(el) => setLinkRef(section.id, el)}
                   id={`nav-link-${section.id}`}
                   href={`#${section.id}`}
+                  aria-current={isActive ? "true" : undefined}
                   onClick={(e) => handleNavClick(e, section.id)}
                   onTouchStart={() => handleTouchStart(section.id)}
                   onTouchEnd={handleTouchEnd}
@@ -276,13 +277,15 @@ export default function UseCasesClient() {
           className="pt-28 pb-0 bg-transparent"
           style={{ scrollMarginTop: `${SCROLL_OFFSET}px` }}
         >
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-3">
+          <div role="tablist" className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-3">
             {USE_CASES.map((uc) => {
               const isActive = activeUseCase === uc.id;
               const UCIcon = uc.icon;
               return (
                 <button
                   key={uc.id}
+                  role="tab"
+                  aria-selected={isActive}
                   onClick={() => handleUseCaseSwitch(uc.id)}
                   className={cn(
                     "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold",

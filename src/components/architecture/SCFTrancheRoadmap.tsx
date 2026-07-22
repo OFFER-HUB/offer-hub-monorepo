@@ -19,14 +19,13 @@ gantt
     SWK Wallet Connection + Balance Display    :t1a, 2026-07-01, 2026-09-01
     Wallet-Based Auth (hybrid)                 :t1b, 2026-08-01, 2026-09-01
 
-  section T2 — Testnet: Core Integrations ($24K)
+  section T2 — Testnet: Core Integrations ($19.5K)
     Soroban Client-Side Signing (SWK)          :t2a, 2026-09-01, 2026-10-20
     BlindPay — 7 LATAM Corridors               :t2b, 2026-09-01, 2026-10-20
-    Abroad — Nequi/Daviplata/Bre-B/Pix         :t2c, 2026-09-15, 2026-10-20
     Off-ramp Orchestration + Webhooks          :t2d, 2026-09-15, 2026-10-20
     E2E Integration Testing                    :t2e, 2026-10-01, 2026-10-20
 
-  section T3 — Mainnet Launch & OS Adapters ($32K)
+  section T3 — Mainnet Launch & OS Adapters ($30.5K)
     Horizon → Stellar RPC Migration            :t3a, 2026-10-20, 2026-12-05
     Mainnet Launch + Monitoring                :t3b, 2026-10-20, 2026-12-05
     Open-Source Integration Adapters           :t3c, 2026-11-15, 2026-12-05
@@ -43,14 +42,14 @@ gantt
             SCF Build #44 Roadmap
           </h2>
           <p className="text-content-secondary max-w-2xl text-lg mb-8">
-            Detailed timeline for the execution of our $80,000 SCF Build Award milestones.
+            Detailed timeline for the execution of our $74,000 SCF Build Award milestones.
           </p>
         </div>
 
         <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
           <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
           <p className="text-sm text-content-secondary leading-relaxed">
-            Three tranches, each tied to verifiable on-chain or functional deliverables. Tranche 1 ships the wallet connection layer. Tranche 2 completes all three SCF integrations on testnet. Tranche 3 migrates to Stellar RPC, launches on mainnet, records 10 live transactions as proof, and open-sources the integration adapters.
+            Three tranches, each tied to verifiable on-chain or functional deliverables. Tranche 1 ships the wallet connection layer. Tranche 2 completes both SCF integrations on testnet. Tranche 3 migrates to Stellar RPC, launches on mainnet, records 10 live transactions as proof, and open-sources the integration adapters.
           </p>
         </div>
 
@@ -99,27 +98,27 @@ gantt
                   <td className="py-4 px-6 text-content-secondary">Sept 1, 2026</td>
                   <td className="py-4 px-6 text-content-secondary">$16,000</td>
                   <td className="py-4 px-6 text-content-secondary">$16,000</td>
-                  <td className="py-4 px-6 text-content-secondary">20%</td>
+                  <td className="py-4 px-6 text-content-secondary">22%</td>
                 </tr>
                 <tr className="border-b border-[var(--color-border)]">
                   <td className="py-4 px-6 font-medium text-content-primary">T2 — Testnet: Core Integrations</td>
                   <td className="py-4 px-6 text-content-secondary">Oct 20, 2026</td>
-                  <td className="py-4 px-6 text-content-secondary">$24,000</td>
-                  <td className="py-4 px-6 text-content-secondary">$24,000</td>
-                  <td className="py-4 px-6 text-content-secondary">30%</td>
+                  <td className="py-4 px-6 text-content-secondary">$19,500</td>
+                  <td className="py-4 px-6 text-content-secondary">$19,500</td>
+                  <td className="py-4 px-6 text-content-secondary">26%</td>
                 </tr>
                 <tr className="border-b border-[var(--color-border)]">
                   <td className="py-4 px-6 font-medium text-content-primary">T3 — Mainnet Launch & OS Adapters</td>
                   <td className="py-4 px-6 text-content-secondary">Dec 5, 2026</td>
-                  <td className="py-4 px-6 text-content-secondary">$32,000</td>
-                  <td className="py-4 px-6 text-content-secondary">$32,000</td>
-                  <td className="py-4 px-6 text-content-secondary">40%</td>
+                  <td className="py-4 px-6 text-content-secondary">$30,500</td>
+                  <td className="py-4 px-6 text-content-secondary">$30,500</td>
+                  <td className="py-4 px-6 text-content-secondary">41%</td>
                 </tr>
                 <tr className="font-bold">
                   <td className="py-4 px-6 text-theme-primary">Total</td>
                   <td className="py-4 px-6 text-theme-primary"></td>
-                  <td className="py-4 px-6 text-theme-primary">$80,000</td>
-                  <td className="py-4 px-6 text-theme-primary">$80,000</td>
+                  <td className="py-4 px-6 text-theme-primary">$74,000</td>
+                  <td className="py-4 px-6 text-theme-primary">$74,000</td>
                   <td className="py-4 px-6 text-theme-primary">100%</td>
                 </tr>
               </tbody>

@@ -1,0 +1,96 @@
+<FeaturesGrid>
+  <FeatureCard
+    title="Data Collection Policy"
+    description="We collect information you voluntarily provide when creating an account, setting up your marketplace, or contacting support — including your name, email address, business details, and payment information. We also automatically collect technical data such as IP addresses, browser type, device identifiers, and interaction logs to ensure the stability, security, and performance of Offer Hub."
+    iconName="ShieldCheck"
+    large={false}
+  />
+  <FeatureCard
+    title="Cookies"
+    description="We use essential cookies to keep you logged in and maintain your session. With your consent, we may use analytics cookies to understand how users navigate the platform. These are never used for advertising. You can manage your preferences at any time via your browser settings or our cookie preference center."
+    iconName="Cookie"
+    large={false}
+  />
+  <FeatureCard
+    title="Third-Party Services"
+    description="Offer Hub integrates with carefully selected third-party services. Payment processing is handled by PCI-compliant providers — we never store raw card data. Infrastructure providers may process your data under strict agreements aligned with GDPR. We do not sell your data to third parties, nor share it with advertisers."
+    iconName="Link2"
+    large={false}
+  />
+</FeaturesGrid>
+
+<div className="mt-24 mb-24 animate-fadeInUp">
+  <div className="flex flex-col gap-6 mb-12">
+    <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-content-primary">
+      Third-Party <span className="text-theme-primary">Data Processors</span>
+    </h2>
+    <p className="text-lg font-medium text-content-secondary max-w-3xl leading-relaxed">
+      To provide our services, we share limited data with the following third-party processors. Each processor is carefully vetted and processes data only for specific, disclosed purposes.
+    </p>
+  </div>
+
+  <ProcessorsGrid>
+    <ProcessorCard
+      name="Supabase"
+      purpose="Database storage and user authentication"
+      data="Email, hashed passwords, profile information, and application state metrics."
+      region="Data stored in EU or US depending on project region."
+      link="https://supabase.com/privacy"
+    />
+    <ProcessorCard
+      name="ipapi.co"
+      purpose="IP-based geolocation and security monitoring"
+      data="User IP address (collected on every page view to determine region and prevent abuse)."
+      link="https://ipapi.co/privacy/"
+    />
+    <ProcessorCard
+      name="GitHub"
+      purpose="Public API for fetching contributor and repository data"
+      data="GitHub usernames and public profile information associated with contributions."
+      link="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
+      purpose="Fiat-to-crypto payment processing and balance management"
+      data="User identifiers, transaction amounts, and currency preferences."
+      link="https://www.airtm.com/en/privacy-policy/"
+    />
+    <ProcessorCard
+      name="Trustless Work / Stellar"
+      purpose="Blockchain-based escrow and transaction settlement"
+      data="Public wallet addresses and transaction metadata (stored immutably on-chain)."
+      link="https://trustlesswork.com/privacy"
+    />
+  </ProcessorsGrid>
+</div>
+
+<ContactSection />
+
+<div className="mt-16">
+  <div className="text-center mb-10 animate-fadeInUp">
+    <p className="text-[11px] font-black uppercase tracking-[0.4em] mb-3 text-theme-primary">
+      GDPR / CCPA
+    </p>
+    <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-content-primary">
+      Your Data Rights
+    </h2>
+    <p className="mt-3 text-base font-medium max-w-xl mx-auto text-content-secondary leading-relaxed">
+      Under GDPR Articles 17 and 20, you may request deletion or export of your personal data at any time.
+    </p>
+  </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+    <DataRightsForm
+      title="Export My Data"
+      description="Receive a copy of all personal data we hold for your email address (GDPR Article 20 — data portability)."
+      iconName="Download"
+      endpoint="/api/privacy/export"
+      successMessage="Your data has been returned below. Save this response for your records."
+      buttonLabel="Export my data"
+    />
+    <DataRightsForm
+      title="Delete My Data"
+      description="Permanently remove all personal data associated with your email address (GDPR Article 17 — right to erasure)."
+      iconName="Trash2"
+      endpoint="/api/privacy/delete"
+      buttonLabel="Delete my data"
+      destructive
+    />
+  </div>
+</div>

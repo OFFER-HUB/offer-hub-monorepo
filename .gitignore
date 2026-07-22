@@ -9,6 +9,9 @@ out/
 build/
 dist/
 
+# Test coverage
+coverage/
+
 # Environment
 .env
 .env.local
@@ -20,6 +23,7 @@ yarn-debug.log*
 
 # Misc
 .DS_Store
+.claude/
 *.pem
 *.tsbuildinfo
 temp_css.txt
