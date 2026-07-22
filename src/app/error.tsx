@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 
+
 export default function Error({
   error,
   reset,
@@ -17,7 +18,7 @@ export default function Error({
     <main className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+         animate={shouldReduceMotion ? {} : { scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
         transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
         className="w-full max-w-md"
       >
