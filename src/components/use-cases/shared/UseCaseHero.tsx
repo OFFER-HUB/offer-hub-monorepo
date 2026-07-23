@@ -2,50 +2,60 @@
 
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowUpRight, FileText, Orbit, Sparkles } from "lucide-react";
+import { ArrowUpRight, FileText, Sparkles } from "lucide-react";
 
-const HERO_METADATA = [
-  {
-    label: "Target",
-    value: "B2B / Freelance",
-    accent: "Marketplace Scope",
-  },
-  {
-    label: "Provider",
-    value: "Stellar (USDC)",
-    accent: "Settlement Layer",
-  },
-  {
-    label: "Features",
-    value: "Milestones, Escrow, Global Settlement",
-    accent: "Release Logic",
-  },
-] as const;
+/* ── Types ── */
 
-const NETWORK_NODES = [
-  { id: "origin", x: 16, y: 44, size: 12, delay: 0 },
-  { id: "north", x: 34, y: 22, size: 8, delay: 0.3 },
-  { id: "core", x: 50, y: 38, size: 14, delay: 0.6 },
-  { id: "east", x: 72, y: 26, size: 9, delay: 0.9 },
-  { id: "south", x: 64, y: 66, size: 11, delay: 1.2 },
-  { id: "settlement", x: 86, y: 50, size: 10, delay: 1.5 },
-] as const;
+type IconComponent = React.FC<{ size?: number; className?: string }>;
 
-const NETWORK_LINKS = [
-  ["origin", "north"],
-  ["origin", "core"],
-  ["north", "core"],
-  ["core", "east"],
-  ["core", "south"],
-  ["east", "settlement"],
-  ["south", "settlement"],
-] as const;
+/** A single "At a glance" metadata card in the right-hand column. */
+export interface UseCaseHeroStat {
+  label: string;
+  value: string;
+  accent: string;
+}
 
-const TECH_DOC_URL =
-  "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md#use-case-1-freelance-platform";
+/** A node in the animated background network graph. */
+export interface HeroNode {
+  id: string;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+}
 
-function NetworkPattern() {
-  const nodeMap = new Map(NETWORK_NODES.map((node) => [node.id, node]));
+/** A link between two nodes, referenced by node id. */
+export type HeroLink = readonly [string, string];
+
+export interface UseCaseHeroProps {
+  /** Unique per use case — used for the SVG line gradient id. */
+  gradientId: string;
+  /** Pill text above the headline, e.g. "CASE STUDY: LVL-1 REAL-WORLD". */
+  badgeLabel: string;
+  headline: string;
+  subheadline: string;
+  /** Absolute URL for the primary CTA (opens in a new tab). */
+  docsUrl: string;
+  /** Primary CTA label. Defaults to "Technical Doc". */
+  ctaLabel?: string;
+  /** Icon + label for the sunken pill next to the CTA. */
+  footerIcon: IconComponent;
+  footerLabel: string;
+  /** The three "At a glance" cards. */
+  stats: UseCaseHeroStat[];
+  /** Background network graph nodes and their connecting links. */
+  nodes: HeroNode[];
+  links: HeroLink[];
+}
+
+/* ── Animated background network ── */
+
+function NetworkPattern({
+  gradientId,
+  nodes,
+  links,
+}: Pick<UseCaseHeroProps, "gradientId" | "nodes" | "links">) {
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -65,14 +75,14 @@ function NetworkPattern() {
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="freelance-network-line" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="rgba(20,154,155,0.08)" />
             <stop offset="50%" stopColor="rgba(20,154,155,0.32)" />
             <stop offset="100%" stopColor="rgba(20,154,155,0.12)" />
           </linearGradient>
         </defs>
 
-        {NETWORK_LINKS.map(([from, to]) => {
+        {links.map(([from, to]) => {
           const source = nodeMap.get(from);
           const target = nodeMap.get(to);
           if (!source || !target) return null;
@@ -84,14 +94,14 @@ function NetworkPattern() {
               y1={source.y}
               x2={target.x}
               y2={target.y}
-              stroke="url(#freelance-network-line)"
+              stroke={`url(#${gradientId})`}
               strokeWidth="0.35"
               strokeDasharray="1.8 1.8"
             />
           );
         })}
 
-        {NETWORK_NODES.map((node) => (
+        {nodes.map((node) => (
           <g key={node.id}>
             <motion.circle
               cx={node.x}
@@ -128,7 +138,25 @@ function NetworkPattern() {
   );
 }
 
-export default function FreelanceHero() {
+/**
+ * Shared hero for every use-case page (Freelance, eCommerce, DAO Payroll,
+ * Real Estate, Service Platforms). All per-use-case content — copy, stats,
+ * CTA link, footer pill, and the background network graph — is passed in as
+ * typed props from each use case's `data.tsx`.
+ */
+export default function UseCaseHero({
+  gradientId,
+  badgeLabel,
+  headline,
+  subheadline,
+  docsUrl,
+  ctaLabel = "Technical Doc",
+  footerIcon: FooterIcon,
+  footerLabel,
+  stats,
+  nodes,
+  links,
+}: UseCaseHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -145,7 +173,7 @@ export default function FreelanceHero() {
       className="relative min-h-[132vh] overflow-hidden bg-transparent"
       style={{ scrollMarginTop: "140px" }}
     >
-      <NetworkPattern />
+      <NetworkPattern gradientId={gradientId} nodes={nodes} links={links} />
 
       <div className="absolute inset-x-0 top-24 bottom-10 mx-auto max-w-7xl px-6 lg:px-8">
         <div className="sticky top-28">
@@ -168,37 +196,35 @@ export default function FreelanceHero() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-theme-primary/55" />
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-theme-primary" />
                   </span>
-                  <span>CASE STUDY: LVL-1 REAL-WORLD</span>
+                  <span>{badgeLabel}</span>
                 </motion.div>
 
                 <motion.h1
                   style={{ y: titleY }}
                   className="text-5xl font-black tracking-tight text-content-primary md:text-7xl"
                 >
-                  Orchestrating the Global Talent Economy
+                  {headline}
                 </motion.h1>
 
                 <p className="mt-8 max-w-2xl text-lg font-medium leading-relaxed text-content-secondary md:text-xl">
-                  The flagship OFFER-HUB deployment story, designed as a live study of
-                  escrow-backed freelance infrastructure: mapped payment flows,
-                  milestone controls, and global USDC settlement without custodial risk.
+                  {subheadline}
                 </p>
 
                 <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
                   <a
-                    href={TECH_DOC_URL}
+                    href={docsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold btn-neumorphic-primary"
                   >
                     <FileText size={16} />
-                    Technical Doc
+                    {ctaLabel}
                     <ArrowUpRight size={15} />
                   </a>
 
                   <div className="inline-flex items-center gap-2 rounded-xl bg-bg-base px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary shadow-neu-sunken-subtle">
-                    <Orbit size={14} className="text-theme-primary" />
-                    Deployment-grade architecture
+                    <FooterIcon size={14} className="text-theme-primary" />
+                    {footerLabel}
                   </div>
                 </div>
               </div>
@@ -209,7 +235,7 @@ export default function FreelanceHero() {
                   At a glance
                 </div>
 
-                {HERO_METADATA.map((item, index) => (
+                {stats.map((item, index) => (
                   <motion.article
                     key={item.label}
                     initial={{ opacity: 0, y: 18 }}

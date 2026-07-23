@@ -1,6 +1,50 @@
-import { Eye, Zap, DollarSign, ShieldCheck, Coins, Globe } from "lucide-react";
+import { Eye, Zap, DollarSign, ShieldCheck, Coins, Globe, Users2 } from "lucide-react";
+import type { UseCaseHeroProps } from "../shared/UseCaseHero";
 import type { DetailedMetricCard } from "../shared/StellarImpactCards";
 import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Hero content (rendered in the #overview section) ──
+export const heroData: UseCaseHeroProps = {
+  gradientId: "dao-payroll-network-line",
+  badgeLabel: "CASE STUDY: LVL-3 GOVERNANCE",
+  headline: "Trustless Payroll for Decentralized Organizations",
+  subheadline:
+    "The DAO payroll blueprint: on-chain budget allocation, contributor milestone verification, and atomic USDC distribution — with full governance auditability and zero custodial risk.",
+  docsUrl:
+    "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md",
+  footerIcon: Users2,
+  footerLabel: "On-chain DAO payroll infrastructure",
+  stats: [
+    {
+      label: "Target",
+      value: "DAO / Web3 Organization",
+      accent: "Payroll Scope",
+    },
+    { label: "Provider", value: "Stellar (USDC)", accent: "Settlement Layer" },
+    {
+      label: "Features",
+      value: "Budget Escrow, Milestone Payroll, Transparent Distribution",
+      accent: "Release Logic",
+    },
+  ],
+  nodes: [
+    { id: "treasury", x: 16, y: 44, size: 12, delay: 0 },
+    { id: "north", x: 34, y: 22, size: 8, delay: 0.3 },
+    { id: "core", x: 50, y: 38, size: 14, delay: 0.6 },
+    { id: "east", x: 72, y: 26, size: 9, delay: 0.9 },
+    { id: "south", x: 64, y: 66, size: 11, delay: 1.2 },
+    { id: "contrib", x: 86, y: 50, size: 10, delay: 1.5 },
+  ],
+  links: [
+    ["treasury", "north"],
+    ["treasury", "core"],
+    ["north", "core"],
+    ["core", "east"],
+    ["core", "south"],
+    ["east", "contrib"],
+    ["south", "contrib"],
+  ],
+};
 
 // ── Features grid content (rendered in the #features section) ──
 export const featureCards: FeatureCard[] = [

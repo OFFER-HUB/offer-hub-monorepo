@@ -1,6 +1,50 @@
 import { Zap, ShieldCheck, Eye, Briefcase, Globe } from "lucide-react";
+import type { UseCaseHeroProps } from "../shared/UseCaseHero";
 import type { SimpleMetricCard } from "../shared/StellarImpactCards";
 import type { FeatureCard } from "../shared/SectionLayout";
+
+// ── Hero content (rendered in the #overview section) ──
+export const heroData: UseCaseHeroProps = {
+  gradientId: "service-platforms-network-line",
+  badgeLabel: "CASE STUDY: LVL-5 ENTERPRISE",
+  headline: "Milestone-Locked Escrow for Professional Services",
+  subheadline:
+    "The professional services platform blueprint: SOW-based escrow, milestone-gated releases, structured dispute resolution, and instant settlement — for legal, consulting, design, and managed services.",
+  docsUrl:
+    "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md#use-case-3-service-marketplace",
+  footerIcon: Briefcase,
+  footerLabel: "Enterprise-grade service escrow",
+  stats: [
+    {
+      label: "Target",
+      value: "B2B / Service Marketplace",
+      accent: "Platform Scope",
+    },
+    { label: "Provider", value: "Stellar (USDC)", accent: "Settlement Layer" },
+    {
+      label: "Features",
+      value: "SOW Escrow, Milestone Gates, On-chain Disputes",
+      accent: "Release Logic",
+    },
+  ],
+  nodes: [
+    { id: "client", x: 16, y: 44, size: 12, delay: 0 },
+    { id: "north", x: 34, y: 22, size: 8, delay: 0.3 },
+    { id: "core", x: 50, y: 38, size: 14, delay: 0.6 },
+    { id: "east", x: 72, y: 26, size: 9, delay: 0.9 },
+    { id: "south", x: 64, y: 66, size: 11, delay: 1.2 },
+    { id: "provider", x: 86, y: 50, size: 10, delay: 1.5 },
+  ],
+  links: [
+    ["client", "north"],
+    ["client", "core"],
+    ["north", "core"],
+    ["core", "east"],
+    ["core", "south"],
+    ["east", "provider"],
+    ["south", "provider"],
+  ],
+};
 
 // ── Features grid content (rendered in the #features section) ──
 export const featureCards: FeatureCard[] = [

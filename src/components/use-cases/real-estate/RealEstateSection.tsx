@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
 
-import RealEstateHero from "./RealEstateHero";
 import EscrowFlowDiagram from "../shared/EscrowFlowDiagram";
 import { ESCROW_STEPS } from "./escrow-steps";
 import {
+  heroData,
   featureCards,
   stellarImpactCardsData,
   stellarImpactSummary,
 } from "./data";
 import { description, sdkCards, tabs } from "./code-tabs";
 
+import UseCaseHero from "../shared/UseCaseHero";
 import StellarImpactCards from "../shared/StellarImpactCards";
 import CodeIntegrationShowcase from "../shared/CodeIntegrationShowcase";
 import {
@@ -31,7 +32,7 @@ export default function RealEstateSection({
 }) {
   return (
     <>
-      <RealEstateHero />
+      <UseCaseHero {...heroData} />
 
       {stickyNav}
 
