@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send, User, Mail, MessageSquare, Building2, CheckCircle2, AlertCircle } from "lucide-react";
 import { submitContactInquiry } from "@/services/contact";
+import { isValidEmail } from "@/utils/email-validation";
 
 interface ContactFormData {
   company: string;
@@ -35,10 +36,7 @@ export function ContactForm() {
     if (!formData.company.trim()) next.company = "Company name is required";
     if (!formData.name.trim()) next.name = "Contact name is required";
     if (!formData.email.trim()) next.email = "Work email is required";
-    else {
-      const re = /^\S+@\S+\.\S+$/;
-      if (!re.test(formData.email)) next.email = "Enter a valid work email";
-    }
+    else if (!isValidEmail(formData.email)) next.email = "Enter a valid work email";
     return next;
   };
 

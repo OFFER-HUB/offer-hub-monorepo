@@ -3,17 +3,17 @@
   "version": "1.0.0",
   "description": "MCP server that exposes OFFER-HUB documentation to AI assistants",
   "type": "module",
-  "main": "./build/index.js",
+  "main": "./build/mcp/src/index.js",
   "bin": {
-    "offer-hub-docs": "./build/index.js"
+    "offer-hub-docs": "./build/mcp/src/index.js"
   },
   "files": [
     "build"
   ],
   "scripts": {
-    "build": "tsc && chmod +x build/index.js",
+    "build": "tsc && chmod +x build/mcp/src/index.js",
     "dev": "tsc --watch",
-    "start": "node build/index.js",
+    "start": "node build/mcp/src/index.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

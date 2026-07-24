@@ -1,13 +1,15 @@
-import { readFileSync, readdirSync, statSync, existsSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join, relative, basename, dirname } from "path";
 import { fileURLToPath } from "url";
 import matter from "gray-matter";
 
+import { collectMdxFiles, fileToSlug } from "../../src/lib/docs-indexing.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Navigate from mcp/build/ to project root
-const PROJECT_ROOT = join(__dirname, "..", "..");
+// Navigate from mcp/build/mcp/src/ to project root (4 levels up)
+const PROJECT_ROOT = join(__dirname, "..", "..", "..", "..");
 
 interface DocPage {
   title: string;
@@ -31,39 +33,14 @@ interface DocSection {
 
 const docs: Map<string, DocPage> = new Map();
 
-function findFiles(dir: string, extension: string): string[] {
-  const files: string[] = [];
-
-  if (!existsSync(dir)) {
-    return files;
-  }
-
-  const entries = readdirSync(dir);
-
-  for (const entry of entries) {
-    const fullPath = join(dir, entry);
-    const stat = statSync(fullPath);
-
-    if (stat.isDirectory()) {
-      files.push(...findFiles(fullPath, extension));
-    } else if (entry.endsWith(extension)) {
-      files.push(fullPath);
-    }
-  }
-
-  return files;
-}
-
 function parseDocument(filePath: string, baseDir: string, source: "mdx" | "md"): DocPage | null {
   try {
     const fileContent = readFileSync(filePath, "utf-8");
     const { data: frontmatter, content } = matter(fileContent);
 
-    // Generate slug from file path
+    // Generate slug from file path using shared utility
     const relativePath = relative(baseDir, filePath);
-    const slug = relativePath
-      .replace(/\.(mdx?|md)$/, "")
-      .replace(/\\/g, "/"); // Normalize Windows paths
+    const slug = fileToSlug(relativePath);
 
     // Extract title from frontmatter or first heading or filename
     let title = frontmatter.title;
@@ -113,7 +90,7 @@ export async function loadDocumentation(): Promise<void> {
 
   // Load MDX files from content/docs/
   const mdxDir = join(PROJECT_ROOT, "content", "docs");
-  const mdxFiles = findFiles(mdxDir, ".mdx");
+  const mdxFiles = collectMdxFiles(mdxDir, "", ".mdx").map((rel) => join(mdxDir, rel));
 
   for (const file of mdxFiles) {
     const doc = parseDocument(file, mdxDir, "mdx");
@@ -124,7 +101,7 @@ export async function loadDocumentation(): Promise<void> {
 
   // Load MD files from docs/
   const mdDir = join(PROJECT_ROOT, "docs");
-  const mdFiles = findFiles(mdDir, ".md");
+  const mdFiles = collectMdxFiles(mdDir, "", ".md").map((rel) => join(mdDir, rel));
 
   for (const file of mdFiles) {
     const doc = parseDocument(file, mdDir, "md");

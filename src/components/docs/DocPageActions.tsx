@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Download, FileCode2, FileText, Github } from "lucide-react";
 
+import { downloadBlob } from "@/utils/downloadBlob";
 import { ExportJSON } from "@/components/docs/ExportJSON";
 
 interface DocPageActionsProps {
@@ -16,18 +17,6 @@ const DOCS_REPO_BASE = "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/mai
 
 function dateStamp() {
   return new Date().toISOString().split("T")[0];
-}
-
-function downloadBlob(filename: string, content: string, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
 }
 
 export function DocPageActions({ slug, title, description, markdownContent }: DocPageActionsProps) {
