@@ -2,35 +2,15 @@
 
 import { useState } from "react";
 import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
-import MermaidDiagram from "./MermaidDiagram";
+import MermaidDiagram from "@/components/shared/MermaidDiagram";
+import { SYSTEM_ARCHITECTURE_CHART } from "./system-architecture.charts";
 import DiagramZoomModal from "./DiagramZoomModal";
 import { Info, Maximize2 } from "lucide-react";
 
 export default function SystemArchitectureDiagram() {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
 
-  const chart = `
-flowchart TD
-    %% Node Styling
-    classDef highlight fill:#149A9B,color:#fff,stroke:#0d7377,stroke-width:2px;
-    classDef backend fill:#002333,color:#fff,stroke:#001522,stroke-width:2px;
-    classDef subtle fill:#F1F3F7,color:#19213D,stroke:#d1d5db,stroke-width:1px;
-
-    Client["Client Layer<br/><small>Next.js 15 · React 19 · Zustand · NextAuth v5</small>"]:::highlight
-    Wallet["Wallet Layer<br/><small>Stellar Wallets Kit · Freighter · Lobstr · xBull</small>"]:::highlight
-    API["NestJS API<br/><small>Auth · Orders · Escrow · Payments · Webhooks · Off-ramp</small>"]:::backend
-    Data["Data Layer<br/><small>PostgreSQL · Redis · BullMQ</small>"]:::subtle
-    Stellar["Stellar<br/><small>Soroban Contracts · TrustlessWork · USDC</small>"]:::subtle
-    Offramp["Off-ramp<br/><small>BlindPay (7 corridors)</small>"]:::highlight
-
-    Client -->|HTTPS / REST| API
-    Client -->|Client-side Soroban signing| Wallet
-    API -->|Prisma ORM| Data
-    API -->|Stellar RPC| Stellar
-    Stellar -->|Webhook / on-chain event| API
-    API -->|API / Webhooks| Offramp
-    Wallet -.->|Sign & Submit| Stellar
-  `;
+  const chart = SYSTEM_ARCHITECTURE_CHART;
 
   return (
     <BlueprintMotionSection id="system" className="px-6 py-24 bg-transparent">
@@ -57,7 +37,7 @@ flowchart TD
           </div>
 
           <div className="relative rounded-[2rem] bg-bg-base shadow-neu-sunken p-6 w-full overflow-x-auto">
-            <MermaidDiagram chart={chart} className="w-full min-w-[600px]" />
+            <MermaidDiagram chart={chart} className="w-full min-w-[600px]" variant="plain" />
             <button
               onClick={() => setIsZoomOpen(true)}
               className="absolute top-4 right-4 rounded-xl bg-bg-base shadow-neu-raised-sm p-2 hover:shadow-neu-sunken transition-all z-10"
@@ -71,7 +51,7 @@ flowchart TD
           </p>
 
           <DiagramZoomModal title="System Architecture" isOpen={isZoomOpen} onClose={() => setIsZoomOpen(false)}>
-            <MermaidDiagram chart={chart} className="w-full" zoom />
+            <MermaidDiagram chart={chart} className="w-full" zoom variant="plain" />
           </DiagramZoomModal>
 
           <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm font-medium">

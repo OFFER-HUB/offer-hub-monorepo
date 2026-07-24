@@ -1,14 +1,8 @@
 import React from "react";
-import { Mail, Cookie, ShieldCheck, Link2 } from "lucide-react";
+import { Mail, Link2 } from "lucide-react";
 import { DataRightsForm } from "./DataRightsForm";
+import { getIcon, type IconName } from "@/lib/icon-registry";
 export { DataRightsForm };
-
-const iconMap = {
-  Mail,
-  Cookie,
-  ShieldCheck,
-  Link2,
-};
 
 export function FeatureCard({
   title,
@@ -18,10 +12,10 @@ export function FeatureCard({
 }: {
   title: string;
   description: string;
-  iconName: keyof typeof iconMap;
+  iconName: IconName;
   large?: boolean;
 }) {
-  const Icon = iconMap[iconName] || iconMap.ShieldCheck;
+  const Icon = getIcon(iconName, "ShieldCheck");
   return (
     <div
       className={`${

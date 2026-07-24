@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, Trash2, Download } from "lucide-react";
-
-const iconMap = {
-  ShieldCheck,
-  Trash2,
-  Download,
-};
+import { getIcon, type IconName } from "@/lib/icon-registry";
 
 type RequestStatus = { ok: boolean; message: string } | null;
 
@@ -22,7 +16,7 @@ export function DataRightsForm({
 }: {
   title: string;
   description: string;
-  iconName: keyof typeof iconMap;
+  iconName: IconName;
   endpoint: string;
   successMessage?: string;
   buttonLabel: string;
@@ -31,7 +25,7 @@ export function DataRightsForm({
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<RequestStatus>(null);
   const [loading, setLoading] = useState(false);
-  const Icon = iconMap[iconName] || ShieldCheck;
+  const Icon = getIcon(iconName, "ShieldCheck");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

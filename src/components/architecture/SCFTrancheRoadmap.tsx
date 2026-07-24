@@ -2,34 +2,15 @@
 
 import { useState } from "react";
 import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
-import MermaidDiagram from "./MermaidDiagram";
+import MermaidDiagram from "@/components/shared/MermaidDiagram";
+import { SCF_GANTT_CHART } from "./scf-tranche-roadmap.charts";
 import DiagramZoomModal from "./DiagramZoomModal";
 import { Info, Maximize2 } from "lucide-react";
 
 export default function SCFTrancheRoadmap() {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
 
-  const ganttChart = `
-gantt
-  title OfferHub SCF Build #44 — Delivery Roadmap
-  dateFormat YYYY-MM-DD
-  axisFormat %b %d
-
-  section T1 — MVP: SWK Connection & Auth ($16K)
-    SWK Wallet Connection + Balance Display    :t1a, 2026-07-01, 2026-09-01
-    Wallet-Based Auth (hybrid)                 :t1b, 2026-08-01, 2026-09-01
-
-  section T2 — Testnet: Core Integrations ($19.5K)
-    Soroban Client-Side Signing (SWK)          :t2a, 2026-09-01, 2026-10-20
-    BlindPay — 7 LATAM Corridors               :t2b, 2026-09-01, 2026-10-20
-    Off-ramp Orchestration + Webhooks          :t2d, 2026-09-15, 2026-10-20
-    E2E Integration Testing                    :t2e, 2026-10-01, 2026-10-20
-
-  section T3 — Mainnet Launch & OS Adapters ($30.5K)
-    Horizon → Stellar RPC Migration            :t3a, 2026-10-20, 2026-12-05
-    Mainnet Launch + Monitoring                :t3b, 2026-10-20, 2026-12-05
-    Open-Source Integration Adapters           :t3c, 2026-11-15, 2026-12-05
-  `;
+  const ganttChart = SCF_GANTT_CHART;
 
   return (
     <BlueprintMotionSection id="roadmap" className="px-6 py-24 bg-bg-base">
@@ -55,7 +36,7 @@ gantt
 
         <div className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 p-6 md:p-10 mb-12">
           <div className="relative rounded-[2rem] bg-bg-base shadow-neu-sunken p-6 overflow-x-auto w-full">
-            <MermaidDiagram chart={ganttChart} className="w-full min-w-[800px]" />
+            <MermaidDiagram chart={ganttChart} className="w-full min-w-[800px]" variant="plain" />
             <button
               onClick={() => setIsZoomOpen(true)}
               className="absolute top-4 right-4 rounded-xl bg-bg-base shadow-neu-raised-sm p-2 hover:shadow-neu-sunken transition-all z-10"
@@ -69,7 +50,7 @@ gantt
           </p>
 
           <DiagramZoomModal title="SCF Build #44 Roadmap" isOpen={isZoomOpen} onClose={() => setIsZoomOpen(false)}>
-            <MermaidDiagram chart={ganttChart} className="w-full" zoom />
+            <MermaidDiagram chart={ganttChart} className="w-full" zoom variant="plain" />
           </DiagramZoomModal>
         </div>
 

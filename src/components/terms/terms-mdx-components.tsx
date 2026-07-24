@@ -1,7 +1,13 @@
 import type { MDXComponents } from "mdx/types";
 import { TermsSection } from "./TermsSection";
+import { BASE_MDX_COMPONENTS } from "@/components/mdx/base-mdx-components";
 
+/**
+ * Terms MDX map = shared base prose + TermsSection override.
+ * Keeps list/heading styling aligned with docs while preserving terms chrome.
+ */
 export const TERMS_MDX_COMPONENTS: MDXComponents = {
+  ...BASE_MDX_COMPONENTS,
   TermsSection,
 
   h3: ({ children }) => (

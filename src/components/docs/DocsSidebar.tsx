@@ -3,12 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Settings, Code, Box, Layers,
-  Shield, Workflow, FileText, Zap, Compass, Rocket, Home
-} from "lucide-react";
+import { Home, Rocket } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { SidebarSection } from "@/lib/mdx";
+import { getIcon, iconNameForDocsSlug } from "@/lib/icon-registry";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -20,20 +18,9 @@ interface DocsSidebarProps {
 }
 
 const getIconForSlug = (slug: string, isActive: boolean) => {
-  const s = slug.toLowerCase();
   const iconClass = isActive ? "text-theme-primary" : "text-content-secondary";
-
-  if (s.includes("api") || s.includes("dev") || s.includes("code")) return <Code size={16} className={iconClass} />;
-  if (s.includes("start") || s.includes("intro") || s.includes("welcome")) return <Rocket size={16} className={iconClass} />;
-  if (s.includes("escrow") || s.includes("contract")) return <Shield size={16} className={iconClass} />;
-  if (s.includes("sdk") || s.includes("tool")) return <Box size={16} className={iconClass} />;
-  if (s.includes("config") || s.includes("setting")) return <Settings size={16} className={iconClass} />;
-  if (s.includes("flow") || s.includes("lifecycle")) return <Workflow size={16} className={iconClass} />;
-  if (s.includes("helper") || s.includes("util")) return <Zap size={16} className={iconClass} />;
-  if (s.includes("design") || s.includes("ui") || s.includes("view")) return <Layers size={16} className={iconClass} />;
-  if (s.includes("network") || s.includes("stellar")) return <Compass size={16} className={iconClass} />;
-
-  return <FileText size={16} className={iconClass} />;
+  const Icon = getIcon(iconNameForDocsSlug(slug));
+  return <Icon size={16} className={iconClass} />;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
