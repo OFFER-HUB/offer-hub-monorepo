@@ -1,29 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { ChevronUp } from "lucide-react";
+import { useScrollProgress } from "@/hooks/useScrollProgress";
 
 const SCROLL_THRESHOLD = 400;
 
 export function BackToTopButton() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    let ticking = false;
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          setIsVisible(window.scrollY > SCROLL_THRESHOLD);
-          ticking = false;
-        });
-      }
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const scrollY = useScrollProgress();
+  const isVisible = scrollY > SCROLL_THRESHOLD;
 
   const scrollToTop = useCallback(() => {
     const prefersReducedMotion = window.matchMedia(
