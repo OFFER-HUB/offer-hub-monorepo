@@ -116,6 +116,11 @@ export function getSidebarNav(): SidebarSection[] {
   return sections.sort((a, b) => (a.links[0]?.order ?? 99) - (b.links[0]?.order ?? 99));
 }
 
+/** Read a static MDX file's raw content by path relative to the project root */
+export function getStaticMdxContent(relativePath: string): string {
+  return fs.readFileSync(path.join(process.cwd(), relativePath), "utf-8");
+}
+
 /** Extract h2 and h3 headings from raw MDX content for Table of Contents */
 export function extractHeadings(content: string): Heading[] {
   const headings: Heading[] = [];

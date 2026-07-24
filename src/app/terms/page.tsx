@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import type { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
@@ -9,6 +7,7 @@ import LoadingBar from "@/components/ui/LoadingBar";
 import { TERMS_MDX_COMPONENTS } from "@/components/terms/terms-mdx-components";
 import { TermsPageHeader } from "@/components/terms/TermsPageHeader";
 import { buildPageMetadata } from "@/lib/seo";
+import { getStaticMdxContent } from "@/lib/mdx";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Terms of Service",
@@ -27,10 +26,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function TermsOfServicePage() {
-  const source = fs.readFileSync(
-    path.join(process.cwd(), "src/content/terms.mdx"),
-    "utf-8"
-  );
+  const source = getStaticMdxContent("src/content/terms.mdx");
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-base text-content-primary">

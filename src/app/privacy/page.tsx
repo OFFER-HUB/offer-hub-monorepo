@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -7,6 +5,7 @@ import LoadingBar from "@/components/ui/LoadingBar";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { MDX_PRIVACY_COMPONENTS } from "@/components/mdx/PrivacyComponents";
 import { buildPageMetadata } from "@/lib/seo";
+import { getStaticMdxContent } from "@/lib/mdx";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Privacy Policy",
@@ -25,7 +24,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function PrivacyPage() {
-  const content = fs.readFileSync(path.join(process.cwd(), "src/content/privacy.mdx"), "utf-8");
+  const content = getStaticMdxContent("src/content/privacy.mdx");
 
   return (
     <div className="min-h-screen flex flex-col">
