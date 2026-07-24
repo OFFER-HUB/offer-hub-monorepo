@@ -1,4 +1,5 @@
 import { SectionHeading } from "@/components/community/SectionHeading";
+import { GITHUB_REPO_URL } from "@/constants/github";
 
 interface Contributor {
   name: string;
@@ -69,7 +70,7 @@ export function ContributorGrid({ contributors }: ContributorGridProps) {
 
         <div className="mt-12 text-center">
           <a
-            href="https://github.com/OFFER-HUB/offer-hub-monorepo/graphs/contributors"
+                        href={`${GITHUB_REPO_URL}/graphs/contributors`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-[400ms] ease-out border border-theme-primary text-theme-primary hover:shadow-neu-raised-hover"

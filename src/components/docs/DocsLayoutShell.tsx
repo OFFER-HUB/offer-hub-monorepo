@@ -12,9 +12,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Breadcrumb } from "@/components/docs/Breadcrumb";
 import { FileCode2, FileText, Github } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { SITE_URL_FALLBACK } from "@/constants/site";
 
 // Use production URL for AI assistant links
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://offer-hub.tech";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
 
 interface DocsLayoutShellProps {
   nav: SidebarSection[];
@@ -237,4 +238,3 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
     </div>
   );
 }
-

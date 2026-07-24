@@ -1,11 +1,12 @@
 import { Pencil } from 'lucide-react';
+import { DOCS_EDIT_BASE } from '@/constants/github';
 
 interface EditOnGitHubProps {
   filePath: string;
 }
 
 export function EditOnGitHub({ filePath }: EditOnGitHubProps) {
-  const githubEditUrl = `https://github.com/OFFER-HUB/offer-hub-monorepo/edit/main/${filePath}`;
+  const githubEditUrl = `${DOCS_EDIT_BASE}/${filePath}`;
 
   return (
     <a

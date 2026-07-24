@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { ChevronRight, Home } from "lucide-react";
+import { SITE_URL_FALLBACK } from "@/constants/site";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://offer-hub.tech";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
 
 function formatSegment(segment: string): string {
   return decodeURIComponent(segment)

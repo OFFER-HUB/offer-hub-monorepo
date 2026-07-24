@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Download, FileCode2, FileText, Github } from "lucide-react";
 
 import { ExportJSON } from "@/components/docs/ExportJSON";
+import { DOCS_REPO_BASE } from "@/constants/github";
 import { logger } from "@/utils/logger";
 
 interface DocPageActionsProps {
@@ -12,8 +13,6 @@ interface DocPageActionsProps {
   description?: string;
   markdownContent: string;
 }
-
-const DOCS_REPO_BASE = "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/content/docs";
 
 function dateStamp() {
   return new Date().toISOString().split("T")[0];

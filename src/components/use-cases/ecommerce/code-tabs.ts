@@ -4,6 +4,7 @@ import type {
   CodeTab,
   SdkCard,
 } from "@/components/use-cases/shared/CodeIntegrationShowcase";
+import { DOCS_REPO_BLOB_BASE } from "@/constants/github";
 
 export const description: CodeIntegrationShowcaseProps["description"] =
   "handles order creation, escrow funding, and delivery confirmation in three explicit calls — no manual fund management required.";
@@ -16,7 +17,7 @@ export const tabs: CodeTab[] = [
     icon: Server,
     description: "Order creation and escrow funding on the server side.",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/api/overview.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/api/overview.md`,
     docLabel: "API Reference",
     code: `import { OfferHub } from "@offerhub/sdk";
 
@@ -45,7 +46,7 @@ await oh.escrows.fund(order.id, {
     description:
       "Delivery confirmation from the buyer — triggers on-chain fund release.",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/sdk/integration-guide.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/sdk/integration-guide.md`,
     docLabel: "SDK Guide",
     code: `import { OfferHub } from "@offerhub/sdk";
 

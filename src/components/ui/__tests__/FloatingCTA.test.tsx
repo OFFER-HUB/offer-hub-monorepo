@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-const STORAGE_KEY = "offer-hub-cta-dismissed";
+import { CTA_DISMISSED_KEY } from "@/constants/storage";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 describe("FloatingCTA", () => {
@@ -26,7 +26,7 @@ describe("FloatingCTA", () => {
   });
 
   it("stays hidden while the dismiss flag is within its TTL", async () => {
-    localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    localStorage.setItem(CTA_DISMISSED_KEY, Date.now().toString());
     render(<FloatingCTA />);
 
     await act(async () => {
@@ -37,7 +37,7 @@ describe("FloatingCTA", () => {
   });
 
   it("becomes visible again once the dismiss TTL has expired", async () => {
-    localStorage.setItem(STORAGE_KEY, (Date.now() - SEVEN_DAYS_MS - 1000).toString());
+    localStorage.setItem(CTA_DISMISSED_KEY, (Date.now() - SEVEN_DAYS_MS - 1000).toString());
     render(<FloatingCTA />);
 
     await act(async () => {
@@ -45,7 +45,7 @@ describe("FloatingCTA", () => {
     });
 
     expect(screen.getByText(/join the waitlist/i)).toBeInTheDocument();
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(CTA_DISMISSED_KEY)).toBeNull();
   });
 
   it("shows the CTA when the page loads with no dismiss flag set", async () => {
@@ -72,6 +72,6 @@ describe("FloatingCTA", () => {
       await vi.advanceTimersByTimeAsync(350);
     });
 
-    expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
+    expect(localStorage.getItem(CTA_DISMISSED_KEY)).not.toBeNull();
   });
 });

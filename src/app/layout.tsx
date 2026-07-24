@@ -8,6 +8,7 @@ import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import { FloatingCTA } from "@/components/ui/FloatingCTA";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { SITE_URL_FALLBACK, SITE_NAME } from "@/constants/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,8 +31,8 @@ export const viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "OFFER-HUB",
-    template: "%s | OFFER-HUB",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
   description:
     "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments without building complex payment infrastructure.",
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   // Eliminates the "metadataBase property in metadata export is not set" build
   // warning and prevents search engines from indexing duplicate versions of the
   // site (e.g. www subdomain, Vercel preview URLs).
-  metadataBase: new URL("https://offer-hub.tech"),
+  metadataBase: new URL(SITE_URL_FALLBACK),
 
   // ── Canonical URL ─────────────────────────────────────────────────────────
   // Next.js resolves '/' against metadataBase and injects
@@ -87,8 +88,8 @@ export const metadata: Metadata = {
     title: "OFFER-HUB | The Future of On-Chain Bounties",
     description:
       "OFFER-HUB empowers marketplaces to provide secure, non-custodial escrow payments without building complex payment infrastructure.",
-    url: "https://offer-hub.tech",
-    siteName: "OFFER-HUB",
+    url: SITE_URL_FALLBACK,
+    siteName: SITE_NAME,
     images: [
       {
         url: "/og-image.png",

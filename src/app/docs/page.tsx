@@ -5,6 +5,7 @@ import { DocsSearchBar } from "@/components/docs/DocsSearchBar";
 import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
+import { GITHUB_REPO_URL } from "@/constants/github";
 
 const docSections = [
   {
@@ -202,7 +203,7 @@ export default function DocsPage() {
           <div className="flex justify-center items-center gap-8">
             <Link href="/community" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">Help Center</Link>
             <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
-            <Link href="https://github.com/OFFER-HUB/offer-hub-monorepo/issues" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">GitHub Issues</Link>
+            <Link href={`${GITHUB_REPO_URL}/issues`} className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">GitHub Issues</Link>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { getIcon, type IconName } from "@/lib/icon-registry";
 import { COMPANY_INFO } from "@/data/company-info";
 export { DataRightsForm };
 
-export function FeatureCard({
+export function PrivacyFeatureCard({
   title,
   description,
   iconName,
@@ -38,7 +38,7 @@ export function FeatureCard({
   );
 }
 
-export function FeaturesGrid({ children }: { children: React.ReactNode }): React.ReactElement {
+export function PrivacyFeaturesGrid({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-5">
       {children}
@@ -148,8 +148,8 @@ export function ContactSection(): React.ReactElement {
 }
 
 export const MDX_PRIVACY_COMPONENTS = {
-  FeaturesGrid,
-  FeatureCard,
+  FeaturesGrid: PrivacyFeaturesGrid,
+  FeatureCard: PrivacyFeatureCard,
   ProcessorsGrid,
   ProcessorCard,
   ContactSection,

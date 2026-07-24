@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const CONSENT_KEY = "cookie_consent";
-const COOKIE_PREFERENCES_EVENT = "cookie-preferences-open";
+import { COOKIE_CONSENT_KEY } from "@/constants/storage";
+import { COOKIE_PREFERENCES_EVENT } from "@/constants/events";
 
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem(CONSENT_KEY)) {
+    if (!localStorage.getItem(COOKIE_CONSENT_KEY)) {
       setVisible(true);
     }
 
@@ -29,12 +28,12 @@ export function CookieConsentBanner() {
   }, []);
 
   const accept = () => {
-    localStorage.setItem(CONSENT_KEY, "accepted");
+    localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
     setVisible(false);
   };
 
   const reject = () => {
-    localStorage.setItem(CONSENT_KEY, "rejected");
+    localStorage.setItem(COOKIE_CONSENT_KEY, "rejected");
     setVisible(false);
   };
 

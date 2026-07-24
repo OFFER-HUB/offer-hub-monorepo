@@ -4,14 +4,7 @@ import { useState, memo } from "react";
 import { Users, GitCommit, ChevronDown } from "lucide-react";
 import { SectionHeading } from "@/components/community/SectionHeading";
 import Image from "next/image";
-
-interface ContributorData {
-  name: string;
-  username: string;
-  avatar: string;
-  commits: number;
-  profileUrl: string;
-}
+import type { ContributorData } from "@/types/community";
 
 interface ContributorsSectionProps {
   contributors: ContributorData[];

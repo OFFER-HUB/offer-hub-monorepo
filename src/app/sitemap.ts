@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next';
 import docsIndex from '@/data/docs-index.json';
+import { SITE_URL_FALLBACK } from '@/constants/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://offer-hub.tech';
+  const baseUrl = SITE_URL_FALLBACK;
 
   const staticRoutes = [
     '',
@@ -14,6 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/docs',
     '/terms',
     '/privacy',
+    '/contact',
+    '/accessibility',
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({

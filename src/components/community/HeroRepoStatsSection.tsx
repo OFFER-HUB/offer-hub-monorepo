@@ -1,11 +1,6 @@
 import { Star, GitFork, Users, AlertCircle } from "lucide-react";
-
-interface RepoStats {
-  stars: string;
-  forks: string;
-  contributors: string;
-  openIssues: string;
-}
+import type { RepoStats } from "@/types/community";
+import { GITHUB_REPO_URL } from "@/constants/github";
 
 interface HeroRepoStatsSectionProps {
   stats: RepoStats | null;
@@ -40,7 +35,7 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
 
             <div className="mt-10 flex flex-wrap gap-4">
               <a
-                href="https://github.com/OFFER-HUB/offer-hub-monorepo"
+                href={GITHUB_REPO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-4 rounded-xl bg-content-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black transition-all"

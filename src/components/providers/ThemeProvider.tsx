@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { MotionConfig } from "framer-motion";
+import { THEME_STORAGE_KEY } from "@/constants/storage";
 
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -16,8 +17,6 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = "offer-hub-theme";
-
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -30,7 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize theme from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     if (stored && ["light", "dark", "system"].includes(stored)) {
       setThemeState(stored);
     }
@@ -63,7 +62,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem(STORAGE_KEY, newTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
   }, []);
 
   const toggleTheme = useCallback((event?: React.MouseEvent) => {

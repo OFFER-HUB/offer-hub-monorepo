@@ -4,14 +4,7 @@ import { useState, memo, useMemo } from "react";
 import { Tag, ArrowUpRight, ChevronDown } from "lucide-react";
 import { SectionHeading } from "@/components/community/SectionHeading";
 import { cn } from "@/lib/cn";
-
-interface IssueData {
-  number: number;
-  title: string;
-  priority: string;
-  url: string;
-  labels: string[];
-}
+import type { IssueData } from "@/types/community";
 
 interface OpenIssuesSectionProps {
   issues: IssueData[];

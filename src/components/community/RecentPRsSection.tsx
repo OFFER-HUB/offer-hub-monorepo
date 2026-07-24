@@ -3,17 +3,9 @@
 import { memo } from "react";
 import { GitPullRequest, Timer, User, ArrowUpRight } from "lucide-react";
 import { SectionHeading } from "@/components/community/SectionHeading";
+import type { PullRequestData } from "@/types/community";
 
-export interface PullRequestData {
-  number: number;
-  title: string;
-  author: string;
-  timestamp: string;
-  url: string;
-  status: 'Open' | 'Merged' | 'Closed';
-}
-
-export interface RecentPRsSectionProps {
+interface RecentPRsSectionProps {
   pullRequests: PullRequestData[];
 }
 

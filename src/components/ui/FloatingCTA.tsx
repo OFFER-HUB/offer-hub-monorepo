@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { X, ArrowRight } from "lucide-react";
+import { CTA_DISMISSED_KEY } from "@/constants/storage";
 
-const STORAGE_KEY = "offer-hub-cta-dismissed";
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function FloatingCTA() {
@@ -18,17 +18,17 @@ export function FloatingCTA() {
 
   useEffect(() => {
     // Check if dismissed recently
-    const dismissedAt = localStorage.getItem(STORAGE_KEY);
+    const dismissedAt = localStorage.getItem(CTA_DISMISSED_KEY);
     if (dismissedAt) {
       const parsed = parseInt(dismissedAt, 10);
       if (!Number.isFinite(parsed) || parsed < 0) {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(CTA_DISMISSED_KEY);
       } else {
         const elapsed = Date.now() - parsed;
         if (elapsed < DISMISS_DURATION) {
           return;
         }
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(CTA_DISMISSED_KEY);
       }
     }
 
@@ -49,7 +49,7 @@ export function FloatingCTA() {
       setIsVisible(false);
       setTimeout(() => setIsAnimating(false), 300);
     } else if (!isExcludedPage && !isVisible) {
-      const dismissedAt = localStorage.getItem(STORAGE_KEY);
+      const dismissedAt = localStorage.getItem(CTA_DISMISSED_KEY);
       if (!dismissedAt) {
         setIsAnimating(true);
         setTimeout(() => setIsVisible(true), 50);
@@ -61,7 +61,7 @@ export function FloatingCTA() {
     setIsVisible(false);
     setTimeout(() => {
       setIsAnimating(false);
-      localStorage.setItem(STORAGE_KEY, Date.now().toString());
+      localStorage.setItem(CTA_DISMISSED_KEY, Date.now().toString());
     }, 300);
   };
 

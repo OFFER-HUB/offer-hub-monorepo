@@ -1,4 +1,4 @@
-import type { PullRequestData } from "@/components/community/RecentPRsSection";
+import type { PullRequestData } from "@/types/community";
 import { logger } from '@/utils/logger';
 
 /* -------------------------------------------------------------------------- */

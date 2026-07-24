@@ -2,25 +2,26 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { getBrowserName, getDeviceType, getOSName } from '@/utils/device';
 import { getGeolocation } from './geolocation';
 import { logger } from '@/utils/logger';
+import { COOKIE_CONSENT_KEY, VISITOR_ID_KEY, SESSION_ID_KEY } from '@/constants/storage';
 
 // Generate a unique visitor ID
 export function generateVisitorId(): string {
-  if (localStorage.getItem('cookie_consent') !== 'accepted') return '';
-  const stored = localStorage.getItem('visitor_id');
+  if (localStorage.getItem(COOKIE_CONSENT_KEY) !== 'accepted') return '';
+  const stored = localStorage.getItem(VISITOR_ID_KEY);
   if (stored) return stored;
 
   const visitorId = `visitor_${crypto.randomUUID()}`;
-  localStorage.setItem('visitor_id', visitorId);
+  localStorage.setItem(VISITOR_ID_KEY, visitorId);
   return visitorId;
 }
 
 // Get session ID
 export function getSessionId(): string {
-  const stored = sessionStorage.getItem('session_id');
+  const stored = sessionStorage.getItem(SESSION_ID_KEY);
   if (stored) return stored;
 
   const sessionId = `session_${crypto.randomUUID()}`;
-  sessionStorage.setItem('session_id', sessionId);
+  sessionStorage.setItem(SESSION_ID_KEY, sessionId);
   return sessionId;
 }
 
@@ -38,7 +39,7 @@ export function getUTMParams(): { utm_source?: string; utm_medium?: string; utm_
 
 // Track page view
 export async function trackPageView(pagePath: string, pageTitle?: string): Promise<void> {
-  if (typeof window !== 'undefined' && localStorage.getItem('cookie_consent') !== 'accepted') {
+  if (typeof window !== 'undefined' && localStorage.getItem(COOKIE_CONSENT_KEY) !== 'accepted') {
     return;
   }
   // Skip tracking if Supabase is not properly configured
@@ -98,7 +99,7 @@ export async function trackPageView(pagePath: string, pageTitle?: string): Promi
           browser: getBrowserName(),
           device: getDeviceType(),
           os: getOSName(),
-        }], { onConflict: 'visitor_id' })
+        }], { onConflict: VISITOR_ID_KEY })
         .then(({ error }) => {
           if (error) {
             const msg = (error as { message?: string })?.message ?? JSON.stringify(error);

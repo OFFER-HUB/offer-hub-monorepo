@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { buildPageMetadata } from "@/lib/seo";
+import { GITHUB_REPO_URL } from "@/constants/github";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
@@ -49,7 +50,7 @@ const tiers: PricingTier[] = [
       "Ideal for prototypes, pilots, and technical evaluation",
     ],
     ctaLabel: "View on GitHub",
-    ctaHref: "https://github.com/OFFER-HUB/offer-hub-monorepo",
+    ctaHref: GITHUB_REPO_URL,
     ctaStyle: "secondary",
     external: true,
     icon: Code2,

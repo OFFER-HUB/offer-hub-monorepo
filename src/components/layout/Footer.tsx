@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Twitter, Send, Github, Disc3 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
-
-const COOKIE_PREFERENCES_EVENT = "cookie-preferences-open";
+import { COOKIE_PREFERENCES_EVENT } from "@/constants/events";
+import { SOCIAL_X, SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
+import { GITHUB_ORG_URL } from "@/constants/github";
 
 const navColumns = [
   {
@@ -38,10 +39,10 @@ const navColumns = [
 ];
 
 const socialLinks = [
-  { href: "https://x.com/offerhub_", icon: Twitter, label: "X" },
-  { href: "https://t.me/offer_hub_contributors", icon: Send, label: "Telegram" },
-  { href: "https://discord.gg/yH4vBNWwc", icon: Disc3, label: "Discord" },
-  { href: "https://github.com/OFFER-HUB", icon: Github, label: "GitHub" },
+  { href: SOCIAL_X, icon: Twitter, label: "X" },
+  { href: SOCIAL_TELEGRAM, icon: Send, label: "Telegram" },
+  { href: SOCIAL_DISCORD, icon: Disc3, label: "Discord" },
+  { href: GITHUB_ORG_URL, icon: Github, label: "GitHub" },
 ];
 
 export function Footer() {

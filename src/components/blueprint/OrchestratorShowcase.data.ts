@@ -1,5 +1,6 @@
 import { Shield, Cpu, Workflow } from "lucide-react";
 import { FlowNode, DetailCard } from "./OrchestratorShowcase.types";
+import { DOCS_REPO_BLOB_BASE } from "@/constants/github";
 
 export const flowNodes: FlowNode[] = [
   { id: "input", label: "Input", sublabel: "Fiat / Crypto", x: 120, y: 168 },
@@ -23,7 +24,7 @@ export const detailCards: DetailCard[] = [
     callout: "The first gate guarantees the orchestrator never mixes custody states across counterparties.",
     method: "prepare()",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/architecture/overview.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/architecture/overview.md`,
     docLabel: "Architecture overview",
   },
   {
@@ -41,7 +42,7 @@ export const detailCards: DetailCard[] = [
     callout: "Liquidity is reserved before release, so the visible seller payout is backed by an available trustline path.",
     method: "authorize()",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/architecture/payment-flows.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/architecture/payment-flows.md`,
     docLabel: "Payment flows",
   },
   {
@@ -59,7 +60,7 @@ export const detailCards: DetailCard[] = [
     callout: "The SDK turns complex backend choreography into a small set of explicit method calls and irreversible checkpoints.",
     method: "finalize()",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/architecture/data-model.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/architecture/data-model.md`,
     docLabel: "Data model",
   },
 ];

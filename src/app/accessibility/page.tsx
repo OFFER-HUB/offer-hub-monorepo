@@ -4,6 +4,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, MessageSquare } from "lucide-react";
+import { SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
+import { GITHUB_REPO_URL } from "@/constants/github";
 
 const features = [
      {
@@ -63,21 +65,21 @@ const contactMethods = [
           method: "Telegram",
           description: "For users who cannot use email",
           value: "@offer_hub_contributors",
-          href: "https://t.me/offer_hub_contributors",
+           href: SOCIAL_TELEGRAM,
           external: true,
      },
      {
           method: "Discord",
           description: "Community support in #support channel",
           value: "OFFER-HUB Community Server",
-          href: "https://discord.gg/yH4vBNWwc",
+           href: SOCIAL_DISCORD,
           external: true,
      },
      {
           method: "GitHub Issues",
           description: "For technical accessibility problems",
           value: "Label with 'accessibility' tag",
-          href: "https://github.com/OFFER-HUB/offer-hub-monorepo/issues",
+           href: `${GITHUB_REPO_URL}/issues`,
           external: true,
      },
 ];

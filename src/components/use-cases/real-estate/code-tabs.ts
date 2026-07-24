@@ -4,6 +4,7 @@ import type {
   CodeTab,
   SdkCard,
 } from "@/components/use-cases/shared/CodeIntegrationShowcase";
+import { DOCS_REPO_BLOB_BASE } from "@/constants/github";
 
 export const description: CodeIntegrationShowcaseProps["description"] =
   "handles deposit initialization, vault funding, and inspection-gated release in three explicit calls — no escrow agent required.";
@@ -17,7 +18,7 @@ export const tabs: CodeTab[] = [
     description:
       "Deposit escrow initialization and vault funding on the server side.",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/api/overview.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/api/overview.md`,
     docLabel: "API Reference",
     code: `import { OfferHub } from "@offerhub/sdk";
 
@@ -49,7 +50,7 @@ await oh.escrows.fund(deposit.id, {
     description:
       "Inspection verification and deposit settlement at lease end.",
     docHref:
-      "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/sdk/integration-guide.md",
+      `${DOCS_REPO_BLOB_BASE}/docs/sdk/integration-guide.md`,
     docLabel: "SDK Guide",
     code: `import { OfferHub } from "@offerhub/sdk";
 

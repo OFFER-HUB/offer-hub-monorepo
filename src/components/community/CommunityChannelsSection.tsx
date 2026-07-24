@@ -3,30 +3,32 @@
 import { ArrowUpRight, Disc3, Github, Send, Twitter } from "lucide-react";
 import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/community/SectionHeading";
+import { SOCIAL_DISCORD, SOCIAL_TELEGRAM, SOCIAL_X } from "@/constants/social";
+import { GITHUB_ORG_URL } from "@/constants/github";
 
 const channels = [
   {
     name: "Discord",
     description: "Real-time discussions, pairing, and contributor office hours.",
-    href: "https://discord.gg/yH4vBNWwc",
+    href: SOCIAL_DISCORD,
     icon: Disc3,
   },
   {
     name: "Telegram",
     description: "Fast async updates for announcements and roadmap drops.",
-    href: "https://t.me/offer_hub_contributors",
+    href: SOCIAL_TELEGRAM,
     icon: Send,
   },
   {
     name: "X",
     description: "Community highlights, release threads, and ecosystem news.",
-    href: "https://x.com/offerhub_",
+    href: SOCIAL_X,
     icon: Twitter,
   },
   {
     name: "GitHub",
     description: "Open source repositories, pull requests, and roadmap items.",
-    href: "https://github.com/OFFER-HUB",
+    href: GITHUB_ORG_URL,
     icon: Github,
   },
 ];

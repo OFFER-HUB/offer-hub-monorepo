@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Code, BookOpen, PenTool, Bug } from "lucide-react";
+import { GITHUB_REPO_URL } from "@/constants/github";
 
 const steps = [
     { number: "01", title: "Fork", description: "Fork the repository to your own GitHub account." },
@@ -85,7 +86,7 @@ export function HowToContribute() {
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <Link
-                        href="https://github.com/OFFER-HUB/offer-hub-monorepo/issues"
+                        href={`${GITHUB_REPO_URL}/issues`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-neumorphic-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2"
