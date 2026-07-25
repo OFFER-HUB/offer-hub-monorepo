@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Script from "next/script";
 import { Send, User, Mail, MessageSquare, CheckCircle2, AlertCircle, Timer } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { submitWaitlistEntry } from "@/services/waitlist";
 
 const COOLDOWN_SECONDS = 30;
 
@@ -113,44 +113,37 @@ export default function RegistrationForm() {
         setIsLoading(true);
         setError(null);
 
-        try {
-            if (!supabase) {
-                setError("Waitlist is not configured yet. Please try again later.");
-                setIsLoading(false);
-                startCooldown();
-                return;
-            }
+        const result = await submitWaitlistEntry({
+            email: formData.email,
+            name: formData.name,
+            purpose: formData.purpose,
+            referral: formData.referral
+        });
 
-            const { error: supabaseError } = await supabase
-                .from("waitlist")
-                .insert([
-                    {
-                        email: formData.email,
-                        name: formData.name,
-                        purpose: formData.purpose,
-                        referral: formData.referral
-                    }
-                ]);
-
-            if (supabaseError) {
-                if (supabaseError.code === "23505") {
-                    setError("This email is already registered on our waitlist.");
-                } else {
-                    setError("Something went wrong. Please try again.");
-                }
-                setIsLoading(false);
-                startCooldown();
-                resetTurnstile();
-                return;
-            }
-
+        if (result.ok) {
             setIsSubmitted(true);
-        } catch {
-            setError("Network error. Please check your connection and try again.");
+            return;
+        }
+
+        // Not-configured is the one branch that leaves the CAPTCHA widget intact,
+        // since no verification attempt was ever made against the backend.
+        if (result.reason === "not_configured") {
+            setError("Waitlist is not configured yet. Please try again later.");
             setIsLoading(false);
             startCooldown();
-            resetTurnstile();
+            return;
         }
+
+        if (result.reason === "duplicate") {
+            setError("This email is already registered on our waitlist.");
+        } else if (result.reason === "error") {
+            setError("Something went wrong. Please try again.");
+        } else {
+            setError("Network error. Please check your connection and try again.");
+        }
+        setIsLoading(false);
+        startCooldown();
+        resetTurnstile();
     };
 
     if (isSubmitted) {

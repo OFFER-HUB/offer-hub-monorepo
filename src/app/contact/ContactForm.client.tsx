@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Send, User, Mail, MessageSquare, Building2, CheckCircle2, AlertCircle } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { submitContactInquiry } from "@/services/contact";
 
 interface ContactFormData {
   company: string;
@@ -53,33 +53,26 @@ export default function ContactForm() {
 
     setIsLoading(true);
 
-    try {
-      if (!supabase) {
-        setSubmitError("Contact is not configured. Please try again later.");
-        setIsLoading(false);
-        return;
-      }
+    const result = await submitContactInquiry({
+      company: formData.company,
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+    });
 
-      const { error: sbError } = await supabase.from("contact_inquiries").insert([
-        {
-          company: formData.company,
-          contact_name: formData.name,
-          email: formData.email,
-          message: formData.message,
-        },
-      ]);
-
-      if (sbError) {
-        setSubmitError("Something went wrong. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-
+    if (result.ok) {
       setIsSubmitted(true);
-    } catch {
-      setSubmitError("Network error. Please check your connection and try again.");
-      setIsLoading(false);
+      return;
     }
+
+    if (result.reason === "not_configured") {
+      setSubmitError("Contact is not configured. Please try again later.");
+    } else if (result.reason === "error") {
+      setSubmitError("Something went wrong. Please try again.");
+    } else {
+      setSubmitError("Network error. Please check your connection and try again.");
+    }
+    setIsLoading(false);
   };
 
   if (isSubmitted) {
