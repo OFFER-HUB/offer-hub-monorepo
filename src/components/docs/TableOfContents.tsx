@@ -1,64 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { Heading } from "@/lib/mdx";
 import { cn } from "@/lib/cn";
+import { useScrollSpy } from "@/hooks/useScrollSpy";
 
 interface TableOfContentsProps {
   headings: Heading[];
 }
 
 export function TableOfContents({ headings }: TableOfContentsProps) {
-  const [activeId, setActiveId] = useState<string>("");
+  const headingIds = headings.map((h) => h.id);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+  const activeId = useScrollSpy({
+    ids: headingIds,
+    rootMargin: "-72px 0px -60% 0px",
+    threshold: [0, 1],
+    pickActiveId: (entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
-        if (visibleEntries.length > 0) {
-          const isAtBottom =
-            window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
+      if (visibleEntries.length === 0) return undefined;
 
-          if (isAtBottom) {
-            setActiveId(visibleEntries[visibleEntries.length - 1].target.id);
-          } else {
-            setActiveId(visibleEntries[0].target.id);
-          }
-        }
-      },
-      {
-        rootMargin: "-72px 0px -60% 0px",
-        threshold: [0, 1],
-      }
-    );
+      const isAtBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
 
-    headings.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    let scrollTimeout: ReturnType<typeof setTimeout>;
-    const handleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const isAtBottom =
-          window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
-        if (isAtBottom && headings.length > 0) {
-          setActiveId(headings[headings.length - 1].id);
-        }
-      }, 100);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      clearTimeout(scrollTimeout);
-      observer.disconnect();
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [headings]);
+      return isAtBottom
+        ? visibleEntries[visibleEntries.length - 1].target.id
+        : visibleEntries[0].target.id;
+    },
+    stickyLastOnBottom: true,
+    bottomOffsetPx: 50,
+    bottomCheckDebounceMs: 100,
+  });
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();

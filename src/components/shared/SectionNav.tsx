@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useMemo, useRef, type MouseEvent } from "react";
 import { motion, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/cn";
+import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { useScrollSpy } from "@/hooks/useScrollSpy";
 
 export type SectionNavItem = { id: string; label: string };
 
@@ -21,50 +23,22 @@ export default function SectionNav({
   scrollMarginPx,
   ariaLabel = "Section navigation",
 }: SectionNavProps) {
-  const [activeSection, setActiveSection] = useState(sections[0]?.id ?? "");
-  const [isNavPinned, setIsNavPinned] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let best = entries[0];
-        entries.forEach((entry) => {
-          if (entry.intersectionRatio > best.intersectionRatio) best = entry;
-        });
-        if (best?.isIntersecting && best.target.id) {
-          setActiveSection(best.target.id);
-        }
-      },
-      { threshold: [0.08, 0.25, 0.45, 0.65], rootMargin: "-14% 0px -14% 0px" }
-    );
+  const sectionIds = useMemo(() => sections.map(({ id }) => id), [sections]);
+  const activeSection = useScrollSpy({
+    ids: sectionIds,
+    threshold: [0.08, 0.25, 0.45, 0.65],
+    rootMargin: "-14% 0px -14% 0px",
+    initialId: sections[0]?.id ?? "",
+  });
 
-    sections.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    let ticking = false;
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          if (navRef.current) {
-            setIsNavPinned(navRef.current.getBoundingClientRect().top <= 81);
-          }
-          ticking = false;
-        });
-      }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [sections]);
+  const scrollY = useScrollProgress();
+  const isNavPinned = useMemo(
+    () => (navRef.current ? navRef.current.getBoundingClientRect().top <= 81 : false),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scrollY]
+  );
 
   const scrollToId = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
