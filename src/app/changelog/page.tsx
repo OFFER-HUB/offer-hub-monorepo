@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { buildPageMetadata } from "@/lib/seo";
+import { fetchChangelogEntries } from "@/services/github";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Changelog",
@@ -17,138 +18,6 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/changelog",
   ogImageAlt: "OFFER-HUB Changelog — releases, improvements, and fixes",
 });
-
-interface GitHubRelease {
-  tag_name: string;
-  name: string | null;
-  body: string | null;
-  draft: boolean;
-  prerelease: boolean;
-  published_at: string | null;
-  created_at: string;
-}
-
-interface ChangelogEntry {
-  version: string;
-  date: string;
-  title: string;
-  badge: string;
-  badgeColor: string;
-  description: string;
-  changes: string[];
-}
-
-const RELEASES_API_URL = "https://api.github.com/repos/OFFER-HUB/offer-hub-monorepo/releases";
-
-function formatReleaseDate(dateString: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    year: "numeric",
-  }).format(new Date(dateString));
-}
-
-function removeMarkdownInlineSyntax(text: string): string {
-  return text
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/__([^_]+)__/g, "$1")
-    .replace(/_([^_]+)_/g, "$1")
-    .trim();
-}
-
-function parseReleaseBody(body: string | null): Pick<ChangelogEntry, "description" | "changes"> {
-  const rawBody = body?.trim();
-
-  if (!rawBody) {
-    return {
-      description: "No release notes were provided for this version.",
-      changes: ["See full release details on GitHub."],
-    };
-  }
-
-  const lines = rawBody
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const changes = lines
-    .map((line) => line.match(/^[-*+]\s+(.+)$/)?.[1] ?? line.match(/^\d+\.\s+(.+)$/)?.[1] ?? null)
-    .filter((line): line is string => Boolean(line))
-    .map(removeMarkdownInlineSyntax);
-
-  const firstMeaningfulLine = lines.find(
-    (line) => !/^[-*+]\s+/.test(line) && !/^\d+\.\s+/.test(line) && !/^#+\s+/.test(line),
-  );
-
-  return {
-    description: firstMeaningfulLine
-      ? removeMarkdownInlineSyntax(firstMeaningfulLine)
-      : "Release notes are available in the full GitHub release details.",
-    changes: changes.length > 0 ? changes : ["See full release details on GitHub."],
-  };
-}
-
-function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): Pick<ChangelogEntry, "badge" | "badgeColor"> {
-  if (release.draft) {
-    return {
-      badge: "Draft",
-      badgeColor: "bg-content-secondary/10 text-content-secondary",
-    };
-  }
-
-  if (release.prerelease) {
-    return {
-      badge: "Pre-release",
-      badgeColor: "bg-theme-warning/10 text-theme-warning",
-    };
-  }
-
-  return {
-    badge: "Release",
-    badgeColor: "bg-theme-success/10 text-theme-success",
-  };
-}
-
-function mapReleaseToEntry(release: GitHubRelease): ChangelogEntry {
-  const { description, changes } = parseReleaseBody(release.body);
-  const badge = getReleaseBadge(release);
-
-  return {
-    version: release.tag_name,
-    date: formatReleaseDate(release.published_at ?? release.created_at),
-    title: release.name?.trim() || `Release ${release.tag_name}`,
-    description,
-    changes,
-    ...badge,
-  };
-}
-
-async function fetchChangelogEntries(): Promise<{ entries: ChangelogEntry[]; hasError: boolean }> {
-  try {
-    const response = await fetch(RELEASES_API_URL, {
-      next: { revalidate: 3600 },
-      headers: {
-        Accept: "application/vnd.github+json",
-      },
-    });
-
-    if (!response.ok) {
-      return { entries: [], hasError: true };
-    }
-
-    const releases = (await response.json()) as GitHubRelease[];
-
-    return {
-      entries: releases.map(mapReleaseToEntry),
-      hasError: false,
-    };
-  } catch (error) {
-    console.error("Failed to fetch GitHub releases:", error);
-    return { entries: [], hasError: true };
-  }
-}
 
 export default async function ChangelogPage() {
   const { entries: changelogEntries, hasError } = await fetchChangelogEntries();
