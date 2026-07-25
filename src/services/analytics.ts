@@ -1,4 +1,6 @@
-import { supabase, isSupabaseConfigured } from './supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getBrowserName, getDeviceType, getOSName } from '@/utils/device';
+import { getGeolocation } from './geolocation';
 
 // Generate a unique visitor ID
 export function generateVisitorId(): string {
@@ -9,42 +11,6 @@ export function generateVisitorId(): string {
   const visitorId = `visitor_${crypto.randomUUID()}`;
   localStorage.setItem('visitor_id', visitorId);
   return visitorId;
-}
-
-// Get device type
-export function getDeviceType(): string {
-  const ua = navigator.userAgent;
-  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-    return 'tablet';
-  }
-  if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-    return 'mobile';
-  }
-  return 'desktop';
-}
-
-// Get browser name
-export function getBrowserName(): string {
-  const ua = navigator.userAgent;
-  if (ua.includes('Firefox')) return 'Firefox';
-  if (ua.includes('SamsungBrowser')) return 'Samsung Browser';
-  if (ua.includes('Opera') || ua.includes('OPR')) return 'Opera';
-  if (ua.includes('Trident')) return 'Internet Explorer';
-  if (ua.includes('Edge')) return 'Edge';
-  if (ua.includes('Chrome')) return 'Chrome';
-  if (ua.includes('Safari')) return 'Safari';
-  return 'Unknown';
-}
-
-// Get OS name
-export function getOSName(): string {
-  const ua = navigator.userAgent;
-  if (ua.includes('Win')) return 'Windows';
-  if (ua.includes('Mac')) return 'MacOS';
-  if (ua.includes('Linux')) return 'Linux';
-  if (ua.includes('Android')) return 'Android';
-  if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
-  return 'Unknown';
 }
 
 // Get session ID
@@ -67,56 +33,6 @@ export function getUTMParams() {
     utm_medium: params.get('utm_medium') || undefined,
     utm_campaign: params.get('utm_campaign') || undefined,
   };
-}
-
-// Get geolocation data from IP (cached per session)
-const emptyGeo = {
-  ip: undefined,
-  country: undefined,
-  country_code: undefined,
-  city: undefined,
-  region: undefined,
-  timezone: undefined,
-};
-
-export async function getGeolocation() {
-  const CACHE_KEY = 'geo_cache';
-
-  try {
-    const cached = sessionStorage.getItem(CACHE_KEY);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    try {
-      const response = await fetch('https://ipapi.co/json/', {
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error('Failed to fetch geolocation');
-
-      const data = await response.json();
-      const geo = {
-        ip: data.ip,
-        country: data.country_name,
-        country_code: data.country_code,
-        city: data.city,
-        region: data.region,
-        timezone: data.timezone,
-      };
-
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify(geo));
-      return geo;
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  } catch {
-    // Cache the empty result so we don't retry on every navigation
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(emptyGeo));
-    return emptyGeo;
-  }
 }
 
 // Track page view
