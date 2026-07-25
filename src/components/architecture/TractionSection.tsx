@@ -1,29 +1,21 @@
-import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
-import { Info, CheckCircle2 } from "lucide-react";
+import ArchitectureSection from "@/components/shared/ArchitectureSection";
+import { CheckCircle2 } from "lucide-react";
 
 export default function TractionSection() {
   return (
-    <BlueprintMotionSection id="traction" className="px-6 py-24 bg-bg-base">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col items-center text-center mb-6">
-          <span className="inline-block rounded-full bg-bg-elevated shadow-neu-raised-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6">
-            Platform Traction
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-content-primary mb-4 tracking-tight">
-            Live on testnet. Built for scale.
-          </h2>
-          <p className="text-content-secondary max-w-2xl text-lg mb-8">
-            Current platform metrics and the validated LATAM freelance market opportunity.
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
-          <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
-          <p className="text-sm text-content-secondary leading-relaxed">
-            The SCF Integration Track requires verifiable traction. This section shows OfferHub&apos;s current testnet status, team readiness, and the market context that validates the integration investment.
-          </p>
-        </div>
-
+    <ArchitectureSection
+      id="traction"
+      sectionClassName="px-6 py-24 bg-bg-base"
+      eyebrowClassName="inline-block rounded-full bg-bg-elevated shadow-neu-raised-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
+      eyebrow="Platform Traction"
+      heading="Live on testnet. Built for scale."
+      description="Current platform metrics and the validated LATAM freelance market opportunity."
+      infoText={
+        <>
+          The SCF Integration Track requires verifiable traction. This section shows OfferHub&apos;s current testnet status, team readiness, and the market context that validates the integration investment.
+        </>
+      }
+    >
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           
           {/* Block A — Current platform status */}
@@ -103,7 +95,6 @@ export default function TractionSection() {
           </div>
 
         </div>
-      </div>
-    </BlueprintMotionSection>
+    </ArchitectureSection>
   );
 }

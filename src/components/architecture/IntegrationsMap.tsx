@@ -1,30 +1,17 @@
-import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
-import { Info } from "lucide-react";
+import ArchitectureSection from "@/components/shared/ArchitectureSection";
 
 export default function IntegrationsMap() {
   return (
-    <BlueprintMotionSection id="integrations" className="px-6 py-24 bg-transparent">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col items-center text-center mb-6">
-          <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6">
-            Ecosystem Integrations
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-content-primary mb-4 tracking-tight">
-            Hub and Spoke Architecture
-          </h2>
-          <p className="text-content-secondary max-w-2xl text-lg mb-8">
-            OfferHub acts as the orchestrator, integrating best-in-class solutions for wallet management, escrow, and global fiat off-ramps.
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
-          <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
-          <p className="text-sm text-content-secondary leading-relaxed">
-            OfferHub uses two building blocks from the official SCF Integration List. Stellar Wallets Kit handles non-custodial wallet connection and client-side Soroban signing. BlindPay routes USDC to bank accounts across 7 LATAM corridors via SPEI, Pix, PSE, and Transfer 3.0. The NestJS orchestrator selects the corridor automatically based on freelancer country and payout preference.
-          </p>
-        </div>
-
-        {/* Desktop Hub & Spoke / Mobile Stack */}
+    <ArchitectureSection
+      id="integrations"
+      sectionClassName="px-6 py-24 bg-transparent"
+      eyebrowClassName="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
+      eyebrow="Ecosystem Integrations"
+      heading="Hub and Spoke Architecture"
+      description="OfferHub acts as the orchestrator, integrating best-in-class solutions for wallet management, escrow, and global fiat off-ramps."
+      infoText="OfferHub uses two building blocks from the official SCF Integration List. Stellar Wallets Kit handles non-custodial wallet connection and client-side Soroban signing. BlindPay routes USDC to bank accounts across 7 LATAM corridors via SPEI, Pix, PSE, and Transfer 3.0. The NestJS orchestrator selects the corridor automatically based on freelancer country and payout preference."
+    >
+      {/* Desktop Hub & Spoke / Mobile Stack */}
         <div className="relative w-full max-w-5xl mx-auto flex flex-col md:block min-h-[600px] gap-8">
           
           {/* Animated SVG Lines (Desktop Only) */}
@@ -125,8 +112,6 @@ export default function IntegrationsMap() {
             <span className="text-theme-primary font-bold">7 BlindPay Corridors</span>
           </div>
         </div>
-
-      </div>
-    </BlueprintMotionSection>
+    </ArchitectureSection>
   );
 }

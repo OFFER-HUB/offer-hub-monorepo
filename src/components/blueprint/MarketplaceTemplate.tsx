@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Terminal, Layers, Wallet, Clock, TrendingUp, Package } from "lucide-react";
-import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
+import { BlueprintMotionSection } from "@/components/shared/BlueprintMotionSection";
 
 type View = "freelancer" | "business";
 

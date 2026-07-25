@@ -1,4 +1,4 @@
-import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
+import { BlueprintMotionSection } from "@/components/shared/BlueprintMotionSection";
 import EvolutionTimelineView from "./evolution-timeline/EvolutionTimelineView";
 
 export default function EvolutionTimeline() {

@@ -1,29 +1,21 @@
-import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
-import { Info, DollarSign, Zap, Shield, Lock, Globe, Users } from "lucide-react";
+import ArchitectureSection from "@/components/shared/ArchitectureSection";
+import { DollarSign, Zap, Shield, Lock, Globe, Users } from "lucide-react";
 
 export default function WhyStellarSection() {
   return (
-    <BlueprintMotionSection id="why-stellar" className="px-6 py-24 bg-transparent">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col items-center text-center mb-6">
-          <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6">
-            Why Stellar
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-content-primary mb-4 tracking-tight">
-            The case for Stellar
-          </h2>
-          <p className="text-content-secondary max-w-2xl text-lg mb-8">
-            What Stellar uniquely enables for OfferHub that no other chain or payment rail provides.
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-12 flex gap-3 items-start max-w-4xl mx-auto">
-          <Info size={15} className="text-theme-primary shrink-0 mt-0.5" />
-          <p className="text-sm text-content-secondary leading-relaxed">
-            This section answers the SCF panel&apos;s core question: why is Stellar the right foundation for OfferHub, and what value does this integration bring to the Stellar ecosystem?
-          </p>
-        </div>
-
+    <ArchitectureSection
+      id="why-stellar"
+      sectionClassName="px-6 py-24 bg-transparent"
+      eyebrowClassName="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
+      eyebrow="Why Stellar"
+      heading="The case for Stellar"
+      description="What Stellar uniquely enables for OfferHub that no other chain or payment rail provides."
+      infoText={
+        <>
+          This section answers the SCF panel&apos;s core question: why is Stellar the right foundation for OfferHub, and what value does this integration bring to the Stellar ecosystem?
+        </>
+      }
+    >
         <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
           
           <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
@@ -87,7 +79,6 @@ export default function WhyStellarSection() {
           </div>
 
         </div>
-      </div>
-    </BlueprintMotionSection>
+    </ArchitectureSection>
   );
 }

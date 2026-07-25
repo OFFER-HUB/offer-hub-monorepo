@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Workflow } from "lucide-react";
-import { BlueprintMotionSection } from "@/components/blueprint/BlueprintMotionSection";
+import { BlueprintMotionSection } from "@/components/shared/BlueprintMotionSection";
 import { OrchestratorDiagram } from "./OrchestratorDiagram";
 import { OrchestratorDetailPanel } from "./OrchestratorDetailPanel";
 import { LayerKey } from "./OrchestratorShowcase.types";
