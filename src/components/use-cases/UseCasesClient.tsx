@@ -5,7 +5,7 @@ import {
   useState,
   useEffect,
   useRef,
-  useCallback,
+  useMemo,
   type ComponentType,
   type ReactNode,
 } from "react";
@@ -13,6 +13,9 @@ import {
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { cn } from "@/lib/cn";
+import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { useScrollSpy } from "@/hooks/useScrollSpy";
+import { usePillIndicator } from "@/hooks/usePillIndicator";
 
 import { USE_CASES, PAGE_SECTIONS, SCROLL_OFFSET } from "./constants";
 import type { UseCaseId } from "./constants";
@@ -44,125 +47,62 @@ const SECTIONS: Record<UseCaseId, ComponentType<SectionProps>> = {
   ),
 };
 
+const SECTION_IDS = PAGE_SECTIONS.map((s) => s.id);
+
 export function UseCasesClient() {
   const [activeUseCase, setActiveUseCase] = useState<UseCaseId>("freelance");
-  const [activeSection, setActiveSection] = useState<string>(
-    PAGE_SECTIONS[0].id,
-  );
-  const [isNavPinned, setIsNavPinned] = useState(false);
-  const [pillStyle, setPillStyle] = useState<{
-    left: number;
-    width: number;
-  } | null>(null);
   const [touchedId, setTouchedId] = useState<string | null>(null);
 
   const navRef = useRef<HTMLDivElement>(null);
-  const pillContainerRef = useRef<HTMLDivElement>(null);
-  const linkRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  // Accumulates the latest known ratio per section id across observer
+  // callbacks, since IntersectionObserver only reports entries whose ratio
+  // changed since the last check, not every observed element each time.
+  const visibilityMapRef = useRef<Map<string, number>>(new Map());
 
-  const setLinkRef = useCallback((id: string, el: HTMLAnchorElement | null) => {
-    if (el) linkRefs.current.set(id, el);
-    else linkRefs.current.delete(id);
-  }, []);
-
-  const updatePillIndicator = useCallback(() => {
-    const container = pillContainerRef.current;
-    const activeLink = linkRefs.current.get(activeSection);
-    if (!container || !activeLink) return;
-
-    const containerRect = container.getBoundingClientRect();
-    const linkRect = activeLink.getBoundingClientRect();
-
-    setPillStyle({
-      left: linkRect.left - containerRect.left,
-      width: linkRect.width,
-    });
-  }, [activeSection]);
-
-  // Re-establish the scroll-spy observer whenever the active use case changes:
-  // the new section mounts lazily, so we retry on the next frame until all
-  // section elements exist in the DOM.
+  // Discard stale ratios from the previous tab's sections before the new
+  // tab's observer starts reporting — the section ids are identical across
+  // tabs (PAGE_SECTIONS is fixed), only the DOM nodes get swapped.
   useEffect(() => {
-    let raf = 0;
-    let observer: IntersectionObserver | null = null;
-
-    const setup = () => {
-      const sectionElements = PAGE_SECTIONS.map((s) =>
-        document.getElementById(s.id),
-      ).filter(Boolean) as HTMLElement[];
-
-      if (sectionElements.length < PAGE_SECTIONS.length) {
-        raf = requestAnimationFrame(setup);
-        return;
-      }
-
-      const visibilityMap = new Map<string, number>();
-
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            visibilityMap.set(entry.target.id, entry.intersectionRatio);
-          });
-
-          let bestId: string = activeSection;
-          let bestRatio = -1;
-
-          visibilityMap.forEach((ratio, id) => {
-            if (ratio > bestRatio) {
-              bestRatio = ratio;
-              bestId = id;
-            }
-          });
-
-          if (bestRatio > 0.05 && bestId !== activeSection) {
-            setActiveSection(bestId);
-          }
-        },
-        {
-          threshold: [0, 0.1, 0.25, 0.4, 0.6, 0.75, 1],
-          rootMargin: "-140px 0px -30% 0px",
-        },
-      );
-
-      sectionElements.forEach((el) => observer!.observe(el));
-    };
-
-    setup();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      observer?.disconnect();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    visibilityMapRef.current.clear();
   }, [activeUseCase]);
 
-  useEffect(() => {
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        if (navRef.current) {
-          setIsNavPinned(navRef.current.getBoundingClientRect().top <= 81);
-        }
-        ticking = false;
+  const activeSection = useScrollSpy({
+    ids: SECTION_IDS,
+    threshold: [0, 0.1, 0.25, 0.4, 0.6, 0.75, 1],
+    rootMargin: "-140px 0px -30% 0px",
+    initialId: PAGE_SECTIONS[0].id,
+    // Each use case's sections mount lazily (next/dynamic), so wait until
+    // they all exist in the DOM before attaching the observer, and re-run
+    // that wait whenever the tab changes even though the ids don't.
+    waitForElements: true,
+    resetKey: activeUseCase,
+    pickActiveId: (entries) => {
+      entries.forEach((entry) => {
+        visibilityMapRef.current.set(entry.target.id, entry.intersectionRatio);
       });
-    };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      let bestId: string | undefined;
+      let bestRatio = -1;
+      visibilityMapRef.current.forEach((ratio, id) => {
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          bestId = id;
+        }
+      });
 
-  useEffect(() => {
-    updatePillIndicator();
-  }, [activeSection, updatePillIndicator]);
+      return bestRatio > 0.05 ? bestId : undefined;
+    },
+  });
 
-  useEffect(() => {
-    const onResize = () => updatePillIndicator();
-    window.addEventListener("resize", onResize, { passive: true });
-    return () => window.removeEventListener("resize", onResize);
-  }, [updatePillIndicator]);
+  const scrollY = useScrollProgress();
+  const isNavPinned = useMemo(
+    () => (navRef.current ? navRef.current.getBoundingClientRect().top <= 81 : false),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scrollY],
+  );
+
+  const { containerRef: pillContainerRef, setItemRef: setLinkRef, pillStyle } =
+    usePillIndicator(activeSection);
 
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -182,7 +122,6 @@ export function UseCasesClient() {
 
   const handleUseCaseSwitch = (id: UseCaseId) => {
     setActiveUseCase(id);
-    setActiveSection("overview");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

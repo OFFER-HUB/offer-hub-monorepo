@@ -8,6 +8,7 @@ import { Menu, X, Send } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useScrollProgress } from "@/hooks/useScrollProgress";
 
 const navLinks = [
   { href: "/#features", label: "Features" },
@@ -41,8 +42,9 @@ export function isLinkActive(href: string, pathname: string): boolean {
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+  const scrollY = useScrollProgress();
+  const isScrolled = scrollY > 12;
 
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -96,21 +98,6 @@ export function Navbar() {
       wasMenuOpen.current = false;
     }
   }, [isMenuOpen]);
-
-  useEffect(() => {
-    let ticking = false;
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          setIsScrolled(window.scrollY > 12);
-          ticking = false;
-        });
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     if (isMenuOpen) {

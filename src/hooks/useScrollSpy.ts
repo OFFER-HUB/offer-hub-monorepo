@@ -33,6 +33,22 @@ export interface UseScrollSpyOptions {
    * consumer should highlight the first item immediately on mount.
    */
   initialId?: string;
+  /**
+   * When true, polls via `requestAnimationFrame` until every id in `ids`
+   * resolves to an element in the DOM before creating the observer,
+   * instead of observing whatever subset exists on the first synchronous
+   * check. Needed when the observed elements are lazy-loaded (e.g. behind
+   * `next/dynamic`) and may not have mounted yet when this hook runs.
+   */
+  waitForElements?: boolean;
+  /**
+   * Extra dependency values that force the observer to be torn down and
+   * re-created, beyond `ids`/`rootMargin`/`threshold`/etc. Needed when the
+   * *set* of ids stays the same across some external change but the
+   * underlying DOM nodes are swapped out (e.g. switching tabs where each
+   * tab lazily mounts its own elements under the same section ids).
+   */
+  resetKey?: string | number;
 }
 
 const defaultPickActiveId = (
@@ -62,22 +78,50 @@ export function useScrollSpy({
   bottomOffsetPx = 50,
   bottomCheckDebounceMs = 100,
   initialId = "",
+  waitForElements = false,
+  resetKey,
 }: UseScrollSpyOptions): string {
   const [activeId, setActiveId] = useState<string>(initialId);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const nextId = pickActiveId(entries);
-        if (nextId) setActiveId(nextId);
-      },
-      { rootMargin, threshold }
-    );
+    // Whenever the observer is torn down and re-created (new ids, or a
+    // resetKey change), snap back to initialId immediately rather than
+    // waiting for the new observer to fire. Matches consumers that need an
+    // eager reset on external changes (e.g. UseCasesClient resetting to its
+    // first section the instant the active tab changes).
+    setActiveId(initialId);
 
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+    let raf = 0;
+    let observer: IntersectionObserver | null = null;
+
+    const attach = () => {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const nextId = pickActiveId(entries);
+          if (nextId) setActiveId(nextId);
+        },
+        { rootMargin, threshold }
+      );
+
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer!.observe(el);
+      });
+    };
+
+    if (waitForElements) {
+      const setup = () => {
+        const allMounted = ids.every((id) => document.getElementById(id));
+        if (!allMounted) {
+          raf = requestAnimationFrame(setup);
+          return;
+        }
+        attach();
+      };
+      setup();
+    } else {
+      attach();
+    }
 
     let scrollTimeout: ReturnType<typeof setTimeout>;
     const handleScroll = () => {
@@ -97,14 +141,24 @@ export function useScrollSpy({
     }
 
     return () => {
-      observer.disconnect();
+      cancelAnimationFrame(raf);
+      observer?.disconnect();
       clearTimeout(scrollTimeout);
       if (stickyLastOnBottom) {
         window.removeEventListener("scroll", handleScroll);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids.join(","), rootMargin, JSON.stringify(threshold), stickyLastOnBottom, bottomOffsetPx, bottomCheckDebounceMs]);
+  }, [
+    ids.join(","),
+    rootMargin,
+    JSON.stringify(threshold),
+    stickyLastOnBottom,
+    bottomOffsetPx,
+    bottomCheckDebounceMs,
+    waitForElements,
+    resetKey,
+  ]);
 
   return activeId;
 }
