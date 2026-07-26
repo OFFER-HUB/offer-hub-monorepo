@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type Props = {
   title: string;
@@ -12,10 +13,7 @@ type Props = {
 };
 
 export function DiagramZoomModal({ title, isOpen, onClose, children }: Props) {
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };

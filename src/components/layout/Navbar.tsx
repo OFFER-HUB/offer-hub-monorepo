@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +9,8 @@ import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 const navLinks = [
   { href: "/#features", label: "Features" },
@@ -48,67 +50,15 @@ export function Navbar() {
 
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
-  const wasMenuOpen = useRef(false);
 
-  useEffect(() => {
-    if (isMenuOpen) {
-      wasMenuOpen.current = true;
-      const menuEl = menuRef.current;
-      if (!menuEl) return;
+  useFocusTrap({
+    containerRef: menuRef,
+    isActive: isMenuOpen,
+    onEscape: () => setIsMenuOpen(false),
+    restoreFocusRef: toggleRef,
+  });
 
-      const focusableSelectors =
-        'a[href], button:not([disabled]), [tabIndex]:not([tabIndex="-1"])';
-      const focusableElements = Array.from(
-        menuEl.querySelectorAll<HTMLElement>(focusableSelectors)
-      );
-
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-      }
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-          setIsMenuOpen(false);
-          return;
-        }
-
-        if (e.key === "Tab") {
-          const firstEl = focusableElements[0];
-          const lastEl = focusableElements[focusableElements.length - 1];
-          if (!firstEl || !lastEl) return;
-
-          if (e.shiftKey) {
-            if (document.activeElement === firstEl) {
-              lastEl.focus();
-              e.preventDefault();
-            }
-          } else {
-            if (document.activeElement === lastEl) {
-              firstEl.focus();
-              e.preventDefault();
-            }
-          }
-        }
-      };
-
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    } else if (wasMenuOpen.current) {
-      toggleRef.current?.focus();
-      wasMenuOpen.current = false;
-    }
-  }, [isMenuOpen]);
-
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMenuOpen]);
+  useBodyScrollLock(isMenuOpen);
 
   const { resolvedTheme } = useTheme();
 

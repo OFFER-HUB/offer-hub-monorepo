@@ -11,6 +11,7 @@ import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Navbar } from "@/components/layout/Navbar";
 import { Breadcrumb } from "@/components/docs/Breadcrumb";
 import { FileCode2, FileText, Github } from "lucide-react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 // Use production URL for AI assistant links
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://offer-hub.tech";
@@ -63,35 +64,11 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
     setIsDrawerOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (!isDrawerOpen) return;
-    const drawerEl = drawerRef.current;
-    if (!drawerEl) return;
-
-    const focusableSelectors =
-      'a[href], button:not([disabled]), [tabIndex]:not([tabIndex="-1"])';
-    const focusableElements = Array.from(
-      drawerEl.querySelectorAll<HTMLElement>(focusableSelectors)
-    );
-    focusableElements[0]?.focus();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setIsDrawerOpen(false); return; }
-      if (e.key === "Tab") {
-        const first = focusableElements[0];
-        const last = focusableElements[focusableElements.length - 1];
-        if (!first || !last) return;
-        if (e.shiftKey) {
-          if (document.activeElement === first) { last.focus(); e.preventDefault(); }
-        } else {
-          if (document.activeElement === last) { first.focus(); e.preventDefault(); }
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isDrawerOpen]);
+  useFocusTrap({
+    containerRef: drawerRef,
+    isActive: isDrawerOpen,
+    onEscape: () => setIsDrawerOpen(false),
+  });
 
   useEffect(() => {
     if (isHub) return;
