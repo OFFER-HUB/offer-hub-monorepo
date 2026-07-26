@@ -5,6 +5,7 @@ import { Search, FileText, ChevronRight, X } from "lucide-react";
 import Fuse, { type FuseResult, type FuseResultMatch } from "fuse.js";
 import { useRouter } from "next/navigation";
 import docsIndex from "@/data/docs-index.json";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface SearchResult {
     id: string;
@@ -16,7 +17,7 @@ interface SearchResult {
 
 export function DocsSearchBar() {
     const [query, setQuery] = useState("");
-    const [debounceQuery, setDebounceQuery] = useState("");
+    const debounceQuery = useDebounce(query, 300);
     const [results, setResults] = useState<FuseResult<SearchResult>[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -32,14 +33,6 @@ export function DocsSearchBar() {
         includeMatches: true,
         minMatchCharLength: 2,
     }), []);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebounceQuery(query);
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [query]);
 
     useEffect(() => {
         if (debounceQuery.length > 1) {

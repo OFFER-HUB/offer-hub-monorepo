@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronDown } from "lucide-react";
+import { useLiquidTextAnimation } from "@/hooks/useLiquidTextAnimation";
 
 /**
  * Animation-only highlight tones for the liquid text effect. These are NOT
@@ -27,90 +28,7 @@ const LIQUID_HIGHLIGHTS = {
 export function HeroSection() {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  useEffect(() => {
-    const el = headingRef.current;
-    if (!el) return;
-
-    // Detect prefers-reduced-motion
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let shouldReduceMotion = mediaQuery.matches;
-
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-      shouldReduceMotion = e.matches;
-      if (shouldReduceMotion) {
-        cancelAnimationFrame(frame);
-        // Set a static beautiful gradient if motion is reduced
-        el.style.backgroundImage = `linear-gradient(135deg, ${LIQUID_HIGHLIGHTS.highlight} 0%, var(--color-primary) 100%)`;
-      } else {
-        frame = requestAnimationFrame(animate);
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleMediaChange);
-
-    let frame: number;
-    let t = 0;
-    let paused = false;
-
-    const animate = () => {
-      if (paused || shouldReduceMotion) return;
-      t += 0.022;
-
-      const b1x = 50 + 28 * Math.sin(t * 0.70);
-      const b1y = 50 + 22 * Math.cos(t * 0.50);
-      const b2x = 50 + 22 * Math.sin(t * 0.40 + 2.0);
-      const b2y = 50 + 28 * Math.cos(t * 0.60 + 1.2);
-      const b3x = 50 + 32 * Math.sin(t * 0.85 + 4.2);
-      const b3y = 50 + 18 * Math.cos(t * 0.75 + 3.0);
-      const b4x = 50 + 18 * Math.sin(t * 1.10 + 1.0);
-      const b4y = 50 + 30 * Math.cos(t * 0.95 + 5.1);
-      const b5x = 50 + 38 * Math.sin(t * 0.55 + 5.5);
-      const b5y = 50 + 24 * Math.cos(t * 0.42 + 4.0);
-      const b6x = 50 + 14 * Math.sin(t * 1.30 + 3.0);
-      const b6y = 50 + 14 * Math.cos(t * 1.15 + 2.0);
-
-      el.style.backgroundImage = [
-        `radial-gradient(ellipse 48% 55% at ${b1x}% ${b1y}%, ${LIQUID_HIGHLIGHTS.highlight} 0%, var(--color-primary) 45%, color-mix(in srgb, var(--color-primary) 0%, transparent) 82%)`,
-        `radial-gradient(ellipse 38% 46% at ${b2x}% ${b2y}%, ${LIQUID_HIGHLIGHTS.brightest} 0%, ${LIQUID_HIGHLIGHTS.highlight} 40%, color-mix(in srgb, ${LIQUID_HIGHLIGHTS.highlight} 0%, transparent) 80%)`,
-        `radial-gradient(ellipse 32% 42% at ${b3x}% ${b3y}%, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 0%, transparent) 78%)`,
-        `radial-gradient(ellipse 28% 38% at ${b4x}% ${b4y}%, var(--color-primary-hover) 0%, color-mix(in srgb, var(--color-primary-hover) 0%, transparent) 78%)`,
-        `radial-gradient(ellipse 44% 52% at ${b5x}% ${b5y}%, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 0%, transparent) 82%)`,
-        `radial-gradient(ellipse 20% 26% at ${b6x}% ${b6y}%, ${LIQUID_HIGHLIGHTS.brightest} 0%, color-mix(in srgb, ${LIQUID_HIGHLIGHTS.brightest} 0%, transparent) 72%)`,
-        `radial-gradient(ellipse 62% 72% at ${b3x}% ${b2y}%, color-mix(in srgb, var(--color-bg-base) 90%, transparent) 0%, color-mix(in srgb, var(--color-bg-base) 50%, transparent) 40%, color-mix(in srgb, var(--color-bg-base) 0%, transparent) 78%)`,
-        `radial-gradient(ellipse 52% 62% at ${b5x}% ${b4y}%, color-mix(in srgb, var(--color-bg-base) 80%, transparent) 0%, color-mix(in srgb, var(--color-bg-base) 38%, transparent) 38%, color-mix(in srgb, var(--color-bg-base) 0%, transparent) 72%)`,
-        `radial-gradient(ellipse 42% 50% at ${b1x}% ${b6y}%, color-mix(in srgb, var(--color-bg-base) 65%, transparent) 0%, color-mix(in srgb, var(--color-bg-base) 20%, transparent) 45%, color-mix(in srgb, var(--color-bg-base) 0%, transparent) 70%)`,
-      ].join(", ");
-
-      frame = requestAnimationFrame(animate);
-    };
-
-    // Pause animation when tab is hidden to save CPU
-    const onVisibility = () => {
-      if (document.hidden) {
-        paused = true;
-        cancelAnimationFrame(frame);
-      } else {
-        paused = false;
-        if (!shouldReduceMotion) {
-          frame = requestAnimationFrame(animate);
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", onVisibility);
-
-    if (shouldReduceMotion) {
-      el.style.backgroundImage = `linear-gradient(135deg, ${LIQUID_HIGHLIGHTS.highlight} 0%, var(--color-primary) 100%)`;
-    } else {
-      frame = requestAnimationFrame(animate);
-    }
-
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener("visibilitychange", onVisibility);
-      mediaQuery.removeEventListener("change", handleMediaChange);
-    };
-  }, []);
+  useLiquidTextAnimation(headingRef, LIQUID_HIGHLIGHTS);
 
   return (
     <section

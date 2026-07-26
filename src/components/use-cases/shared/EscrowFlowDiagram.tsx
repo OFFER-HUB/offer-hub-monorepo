@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useId } from "react";
+import { useState, useRef, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export interface EscrowStep {
   stepNumber: number;
@@ -252,15 +253,7 @@ export function EscrowFlowDiagram({
   className,
 }: EscrowFlowDiagramProps) {
   const [activeStep, setActiveStep] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const isOnChainActive =
     activeStep !== null && steps[activeStep - 1]?.isOnChain;
