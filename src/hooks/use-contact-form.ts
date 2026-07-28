@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isValidEmail } from "@/utils/email-validation";
 import { submitContactInquiry } from "@/services/contact";
 
 export interface ContactFormData {
