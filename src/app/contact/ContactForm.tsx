@@ -1,77 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { Send, User, Mail, MessageSquare, Building2, CheckCircle2, AlertCircle } from "lucide-react";
-import { submitContactInquiry } from "@/services/contact";
-import { isValidEmail } from "@/utils/email-validation";
-
-interface ContactFormData {
-  company: string;
-  name: string;
-  email: string;
-  message: string;
-}
+import { FormField } from "@/components/forms/FormField";
+import { useContactForm } from "@/hooks/use-contact-form";
 
 export function ContactForm() {
-  const [formData, setFormData] = useState<ContactFormData>({
-    company: "",
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target as HTMLInputElement;
-    setFormData((p) => ({ ...p, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
-    setSubmitError(null);
-  };
-
-  const validate = () => {
-    const next: Partial<Record<keyof ContactFormData, string>> = {};
-    if (!formData.company.trim()) next.company = "Company name is required";
-    if (!formData.name.trim()) next.name = "Contact name is required";
-    if (!formData.email.trim()) next.email = "Work email is required";
-    else if (!isValidEmail(formData.email)) next.email = "Enter a valid work email";
-    return next;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError(null);
-    const v = validate();
-    if (Object.keys(v).length) {
-      setErrors(v);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const result = await submitContactInquiry({
-      company: formData.company,
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-    });
-
-    if (result.ok) {
-      setIsSubmitted(true);
-      return;
-    }
-
-    if (result.reason === "not_configured") {
-      setSubmitError("Contact is not configured. Please try again later.");
-    } else if (result.reason === "error") {
-      setSubmitError("Something went wrong. Please try again.");
-    } else {
-      setSubmitError("Network error. Please check your connection and try again.");
-    }
-    setIsLoading(false);
-  };
+  const {
+    formData,
+    errors,
+    isLoading,
+    isSubmitted,
+    submitError,
+    handleInputChange,
+    handleSubmit,
+  } = useContactForm();
 
   if (isSubmitted) {
     return (
@@ -95,41 +37,59 @@ export function ContactForm() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="company" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Company Name</label>
-          <div className="relative group">
-            <Building2 size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-            <input id="company" name="company" value={formData.company} onChange={handleInputChange} required aria-describedby={errors.company ? "company-error" : undefined} className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.company ? 'ring-1 ring-red-400' : ''}`} placeholder="Company, LLC" disabled={isLoading} />
-            {errors.company && <p id="company-error" className="text-xs text-red-600 mt-1 pl-2">{errors.company}</p>}
-          </div>
-        </div>
+        <FormField
+          id="company"
+          name="company"
+          label="Company Name"
+          value={formData.company}
+          onChange={handleInputChange}
+          placeholder="Company, LLC"
+          required
+          disabled={isLoading}
+          icon={Building2}
+          error={errors.company}
+        />
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Contact Name</label>
-          <div className="relative group">
-            <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-            <input id="name" name="name" value={formData.name} onChange={handleInputChange} required aria-describedby={errors.name ? "name-error" : undefined} className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.name ? 'ring-1 ring-red-400' : ''}`} placeholder="Jane Doe" disabled={isLoading} />
-            {errors.name && <p id="name-error" className="text-xs text-red-600 mt-1 pl-2">{errors.name}</p>}
-          </div>
-        </div>
+        <FormField
+          id="name"
+          name="name"
+          label="Contact Name"
+          value={formData.name}
+          onChange={handleInputChange}
+          placeholder="Jane Doe"
+          required
+          disabled={isLoading}
+          icon={User}
+          error={errors.name}
+        />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Work Email</label>
-        <div className="relative group">
-          <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-          <input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required aria-describedby={errors.email ? "email-error" : undefined} className={`w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium focus-visible:ring-2 focus-visible:ring-theme-primary ${errors.email ? 'ring-1 ring-red-400' : ''}`} placeholder="you@company.com" disabled={isLoading} />
-          {errors.email && <p id="email-error" className="text-xs text-red-600 mt-1 pl-2">{errors.email}</p>}
-        </div>
-      </div>
+      <FormField
+        id="email"
+        name="email"
+        label="Work Email"
+        type="email"
+        value={formData.email}
+        onChange={handleInputChange}
+        placeholder="you@company.com"
+        required
+        disabled={isLoading}
+        icon={Mail}
+        error={errors.email}
+      />
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="message" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Use case / Message (optional)</label>
-        <div className="relative group">
-          <MessageSquare size={16} className="absolute left-5 top-6 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-          <textarea id="message" name="message" rows={4} value={formData.message} onChange={handleInputChange} placeholder="Tell us about your integration, expected volume, or key requirements..." disabled={isLoading} className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium resize-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-theme-primary" />
-        </div>
-      </div>
+      <FormField
+        id="message"
+        name="message"
+        label="Use case / Message (optional)"
+        as="textarea"
+        rows={4}
+        value={formData.message}
+        onChange={handleInputChange}
+        placeholder="Tell us about your integration, expected volume, or key requirements..."
+        disabled={isLoading}
+        icon={MessageSquare}
+      />
 
       <button type="submit" disabled={isLoading} className="btn-neumorphic-primary mt-2 w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed">
         {isLoading ? 'Submitting...' : 'Contact Sales'}

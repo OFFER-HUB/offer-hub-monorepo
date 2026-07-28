@@ -1,150 +1,24 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
 import Script from "next/script";
 import { Send, User, Mail, MessageSquare, CheckCircle2, AlertCircle, Timer } from "lucide-react";
-import { submitWaitlistEntry } from "@/services/waitlist";
-
-const COOLDOWN_SECONDS = 30;
-
-declare global {
-    interface Window {
-        turnstile?: {
-            render: (
-                container: HTMLElement,
-                options: {
-                    sitekey: string;
-                    callback: (token: string) => void;
-                    "expired-callback": () => void;
-                    "error-callback": () => void;
-                }
-            ) => string;
-            reset: (widgetId: string) => void;
-        };
-    }
-}
-
-interface FormData {
-    name: string;
-    email: string;
-    purpose: string;
-    referral: string;
-}
+import { FormField } from "@/components/forms/FormField";
+import { useWaitlistForm } from "@/hooks/use-waitlist-form";
 
 export function RegistrationForm() {
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [cooldownSeconds, setCooldownSeconds] = useState(0);
-    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-    const [formData, setFormData] = useState<FormData>({
-        name: "",
-        email: "",
-        purpose: "",
-        referral: ""
-    });
-
-    const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const turnstileContainerRef = useRef<HTMLDivElement>(null);
-    const turnstileWidgetId = useRef<string | null>(null);
-
-    const startCooldown = useCallback(() => {
-        if (cooldownRef.current) clearInterval(cooldownRef.current);
-        setCooldownSeconds(COOLDOWN_SECONDS);
-        cooldownRef.current = setInterval(() => {
-            setCooldownSeconds(prev => {
-                if (prev <= 1) {
-                    clearInterval(cooldownRef.current!);
-                    cooldownRef.current = null;
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-    }, []);
-
-    const resetTurnstile = useCallback(() => {
-        if (turnstileWidgetId.current && typeof window !== "undefined" && window.turnstile) {
-            window.turnstile.reset(turnstileWidgetId.current);
-            setTurnstileToken(null);
-        }
-    }, []);
-
-    const renderTurnstile = useCallback(() => {
-        const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-        if (
-            !sitekey ||
-            !turnstileContainerRef.current ||
-            turnstileWidgetId.current ||
-            typeof window === "undefined" ||
-            !window.turnstile
-        ) return;
-
-        turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
-            sitekey,
-            callback: (token) => setTurnstileToken(token),
-            "expired-callback": () => setTurnstileToken(null),
-            "error-callback": () => setTurnstileToken(null),
-        });
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            if (cooldownRef.current) clearInterval(cooldownRef.current);
-        };
-    }, []);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        setError(null);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (cooldownSeconds > 0 || isLoading) return;
-
-        const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-        if (sitekey && !turnstileToken) {
-            setError("Please complete the CAPTCHA verification.");
-            return;
-        }
-
-        setIsLoading(true);
-        setError(null);
-
-        const result = await submitWaitlistEntry({
-            email: formData.email,
-            name: formData.name,
-            purpose: formData.purpose,
-            referral: formData.referral
-        });
-
-        if (result.ok) {
-            setIsSubmitted(true);
-            return;
-        }
-
-        // Not-configured is the one branch that leaves the CAPTCHA widget intact,
-        // since no verification attempt was ever made against the backend.
-        if (result.reason === "not_configured") {
-            setError("Waitlist is not configured yet. Please try again later.");
-            setIsLoading(false);
-            startCooldown();
-            return;
-        }
-
-        if (result.reason === "duplicate") {
-            setError("This email is already registered on our waitlist.");
-        } else if (result.reason === "error") {
-            setError("Something went wrong. Please try again.");
-        } else {
-            setError("Network error. Please check your connection and try again.");
-        }
-        setIsLoading(false);
-        startCooldown();
-        resetTurnstile();
-    };
+    const {
+        formData,
+        isSubmitted,
+        isLoading,
+        error,
+        cooldownSeconds,
+        turnstileContainerRef,
+        isTurnstileConfigured,
+        canSubmit,
+        handleInputChange,
+        handleSubmit,
+        renderTurnstile,
+    } = useWaitlistForm();
 
     if (isSubmitted) {
         return (
@@ -158,8 +32,7 @@ export function RegistrationForm() {
         );
     }
 
-    const isTurnstileConfigured = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    const canSubmit = !isLoading && cooldownSeconds === 0 && (!isTurnstileConfigured || !!turnstileToken);
+    const isDisabled = isLoading || cooldownSeconds > 0;
 
     return (
         <section id="waitlist-form" className="py-32 bg-transparent relative">
@@ -202,92 +75,61 @@ export function RegistrationForm() {
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Full Name</label>
-                        <div className="relative group">
-                            <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-                            <input
-                                id="name"
-                                required
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                placeholder="John Doe"
-                                maxLength={100}
-                                disabled={isLoading || cooldownSeconds > 0}
-                                className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
-                            />
-                        </div>
-                    </div>
+                    <FormField
+                        id="name"
+                        name="name"
+                        label="Full Name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="John Doe"
+                        maxLength={100}
+                        required
+                        disabled={isDisabled}
+                        icon={User}
+                    />
 
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">Email Address</label>
-                        <div className="relative group">
-                            <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-                            <input
-                                id="email"
-                                required
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                placeholder="john@example.com"
-                                maxLength={320}
-                                disabled={isLoading || cooldownSeconds > 0}
-                                className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
-                            />
-                        </div>
-                    </div>
+                    <FormField
+                        id="email"
+                        name="email"
+                        label="Email Address"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="john@example.com"
+                        maxLength={320}
+                        required
+                        disabled={isDisabled}
+                        icon={Mail}
+                    />
 
-                    <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-center ml-2">
-                            <label htmlFor="purpose" className="text-[10px] font-black uppercase tracking-widest text-content-secondary">For what would you use Offer Hub?</label>
-                            <span className={`text-[10px] font-bold tracking-wider transition-colors duration-200 ${
-                                formData.purpose.length >= 480
-                                    ? "text-red-500"
-                                    : formData.purpose.length >= 400
-                                    ? "text-amber-500"
-                                    : "text-content-muted"
-                            }`}>
-                                {formData.purpose.length}/500
-                            </span>
-                        </div>
-                        <div className="relative group">
-                            <MessageSquare size={16} className="absolute left-5 top-6 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-                            <textarea
-                                id="purpose"
-                                required
-                                rows={3}
-                                name="purpose"
-                                value={formData.purpose}
-                                onChange={handleInputChange}
-                                placeholder="Tell us about your marketplace or project..."
-                                maxLength={500}
-                                disabled={isLoading || cooldownSeconds > 0}
-                                className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium resize-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
-                            />
-                        </div>
-                    </div>
+                    <FormField
+                        id="purpose"
+                        name="purpose"
+                        label="For what would you use Offer Hub?"
+                        as="textarea"
+                        rows={3}
+                        value={formData.purpose}
+                        onChange={handleInputChange}
+                        placeholder="Tell us about your marketplace or project..."
+                        maxLength={500}
+                        showCharCount
+                        required
+                        disabled={isDisabled}
+                        icon={MessageSquare}
+                    />
 
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="referral" className="text-[10px] font-black uppercase tracking-widest text-content-secondary ml-2">How did you hear about us?</label>
-                        <div className="relative group">
-                            <Send size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-theme-primary transition-colors" />
-                            <input
-                                id="referral"
-                                required
-                                type="text"
-                                name="referral"
-                                value={formData.referral}
-                                onChange={handleInputChange}
-                                placeholder="X, Telegram, Friend, etc."
-                                maxLength={200}
-                                disabled={isLoading || cooldownSeconds > 0}
-                                className="w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
-                            />
-                        </div>
-                    </div>
+                    <FormField
+                        id="referral"
+                        name="referral"
+                        label="How did you hear about us?"
+                        value={formData.referral}
+                        onChange={handleInputChange}
+                        placeholder="X, Telegram, Friend, etc."
+                        maxLength={200}
+                        required
+                        disabled={isDisabled}
+                        icon={Send}
+                    />
 
                     {isTurnstileConfigured && (
                         <div ref={turnstileContainerRef} className="mx-auto" />

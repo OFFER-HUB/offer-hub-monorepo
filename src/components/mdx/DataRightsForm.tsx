@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { getIcon, type IconName } from "@/lib/icon-registry";
+import React from "react";
+import { ShieldCheck, Trash2, Download } from "lucide-react";
+import { useDataRightsForm } from "@/hooks/use-data-rights-form";
 
-type RequestStatus = { ok: boolean; message: string } | null;
+const iconMap = {
+  ShieldCheck,
+  Trash2,
+  Download,
+};
 
 export function DataRightsForm({
   title,
@@ -16,40 +21,17 @@ export function DataRightsForm({
 }: {
   title: string;
   description: string;
-  iconName: IconName;
+  iconName: keyof typeof iconMap;
   endpoint: string;
   successMessage?: string;
   buttonLabel: string;
   destructive?: boolean;
 }) {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<RequestStatus>(null);
-  const [loading, setLoading] = useState(false);
-  const Icon = getIcon(iconName, "ShieldCheck");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setStatus(null);
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setStatus({ ok: false, message: json.error ?? "An error occurred." });
-      } else {
-        setStatus({ ok: true, message: successMessage ?? json.message ?? "Done." });
-        setEmail("");
-      }
-    } catch {
-      setStatus({ ok: false, message: "Network error. Please try again." });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { email, status, loading, setEmail, handleSubmit } = useDataRightsForm(
+    endpoint,
+    successMessage
+  );
+  const Icon = iconMap[iconName] || ShieldCheck;
 
   return (
     <div className="p-8 sm:p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
