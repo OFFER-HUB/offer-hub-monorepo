@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Copy, Check } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/cn";
+import { logger } from "@/utils/logger";
 
 export type MermaidDiagramProps = {
   chart?: string;
@@ -115,7 +116,7 @@ export function MermaidDiagram({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy!", err);
+      logger.error("Failed to copy!", err);
     }
   }
 

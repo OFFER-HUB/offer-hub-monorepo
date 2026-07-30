@@ -60,6 +60,44 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
     );
   }, [currentDocSlug, nav]);
 
+  // Inline DocActionsMenu to avoid missing import error
+  function DocActionsMenu({ slug }: { slug: string }) {
+    const viewUrl = `${SITE_URL}/docs/${slug}`;
+    const githubUrl = `https://github.com/offer-hub/offer-hub-monorepo/blob/main/apps/www/src/content/docs/${slug}.mdx`;
+
+    return (
+      <div className="flex items-center gap-3">
+        <a
+          href={viewUrl}
+          className="inline-flex items-center gap-2 text-content-secondary hover:text-content-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <FileText size={16} aria-hidden="true" />
+          <span className="sr-only">View</span>
+        </a>
+        <a
+          href={githubUrl}
+          className="inline-flex items-center gap-2 text-content-secondary hover:text-content-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Github size={16} aria-hidden="true" />
+          <span className="sr-only">Edit on GitHub</span>
+        </a>
+        <a
+          href={`${viewUrl}#source`}
+          className="inline-flex items-center gap-2 text-content-secondary hover:text-content-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <FileCode2 size={16} aria-hidden="true" />
+          <span className="sr-only">View source</span>
+        </a>
+      </div>
+    );
+  }
+
   useEffect(() => {
     setIsDrawerOpen(false);
   }, [pathname]);
@@ -200,170 +238,3 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   );
 }
 
-import { ExportJSON } from "@/components/docs/ExportJSON";
-
-function DocActionsMenu({ slug }: { slug: string }) {
-  const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<string | null>(null);
-
-  const getDocData = () => {
-    const el = document.getElementById("doc-metadata-for-actions");
-    if (!el) return null;
-    return {
-      slug: el.getAttribute("data-slug"),
-      title: el.getAttribute("data-title"),
-      markdown: el.getAttribute("data-markdown"),
-    };
-  };
-
-  const getPageContent = () => {
-    const data = getDocData();
-    // Try to get markdown from data attribute first
-    if (data?.markdown && data.markdown.length > 0) {
-      return { markdown: data.markdown, title: data.title };
-    }
-    // Fallback to extracting text from the page content
-    const contentEl = document.getElementById("doc-page-export-content");
-    if (contentEl) {
-      return {
-        markdown: contentEl.innerText || "",
-        title: data?.title || document.title
-      };
-    }
-    return { markdown: "", title: "" };
-  };
-
-  const handleCopyMarkdown = async () => {
-    try {
-      const { markdown, title } = getPageContent();
-      const fullContent = `# ${title}\n\nSource: ${SITE_URL}/docs/${slug}\n\n${markdown}`;
-      await navigator.clipboard.writeText(fullContent);
-      setCopyStatus("Copied!");
-      setTimeout(() => setCopyStatus(null), 2000);
-    } catch (err) {
-      console.error("Copy failed", err);
-      setCopyStatus("Failed to copy");
-      setTimeout(() => setCopyStatus(null), 2000);
-    }
-  };
-
-  const handleExportPdf = async () => {
-    setIsExportingPdf(true);
-    try {
-      const html2pdfModule = await import("html2pdf.js");
-      const html2pdf = html2pdfModule.default;
-      const source = document.getElementById("doc-page-export-content");
-      if (!source) {
-        throw new Error("Content not found");
-      }
-
-      // Clone the content to avoid modifying the original
-      const clone = source.cloneNode(true) as HTMLElement;
-
-      // Remove any elements that might cause issues
-      clone.querySelectorAll("button, iframe, video").forEach(el => el.remove());
-
-      const opt = {
-        margin: [15, 15, 15, 15],
-        filename: `${slug.replace(/\//g, "-")}-offerhub-docs.pdf`,
-        image: { type: "jpeg" as const, quality: 0.95 },
-        html2canvas: {
-          scale: 1.5,
-          useCORS: true,
-          logging: false,
-          letterRendering: true
-        },
-        jsPDF: {
-          unit: "mm" as const,
-          format: "a4" as const,
-          orientation: "portrait" as const
-        },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] as ("avoid-all" | "css" | "legacy")[] }
-      };
-
-      await html2pdf().set(opt).from(clone).save();
-    } catch (err) {
-      console.error("PDF Export failed", err);
-      alert("PDF export failed. The document might be too large. Try copying as markdown instead.");
-    } finally {
-      setIsExportingPdf(false);
-    }
-  };
-
-  /* ─── Inline helpers ─── */
-  async function handleExportMarkdown() {
-    const el = document.getElementById("doc-metadata-for-actions");
-    const markdown = el?.getAttribute("data-markdown") || "";
-    const filename = `${slug.replace(/\//g, "-")}.md`;
-    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement("a"), { href: url, download: filename });
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  }
-
-  const DOCS_REPO_BASE = "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/content/docs";
-
-  const NEU_ICON_BTN = "neu-circle w-10 h-10 flex items-center justify-center text-content-secondary hover:text-[#149A9B] transition-colors";
-  const NEU_PILL = "flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-medium tracking-tight transition-all duration-300 ease-out text-content-secondary hover:text-[#149A9B]" +
-    " shadow-[4px_4px_8px_var(--shadow-dark),-4px_-4px_8px_var(--shadow-light)] bg-[var(--color-bg-base)]" +
-    " hover:shadow-[inset_2px_2px_5px_var(--shadow-dark),inset_-2px_-2px_5px_var(--shadow-light)]";
-
-  return (
-    <div className="flex items-center gap-3">
-      {/* ── Export as ── */}
-      <span className="text-[11px] font-bold uppercase tracking-widest text-content-secondary/60 mr-1">Export as</span>
-
-      <button type="button" title="Download Markdown" aria-label="Download Markdown" onClick={handleExportMarkdown} className={NEU_ICON_BTN}>
-        <FileCode2 size={17} aria-hidden="true" />
-      </button>
-
-      <ExportJSON slug={slug} title={slug} />
-
-      <button
-        type="button" title="Export PDF" aria-label="Export PDF"
-        disabled={isExportingPdf}
-        onClick={handleExportPdf}
-        className={NEU_ICON_BTN + " disabled:opacity-50"}
-      >
-        <FileText size={17} aria-hidden="true" />
-      </button>
-
-      {/* ── Divider ── */}
-      <span className="w-px h-5 bg-[var(--color-border)]/40" />
-
-      {/* ── GitHub ── */}
-      <a
-        href={`${DOCS_REPO_BASE}/${slug}.mdx`}
-        target="_blank" rel="noopener noreferrer"
-        title="Edit on GitHub"
-        aria-label="Edit on GitHub"
-        className={NEU_ICON_BTN}
-      >
-        <Github size={17} aria-hidden="true" />
-      </a>
-
-      {/* ── Divider ── */}
-      <span className="w-px h-5 bg-[var(--color-border)]/40" />
-
-      {/* ── Copy pill ── */}
-      <button
-        type="button"
-        title={copyStatus ? "Copied!" : "Copy page as Markdown"}
-        onClick={handleCopyMarkdown}
-        className={NEU_PILL}
-      >
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4" aria-hidden="true">
-          {copyStatus ? (
-            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-          ) : (
-            <>
-              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-            </>
-          )}
-        </svg>
-        {copyStatus ? "Copied!" : "Copy"}
-      </button>
-    </div>
-  );
-}
