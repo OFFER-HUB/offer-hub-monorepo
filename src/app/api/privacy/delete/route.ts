@@ -5,7 +5,7 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json().catch(() => null);
   const email = (body?.email ?? '').trim();
 

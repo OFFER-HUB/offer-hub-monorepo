@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { getBrowserName, getDeviceType, getOSName } from '@/utils/device';
 import { getGeolocation } from './geolocation';
+import { logger } from '@/utils/logger';
 
 // Generate a unique visitor ID
 export function generateVisitorId(): string {
@@ -24,7 +25,7 @@ export function getSessionId(): string {
 }
 
 // Get UTM parameters from URL
-export function getUTMParams() {
+export function getUTMParams(): { utm_source?: string; utm_medium?: string; utm_campaign?: string } {
   if (typeof window === 'undefined') return {};
 
   const params = new URLSearchParams(window.location.search);
@@ -36,7 +37,7 @@ export function getUTMParams() {
 }
 
 // Track page view
-export async function trackPageView(pagePath: string, pageTitle?: string) {
+export async function trackPageView(pagePath: string, pageTitle?: string): Promise<void> {
   if (typeof window !== 'undefined' && localStorage.getItem('cookie_consent') !== 'accepted') {
     return;
   }
@@ -76,9 +77,7 @@ export async function trackPageView(pagePath: string, pageTitle?: string) {
       .then(({ error }) => {
         if (error) {
           const msg = (error as { message?: string })?.message ?? JSON.stringify(error);
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('[Analytics] Page view:', msg);
-          }
+          logger.warn('[Analytics] Page view:', msg);
         }
       });
 
@@ -103,13 +102,11 @@ export async function trackPageView(pagePath: string, pageTitle?: string) {
         .then(({ error }) => {
           if (error) {
             const msg = (error as { message?: string })?.message ?? JSON.stringify(error);
-            if (process.env.NODE_ENV === 'development') {
-              console.warn('[Analytics] Visitor upsert:', msg);
-            }
+            logger.warn('[Analytics] Visitor upsert:', msg);
           }
         });
     });
   } catch (error) {
-    console.error('Error in trackPageView:', error);
+    logger.error('Error in trackPageView:', error);
   }
 }
