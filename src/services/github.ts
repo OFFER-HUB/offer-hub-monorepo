@@ -1,39 +1,7 @@
-import type { PullRequestData } from "@/types/community";
+import type { RepoStats, ContributorData, IssueData, PullRequestData, CommunityData } from "@/types/community";
+import type { Contributor, GitHubRepo, GitHubPullRequest, GitHubIssue, GitHubRelease } from "@/types/github";
+import { GITHUB_RELEASES_API_URL } from "@/constants/github";
 import { logger } from '@/utils/logger';
-
-/* -------------------------------------------------------------------------- */
-/*                              Public data shapes                             */
-/* -------------------------------------------------------------------------- */
-
-export interface RepoStats {
-  stars: string;
-  forks: string;
-  contributors: string;
-  openIssues: string;
-}
-
-export interface ContributorData {
-  name: string;
-  username: string;
-  avatar: string;
-  commits: number;
-  profileUrl: string;
-}
-
-export interface IssueData {
-  number: number;
-  title: string;
-  priority: string;
-  url: string;
-  labels: string[];
-}
-
-export interface CommunityData {
-  stats: RepoStats | null;
-  contributors: ContributorData[];
-  pullRequests: PullRequestData[];
-  issues: IssueData[];
-}
 
 export interface ChangelogEntry {
   version: string;
@@ -43,56 +11,6 @@ export interface ChangelogEntry {
   badgeColor: string;
   description: string;
   changes: string[];
-}
-
-/* -------------------------------------------------------------------------- */
-/*                            Raw GitHub API shapes                            */
-/* -------------------------------------------------------------------------- */
-
-interface Contributor {
-  login: string;
-  avatar_url: string;
-  contributions: number;
-  html_url: string;
-}
-
-interface GitHubRepo {
-  stargazers_count: number;
-  forks_count: number;
-  open_issues_count: number;
-}
-
-interface GitHubPullRequest {
-  number: number;
-  title: string;
-  html_url: string;
-  state: string;
-  created_at: string;
-  merged_at: string | null;
-  user: {
-    login: string;
-  } | null;
-}
-
-interface GitHubIssue {
-  number: number;
-  title: string;
-  html_url: string;
-  pull_request?: object;
-  created_at?: string;
-  labels: Array<{
-    name: string;
-  }>;
-}
-
-interface GitHubRelease {
-  tag_name: string;
-  name: string | null;
-  body: string | null;
-  draft: boolean;
-  prerelease: boolean;
-  published_at: string | null;
-  created_at: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -233,7 +151,7 @@ export async function fetchCommunityData() {
 /*                                  Changelog                                  */
 /* -------------------------------------------------------------------------- */
 
-const RELEASES_API_URL = "https://api.github.com/repos/OFFER-HUB/offer-hub-monorepo/releases";
+const RELEASES_API_URL = GITHUB_RELEASES_API_URL;
 
 function formatReleaseDate(dateString: string): string {
   return new Intl.DateTimeFormat("en-US", {

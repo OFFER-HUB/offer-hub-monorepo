@@ -13,6 +13,7 @@ import { Breadcrumb } from "@/components/docs/Breadcrumb";
 import { FileCode2, FileText, Github } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { SITE_URL_FALLBACK } from "@/constants/site";
+import { DOCS_REPO_BASE } from "@/constants/github";
 
 // Use production URL for AI assistant links
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
@@ -64,7 +65,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   // Inline DocActionsMenu to avoid missing import error
   function DocActionsMenu({ slug }: { slug: string }) {
     const viewUrl = `${SITE_URL}/docs/${slug}`;
-    const githubUrl = `https://github.com/offer-hub/offer-hub-monorepo/blob/main/apps/www/src/content/docs/${slug}.mdx`;
+    const githubUrl = `${DOCS_REPO_BASE}/${slug}.mdx`;
 
     return (
       <div className="flex items-center gap-3">
