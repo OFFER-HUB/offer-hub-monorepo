@@ -2,6 +2,7 @@ import React from "react";
 import { Mail, Link2 } from "lucide-react";
 import { DataRightsForm } from "./DataRightsForm";
 import { getIcon, type IconName } from "@/lib/icon-registry";
+import { COMPANY_INFO } from "@/data/company-info";
 export { DataRightsForm };
 
 export function FeatureCard({
@@ -14,7 +15,7 @@ export function FeatureCard({
   description: string;
   iconName: IconName;
   large?: boolean;
-}) {
+}): React.ReactElement {
   const Icon = getIcon(iconName, "ShieldCheck");
   return (
     <div
@@ -37,7 +38,7 @@ export function FeatureCard({
   );
 }
 
-export function FeaturesGrid({ children }: { children: React.ReactNode }) {
+export function FeaturesGrid({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-5">
       {children}
@@ -57,7 +58,7 @@ export function ProcessorCard({
   data: string;
   region?: string;
   link: string;
-}) {
+}): React.ReactElement {
   return (
     <div className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-all duration-300">
       <div className="flex items-center justify-between">
@@ -97,11 +98,11 @@ export function ProcessorCard({
   );
 }
 
-export function ProcessorsGrid({ children }: { children: React.ReactNode }) {
+export function ProcessorsGrid({ children }: { children: React.ReactNode }): React.ReactElement {
   return <div className="grid grid-cols-1 md:grid-cols-2 gap-6">{children}</div>;
 }
 
-export function ContactSection() {
+export function ContactSection(): React.ReactElement {
   return (
     <div className="p-8 sm:p-12 md:p-14 rounded-[3rem] shadow-neu-raised flex flex-col md:flex-row md:items-center md:justify-between gap-10 md:gap-14 mt-16 bg-bg-elevated">
       <div className="flex flex-col gap-6 md:max-w-md">
@@ -118,8 +119,8 @@ export function ContactSection() {
       </div>
       <div className="flex flex-col gap-5 w-full md:w-auto md:shrink-0 md:min-w-[280px]">
         {[
-          { label: "Privacy inquiries", email: "privacy@offerhub.io" },
-          { label: "General support", email: "support@offerhub.io" },
+          { label: "Privacy inquiries", email: COMPANY_INFO.emails.privacy },
+          { label: "General support", email: COMPANY_INFO.emails.support },
         ].map(({ label, email }) => (
           <a
             key={email}
@@ -134,11 +135,11 @@ export function ContactSection() {
         ))}
         <div className="rounded-2xl px-6 py-5 shadow-neu-raised-sm bg-bg-elevated">
           <p className="text-xs leading-relaxed font-medium text-content-secondary">
-            Offer Hub Inc.
+            {COMPANY_INFO.name}
             <br />
-            123 Market Street, Suite 400
+            {COMPANY_INFO.address.line1}
             <br />
-            San Francisco, CA 94105, USA
+            {COMPANY_INFO.address.line2}
           </p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Download, FileCode2, FileText, Github } from "lucide-react";
 
 import { downloadBlob } from "@/utils/downloadBlob";
 import { ExportJSON } from "@/components/docs/ExportJSON";
+import { logger } from "@/utils/logger";
 
 interface DocPageActionsProps {
   slug: string;
@@ -168,7 +169,7 @@ export function DocPageActions({ slug, title, description, markdownContent }: Do
 
       exportContainer.remove();
     } catch (error) {
-      console.error("PDF export failed", error);
+      logger.error("PDF export failed", error);
     } finally {
       setIsExportingPdf(false);
     }

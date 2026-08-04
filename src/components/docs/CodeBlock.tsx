@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Copy, Check, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/components/providers/ThemeProvider";
-import { highlightCache, escapeHtml } from "@/utils/shiki-helpers";
+import { logger } from "@/utils/logger";
 
 interface CodeBlockProps {
   code?: string;
@@ -86,7 +86,7 @@ export function CodeBlock({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy!", err);
+      logger.error("Failed to copy!", err);
     }
   }
 
