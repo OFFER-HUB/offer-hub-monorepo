@@ -1,6 +1,7 @@
 "use client";
 
 import { Download } from 'lucide-react';
+import { logger } from '@/utils/logger';
 
 interface ExportMarkdownProps {
     slug: string;
@@ -10,13 +11,13 @@ export function ExportMarkdown({ slug }: ExportMarkdownProps) {
     function handleExport() {
         const el = document.getElementById("doc-metadata-for-actions");
         if (!el) {
-            console.error("Documentation metadata not found");
+            logger.error("Documentation metadata not found");
             return;
         }
 
         const markdown = el.getAttribute("data-markdown");
         if (!markdown) {
-            console.error("Documentation content not found");
+            logger.error("Documentation content not found");
             return;
         }
 

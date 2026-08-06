@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.classList.add(resolved);
     };
     mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme, mounted]);
 
   const setTheme = useCallback((newTheme: Theme) => {
