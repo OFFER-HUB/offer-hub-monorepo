@@ -11,15 +11,17 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 function fillRequiredFields(container: HTMLElement) {
-  const name = container.querySelector<HTMLInputElement>("#name")!;
-  const email = container.querySelector<HTMLInputElement>("#email")!;
-  const purpose = container.querySelector<HTMLTextAreaElement>("#purpose")!;
-  const referral = container.querySelector<HTMLInputElement>("#referral")!;
+  act(() => {
+    const name = container.querySelector<HTMLInputElement>("#name")!;
+    const email = container.querySelector<HTMLInputElement>("#email")!;
+    const purpose = container.querySelector<HTMLTextAreaElement>("#purpose")!;
+    const referral = container.querySelector<HTMLInputElement>("#referral")!;
 
-  fireInput(name, "Jane Doe");
-  fireInput(email, "jane@example.com");
-  fireInput(purpose, "Building a marketplace");
-  fireInput(referral, "Friend");
+    fireInput(name, "Jane Doe");
+    fireInput(email, "jane@example.com");
+    fireInput(purpose, "Building a marketplace");
+    fireInput(referral, "Friend");
+  });
 }
 
 function fireInput(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
@@ -75,6 +77,7 @@ describe("RegistrationForm", () => {
   });
 
   it("shows a duplicate-email error and starts the cooldown on a unique-violation response", async () => {
+    vi.useFakeTimers();
     insert.mockResolvedValueOnce({ error: { code: "23505" } });
     const { container } = render(<RegistrationForm />);
 
@@ -83,10 +86,15 @@ describe("RegistrationForm", () => {
     const submitButton = screen.getByRole("button", { name: /submit application/i });
     await act(async () => {
       submitButton.click();
+      await vi.advanceTimersByTimeAsync(0);
     });
 
-    expect(await screen.findByText(/already registered on our waitlist/i)).toBeInTheDocument();
+    expect(screen.getByText(/already registered on our waitlist/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /wait 30s/i })).toBeDisabled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000);
+    });
   });
 
   it("prevents resubmission while the cooldown is active", async () => {
