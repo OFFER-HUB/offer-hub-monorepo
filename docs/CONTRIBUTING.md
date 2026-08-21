@@ -53,6 +53,84 @@ For the backend Orchestrator, see the [OFFER-HUB-Orchestrator](https://github.co
 - **API Server**: `npm run dev:api`
 - **Both Services (API + Worker)**: `npm run dev`
 
+## Testing
+
+The frontend suite runs on [Vitest](https://vitest.dev/) with
+[Testing Library](https://testing-library.com/) and a `jsdom` environment.
+
+### Running the suite
+
+```bash
+npm ci               # a fresh install is enough - no .env or credentials needed
+npm run test         # run everything once
+npm run test:watch   # re-run affected tests as you edit
+npm run test:coverage# run everything and enforce the coverage thresholds
+```
+
+You can also target a single file or a name pattern:
+
+```bash
+npm run test -- src/services/__tests__/waitlist.test.ts
+npm run test -- -t "cookie consent"
+```
+
+### Where tests live
+
+Tests sit in a `__tests__/` folder next to the code they cover, named
+`<module>.test.ts` (or `.test.tsx` for anything that renders):
+
+```
+src/services/waitlist.ts        ->  src/services/__tests__/waitlist.test.ts
+src/hooks/useDebounce.ts        ->  src/hooks/__tests__/useDebounce.test.ts
+src/app/api/privacy/delete/     ->  src/app/api/privacy/__tests__/delete.route.test.ts
+```
+
+### Conventions
+
+- **Never hit a real service.** Supabase is mocked at the `@/lib/supabase`
+  module boundary and the GitHub API through `fetch`. A test run must work
+  offline, with no credentials, and must not spend the unauthenticated GitHub
+  rate limit.
+- **Cover the unconfigured path.** Anything touching Supabase has to behave
+  sanely when `isSupabaseConfigured === false` and `supabase === null` - that
+  is what a contributor running the app locally actually hits.
+- **Cover consent gating.** `src/services/analytics.ts` must generate and
+  persist nothing while `cookie_consent !== 'accepted'`. If you touch
+  analytics, keep those assertions passing rather than adjusting them.
+- **Server-side modules** (API routes, anything asserting SSR behaviour) opt
+  into the Node environment with a `// @vitest-environment node` docblock on
+  the first line.
+- **Browser APIs jsdom lacks** (`IntersectionObserver`, `ResizeObserver`,
+  `matchMedia`, `document.fonts`) are stubbed once in `vitest.setup.ts`.
+  Override them locally when a test needs specific behaviour; do not delete
+  the shared stubs.
+- Prefer asserting **behaviour a user or caller can observe** (rendered text,
+  roles, returned values, the payload sent to Supabase) over internal state.
+
+### Coverage
+
+`vitest.config.ts` enforces two tiers of thresholds and CI fails when either
+is not met:
+
+| Scope | Bar |
+|---|---|
+| `src/services/**`, `src/hooks/**`, `src/lib/{supabase,seo,mdx}.ts` | 95% statements |
+| `src/app/api/**` | 100% |
+| Everything else (global floor) | 40% statements |
+
+The global floor is deliberately set at roughly where the suite is today, not
+at an aspirational number. Raise it as component coverage lands rather than
+leaving a bar nobody can clear.
+
+### What is expected of a PR
+
+- `npm run lint` passes with no errors.
+- `npm run test:coverage` passes, thresholds included.
+- New or changed behaviour comes with tests. For a bug fix, that means a test
+  that fails without your fix.
+- Tests deleted or skipped (`.skip`, `.todo`) are explained in the PR
+  description.
+
 ## Git Standards
 
 ### Branch Naming
@@ -131,7 +209,10 @@ Attach the report content and screenshots directly to your PR description rather
 
 1. Create a branch from `main`.
 2. Make your changes and use atomic commits.
-3. Ensure the project builds correctly (`npm run build`).
+3. Ensure the project builds correctly (`npm run build`), that `npm run lint`
+   reports no errors, and that `npm run test:coverage` passes - CI runs all
+   three and will fail the PR otherwise. See [Testing](#testing) for what is
+   expected of the tests themselves.
 4. **If your PR introduces a user-facing change** (new feature, bug fix, deprecation, breaking change, or security patch), add an entry to the `[Unreleased]` section of [`CHANGELOG.md`](../CHANGELOG.md) at the repository root. Follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and place the change under the appropriate category: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, or `Security`.
 5. Open a PR using our Pull Request template.
 6. Wait for a maintainer's review.

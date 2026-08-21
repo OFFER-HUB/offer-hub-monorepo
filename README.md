@@ -136,6 +136,23 @@ We welcome contributions! Please see [CONTRIBUTING.md](./docs/CONTRIBUTING.md) f
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
+### 🧪 Tests
+
+The frontend suite runs on Vitest. A plain `npm ci` is enough — no `.env` file,
+no credentials, and no network access are required.
+
+```bash
+npm run test          # run the suite once
+npm run test:watch    # re-run affected tests as you edit
+npm run test:coverage # run the suite and enforce coverage thresholds
+```
+
+Tests live in `__tests__/` folders beside the code they cover. CI runs
+`npm run lint`, `npm run build` and `npm run test:coverage`, and fails when
+coverage drops below the thresholds in `vitest.config.ts`. See the
+[Testing section of the contribution guide](./docs/CONTRIBUTING.md#testing)
+for conventions and what is expected of a PR.
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

@@ -30,12 +30,16 @@ export default function Home() {
     <>
       <LoadingBar />
       <Navbar />
-      <HeroSection />
-      <SupportedBySection />
-      <StatsSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <RegistrationForm />
+      {/* Every other route wraps its content in <main>; without it the root
+          layout's "Skip to main content" link has no landmark to land on. */}
+      <main>
+        <HeroSection />
+        <SupportedBySection />
+        <StatsSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <RegistrationForm />
+      </main>
       <Footer />
     </>
   );

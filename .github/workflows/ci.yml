@@ -17,8 +17,18 @@ jobs:
           node-version: "20"
           cache: "npm"
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
-      - run: npm run test
+      # Runs the suite and enforces the coverage thresholds in
+      # vitest.config.ts - the job fails if coverage drops below them.
+      - run: npm run test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 7
 
   backend:
     name: Backend Build
