@@ -41,12 +41,3 @@ export const isSupabaseConfigured = Boolean(
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
-
-export interface WaitlistEntry {
-  id?: string;
-  email: string;
-  name?: string;
-  company?: string;
-  created_at?: string;
-  updated_at?: string;
-}
