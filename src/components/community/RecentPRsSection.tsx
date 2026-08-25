@@ -14,18 +14,18 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
   const isMerged = pr.status === 'Merged';
 
   return (
-    <article className="flex flex-col gap-4 rounded-3xl bg-bg-base p-5 shadow-neu-raised-sm hover:shadow-neu-raised transition-shadow duration-300 group/card">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="mt-1 w-8 h-8 rounded-lg bg-bg-base flex items-center justify-center shadow-neu-sunken-subtle transition-transform group-hover/card:scale-110">
+    <article className="flex flex-col gap-4 rounded-3xl bg-bg-base p-5 shadow-neu-raised-sm hover:shadow-neu-raised transition-shadow duration-300 group/card min-w-0 overflow-hidden">
+      <div className="flex items-start justify-between gap-4 min-w-0">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="mt-1 w-8 h-8 rounded-lg bg-bg-base flex items-center justify-center shadow-neu-sunken-subtle transition-transform group-hover/card:scale-110 shrink-0">
             <GitPullRequest size={14} className={isMerged ? "text-purple-500" : "text-theme-primary"} />
           </div>
-          <div>
+          <div className="min-w-0 max-w-full overflow-hidden">
             <a
               href={pr.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-black text-content-primary leading-tight hover:text-theme-primary transition-colors block mb-2"
+              className="text-sm font-black text-content-primary leading-tight hover:text-theme-primary transition-colors mb-2 min-h-6 max-w-full overflow-hidden truncate flex items-center"
             >
               {pr.title}
             </a>
@@ -55,7 +55,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open pull request: ${pr.title}`}
-          className="p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-all"
+          className="p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-all max-w-full overflow-hidden truncate flex items-center justify-center shrink-0 min-w-11 min-h-11"
         >
           <ArrowUpRight size={14} aria-hidden="true" />
         </a>

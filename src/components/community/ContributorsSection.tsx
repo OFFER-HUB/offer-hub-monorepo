@@ -13,8 +13,8 @@ interface ContributorsSectionProps {
 // Memoized contributor card to prevent unnecessary re-renders
 const ContributorCard = memo(function ContributorCard({ person }: { person: ContributorData }) {
   return (
-    <article className="group relative rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-[box-shadow,transform] duration-300 hover:shadow-neu-raised-hover hover:-translate-y-1">
-      <div className="flex flex-col items-center text-center gap-4">
+    <article className="group relative rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-[box-shadow,transform] duration-300 hover:shadow-neu-raised-hover hover:-translate-y-1 min-w-0 overflow-hidden">
+      <div className="flex flex-col items-center text-center gap-4 min-w-0">
         {person.avatar ? (
           <div className="p-1 rounded-full bg-bg-base shadow-neu-sunken-subtle group-hover:shadow-neu-sunken transition-shadow">
             <Image
@@ -31,11 +31,11 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
           </div>
         )}
 
-        <div className="min-w-0">
+        <div className="min-w-0 w-full max-w-full">
           <h3 className="text-base font-black text-content-primary truncate tracking-tight">
             {person.name || person.username}
           </h3>
-          <p className="text-[11px] font-black uppercase tracking-widest text-theme-primary mt-1">
+          <p className="text-[11px] font-black uppercase tracking-widest text-theme-primary mt-1 truncate">
             @{person.username}
           </p>
         </div>
@@ -50,7 +50,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
             href={person.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-[10px] font-black uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow"
+            className="mt-1 p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-[10px] font-black uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow max-w-full overflow-hidden truncate flex items-center min-h-11"
           >
             Profile
           </a>

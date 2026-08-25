@@ -138,17 +138,18 @@ export function UseCasesClient() {
         "md:top-[80px]",
       )}
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 flex justify-center">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 w-full min-w-0">
         <div
           className={cn(
             "pointer-events-auto relative flex items-center p-1.5 sm:p-2 rounded-2xl bg-bg-base",
+            "overflow-x-auto no-scrollbar scroll-smooth max-w-full",
             "transition-shadow duration-500 will-change-[box-shadow]",
             isNavPinned ? "shadow-neu-raised-scrolled" : "shadow-neu-raised",
           )}
         >
           <div
             ref={pillContainerRef}
-            className="relative flex items-center gap-1 sm:gap-2"
+            className="relative flex items-center gap-1 sm:gap-2 w-max mx-auto"
           >
             {pillStyle && (
               <span
@@ -220,7 +221,10 @@ export function UseCasesClient() {
           className="pt-28 pb-0 bg-transparent"
           style={{ scrollMarginTop: `${SCROLL_OFFSET}px` }}
         >
-          <div role="tablist" className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-3">
+          <div
+            role="tablist"
+            className="max-w-5xl mx-auto px-4 sm:px-6 w-full min-w-0 flex flex-wrap justify-center gap-3 overflow-x-auto no-scrollbar scroll-smooth"
+          >
             {USE_CASES.map((uc) => {
               const isActive = activeUseCase === uc.id;
               const UCIcon = uc.icon;
@@ -231,7 +235,7 @@ export function UseCasesClient() {
                   aria-selected={isActive}
                   onClick={() => handleUseCaseSwitch(uc.id)}
                   className={cn(
-                    "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold",
+                    "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold min-h-11",
                     "transition-[color,box-shadow] duration-300 select-none touch-manipulation",
                     isActive
                       ? "btn-neumorphic-primary text-white shadow-neu-sunken"
