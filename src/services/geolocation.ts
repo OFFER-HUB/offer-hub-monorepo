@@ -1,3 +1,5 @@
+import { GEO_CACHE_KEY } from '@/constants/storage';
+
 export interface GeoData {
   ip?: string;
   country?: string;
@@ -18,7 +20,7 @@ const emptyGeo: GeoData = {
 };
 
 export async function getGeolocation(): Promise<GeoData> {
-  const CACHE_KEY = 'geo_cache';
+  const CACHE_KEY = GEO_CACHE_KEY;
 
   try {
     const cached = sessionStorage.getItem(CACHE_KEY);
