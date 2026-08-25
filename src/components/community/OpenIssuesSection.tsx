@@ -32,7 +32,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-base font-black text-content-primary hover:text-theme-primary transition-colors leading-tight line-clamp-2 mb-4 tracking-tight"
+          className="block text-base font-black text-content-primary hover:text-theme-primary transition-colors leading-tight line-clamp-2 mb-4 tracking-tight min-h-6 max-w-full overflow-hidden"
         >
           {issue.title}
         </a>
@@ -116,7 +116,7 @@ export const OpenIssuesSection = ({ issues }: OpenIssuesSectionProps) => {
           <div className="mt-16 text-center">
             <button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary hover:gap-3 transition-[gap] group"
+              className="inline-flex items-center justify-center min-h-11 gap-2 px-4 text-[11px] font-black uppercase tracking-widest text-theme-primary hover:gap-3 transition-[gap] group"
             >
               Load more issues
               <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />

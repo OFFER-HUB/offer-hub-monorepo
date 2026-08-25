@@ -15,7 +15,7 @@ const navColumns = [
     links: [
       { href: "/", label: "Home" },
       { href: "/pricing", label: "Pricing" },
-        { href: "/contact", label: "Contact" },
+      { href: "/contact", label: "Contact" },
       { href: "/docs", label: "Docs" },
       { href: "/community", label: "Community" },
     ],
@@ -103,7 +103,7 @@ export function Footer() {
                 manage, and pay.
               </p>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
                 {socialLinks.map((s) => (
                   <a
                     key={s.label}
@@ -111,9 +111,9 @@ export function Footer() {
                     aria-label={s.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-content-secondary hover:text-content-primary transition-colors duration-200"
+                    className="inline-flex items-center justify-center min-w-11 min-h-11 text-content-secondary hover:text-content-primary transition-colors duration-200"
                   >
-                    <s.icon size={18} />
+                    <s.icon size={18} aria-hidden="true" />
                   </a>
                 ))}
               </div>
@@ -129,7 +129,7 @@ export function Footer() {
                     {col.heading}
                   </h4>
 
-                  <ul className="flex flex-col gap-3">
+                  <ul className="flex flex-col gap-1">
                     {col.links.map((link) => (
                       <li key={link.label}>
                         {link.label === "Cookie Preferences" ? (
@@ -141,14 +141,14 @@ export function Footer() {
                                 new CustomEvent(COOKIE_PREFERENCES_EVENT)
                               );
                             }}
-                            className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
+                            className="inline-flex items-center min-h-11 text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
                           >
                             {link.label}
                           </a>
                         ) : (
                           <Link
                             href={link.href}
-                            className="text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
+                            className="inline-flex items-center min-h-11 text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
                           >
                             {link.label}
                           </Link>

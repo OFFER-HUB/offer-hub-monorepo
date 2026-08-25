@@ -58,7 +58,7 @@ export function Breadcrumb() {
       <div className="flex items-center gap-2 text-[14px] whitespace-nowrap overflow-x-auto no-scrollbar py-1">
         <Link
           href="/docs"
-          className="text-theme-primary hover:text-theme-primary/80 transition-colors font-medium flex items-center gap-1.5"
+          className="text-theme-primary hover:text-theme-primary/80 transition-colors font-medium inline-flex items-center gap-1.5 min-h-11"
         >
           <Home size={15} />
           Docs
@@ -76,7 +76,7 @@ export function Breadcrumb() {
               ) : (
                 <Link
                   href={href}
-                  className="text-content-secondary hover:text-content-primary transition-colors font-medium"
+                  className="text-content-secondary hover:text-content-primary transition-colors font-medium inline-flex items-center min-h-11"
                 >
                   {formatSegment(segment)}
                 </Link>

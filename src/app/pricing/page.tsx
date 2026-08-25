@@ -161,7 +161,7 @@ export default function PricingPage() {
           <p className="mt-10 text-center text-sm text-content-secondary">
             Need help choosing the right setup? Reach us through our
             {" "}
-            <Link href="/contact" className="text-theme-primary font-semibold hover:underline">
+            <Link href="/contact" className="inline-flex items-center min-h-6 text-theme-primary font-semibold hover:underline">
               contact channel
             </Link>
             {" "}

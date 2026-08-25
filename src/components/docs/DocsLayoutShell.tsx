@@ -83,7 +83,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
+                className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
                 aria-label="Open docs navigation"
               >
                 <Menu size={20} aria-hidden="true" />
@@ -156,7 +156,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(false)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-content-secondary hover:bg-bg-elevated hover:text-content-primary transition-colors"
+                className="inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-bg-elevated hover:text-content-primary transition-colors"
                 aria-label="Close docs navigation"
               >
                 <X size={20} aria-hidden="true" />

@@ -140,12 +140,12 @@ export function DocsSearchBar() {
                         aria-label="Documentation search"
                         aria-autocomplete="list"
                         aria-activedescendant={activeIndex >= 0 ? `result-item-${results[activeIndex]?.item.id}` : undefined}
-                        className="bg-transparent flex-1 text-content-primary placeholder:text-content-secondary w-full rounded-md focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
+                        className="bg-transparent flex-1 min-h-6 text-content-primary placeholder:text-content-secondary w-full rounded-md focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
                     />
                     {query ? (
                         <button
                             onClick={() => { setQuery(""); setResults([]); setIsOpen(false); }}
-                            className="text-content-secondary hover:text-content-primary transition-colors flex items-center justify-center px-1"
+                            className="text-content-secondary hover:text-content-primary transition-colors inline-flex items-center justify-center min-w-11 min-h-11 px-1"
                         >
                             <X size={18} />
                         </button>

@@ -62,7 +62,7 @@ export function HeroSection() {
          */}
         <h1
           ref={headingRef}
-          className="font-black leading-[1.1] tracking-tight whitespace-nowrap px-8 py-4"
+          className="font-black leading-[1.1] tracking-tight px-4 sm:px-8 py-4 max-w-full"
           style={{
             fontSize: "clamp(3.5rem, 13vw, 12rem)",
             WebkitBackgroundClip: "text",

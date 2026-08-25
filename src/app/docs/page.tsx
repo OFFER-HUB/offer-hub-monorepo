@@ -185,7 +185,7 @@ export default function DocsPage() {
                     href={section.externalLink.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative z-10 inline-block mt-2 ml-8 text-xs font-bold text-theme-primary hover:underline"
+                    className="relative z-10 inline-flex items-center min-h-11 mt-2 ml-8 text-xs font-bold text-theme-primary hover:underline"
                   >
                     {section.externalLink.label}
                   </a>
@@ -201,9 +201,9 @@ export default function DocsPage() {
             Can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex justify-center items-center gap-8">
-            <Link href="/community" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">Help Center</Link>
+            <Link href="/community" className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">Help Center</Link>
             <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
-            <Link href={`${GITHUB_REPO_URL}/issues`} className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">GitHub Issues</Link>
+            <Link href={`${GITHUB_REPO_URL}/issues`} className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">GitHub Issues</Link>
           </div>
         </div>
       </div>

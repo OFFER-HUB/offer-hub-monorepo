@@ -144,7 +144,7 @@ export function Navbar() {
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
-              className="lg:hidden p-2 rounded-full transition-shadow duration-300 ease-out bg-bg-base text-content-secondary shadow-neu-raised hover:shadow-neu-sunken-subtle"
+              className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-full transition-shadow duration-300 ease-out bg-bg-base text-content-secondary shadow-neu-raised hover:shadow-neu-sunken-subtle"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>

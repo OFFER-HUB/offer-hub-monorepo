@@ -39,7 +39,7 @@ function DocTooltip({ href, label }: { href: string; label: string }) {
         rel="noreferrer"
         aria-label={`See full ${label}`}
         className={cn(
-          "flex items-center gap-1.5 rounded-xl px-3 py-1.5",
+          "flex items-center gap-1.5 rounded-xl px-3 py-1.5 min-h-11",
           "text-[10px] font-bold uppercase tracking-widest text-content-muted",
           "transition-colors duration-200",
           "hover:text-theme-primary hover:bg-theme-primary/10"
@@ -95,7 +95,7 @@ function CopyButton({ code }: { code: string }) {
       onClick={handleCopy}
       aria-label={copied ? "Copied to clipboard" : "Copy code"}
       className={cn(
-        "relative flex items-center gap-2 rounded-xl px-3 py-1.5",
+        "relative flex items-center gap-2 rounded-xl px-3 py-1.5 min-h-11",
         "text-[10px] font-black uppercase tracking-widest",
         "transition-[color,background-color,box-shadow] duration-300",
         copied
