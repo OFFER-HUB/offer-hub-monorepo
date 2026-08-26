@@ -1,34 +1,35 @@
-import { supabase } from "@/lib/supabase";
-
-export interface ContactSubmission {
+export type ContactSubmission = {
   company: string;
   name: string;
   email: string;
   message: string;
-}
+};
 
 export type ContactResult =
   | { ok: true }
-  | { ok: false; reason: "not_configured" | "error" | "network" };
+  | { ok: false; reason: "not_configured" | "error" | "network" | "validation"; errors?: Record<string, string> };
 
 export async function submitContactInquiry(
   inquiry: ContactSubmission,
 ): Promise<ContactResult> {
-  if (!supabase) {
-    return { ok: false, reason: "not_configured" };
-  }
-
   try {
-    const { error } = await supabase.from("contact_inquiries").insert([
-      {
-        company: inquiry.company,
-        contact_name: inquiry.name,
-        email: inquiry.email,
-        message: inquiry.message,
-      },
-    ]);
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(inquiry),
+    });
 
-    if (error) {
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 400 && json.errors) {
+      return { ok: false, reason: "validation", errors: json.errors };
+    }
+
+    if (res.status === 503) {
+      return { ok: false, reason: "not_configured" };
+    }
+
+    if (!res.ok) {
       return { ok: false, reason: "error" };
     }
 

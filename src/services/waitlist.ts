@@ -1,40 +1,44 @@
-import { supabase } from "@/lib/supabase";
-
-export interface WaitlistSubmission {
+export type WaitlistSubmission = {
   email: string;
   name: string;
   purpose: string;
   referral: string;
-}
+};
 
 export type WaitlistResult =
   | { ok: true }
-  | { ok: false; reason: "not_configured" | "duplicate" | "error" | "network" };
-
-const UNIQUE_VIOLATION = "23505";
+  | {
+      ok: false;
+      reason: "not_configured" | "duplicate" | "error" | "network" | "validation";
+      errors?: Record<string, string>;
+    };
 
 export async function submitWaitlistEntry(
   entry: WaitlistSubmission,
 ): Promise<WaitlistResult> {
-  if (!supabase) {
-    return { ok: false, reason: "not_configured" };
-  }
-
   try {
-    const { error } = await supabase.from("waitlist").insert([
-      {
-        email: entry.email,
-        name: entry.name,
-        purpose: entry.purpose,
-        referral: entry.referral,
-      },
-    ]);
+    const res = await fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
+    });
 
-    if (error) {
-      return {
-        ok: false,
-        reason: error.code === UNIQUE_VIOLATION ? "duplicate" : "error",
-      };
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 400 && json.errors) {
+      return { ok: false, reason: "validation", errors: json.errors };
+    }
+
+    if (res.status === 503) {
+      return { ok: false, reason: "not_configured" };
+    }
+
+    if (res.status === 409 && json.error === "duplicate") {
+      return { ok: false, reason: "duplicate" };
+    }
+
+    if (!res.ok) {
+      return { ok: false, reason: "error" };
     }
 
     return { ok: true };
