@@ -43,7 +43,7 @@ export function DataRightsForm({
         <h3 className="text-xl font-black tracking-tight mb-2 text-content-primary">{title}</h3>
         <p className="text-sm font-medium leading-relaxed text-content-secondary">{description}</p>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
         <Input
           id={`data-rights-email-${endpoint}`}
           label="Email address"

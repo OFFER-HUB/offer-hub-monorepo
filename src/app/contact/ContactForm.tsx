@@ -28,7 +28,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-8 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
+    <form onSubmit={handleSubmit} noValidate className="p-8 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
       {submitError && (
         <div role="alert" aria-live="assertive" className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 flex items-start gap-3 animate-fadeIn">
           <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />

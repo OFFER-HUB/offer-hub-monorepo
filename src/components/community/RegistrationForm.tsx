@@ -58,6 +58,7 @@ export function RegistrationForm() {
 
                 <form
                     onSubmit={handleSubmit}
+                    noValidate
                     className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-8"
                 >
                     {error && (
