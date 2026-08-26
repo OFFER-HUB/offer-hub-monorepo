@@ -1,6 +1,9 @@
 "use client"
 
 import type { LucideIcon } from "lucide-react"
+import { Input } from "@/components/ui/Input"
+import { Textarea } from "@/components/ui/Textarea"
+import { cn } from "@/lib/cn"
 
 interface FormFieldProps {
   id: string
@@ -21,8 +24,8 @@ interface FormFieldProps {
   labelExtra?: React.ReactNode
 }
 
-const INPUT_CLASS =
-  "w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-[box-shadow,opacity] font-medium disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
+const FIELD_CLASS =
+  "pl-12 pr-6 py-3.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
 
 export function FormField({
   id,
@@ -42,7 +45,7 @@ export function FormField({
   error,
   labelExtra,
 }: FormFieldProps) {
-  const errorId = error ? `${id}-error` : undefined
+  const labelId = `${id}-label`
   const charCountClass =
     value.length >= (maxLength ?? 500) * 0.96
       ? "text-red-500"
@@ -54,6 +57,7 @@ export function FormField({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-center ml-2">
         <label
+          id={labelId}
           htmlFor={id}
           className="text-[10px] font-black uppercase tracking-widest text-content-secondary"
         >
@@ -72,44 +76,44 @@ export function FormField({
         {Icon && (
           <Icon
             size={16}
-            className={`absolute left-5 text-content-muted group-focus-within:text-theme-primary transition-colors ${
+            className={cn(
+              "absolute left-5 z-10 text-content-muted group-focus-within:text-theme-primary transition-colors pointer-events-none",
               as === "textarea" ? "top-6" : "top-1/2 -translate-y-1/2"
-            }`}
+            )}
           />
         )}
         {as === "textarea" ? (
-          <textarea
+          <Textarea
             id={id}
-            required={required}
-            rows={rows}
+            labelledBy={labelId}
             name={name}
             value={value}
             onChange={onChange}
             placeholder={placeholder}
             maxLength={maxLength}
+            required={required}
             disabled={disabled}
-            aria-describedby={errorId}
-            className={`${INPUT_CLASS} resize-none ${error ? "ring-1 ring-red-400" : ""}`}
+            rows={rows}
+            error={error}
+            hideWrapper
+            className={cn(FIELD_CLASS, Icon && "pl-12")}
           />
         ) : (
-          <input
+          <Input
             id={id}
-            required={required}
+            labelledBy={labelId}
             type={type}
             name={name}
             value={value}
             onChange={onChange}
             placeholder={placeholder}
             maxLength={maxLength}
+            required={required}
             disabled={disabled}
-            aria-describedby={errorId}
-            className={`${INPUT_CLASS} ${error ? "ring-1 ring-red-400" : ""}`}
+            error={error}
+            hideWrapper
+            className={cn(FIELD_CLASS, Icon && "pl-12")}
           />
-        )}
-        {error && (
-          <p id={errorId} className="text-xs text-red-600 mt-1 pl-2">
-            {error}
-          </p>
         )}
       </div>
     </div>
