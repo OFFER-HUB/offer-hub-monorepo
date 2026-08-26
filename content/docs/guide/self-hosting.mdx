@@ -32,20 +32,20 @@ Verify that Docker is installed and running:
 
 ## Architecture Overview
 
-The OFFER-HUB deployment consists of:
+The OFFER-HUB deployment consists of the API, its shared infrastructure, and the Stellar network:
 
 ```mermaid
 flowchart LR
     Frontend[Frontend Next.js]
-    Orchestrator[Orchestrator NestJS]
+    API[apps/api NestJS]
     Postgres[PostgreSQL]
     Redis[Redis BullMQ]
     Stellar[Stellar Network]
 
-    Frontend --> Orchestrator
-    Orchestrator --> Postgres
-    Orchestrator --> Redis
-    Orchestrator --> Stellar
+    Frontend --> API
+    API --> Postgres
+    API --> Redis
+    API --> Stellar
 ```
 
 ## Docker Setup
@@ -415,14 +415,15 @@ A healthy deployment shows `(healthy)` next to each service. If a service is `(u
 
 ## Background Jobs
 
-The Orchestrator uses BullMQ for background job processing:
+The API registers and processes BullMQ jobs in the same service. The separate `apps/worker` package
+is deprecated and should not be started as an additional process.
 
 | Queue | Purpose |
 |-------|---------|
-| `blockchain-monitor` | Monitor Stellar for incoming deposits |
-| `transaction-submit` | Submit signed Stellar transactions |
-| `webhook-delivery` | Send webhooks to registered endpoints |
-| `balance-sync` | Reconcile on-chain and off-chain balances |
+| `webhooks` | Process Airtm and Trustless Work webhooks |
+| `reconciliation` | Sync topups, withdrawals, escrows, and missed deposits |
+| `notifications` | Send email and webhook notifications |
+| `dead-letter-queue` | Retain jobs that exhausted their retries |
 
 Monitor job queues:
 
@@ -430,8 +431,14 @@ Monitor job queues:
 # View Redis keys
 docker compose exec redis redis-cli keys "bull:*"
 
-# Check queue length
-docker compose exec redis redis-cli llen "bull:webhook-delivery:wait"
+# Check the webhook queue length
+docker compose exec redis redis-cli llen "bull:webhooks:wait"
+```
+
+Start the API; it also processes background jobs:
+
+```bash
+npm run dev
 ```
 
 ## Updating

@@ -27,6 +27,11 @@ Your marketplace communicates with the Orchestrator via REST API. The Orchestrat
   The Orchestrator is intentionally narrow in scope. It handles payments, escrow, and balances. Authentication, listings, and communication are your marketplace's responsibility.
 </Callout>
 
+## API and background jobs
+
+The API in `apps/api` serves the REST API and processes BullMQ background jobs in the same service.
+The separate `apps/worker` package is deprecated; do not deploy it as a second required process.
+
 ## Architecture Overview
 
 ```mermaid
