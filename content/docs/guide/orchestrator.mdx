@@ -7,7 +7,7 @@ section: Guides
 
 The Orchestrator is the central engine of OFFER-HUB. It coordinates every step of a transaction — from the moment a buyer deposits USDC to the moment a seller withdraws funds — enforcing rules, managing state, and communicating with the Stellar blockchain so your marketplace never has to.
 
-<Callout variant="tip">
+<Callout type="tip">
   This guide covers the internal architecture. If you just want to make your first API call, go to [Quick Start](/docs/guide/quick-start) instead.
 </Callout>
 
@@ -23,7 +23,7 @@ The Orchestrator is a state machine-driven backend service that sits between you
 
 Your marketplace communicates with the Orchestrator via REST API. The Orchestrator handles everything on-chain.
 
-<Callout variant="note">
+<Callout type="note">
   The Orchestrator is intentionally narrow in scope. It handles payments, escrow, and balances. Authentication, listings, and communication are your marketplace's responsibility.
 </Callout>
 
@@ -88,7 +88,7 @@ const order = await client.orders.create({
 
 The Orchestrator signs and submits a Stellar transaction that locks the USDC into a Soroban smart contract via Trustless Work. The escrow state moves to `FUNDED`.
 
-<Callout variant="note">
+<Callout type="note">
   At this point funds are held by the smart contract — not by OFFER-HUB. The Orchestrator cannot unilaterally move them. Only valid contract calls can release, dispute, or refund.
 </Callout>
 
@@ -141,7 +141,7 @@ stateDiagram-v2
 | `REFUNDED` | Funds returned to buyer's available balance |
 | `SPLIT` | Dispute resolved with partial payment to both parties |
 
-<Callout variant="warning">
+<Callout type="warning">
   Once an escrow reaches `RELEASED`, `REFUNDED`, or `SPLIT` it is terminal — no further transitions are allowed.
 </Callout>
 
@@ -172,7 +172,7 @@ const response = await fetch("/api/orders", {
 })
 ```
 
-<Callout variant="danger">
+<Callout type="danger">
   Never generate a new idempotency key when retrying a failed request. A new key will create a duplicate operation.
 </Callout>
 
@@ -204,7 +204,7 @@ SSE_KEEPALIVE_INTERVAL_MS=30000
 
 The Orchestrator is built exclusively for USDC on Stellar. Stellar was chosen for its low fees (fractions of a cent), fast finality (3-5 seconds), and native USDC support via Circle. Smart contracts run on Soroban, managed through the Trustless Work protocol.
 
-<Callout variant="note">
+<Callout type="note">
   For local development, set `STELLAR_NETWORK=testnet`. You can fund test wallets using the [Stellar Friendbot](https://friendbot.stellar.org).
 </Callout>
 
@@ -216,6 +216,6 @@ AIRTM_API_KEY=your-airtm-key
 AIRTM_WEBHOOK_SECRET=your-webhook-secret
 ```
 
-<Callout variant="warning">
+<Callout type="warning">
   AirTM requires users to complete KYC on their platform. Crypto mode has no KYC requirement.
 </Callout>
