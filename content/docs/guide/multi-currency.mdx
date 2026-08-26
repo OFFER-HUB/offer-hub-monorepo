@@ -49,9 +49,9 @@ To enable specific assets or set default conversion preferences, update your con
 Here is an example configuring supported currencies using our SDK or API:
 
 <CodeBlock language="ts">{`
-import { OfferHubClient } from '@offer-hub/sdk';
+import { OfferHubSDK } from '@offerhub/sdk';
 
-const client = new OfferHubClient({
+const sdk = new OfferHubSDK({
   apiKey: process.env.OFFER_HUB_API_KEY,
   supportedAssets: [
     {
