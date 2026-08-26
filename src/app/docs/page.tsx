@@ -2,18 +2,28 @@
 
 import { useRef, useEffect } from "react";
 import { DocsSearchBar } from "@/components/docs/DocsSearchBar";
-import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight, Lock } from "lucide-react";
+import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight, Lock, Rocket } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { GITHUB_REPO_URL } from "@/constants/github";
 
 const docSections = [
   {
+    icon: <Rocket />,
+    title: "Build Your First Marketplace",
+    description: "Hackathon fast-track: scaffold a project, run the Orchestrator, wire the SDK, and ship buyer signup, listings, checkout with escrow, and fund release end to end.",
+    link: "/docs/guide/build-your-first-marketplace",
+    count: "Recommended start",
+    highlight: true,
+    externalLink: undefined as { href: string; label: string } | undefined,
+  },
+  {
     icon: <Book />,
     title: "Getting Started",
     description: "Learn what OFFER-HUB is, how to install it, and make your first API call.",
     link: "/docs/getting-started",
     count: "3 articles",
+    highlight: false,
     externalLink: undefined as { href: string; label: string } | undefined,
   },
   {
@@ -22,6 +32,7 @@ const docSections = [
     description: "Create users, orders, and complete your first escrow transaction in minutes.",
     link: "/docs/guide/quick-start",
     count: "8 guides",
+    highlight: false,
     externalLink: undefined as { href: string; label: string } | undefined,
   },
   {
@@ -30,6 +41,7 @@ const docSections = [
     description: "Complete REST API documentation with authentication, endpoints, and webhooks.",
     link: "/docs/api-reference/overview",
     count: "3 articles",
+    highlight: false,
     externalLink: { href: "/openapi.json", label: "View OpenAPI Spec" },
   },
   {
@@ -38,6 +50,7 @@ const docSections = [
     description: "Smart contract escrow, deposits, withdrawals, and dispute resolution.",
     link: "/docs/guide/escrow",
     count: "5 guides",
+    highlight: false,
     externalLink: undefined as { href: string; label: string } | undefined,
   },
   {
@@ -46,6 +59,7 @@ const docSections = [
     description: "Install and use the official SDK to integrate OFFER-HUB into your app.",
     link: "/docs/sdk/quick-start",
     count: "1 article",
+    highlight: false,
     externalLink: undefined as { href: string; label: string } | undefined,
   },
   {
@@ -54,6 +68,7 @@ const docSections = [
     description: "Deploy OFFER-HUB on your own infrastructure with Docker and configure it.",
     link: "/docs/guide/self-hosting",
     count: "2 articles",
+    highlight: false,
     externalLink: undefined as { href: string; label: string } | undefined,
   },
   {
@@ -62,6 +77,7 @@ const docSections = [
     description: "API key management, webhook validation, wallet key security, and blockchain-specific attack mitigations.",
     link: "/docs/guide/security",
     count: "1 guide",
+    highlight: false,
     externalLink: undefined as { href: string; label: string } | undefined,
   },
 ];
@@ -156,20 +172,29 @@ export default function DocsPage() {
         <div className="container mx-auto px-6 py-16 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {docSections.map((section) => (
-              <div key={section.link} className="relative group">
+              <div key={section.link} className={cn("relative group", section.highlight && "md:col-span-2 lg:col-span-3")}>
                 <Link
                   href={section.link}
                   className={cn(
-                    "block p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
-                    "hover:border-theme-primary/20 hover:shadow-neu-raised"
+                    "block p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 border bg-bg-base/50 backdrop-blur-sm",
+                    section.highlight
+                      ? "border-theme-primary/40 shadow-neu-raised hover:shadow-neu-raised hover:border-theme-primary/60"
+                      : "border-black/[0.03] dark:border-white/[0.03] hover:border-theme-primary/20 hover:shadow-neu-raised"
                   )}
                 >
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
                     {section.icon}
                   </div>
-                  <h3 className="text-2xl font-black mb-4 group-hover:text-theme-primary transition-colors leading-tight tracking-tight text-content-primary">
-                    {section.title}
-                  </h3>
+                  <div className="flex items-center gap-3 flex-wrap mb-4">
+                    <h3 className="text-2xl font-black group-hover:text-theme-primary transition-colors leading-tight tracking-tight text-content-primary">
+                      {section.title}
+                    </h3>
+                    {section.highlight && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-theme-primary/10 text-theme-primary shadow-neu-raised-sm">
+                        Hackathon Start Here
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[15px] leading-relaxed mb-8 font-medium text-content-secondary">
                     {section.description}
                   </p>

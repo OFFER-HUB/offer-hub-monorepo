@@ -1,0 +1,896 @@
+---
+title: Build Your First Marketplace
+description: End-to-end tutorial — scaffold a project, run the Orchestrator, wire the SDK, and ship a minimal marketplace with buyer/seller signup, listings, checkout with escrow, and fund release.
+order: 0
+section: Guides
+---
+
+<Callout type="tip">
+  **Hackathon fast-track.** This is the recommended starting point for hackathon participants. Every command and code sample is verified against the real Orchestrator repository. You will have a running marketplace skeleton in under an hour.
+</Callout>
+
+## What You Will Build
+
+By the end of this guide you will have:
+
+- A running OFFER-HUB Orchestrator instance (local, Docker-backed)
+- A minimal Node.js / TypeScript marketplace backend wired to the SDK
+- Buyer and seller user accounts with Stellar wallets
+- A simple listing flow tied to an escrow-protected order
+- Complete checkout: reserve → escrow → release (and dispute path)
+- Real-time event subscription to reflect state changes in your UI
+
+```mermaid
+flowchart TB
+    subgraph You["Your Marketplace App"]
+        UI[Frontend / CLI]
+        App[Backend Service]
+        UI --> App
+    end
+
+    App -->|SDK calls| Orch
+
+    subgraph Orch["OFFER-HUB Orchestrator :4000"]
+        Ledger[Balance Ledger]
+        ESM[Escrow State Machine]
+        Events[SSE Event Stream]
+    end
+
+    Orch --> Stellar
+    Orch --> TW
+
+    Stellar[Stellar Testnet USDC]
+    TW[Trustless Work Soroban Contracts]
+```
+
+---
+
+## Prerequisites
+
+| Requirement | Version | Notes |
+|---|---|---|
+| Node.js | 20 LTS | Runtime |
+| npm | 10+ | Package manager |
+| Docker + Docker Compose | Latest | PostgreSQL + Redis |
+| Git | Latest | Clone the Orchestrator |
+
+You also need a free [Trustless Work](https://trustlesswork.com) developer API key for testnet escrow.
+
+<Callout type="note">
+  All steps use the Stellar **testnet**. No real money is involved. You can mint test USDC via [Stellar Friendbot](https://friendbot.stellar.org).
+</Callout>
+
+---
+
+## Part 1 — Run the Orchestrator
+
+### Step 1.1 — Clone and Install
+
+<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB</CommandLine>
+
+<CommandLine>npm install</CommandLine>
+
+### Step 1.2 — Start Infrastructure
+
+<CommandLine>docker compose up -d</CommandLine>
+
+This starts PostgreSQL on port `5432` and Redis on port `6379`.
+
+### Step 1.3 — Configure Environment
+
+<CommandLine>cp .env.example .env</CommandLine>
+
+Open `.env` and set the minimum required variables:
+
+```env
+# Server
+NODE_ENV=development
+PORT=4000
+
+# Database (Docker defaults)
+DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+DIRECT_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Payment mode — crypto uses Stellar USDC directly
+PAYMENT_PROVIDER=crypto
+
+# Generate with: openssl rand -hex 32
+WALLET_ENCRYPTION_KEY=your-32-byte-hex-key
+
+# Choose any secret for local dev
+OFFERHUB_MASTER_KEY=dev-master-key-change-in-production
+
+# Get from trustlesswork.com (testnet key)
+TRUSTLESS_API_KEY=your_trustless_testnet_key
+TRUSTLESS_API_URL=https://dev.api.trustlesswork.com
+
+# Stellar testnet
+STELLAR_NETWORK=testnet
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_USDC_ASSET_CODE=USDC
+STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+```
+
+<Callout type="warning">
+  Generate `WALLET_ENCRYPTION_KEY` with `openssl rand -hex 32`. Keep it secret — it encrypts every Stellar private key in the database.
+</Callout>
+
+### Step 1.4 — Migrate and Bootstrap
+
+<CommandLine>npm run prisma:generate && npm run prisma:migrate</CommandLine>
+
+<CommandLine>npm run bootstrap</CommandLine>
+
+The `bootstrap` command creates the internal platform user that co-signs escrow transactions.
+
+### Step 1.5 — Start the API
+
+<CommandLine>npm run dev</CommandLine>
+
+### Step 1.6 — Verify
+
+<CommandLine>curl http://localhost:4000/api/v1/health</CommandLine>
+
+Expected response:
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-01T00:00:00.000Z",
+  "services": {
+    "database": "connected",
+    "redis": "connected"
+  }
+}
+```
+
+### Step 1.7 — Create Your API Key
+
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/api-keys \
+  -H "Authorization: Bearer dev-master-key-change-in-production" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-marketplace", "scopes": ["read", "write"]}'
+```
+
+Save the returned `key` value — it is only shown once. It will look like `ohk_live_xxxxxxxxxxxx`.
+
+<Callout type="danger">
+  Never commit your API key or `WALLET_ENCRYPTION_KEY` to version control. Add `.env` to `.gitignore`.
+</Callout>
+
+---
+
+## Part 2 — Scaffold Your Marketplace App
+
+Open a **new terminal** in a different directory for your marketplace code.
+
+### Step 2.1 — Create the Project
+
+<CommandLine>mkdir my-marketplace && cd my-marketplace && npm init -y</CommandLine>
+
+<CommandLine>npm install @offerhub/sdk dotenv</CommandLine>
+
+<CommandLine>npm install --save-dev typescript tsx @types/node</CommandLine>
+
+### Step 2.2 — Configure TypeScript
+
+<CommandLine>npx tsc --init --target ES2022 --module NodeNext --moduleResolution NodeNext --outDir dist --strict</CommandLine>
+
+### Step 2.3 — Set Environment Variables
+
+Create a `.env` file in your marketplace directory:
+
+```env
+OFFERHUB_API_URL=http://localhost:4000
+OFFERHUB_API_KEY=ohk_live_your_api_key_here
+```
+
+### Step 2.4 — Initialize the SDK
+
+Create `src/sdk.ts`:
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+export const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL!,
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+```
+
+<Callout type="note">
+  The SDK is server-side only. Never instantiate it with your API key in browser code.
+</Callout>
+
+---
+
+## Part 3 — User Signup
+
+Every participant in your marketplace — buyer or seller — needs an OFFER-HUB user record. This is created once, typically at registration time in your backend.
+
+### What the SDK Creates
+
+When you call `sdk.users.create`, the Orchestrator:
+
+1. Stores the user in its database with an `available` and `reserved` balance (both start at `0.00`)
+2. Derives a unique Stellar keypair for that user and encrypts the private key at rest
+3. Returns the user ID you use for all subsequent API calls
+
+### Signup Flow
+
+```mermaid
+sequenceDiagram
+    participant App as Your App
+    participant Orch as Orchestrator
+    participant Stellar as Stellar Testnet
+
+    App->>Orch: users.create (BUYER)
+    Orch->>Stellar: derive keypair
+    Orch-->>App: { id: "usr_buyer123", ... }
+
+    App->>Orch: users.create (SELLER)
+    Orch->>Stellar: derive keypair
+    Orch-->>App: { id: "usr_seller456", ... }
+```
+
+Create `src/01-signup.ts`:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+async function signup() {
+  // Register the buyer
+  const buyer = await sdk.users.create({
+    externalUserId: 'marketplace-user-buyer-001',
+    email: 'alice@example.com',
+    type: 'BUYER',
+  });
+  console.log('Buyer created:', buyer.id);
+
+  // Register the seller
+  const seller = await sdk.users.create({
+    externalUserId: 'marketplace-user-seller-001',
+    email: 'bob@example.com',
+    type: 'SELLER',
+  });
+  console.log('Seller created:', seller.id);
+
+  // Check initial balances
+  const buyerBalance = await sdk.balance.get(buyer.id);
+  console.log('Buyer balance:', buyerBalance);
+  // → { available: "0.00", reserved: "0.00", currency: "USD" }
+
+  // Get buyer's deposit address
+  const depositInfo = await sdk.wallet.getDepositAddress(buyer.id);
+  console.log('Buyer deposit address:', depositInfo.address);
+
+  return { buyer, seller };
+}
+
+signup().catch(console.error);
+```
+
+<CommandLine>npx tsx src/01-signup.ts</CommandLine>
+
+<Callout type="tip">
+  Store `buyer.id` and `seller.id` in your own database linked to your internal user records. The `externalUserId` field is how you map back from OFFER-HUB to your own user system.
+</Callout>
+
+---
+
+## Part 4 — Fund the Buyer Account
+
+Before a buyer can place an order they need a USDC balance. On testnet, you use the Stellar Friendbot to mint test USDC.
+
+### How Deposits Work
+
+The Orchestrator watches the Stellar network for incoming USDC payments to each user's assigned address. When it detects a payment, it credits the user's `available` balance automatically.
+
+```mermaid
+sequenceDiagram
+    participant Buyer as Buyer Wallet
+    participant Stellar as Stellar Testnet
+    participant Orch as Orchestrator
+
+    Buyer->>Stellar: send USDC to deposit address
+    Stellar-->>Orch: payment detected (webhook / polling)
+    Orch->>Orch: credit buyer.available += amount
+    Orch->>Orch: emit balance.credited event
+```
+
+### Get and Display the Deposit Address
+
+Create `src/02-deposit.ts`:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+async function showDepositAddress(userId: string) {
+  const info = await sdk.wallet.getDepositAddress(userId);
+
+  console.log('─────────────────────────────────────────');
+  console.log('Send USDC to fund this account:');
+  console.log('  Network :', info.network);    // testnet
+  console.log('  Asset   :', info.asset.code); // USDC
+  console.log('  Address :', info.address);    // G...
+  console.log('─────────────────────────────────────────');
+  console.log('Use Stellar Friendbot to get test USDC:');
+  console.log(`  https://friendbot.stellar.org?addr=${info.address}`);
+
+  return info;
+}
+
+// Replace with your actual buyer ID from Part 3
+showDepositAddress('usr_buyer123').catch(console.error);
+```
+
+<CommandLine>npx tsx src/02-deposit.ts</CommandLine>
+
+### Check the Balance
+
+Once the deposit is detected (usually within a few seconds on testnet):
+
+```typescript
+const balance = await sdk.balance.get('usr_buyer123');
+console.log('Available:', balance.available); // e.g., "100.00"
+console.log('Reserved:', balance.reserved);   // "0.00"
+```
+
+---
+
+## Part 5 — Create a Listing and Order
+
+A "listing" in your marketplace is a concept you own — OFFER-HUB does not store listings. What OFFER-HUB handles is the financial side: creating an order that links a buyer to a seller for a specific amount.
+
+### The Listing → Order Mapping
+
+Your marketplace creates a listing record. When a buyer clicks "Buy", your backend calls `sdk.orders.create` to lock the financial agreement:
+
+```mermaid
+flowchart LR
+    A["Buyer clicks 'Buy'"] --> B["Your backend validates listing"]
+    B --> C["sdk.orders.create (buyer, seller, amount)"]
+    C --> D["Order status: ORDER_CREATED"]
+    D --> E["sdk.orders.reserve — lock buyer funds"]
+    E --> F["Order status: FUNDS_RESERVED"]
+```
+
+Create `src/03-listing-and-order.ts`:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+// Your marketplace owns the listing data
+const listing = {
+  id: 'listing-001',
+  title: 'Logo Design — Startup Package',
+  description: 'Professional logo design with 3 concepts, 2 revision rounds',
+  price: '75.00',
+  currency: 'USD',
+  sellerId: 'usr_seller456', // from Part 3
+};
+
+async function checkout(buyerId: string) {
+  // Step 1: Check buyer has enough funds
+  const balance = await sdk.balance.get(buyerId);
+  if (parseFloat(balance.available) < parseFloat(listing.price)) {
+    throw new Error(
+      `Insufficient balance: have ${balance.available}, need ${listing.price}`
+    );
+  }
+
+  // Step 2: Create the order
+  const order = await sdk.orders.create({
+    buyerId,
+    sellerId: listing.sellerId,
+    amount: listing.price,
+    currency: listing.currency,
+    title: listing.title,
+    description: listing.description,
+  });
+  console.log('Order created:', order.id, '| Status:', order.status);
+  // → ORDER_CREATED
+
+  // Step 3: Reserve the buyer's funds
+  await sdk.orders.reserve(order.id);
+  console.log('Funds reserved for order:', order.id);
+
+  // Verify the balance change
+  const updatedBalance = await sdk.balance.get(buyerId);
+  console.log('Available after reserve:', updatedBalance.available);
+  // decreased by listing.price
+  console.log('Reserved after reserve:', updatedBalance.reserved);
+  // increased by listing.price
+
+  return order;
+}
+
+// Replace with your actual buyer ID from Part 3
+checkout('usr_buyer123').catch(console.error);
+```
+
+<CommandLine>npx tsx src/03-listing-and-order.ts</CommandLine>
+
+<Callout type="note">
+  `sdk.orders.reserve` moves funds from `available` to `reserved` in the internal ledger. Nothing goes on-chain yet — that happens in Part 6.
+</Callout>
+
+---
+
+## Part 6 — Fund the Escrow
+
+Once funds are reserved, the next step is locking them into a Soroban smart contract via Trustless Work. This is the moment the buyer's payment leaves the off-chain ledger and becomes non-custodially held on Stellar.
+
+### Escrow Funding Flow
+
+```mermaid
+sequenceDiagram
+    participant App as Your App
+    participant Orch as Orchestrator
+    participant TW as Trustless Work
+    participant Stellar as Stellar Testnet
+
+    App->>Orch: sdk.escrow.create(orderId)
+    Orch->>TW: deploy Soroban contract
+    TW->>Stellar: contract deployed
+    Orch-->>App: status → ESCROW_CREATED
+
+    App->>Orch: sdk.escrow.fund(orderId)
+    Orch->>Stellar: transfer USDC into contract
+    Stellar-->>Orch: tx confirmed
+    Orch-->>App: status → IN_PROGRESS
+```
+
+Create `src/04-escrow.ts`:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+async function fundEscrow(orderId: string) {
+  // Step 1: Deploy the Soroban smart contract
+  await sdk.escrow.create(orderId);
+  console.log('Deploying escrow contract for order:', orderId);
+
+  // Step 2: Wait for contract deployment (async on-chain)
+  await sdk.orders.waitForStatus(orderId, 'ESCROW_CREATED');
+  console.log('Contract deployed. Status: ESCROW_CREATED');
+
+  // Step 3: Transfer USDC from buyer's wallet into the contract
+  await sdk.escrow.fund(orderId);
+  console.log('Funding escrow...');
+
+  // Step 4: Wait for on-chain confirmation (3–10 seconds on testnet)
+  await sdk.orders.waitForStatus(orderId, 'IN_PROGRESS');
+  console.log('Escrow funded! Order is now IN_PROGRESS');
+  console.log('Funds are non-custodially held in the Soroban contract.');
+}
+
+// Replace with your actual order ID from Part 5
+fundEscrow('ord_xyz789').catch(console.error);
+```
+
+<CommandLine>npx tsx src/04-escrow.ts</CommandLine>
+
+<Callout type="warning">
+  Always call `waitForStatus` after `escrow.create` and `escrow.fund`. Both operations are asynchronous — they dispatch Stellar transactions and resolve when the chain confirms. Do not call the next step before the previous one completes.
+</Callout>
+
+### Balance State After Funding
+
+| Ledger field | Before fund | After fund |
+|---|---|---|
+| `available` | 25.00 | 25.00 |
+| `reserved` | 75.00 | 0.00 |
+| On-chain (contract) | 0 USDC | 75 USDC |
+
+The `reserved` balance becomes `0.00` because the funds are now truly on-chain in the smart contract — the Orchestrator no longer holds them.
+
+---
+
+## Part 7 — Release Funds to the Seller
+
+When the buyer is satisfied with the delivered work, they approve release. The Orchestrator co-signs the smart contract call, and USDC flows to the seller's Stellar address.
+
+### Release Flow
+
+```mermaid
+sequenceDiagram
+    participant App as Your App
+    participant Orch as Orchestrator
+    participant TW as Trustless Work
+    participant Seller as Seller Wallet
+
+    App->>Orch: sdk.resolution.release(orderId, { requestedBy: buyerId })
+    Orch->>TW: release_escrow (buyer + platform co-sign)
+    TW->>Seller: transfer USDC
+    Orch->>Orch: credit seller.available
+    Orch->>Orch: emit order.released event
+    Orch-->>App: status → CLOSED
+```
+
+Create `src/05-release.ts`:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+async function releaseToSeller(orderId: string, buyerId: string, sellerId: string) {
+  // Buyer approves the completed work
+  await sdk.resolution.release(orderId, {
+    requestedBy: buyerId,
+  });
+  console.log('Release initiated...');
+
+  // Wait for settlement
+  await sdk.orders.waitForStatus(orderId, 'CLOSED');
+  console.log('Order CLOSED. Funds released to seller.');
+
+  // Seller can now see their updated balance
+  const sellerBalance = await sdk.balance.get(sellerId);
+  console.log('Seller available balance:', sellerBalance.available);
+  // Increased by the order amount
+
+  // Seller can withdraw to any Stellar address
+  const withdrawal = await sdk.withdrawals.create({
+    userId: sellerId,
+    amount: '75.00',
+    destinationAddress: 'GXXXXXXXX...', // seller's external wallet
+  });
+  console.log('Withdrawal requested:', withdrawal.id);
+}
+
+// Replace with your actual IDs from previous steps
+releaseToSeller('ord_xyz789', 'usr_buyer123', 'usr_seller456').catch(console.error);
+```
+
+<CommandLine>npx tsx src/05-release.ts</CommandLine>
+
+---
+
+## Part 8 — Dispute Path
+
+If the buyer is not satisfied, they can open a dispute before approving release. Funds remain locked in the contract until the platform resolves the dispute.
+
+### Dispute and Resolution Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> IN_PROGRESS : escrow funded
+    IN_PROGRESS --> DISPUTED : buyer disputes
+    IN_PROGRESS --> CLOSED : buyer releases
+    DISPUTED --> CLOSED : platform resolves → release
+    DISPUTED --> REFUNDED : platform resolves → refund
+    CLOSED --> [*]
+    REFUNDED --> [*]
+```
+
+Create `src/06-dispute.ts`:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+async function handleDispute(orderId: string, buyerId: string) {
+  // Step 1: Buyer opens a dispute (must be IN_PROGRESS)
+  await sdk.resolution.dispute(orderId, {
+    requestedBy: buyerId,
+    reason: 'Delivered work does not match agreed specifications',
+  });
+  console.log('Dispute opened. Funds frozen in contract.');
+
+  // Step 2: Platform fetches the dispute record
+  const disputes = await sdk.disputes.list({ orderId });
+  const dispute = disputes[0];
+  console.log('Dispute ID:', dispute.id);
+
+  // Step 3: Platform reviews evidence and resolves
+  // Option A: Refund the buyer
+  await sdk.disputes.resolve(dispute.id, {
+    resolution: 'refund',
+    note: 'Verified: deliverables did not meet specification',
+  });
+
+  // Option B (alternative): Release to seller
+  // await sdk.disputes.resolve(dispute.id, {
+  //   resolution: 'release',
+  //   note: 'Verified: work was delivered as agreed',
+  // });
+
+  await sdk.orders.waitForStatus(orderId, 'REFUNDED');
+  console.log('Order REFUNDED. Buyer balance credited.');
+
+  const buyerBalance = await sdk.balance.get(buyerId);
+  console.log('Buyer available balance (after refund):', buyerBalance.available);
+}
+
+// Replace with your actual IDs
+handleDispute('ord_xyz789', 'usr_buyer123').catch(console.error);
+```
+
+<CommandLine>npx tsx src/06-dispute.ts</CommandLine>
+
+<Callout type="note">
+  Only the platform (using the master API key) can resolve disputes. Dispute resolution requires a co-signature from the Trustless Work arbiter smart contract, ensuring neither party can unilaterally steal funds.
+</Callout>
+
+---
+
+## Part 9 — Real-Time Events
+
+Subscribe to the Orchestrator's SSE stream to keep your UI in sync without polling.
+
+### Available Events
+
+| Event | Fired when |
+|---|---|
+| `balance.credited` | Deposit detected on-chain |
+| `order.created` | `sdk.orders.create` succeeds |
+| `order.funds_reserved` | `sdk.orders.reserve` succeeds |
+| `order.escrow_created` | Soroban contract deployed |
+| `order.escrow_funded` | USDC locked in contract |
+| `order.released` | Seller receives USDC |
+| `order.disputed` | Buyer opens dispute |
+| `order.refunded` | Buyer refunded |
+| `order.closed` | Order fully settled |
+
+Create `src/07-events.ts`:
+
+```typescript
+import 'dotenv/config';
+
+// OFFER-HUB emits Server-Sent Events at GET /api/v1/events
+// Standard EventSource works in Node 18+ and all modern browsers.
+const EVENTS_URL = `${process.env.OFFERHUB_API_URL}/api/v1/events`;
+const API_KEY = process.env.OFFERHUB_API_KEY!;
+
+// Node.js EventSource (install eventsource package if needed)
+// In a browser you'd use new EventSource(url) directly.
+const { EventSource } = await import('eventsource');
+
+const es = new EventSource(EVENTS_URL, {
+  headers: { Authorization: `Bearer ${API_KEY}` },
+});
+
+es.onopen = () => {
+  console.log('Connected to OFFER-HUB event stream');
+};
+
+es.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  switch (data.eventType) {
+    case 'balance.credited':
+      console.log(`💰 Balance credited: +${data.payload.amount} USDC for user ${data.payload.userId}`);
+      break;
+    case 'order.escrow_funded':
+      console.log(`🔒 Escrow funded: order ${data.payload.orderId} is now IN_PROGRESS`);
+      break;
+    case 'order.released':
+      console.log(`✅ Funds released: order ${data.payload.orderId} CLOSED`);
+      break;
+    case 'order.disputed':
+      console.log(`⚠️ Dispute opened: order ${data.payload.orderId}`);
+      break;
+    case 'order.refunded':
+      console.log(`↩️ Refund processed: order ${data.payload.orderId}`);
+      break;
+    default:
+      console.log(`Event: ${data.eventType}`, data.payload);
+  }
+};
+
+es.onerror = (err) => {
+  console.error('Event stream error:', err);
+};
+
+// Keep alive — press Ctrl+C to stop
+console.log('Listening for events. Press Ctrl+C to stop.');
+```
+
+<CommandLine>npx tsx src/07-events.ts</CommandLine>
+
+<Callout type="tip">
+  In a real app, run this subscriber in your backend and use your WebSocket layer, push notifications, or polling fallback to update your frontend clients.
+</Callout>
+
+---
+
+## Part 10 — End-to-End Happy Path
+
+Here is the complete happy path in a single script you can run for a quick demo or hackathon presentation:
+
+```typescript
+import 'dotenv/config';
+import { sdk } from './sdk.js';
+
+async function fullDemoFlow() {
+  console.log('\n=== OFFER-HUB Marketplace Demo ===\n');
+
+  // 1. Register participants
+  const buyer = await sdk.users.create({
+    externalUserId: `demo-buyer-${Date.now()}`,
+    email: 'alice@demo.com',
+    type: 'BUYER',
+  });
+  const seller = await sdk.users.create({
+    externalUserId: `demo-seller-${Date.now()}`,
+    email: 'bob@demo.com',
+    type: 'SELLER',
+  });
+  console.log('✓ Buyer:', buyer.id);
+  console.log('✓ Seller:', seller.id);
+
+  // 2. Get buyer deposit address (fund manually via Friendbot on testnet)
+  const deposit = await sdk.wallet.getDepositAddress(buyer.id);
+  console.log('\nFund the buyer via Friendbot:');
+  console.log(`  https://friendbot.stellar.org?addr=${deposit.address}`);
+  console.log('\nPress Ctrl+C and re-run after funding, or use a pre-funded testnet account.\n');
+
+  // ⚠️ In a real hackathon demo, fund the buyer first, then continue.
+  // For a fully automated demo, inject a pre-funded externalUserId here.
+
+  // 3. Place an order
+  const order = await sdk.orders.create({
+    buyerId: buyer.id,
+    sellerId: seller.id,
+    amount: '50.00',
+    currency: 'USD',
+    title: 'Demo Service',
+    description: 'End-to-end demo for hackathon',
+  });
+  console.log('✓ Order created:', order.id);
+
+  // 4. Reserve funds
+  await sdk.orders.reserve(order.id);
+  console.log('✓ Funds reserved');
+
+  // 5. Create + fund escrow
+  await sdk.escrow.create(order.id);
+  await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
+  console.log('✓ Escrow contract deployed');
+
+  await sdk.escrow.fund(order.id);
+  await sdk.orders.waitForStatus(order.id, 'IN_PROGRESS');
+  console.log('✓ Escrow funded (USDC on-chain)');
+
+  // 6. Simulate work delivery + buyer approval
+  await sdk.resolution.release(order.id, { requestedBy: buyer.id });
+  await sdk.orders.waitForStatus(order.id, 'CLOSED');
+  console.log('✓ Funds released to seller');
+
+  // 7. Check seller balance
+  const sellerBalance = await sdk.balance.get(seller.id);
+  console.log('\nSeller balance:', sellerBalance.available, sellerBalance.currency);
+
+  console.log('\n=== Demo complete! ===');
+}
+
+fullDemoFlow().catch(console.error);
+```
+
+<CommandLine>npx tsx src/full-demo.ts</CommandLine>
+
+---
+
+## Part 11 — Error Handling
+
+Wrap SDK calls in try/catch and handle typed errors for a production-quality integration:
+
+```typescript
+import {
+  InsufficientFundsError,
+  NotFoundError,
+  ValidationError,
+  InvalidTransitionError,
+  OfferHubError,
+} from '@offerhub/sdk';
+
+async function safeCreateOrder(buyerId: string, sellerId: string, amount: string) {
+  try {
+    const order = await sdk.orders.create({
+      buyerId,
+      sellerId,
+      amount,
+      currency: 'USD',
+      title: 'Service',
+    });
+    await sdk.orders.reserve(order.id);
+    return order;
+
+  } catch (error) {
+    if (error instanceof InsufficientFundsError) {
+      // Show "Please add funds" UI to the buyer
+      console.error(`Need ${error.required} USDC, balance is ${error.available}`);
+    } else if (error instanceof NotFoundError) {
+      // User ID does not exist — re-register flow
+      console.error(`${error.resourceType} not found`);
+    } else if (error instanceof ValidationError) {
+      // Bad request body — log and fix
+      console.error('Validation failed:', error.errors);
+    } else if (error instanceof InvalidTransitionError) {
+      // State machine violation — check current order status
+      console.error(`Cannot transition from state: ${error.currentState}`);
+    } else if (error instanceof OfferHubError) {
+      // Generic orchestrator error
+      console.error('Orchestrator error:', error.message);
+    } else {
+      throw error; // Re-throw unexpected errors
+    }
+  }
+}
+```
+
+### Common Errors Reference
+
+| Error class | HTTP | When it happens | Fix |
+|---|---|---|---|
+| `InsufficientFundsError` | 422 | Buyer balance too low | Check `balance.available` before creating order |
+| `InvalidTransitionError` | 409 | Wrong order state for action | Follow the state machine |
+| `NotFoundError` | 404 | Unknown ID | Verify IDs are from `create` responses |
+| `ValidationError` | 400 | Missing/invalid fields | Check required fields in SDK types |
+| `OfferHubError` | 5xx | Stellar/infrastructure issue | Retry with same idempotency key |
+
+### Safe Retries with Idempotency Keys
+
+```typescript
+// Attach a stable, deterministic key to each state-changing operation
+const idempotentSdk = sdk.withIdempotencyKey(`fund-${orderId}-v1`);
+
+// Safe to retry — same key returns the cached result
+await idempotentSdk.escrow.fund(orderId);
+```
+
+<Callout type="warning">
+  Always use idempotency keys for `escrow.fund`, `escrow.create`, `resolution.release`, and `resolution.dispute`. Stellar transactions are irreversible — duplicates cannot be undone.
+</Callout>
+
+---
+
+## Part 12 — Project Structure Recap
+
+Here is the final file layout of the marketplace app you built:
+
+```
+my-marketplace/
+├── .env                     # OFFERHUB_API_URL, OFFERHUB_API_KEY
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── sdk.ts               # SDK singleton
+    ├── 01-signup.ts         # Create buyer + seller users
+    ├── 02-deposit.ts        # Show deposit address
+    ├── 03-listing-and-order.ts  # Create order + reserve funds
+    ├── 04-escrow.ts         # Deploy contract + fund on-chain
+    ├── 05-release.ts        # Approve + release to seller
+    ├── 06-dispute.ts        # Dispute + platform resolution
+    ├── 07-events.ts         # SSE real-time event subscription
+    └── full-demo.ts         # Complete happy-path demo
+```
+
+---
+
+## What to Build Next
+
+You now have all the building blocks. Here are natural extensions for a hackathon demo:
+
+| Feature | Guide |
+|---|---|
+| Self-host on a VPS or Fly.io | [Self-Hosting Guide](/docs/guide/self-hosting) |
+| Deep dive into escrow states | [Escrow Flows](/docs/guide/escrow-flows) |
+| Handle withdrawals in the UI | [Withdrawals Guide](/docs/guide/withdrawals) |
+| Detailed dispute management | [Disputes Guide](/docs/guide/disputes) |
+| AirTM fiat on/off-ramp | [Orchestrator Guide](/docs/guide/orchestrator) |
+| Full REST API reference | [API Reference](/docs/api-reference/overview) |
+| Security checklist | [Security Guide](/docs/guide/security) |
+
+<Callout type="note">
+  Need help? Join the [Discord community](https://discord.gg/offerhub) or open an issue on [GitHub](https://github.com/OFFER-HUB/offer-hub-monorepo/issues).
+</Callout>
