@@ -7,6 +7,7 @@ import type { ApiEndpoint } from "@/data/api-schema";
 import { MethodBadge } from "./MethodBadge";
 import { ParameterInput } from "./ParameterInput";
 import { ResponseViewer } from "./ResponseViewer";
+import { Textarea } from "@/components/ui/Textarea";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
 
@@ -149,18 +150,18 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
 
               {endpoint.requestBody && (
                 <div className="space-y-2">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">
-                    Request Body{" "}
-                    <span className="ml-2 font-normal normal-case tracking-normal text-content-secondary">
-                      {endpoint.requestBody.contentType}
-                    </span>
-                  </h4>
-                  <textarea
+                  <Textarea
+                    id={`request-body-${endpoint.path}`}
+                    label="Request body"
+                    labelClassName="text-[11px] font-black uppercase tracking-widest text-theme-primary"
                     value={bodyValue}
                     onChange={(e) => setBodyValue(e.target.value)}
                     rows={Math.min(bodyValue.split("\n").length + 1, 12)}
-                    className="w-full rounded-xl px-4 py-3 text-sm font-mono text-content-primary resize-y bg-bg-sunken shadow-neu-sunken transition-shadow focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-0"
+                    className="text-sm font-mono resize-y"
                   />
+                  <p className="text-xs text-content-secondary">
+                    {endpoint.requestBody.contentType}
+                  </p>
                 </div>
               )}
             </div>
