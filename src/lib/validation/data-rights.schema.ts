@@ -1,8 +1,14 @@
 import { z } from "zod";
-import { emailField, EMAIL_REQUIRED_MESSAGE } from "./email";
+import { EMAIL_REGEX, EMAIL_REQUIRED_MESSAGE } from "./email";
+
+const dataRightsEmailField = z
+  .string()
+  .trim()
+  .min(1, EMAIL_REQUIRED_MESSAGE)
+  .regex(EMAIL_REGEX, EMAIL_REQUIRED_MESSAGE);
 
 export const dataRightsSchema = z.object({
-  email: emailField,
+  email: dataRightsEmailField,
 });
 
 export type DataRightsPayload = z.infer<typeof dataRightsSchema>;
