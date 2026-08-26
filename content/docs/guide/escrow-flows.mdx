@@ -62,7 +62,7 @@ const sdk = new OfferHubSDK({
 });
 
 // Create escrow contract
-await sdk.escrow.create('ord_xyz789');
+await sdk.orders.createEscrow('ord_xyz789');
 
 // Wait until contract is deployed
 await sdk.orders.waitForStatus('ord_xyz789', 'ESCROW_CREATED');
@@ -103,7 +103,7 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow/fund \
 ### TypeScript SDK
 
 ```ts
-await sdk.escrow.fund('ord_xyz789');
+await sdk.orders.fundEscrow('ord_xyz789');
 
 await sdk.orders.waitForStatus('ord_xyz789', 'IN_PROGRESS');
 ```
@@ -209,7 +209,7 @@ Response:
 ### TypeScript SDK
 
 ```ts
-await sdk.resolution.release('ord_xyz789', {
+await sdk.orders.release('ord_xyz789', {
   requestedBy: 'usr_buyer123',
 });
 ```
@@ -270,7 +270,7 @@ Response:
 ### TypeScript SDK
 
 ```ts
-await sdk.resolution.dispute('ord_xyz789', {
+await sdk.orders.dispute('ord_xyz789', {
   requestedBy: 'usr_buyer123',
   reason: 'Work delivered does not match agreed specifications',
 });
@@ -379,7 +379,7 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/cancel \
 
 ```ts
 // Step 1: Buyer raises dispute
-await sdk.resolution.dispute('ord_xyz789', {
+await sdk.orders.dispute('ord_xyz789', {
   requestedBy: 'usr_buyer123',
   reason: 'Work not delivered',
 });

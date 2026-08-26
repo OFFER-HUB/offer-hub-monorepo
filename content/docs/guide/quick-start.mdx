@@ -240,11 +240,11 @@ const order = await sdk.orders.create({
 await sdk.orders.reserve(order.id);
 
 // Create and fund escrow
-await sdk.escrow.create(order.id);
-await sdk.escrow.fund(order.id);
+await sdk.orders.createEscrow(order.id);
+await sdk.orders.fundEscrow(order.id);
 
 // Release to seller
-await sdk.resolution.release(order.id, { requestedBy: buyer.id });
+await sdk.orders.release(order.id, { requestedBy: buyer.id });
 ```
 
 ## Listening to Events

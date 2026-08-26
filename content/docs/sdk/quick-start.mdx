@@ -89,13 +89,13 @@ console.log('Status:', order.status);    // ORDER_CREATED
 await sdk.orders.reserve(order.id);
 
 // 2. Create escrow on blockchain
-await sdk.escrow.create(order.id);
+await sdk.orders.createEscrow(order.id);
 
 // 3. Fund the escrow
-await sdk.escrow.fund(order.id);
+await sdk.orders.fundEscrow(order.id);
 
 // 4. Release to seller when work is done
-await sdk.resolution.release(order.id, {
+await sdk.orders.release(order.id, {
   requestedBy: 'usr_buyer123'
 });
 ```
@@ -108,9 +108,7 @@ The SDK provides access to all Orchestrator resources:
 |----------|-------------|
 | `sdk.users` | Create and manage users |
 | `sdk.balance` | Check user balances |
-| `sdk.orders` | Create and manage orders |
-| `sdk.escrow` | Create and fund escrow contracts |
-| `sdk.resolution` | Release, refund, or dispute orders |
+| `sdk.orders` | Create and manage orders, escrows, and resolutions |
 | `sdk.disputes` | Manage disputes |
 | `sdk.wallet` | Wallet operations (deposit addresses) |
 | `sdk.withdrawals` | Create withdrawals |

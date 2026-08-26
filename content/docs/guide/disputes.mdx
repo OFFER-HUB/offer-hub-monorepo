@@ -312,7 +312,7 @@ const sdk = new OfferHubSDK({
 });
 
 // Open a dispute
-const dispute = await sdk.resolution.dispute('ord_xyz789', {
+const dispute = await sdk.orders.dispute('ord_xyz789', {
   requestedBy: 'usr_buyer123',
   reason: 'Work not delivered as specified'
 });

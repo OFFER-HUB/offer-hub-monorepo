@@ -233,19 +233,19 @@ const sdk = new OfferHubSDK({
 const order = await sdk.orders.get('ord_xyz789');
 
 // Create escrow contract
-await sdk.escrow.create(order.id);
+await sdk.orders.createEscrow(order.id);
 
 // Wait for contract creation (or use events)
 await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
 
 // Fund the escrow
-await sdk.escrow.fund(order.id);
+await sdk.orders.fundEscrow(order.id);
 
 // Wait for funding confirmation
 await sdk.orders.waitForStatus(order.id, 'IN_PROGRESS');
 
 // Later: release to seller
-await sdk.resolution.release(order.id, {
+await sdk.orders.release(order.id, {
   requestedBy: order.buyerId
 });
 ```
@@ -346,7 +346,7 @@ Blockchain transactions can take time. Handle timeouts gracefully:
 
 ```typescript
 try {
-  await sdk.escrow.fund(orderId);
+  await sdk.orders.fundEscrow(orderId);
 } catch (error) {
   if (error.code === 'FUNDING_TIMEOUT') {
     // Check if transaction was actually submitted
