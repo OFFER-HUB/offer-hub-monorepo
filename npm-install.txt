@@ -1,0 +1,18 @@
+
+up to date, audited 781 packages in 9s
+
+286 packages are looking for funding
+  run `npm fund` for details
+
+20 vulnerabilities (4 moderate, 15 high, 1 critical)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm warn allow-scripts 3 packages have install scripts not yet covered by allowScripts:
+npm warn allow-scripts   core-js@3.48.0 (install: (install scripts present))
+npm warn allow-scripts   sharp@0.34.5 (install: (install scripts present))
+npm warn allow-scripts   unrs-resolver@1.11.1 (install: (install scripts present))
+npm warn allow-scripts
+npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.

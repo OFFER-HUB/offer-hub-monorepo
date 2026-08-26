@@ -3,7 +3,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { TERMS_MDX_COMPONENTS } from "@/components/terms/terms-mdx-components";
 import { TermsPageHeader } from "@/components/terms/TermsPageHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -30,7 +30,7 @@ export default async function TermsOfServicePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-base text-content-primary">
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
       <main className="flex-grow pt-32 pb-24 px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">

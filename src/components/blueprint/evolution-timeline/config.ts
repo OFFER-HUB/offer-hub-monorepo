@@ -24,7 +24,7 @@ export function statusConfig(status: PhaseStatus): StatusConfig {
         bg: "bg-[var(--color-success)]/10",
         border: "border-[var(--color-success)]/30",
         label: "Completed",
-        dotColor: "#16a34a",
+        dotColor: "var(--color-success)",
         dotBg: "bg-[var(--color-success)]",
       };
     case "in-progress":

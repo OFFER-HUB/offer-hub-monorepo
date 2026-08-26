@@ -23,12 +23,12 @@ import { SupportedBySection } from "@/components/SupportedBySection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { RegistrationForm } from "@/components/community/RegistrationForm";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 
 export default function Home() {
   return (
     <>
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
       {/* Every other route wraps its content in <main>; without it the root
           layout's "Skip to main content" link has no landmark to land on. */}

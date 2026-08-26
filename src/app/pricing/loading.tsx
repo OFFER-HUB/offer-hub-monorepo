@@ -1,6 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function PricingCardSkeleton() {
@@ -30,7 +30,7 @@ function PricingCardSkeleton() {
 export default function PricingLoading() {
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
 
       <main className="flex-grow pt-28 pb-20">

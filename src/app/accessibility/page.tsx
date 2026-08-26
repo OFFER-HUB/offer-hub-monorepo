@@ -2,7 +2,7 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, MessageSquare } from "lucide-react";
 import { SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
 import { GITHUB_REPO_URL } from "@/constants/github";
@@ -87,7 +87,7 @@ const contactMethods = [
 export default function AccessibilityPage() {
      return (
           <div className="min-h-screen flex flex-col">
-               <LoadingBar />
+               <TopProgressBar mode="scroll-progress" />
                <Navbar />
 
                <main className="flex-grow pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 px-4 sm:px-8 md:px-12 lg:px-24">

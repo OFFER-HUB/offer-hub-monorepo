@@ -1,0 +1,33 @@
+error: Your local changes to the following files would be overwritten by merge:
+	src/components/api-explorer/MethodBadge.tsx
+	src/components/community/IssueCard.tsx
+	src/components/ui/Badge.tsx
+Please commit your changes or stash them before you merge.
+Aborting
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/components/api-explorer/MethodBadge.tsx
+	modified:   src/components/community/IssueCard.tsx
+	modified:   src/components/ui/Badge.tsx
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	build-before.txt
+	build-errors.txt
+	build-out.txt
+	build-output.txt
+	git-status.txt
+	npm-install.txt
+	offer-hub-monorepo/
+	src/components/ui/TopProgressBar.tsx
+	src/lib/statusColors.ts
+	stash-pop.txt
+	tsc-errors.txt
+	tsc-out.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+The stash entry is kept in case you need it again.

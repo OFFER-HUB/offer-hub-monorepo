@@ -4,6 +4,8 @@ import { Footer } from "@/components/layout/Footer";
 import { buildPageMetadata } from "@/lib/seo";
 import type { GitHubRelease } from "@/types/github";
 import { GITHUB_RELEASES_API_URL } from "@/constants/github";
+import { StatusBadge } from "@/components/ui/Badge";
+import type { BadgeVariant } from "@/components/ui/Badge";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Changelog",
@@ -24,8 +26,8 @@ interface ChangelogEntry {
   version: string;
   date: string;
   title: string;
-  badge: string;
-  badgeColor: string;
+  /** Typed variant key for StatusBadge — replaces the old free-form badge + badgeColor strings. */
+  badgeVariant: Extract<BadgeVariant, "release" | "prerelease" | "draft">;
   description: string;
   changes: string[];
 }
@@ -82,38 +84,24 @@ function parseReleaseBody(body: string | null): Pick<ChangelogEntry, "descriptio
   };
 }
 
-function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): Pick<ChangelogEntry, "badge" | "badgeColor"> {
-  if (release.draft) {
-    return {
-      badge: "Draft",
-      badgeColor: "bg-content-secondary/10 text-content-secondary",
-    };
-  }
-
-  if (release.prerelease) {
-    return {
-      badge: "Pre-release",
-      badgeColor: "bg-theme-warning/10 text-theme-warning",
-    };
-  }
-
-  return {
-    badge: "Release",
-    badgeColor: "bg-theme-success/10 text-theme-success",
-  };
+function getReleaseBadgeVariant(
+  release: Pick<GitHubRelease, "draft" | "prerelease">,
+): ChangelogEntry["badgeVariant"] {
+  if (release.draft) return "draft";
+  if (release.prerelease) return "prerelease";
+  return "release";
 }
 
 function mapReleaseToEntry(release: GitHubRelease): ChangelogEntry {
   const { description, changes } = parseReleaseBody(release.body);
-  const badge = getReleaseBadge(release);
 
   return {
     version: release.tag_name,
     date: formatReleaseDate(release.published_at ?? release.created_at),
     title: release.name?.trim() || `Release ${release.tag_name}`,
+    badgeVariant: getReleaseBadgeVariant(release),
     description,
     changes,
-    ...badge,
   };
 }
 
@@ -177,7 +165,7 @@ export default async function ChangelogPage() {
                   </h2>
                   <p className="text-content-secondary text-sm md:text-base font-medium leading-relaxed">
                     {hasError
-                      ? "We couldn’t load GitHub Releases right now. Please try again shortly."
+                      ? "We couldn't load GitHub Releases right now. Please try again shortly."
                       : "As soon as a GitHub release is published, it will appear here automatically."}
                   </p>
                 </div>
@@ -185,65 +173,65 @@ export default async function ChangelogPage() {
             ) : (
               <div className="space-y-16 md:space-y-24">
                 {changelogEntries.map((entry, index) => (
-                <div
-                  key={entry.version}
-                  className={`relative flex flex-col md:flex-row items-start md:items-center md:justify-between ${index % 2 === 0 ? "md:flex-row-reverse" : ""
-                    }`}
-                >
-                  {/* Neumorphic Dot on timeline */}
-                  <div className="absolute left-6 md:left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-bg-base shadow-neu-raised-sm z-10 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-theme-primary" />
-                  </div>
-
-                  {/* Date (for desktop, alternates side) */}
                   <div
-                    className={`hidden md:block w-5/12 ${index % 2 === 0 ? "text-left" : "text-right"}`}
+                    key={entry.version}
+                    className={`relative flex flex-col md:flex-row items-start md:items-center md:justify-between ${
+                      index % 2 === 0 ? "md:flex-row-reverse" : ""
+                    }`}
                   >
-                    <span className="text-sm font-black text-content-primary uppercase tracking-widest opacity-40">
-                      {entry.date}
-                    </span>
-                  </div>
+                    {/* Neumorphic Dot on timeline */}
+                    <div className="absolute left-6 md:left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-bg-base shadow-neu-raised-sm z-10 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-theme-primary" />
+                    </div>
 
-                  {/* Enhanced Card content */}
-                  <div className="w-full md:w-5/12 pl-12 md:pl-0">
-                    <div className="bg-bg-elevated rounded-[2.5rem] p-8 md:p-10 shadow-neu-raised hover:shadow-neu-raised-hover transition-all duration-500 ease-out group">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black text-content-primary tracking-tight group-hover:text-theme-primary transition-colors">
-                            {entry.version}
-                          </span>
-                          <span
-                            className={`${entry.badgeColor} text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-neu-raised-sm`}
-                          >
-                            {entry.badge}
+                    {/* Date (for desktop, alternates side) */}
+                    <div
+                      className={`hidden md:block w-5/12 ${index % 2 === 0 ? "text-left" : "text-right"}`}
+                    >
+                      <span className="text-sm font-black text-content-primary uppercase tracking-widest opacity-40">
+                        {entry.date}
+                      </span>
+                    </div>
+
+                    {/* Enhanced Card content */}
+                    <div className="w-full md:w-5/12 pl-12 md:pl-0">
+                      <div className="bg-bg-elevated rounded-[2.5rem] p-8 md:p-10 shadow-neu-raised hover:shadow-neu-raised-hover transition-all duration-500 ease-out group">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl font-black text-content-primary tracking-tight group-hover:text-theme-primary transition-colors">
+                              {entry.version}
+                            </span>
+                            <StatusBadge
+                              variant={entry.badgeVariant}
+                              className="text-[9px] uppercase font-black px-3 py-1 tracking-widest"
+                            />
+                          </div>
+                          <span className="text-xs font-black text-content-secondary block md:hidden uppercase tracking-widest opacity-60">
+                            {entry.date}
                           </span>
                         </div>
-                        <span className="text-xs font-black text-content-secondary block md:hidden uppercase tracking-widest opacity-60">
-                          {entry.date}
-                        </span>
+
+                        <h3 className="text-lg font-bold text-content-primary mb-4">
+                          {entry.title}
+                        </h3>
+                        <p className="text-content-secondary text-sm font-medium leading-relaxed mb-6">
+                          {entry.description}
+                        </p>
+
+                        <ul className="space-y-3">
+                          {entry.changes.map((change) => (
+                            <li
+                              key={`${entry.version}-${change}`}
+                              className="flex items-start gap-3 text-sm font-medium text-content-primary/80"
+                            >
+                              <span className="mt-2 h-1 w-1 rounded-full bg-theme-primary shrink-0" />
+                              <span>{change}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-
-                      <h3 className="text-lg font-bold text-content-primary mb-4">
-                        {entry.title}
-                      </h3>
-                      <p className="text-content-secondary text-sm font-medium leading-relaxed mb-6">
-                        {entry.description}
-                      </p>
-
-                      <ul className="space-y-3">
-                        {entry.changes.map((change) => (
-                          <li
-                            key={`${entry.version}-${change}`}
-                            className="flex items-start gap-3 text-sm font-medium text-content-primary/80"
-                          >
-                            <span className="mt-2 h-1 w-1 rounded-full bg-theme-primary shrink-0" />
-                            <span>{change}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
-                </div>
                 ))}
               </div>
             )}

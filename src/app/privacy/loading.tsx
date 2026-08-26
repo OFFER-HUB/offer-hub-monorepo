@@ -1,6 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function LegalSectionSkeleton() {
@@ -19,7 +19,7 @@ function LegalSectionSkeleton() {
 export default function PrivacyLoading() {
   return (
     <div className="min-h-screen flex flex-col">
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
 
       <main className="flex-grow pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 px-4 sm:px-8 md:px-12 lg:px-24">
