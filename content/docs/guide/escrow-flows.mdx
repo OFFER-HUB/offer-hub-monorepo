@@ -167,16 +167,17 @@ When the buyer approves the delivered work, funds are released to the seller in 
 
 ### Steps
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `complete_escrow` | Buyer confirms delivery |
-| 2 | `release_escrow` | Platform authorizes release |
-| 3 | Claim funds | Seller receives USDC |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `changeMilestoneStatus` | **Seller** | `serviceProvider` |
+| 2 | `approveMilestone` | **Buyer** | `approver` |
+| 3 | `releaseFunds` | **Buyer** | `releaseSigner` |
 
 ```mermaid
 flowchart LR
-    A[Buyer signs complete] --> B[Platform signs release]
-    B --> C[Seller claims USDC]
+    A["Seller signs\nchangeMilestoneStatus\n(serviceProvider)"] --> B["Buyer signs\napproveMilestone\n(approver)"]
+    B --> C["Buyer signs\nreleaseFunds\n(releaseSigner)"]
+    C --> D[USDC sent to seller]
 ```
 
 ### REST
@@ -355,10 +356,14 @@ flowchart LR
 
 Two on-chain transactions are required:
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `dispute_escrow` | Buyer opens dispute |
-| 2 | `resolve_dispute` | Platform issues refund |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `disputeEscrow` | **Buyer** | `approver` (disputer) |
+| 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
+
+<Callout type="danger">
+  **Role separation is enforced by the smart contract.** The `disputeResolver` must be a different party from the disputer. Because the buyer signs step 1, the platform wallet is the only valid signer for step 2. Neither the buyer nor the seller can unilaterally resolve a dispute to reclaim funds.
+</Callout>
 
 ### Refund via Cancellation
 

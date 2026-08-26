@@ -28,10 +28,10 @@ OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on th
 
 | Role | Description |
 |------|-------------|
-| **Buyer** | Deposits funds into escrow |
-| **Seller** | Receives funds when work is approved |
-| **Platform** | OFFER-HUB's signer for dispute resolution |
-| **Arbiter** | Trustless Work's contract for on-chain enforcement |
+| **Buyer** | Funds the escrow; approves milestones; signs fund-release transactions |
+| **Seller** | Receives funds; marks milestones as completed (`serviceProvider` role) |
+| **Platform** | OFFER-HUB's signer; acts as `disputeResolver` — required for any dispute resolution |
+| **Arbiter** | Trustless Work's smart contract; enforces that `disputeResolver` ≠ `disputer` on-chain |
 
 ## Escrow Lifecycle
 
@@ -145,18 +145,23 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/release \
 
 ### The 3-Transaction Release Flow
 
-Releasing funds requires three separate blockchain transactions:
+Releasing funds requires three separate Stellar transactions signed by different parties:
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `complete_escrow` | Buyer approves work |
-| 2 | `release_escrow` | Platform authorizes release |
-| 3 | Claim funds | Seller receives USDC |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `changeMilestoneStatus` | **Seller** | `serviceProvider` |
+| 2 | `approveMilestone` | **Buyer** | `approver` |
+| 3 | `releaseFunds` | **Buyer** | `releaseSigner` |
+
+<Callout type="note">
+  The seller signs first to mark the milestone as completed, then the buyer signs twice — once to approve and once to trigger the actual fund transfer. All signing happens server-side via the parties' invisible wallets.
+</Callout>
 
 ```mermaid
 flowchart LR
-    A[Buyer signs complete] --> B[Platform signs release]
-    B --> C[Seller claims funds]
+    A["Seller signs\nchangeMilestoneStatus\n(serviceProvider)"] --> B["Buyer signs\napproveMilestone\n(approver)"]
+    B --> C["Buyer signs\nreleaseFunds\n(releaseSigner)"]
+    C --> D[USDC sent to seller]
 ```
 
 ### Release Response
@@ -208,13 +213,17 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
 
 ### The 2-Transaction Refund Flow
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `dispute_escrow` | Buyer opens dispute |
-| 2 | `resolve_dispute` | Platform refunds buyer |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `disputeEscrow` | **Buyer** | `approver` (disputer) |
+| 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
 
 <Callout type="warning">
-  Disputes require platform intervention. The smart contract won't release funds until the platform signs the resolution transaction.
+  Disputes require platform intervention. The smart contract won't transfer funds until the platform signs the `resolveDispute` transaction as `disputeResolver`.
+</Callout>
+
+<Callout type="danger">
+  **Role separation is enforced on-chain.** The `disputeResolver` must be a different party from the disputer. Because the buyer opens the dispute (step 1), only the platform wallet — never the buyer or seller — can sign the resolution (step 2). This prevents either party from unilaterally reclaiming funds.
 </Callout>
 
 ## Using the SDK
