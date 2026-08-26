@@ -54,10 +54,19 @@ Follow the [Installation guide](/docs/installation) to clone the orchestrator re
   The installation takes about 5 minutes. You'll have a running API at `http://localhost:4000` when you're done.
 </Callout>
 
+## Creating an API Key
+
+After installation, you need an API key to make API calls. The fastest way is with the CLI:
+
+<CommandLine>npm install -g @offerhub/cli && offerhub keys create</CommandLine>
+
+You can also create keys with `curl` — see the [Installation guide](/docs/installation#creating-your-first-api-key) for both methods.
+
 ## Next Steps
 
 Once the Orchestrator is running, explore these guides:
 
+- [CLI Guide](/docs/guide/cli) — Manage API keys and maintenance from the command line
 - [Quick Start](/docs/guide/quick-start) — Create your first user and order in 5 minutes
 - [Orchestrator Guide](/docs/guide/orchestrator) — Deep dive into the Orchestrator architecture
 - [Escrow Flows](/docs/guide/escrow) — Learn about escrow states and transitions
