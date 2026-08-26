@@ -212,7 +212,7 @@ describe("useWaitlistForm cooldown", () => {
 });
 
 describe("useWaitlistForm with Turnstile configured", () => {
-  const render$ = vi.fn(() => "widget-1");
+  const render$ = vi.fn<(...args: unknown[]) => string>(() => "widget-1");
   const reset = vi.fn();
 
   beforeEach(() => {

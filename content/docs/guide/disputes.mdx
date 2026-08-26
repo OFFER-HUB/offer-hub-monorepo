@@ -35,24 +35,24 @@ A dispute should be opened when:
 ```
 IN_PROGRESS
       ↓
-DISPUTING (opening dispute)
-      ↓
 DISPUTED (awaiting resolution)
       ↓
   ┌───┴───┐
   ↓       ↓
-REFUNDED  CLOSED
+REFUNDED  RELEASED
 (buyer)   (seller)
+      ↓
+    CLOSED
 ```
 
 ### State Descriptions
 
 | State | Description |
 |-------|-------------|
-| `DISPUTING` | Dispute transaction being submitted |
 | `DISPUTED` | Funds locked, awaiting platform resolution |
 | `REFUNDED` | Dispute resolved in buyer's favor |
-| `CLOSED` | Dispute resolved in seller's favor |
+| `RELEASED` | Dispute resolved in seller's favor |
+| `CLOSED` | Order completed after resolution |
 
 ## Opening a Dispute
 

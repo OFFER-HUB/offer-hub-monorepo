@@ -37,50 +37,27 @@ OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on th
 
 ### State Machine
 
-```mermaid
-stateDiagram-v2
-    [*] --> ORDER_CREATED
-    ORDER_CREATED --> FUNDS_RESERVED: Off-chain lock
+The escrow contract follows the internal **Escrow state machine** below — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly. The order around it follows the [Order lifecycle](/docs/guide/orders).
 
-    state "Contract Setup" as setup {
-        FUNDS_RESERVED --> ESCROW_CREATING: Init contract
-        ESCROW_CREATING --> ESCROW_CREATED: Deployed
-    }
-
-    state "Funding" as funding {
-        ESCROW_CREATED --> ESCROW_FUNDING: Send USDC
-        ESCROW_FUNDING --> ESCROW_FUNDED: Confirmed
-    }
-
-    ESCROW_FUNDED --> IN_PROGRESS: Work begins
-
-    state "Resolution" as resolution {
-        IN_PROGRESS --> RELEASING: Buyer approves
-        IN_PROGRESS --> DISPUTING: Open dispute
-        RELEASING --> CLOSED: Released
-        DISPUTING --> DISPUTED: Under review
-        DISPUTED --> REFUNDED: Refund
-        DISPUTED --> CLOSED: Release
-    }
-
-    CLOSED --> [*]
-    REFUNDED --> [*]
-```
+<EscrowStateMachineDiagram />
 
 ### State Descriptions
 
 | State | Description |
 |-------|-------------|
-| `ESCROW_CREATING` | Smart contract being deployed |
-| `ESCROW_CREATED` | Contract ready, waiting for funding |
-| `ESCROW_FUNDING` | USDC transfer to contract in progress |
-| `ESCROW_FUNDED` | Funds locked, work can begin |
-| `IN_PROGRESS` | Seller is working on the order |
-| `RELEASING` | Release transaction in progress |
-| `DISPUTING` | Dispute transaction in progress |
-| `DISPUTED` | Awaiting resolution |
-| `CLOSED` | Funds released to seller |
-| `REFUNDED` | Funds returned to buyer |
+| `CREATING` | Creating contract in Trustless Work |
+| `CREATED` | Contract created, not funded |
+| `FUNDING` | Funding contract |
+| `FUNDED` | Funds locked in contract |
+| `RELEASING` | Releasing funds to the seller |
+| `RELEASED` | Funds released |
+| `REFUNDING` | Returning funds to the buyer |
+| `REFUNDED` | Funds returned |
+| `DISPUTED` | Active dispute |
+
+<Callout type="note">
+  Order-level statuses (e.g. `ESCROW_CREATING`, `ESCROW_FUNDING`, `ESCROW_FUNDED`, `IN_PROGRESS`, `CLOSED`) belong to the [Order state machine](/docs/guide/orders). The escrow machine above tracks the smart contract itself.
+</Callout>
 
 ## Creating Escrow
 
@@ -235,8 +212,9 @@ const order = await sdk.orders.get('ord_xyz789');
 // Create escrow contract
 await sdk.escrow.create(order.id);
 
-// Wait for contract creation (or use events)
-await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
+// Wait for contract creation (or use events) — the order advances to
+// ESCROW_FUNDING once Trustless Work confirms the deployment
+await sdk.orders.waitForStatus(order.id, 'ESCROW_FUNDING');
 
 // Fund the escrow
 await sdk.escrow.fund(order.id);
@@ -255,8 +233,8 @@ await sdk.resolution.release(order.id, {
 ```typescript
 const events = sdk.events.subscribe();
 
-events.on('order.escrow_created', (data) => {
-  console.log('Contract deployed:', data.contractId);
+events.on('order.escrow_creating', (data) => {
+  console.log('Contract deploying:', data.contractId);
 });
 
 events.on('order.escrow_funded', (data) => {
