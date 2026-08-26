@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/cn';
-import { statusColors } from '@/lib/statusColors';
+import { statusColors, type StatusColorSet } from '@/lib/statusColors';
 
 /**
  * All badge variant keys supported by StatusBadge.
@@ -70,7 +70,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   label,
   className,
 }) => {
-  const colors = statusColors[variantColorKey[variant]];
+  const colors: StatusColorSet = statusColors[variantColorKey[variant]];
   const displayLabel = label ?? defaultLabels[variant];
 
   return (
@@ -79,7 +79,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium shadow-neu-raised-sm',
         colors.text,
         colors.bg,
-        colors.border,
+        colors.border ?? '',
         className,
       )}
     >
