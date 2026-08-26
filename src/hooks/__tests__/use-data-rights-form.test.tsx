@@ -25,10 +25,11 @@ beforeEach(() => {
 });
 
 describe("useDataRightsForm", () => {
-  it("starts with an empty email, no status and not loading", () => {
+  it("starts with an empty email, no status, no errors and not loading", () => {
     const { result } = renderHook(() => useDataRightsForm(ENDPOINT));
 
     expect(result.current.email).toBe("");
+    expect(result.current.errors).toEqual({});
     expect(result.current.status).toBeNull();
     expect(result.current.loading).toBe(false);
   });
@@ -118,6 +119,7 @@ describe("useDataRightsForm", () => {
     const { result } = renderHook(() =>
       useDataRightsForm(ENDPOINT, "Check your inbox."),
     );
+    act(() => result.current.setEmail("jane@acme.com"));
 
     await submit(result);
 
@@ -134,6 +136,7 @@ describe("useDataRightsForm", () => {
       }),
     );
     const { result } = renderHook(() => useDataRightsForm(ENDPOINT));
+    act(() => result.current.setEmail("jane@acme.com"));
 
     let pending!: Promise<void>;
     act(() => {
@@ -158,9 +161,11 @@ describe("useDataRightsForm", () => {
       message: "Nope.",
     });
     const { result } = renderHook(() => useDataRightsForm(ENDPOINT));
+    act(() => result.current.setEmail("ghost@acme.com"));
     await submit(result);
     expect(result.current.status?.ok).toBe(false);
 
+    act(() => result.current.setEmail("jane@acme.com"));
     submitDataRightsRequest.mockResolvedValueOnce({
       ok: true,
       message: "Done.",
@@ -168,6 +173,18 @@ describe("useDataRightsForm", () => {
     await submit(result);
 
     expect(result.current.status).toEqual({ ok: true, message: "Done." });
+  });
+
+  it("blocks submission for invalid emails before calling the service", async () => {
+    const { result } = renderHook(() => useDataRightsForm(ENDPOINT));
+    act(() => result.current.setEmail("a@@b.co"));
+
+    await submit(result);
+
+    expect(submitDataRightsRequest).not.toHaveBeenCalled();
+    expect(result.current.errors.email).toBe(
+      "A valid email address is required.",
+    );
   });
 
   it("works against the delete endpoint too", async () => {

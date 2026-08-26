@@ -60,7 +60,7 @@ describe("POST /api/privacy/delete — input validation", () => {
 
     expect(res.status).toBe(400);
     await expect(res.json()).resolves.toEqual({
-      error: "A valid email address is required.",
+      errors: { email: "A valid email address is required." },
     });
     expect(from).not.toHaveBeenCalled();
   });

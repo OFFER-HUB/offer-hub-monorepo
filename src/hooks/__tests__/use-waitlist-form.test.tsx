@@ -73,6 +73,28 @@ describe("useWaitlistForm", () => {
     expect(result.current.canSubmit).toBe(true);
   });
 
+  it("blocks submission when required fields are empty", async () => {
+    const { result } = renderHook(() => useWaitlistForm());
+
+    await submit(result);
+
+    expect(result.current.errors.name).toBeDefined();
+    expect(submitWaitlistEntry).not.toHaveBeenCalled();
+  });
+
+  it.each(["a@@b.co", "a@b@c.co"])(
+    "rejects %s before calling the service",
+    async (email) => {
+      const { result } = renderHook(() => useWaitlistForm());
+      fill(result, { ...VALID, email });
+
+      await submit(result);
+
+      expect(result.current.errors.email).toBeDefined();
+      expect(submitWaitlistEntry).not.toHaveBeenCalled();
+    },
+  );
+
   it("tracks input changes by field name", () => {
     const { result } = renderHook(() => useWaitlistForm());
 
@@ -122,6 +144,7 @@ describe("useWaitlistForm", () => {
   ])("maps %j to a user-facing message", async (serviceResult, message) => {
     submitWaitlistEntry.mockResolvedValue(serviceResult);
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
 
     await submit(result);
 
@@ -133,6 +156,7 @@ describe("useWaitlistForm", () => {
   it("clears the error as soon as the user edits a field", async () => {
     submitWaitlistEntry.mockResolvedValue({ ok: false, reason: "error" });
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
     await submit(result);
     expect(result.current.error).not.toBeNull();
 
@@ -150,6 +174,7 @@ describe("useWaitlistForm cooldown", () => {
 
   it("starts a 30 second cooldown after a failed submission", async () => {
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
 
     await submit(result);
 
@@ -159,6 +184,7 @@ describe("useWaitlistForm cooldown", () => {
 
   it("counts the cooldown down once per second", async () => {
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
     await submit(result);
 
     act(() => {
@@ -170,6 +196,7 @@ describe("useWaitlistForm cooldown", () => {
 
   it("clears the cooldown and becomes submittable again after 30 seconds", async () => {
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
     await submit(result);
 
     act(() => {
@@ -182,6 +209,7 @@ describe("useWaitlistForm cooldown", () => {
 
   it("ignores a submission attempted during the cooldown", async () => {
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
     await submit(result);
     expect(submitWaitlistEntry).toHaveBeenCalledTimes(1);
 
@@ -193,6 +221,7 @@ describe("useWaitlistForm cooldown", () => {
   it("does not start a cooldown after a successful submission", async () => {
     submitWaitlistEntry.mockResolvedValue({ ok: true });
     const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
 
     await submit(result);
 
@@ -202,6 +231,7 @@ describe("useWaitlistForm cooldown", () => {
   it("clears its interval on unmount", async () => {
     const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval");
     const { result, unmount } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
     await submit(result);
 
     unmount();
@@ -325,6 +355,7 @@ describe("useWaitlistForm with Turnstile configured", () => {
       callback: (token: string) => void;
     };
     act(() => options.callback("token-abc"));
+    fill(result, VALID);
 
     await submit(result);
 

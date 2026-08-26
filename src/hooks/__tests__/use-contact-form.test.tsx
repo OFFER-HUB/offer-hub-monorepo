@@ -120,7 +120,7 @@ describe("useContactForm", () => {
     expect(submitContactInquiry).toHaveBeenCalled();
   });
 
-  it.each(["not-an-email", "jane@acme", "jane acme.com", "@acme.com"])(
+  it.each(["not-an-email", "jane@acme", "jane acme.com", "@acme.com", "a@@b.co", "a@b@c.co"])(
     "rejects %j as a work email",
     async (email) => {
       const { result } = renderHook(() => useContactForm());

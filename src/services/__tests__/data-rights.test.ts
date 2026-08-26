@@ -70,6 +70,23 @@ describe("submitDataRightsRequest", () => {
     });
   });
 
+  it("maps 400 field errors to validation", async () => {
+    mockFetch(async () =>
+      jsonResponse(400, {
+        errors: { email: "A valid email address is required." },
+      }),
+    );
+
+    await expect(
+      submitDataRightsRequest(ENDPOINT, "a@@b.co"),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "validation",
+      message: "A valid email address is required.",
+      errors: { email: "A valid email address is required." },
+    });
+  });
+
   it("falls back to a generic error message when the error body has none", async () => {
     mockFetch(async () => jsonResponse(500, {}));
 
