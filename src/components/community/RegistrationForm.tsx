@@ -11,6 +11,7 @@ export function RegistrationForm() {
         isSubmitted,
         isLoading,
         error,
+        errors,
         cooldownSeconds,
         turnstileContainerRef,
         isTurnstileConfigured,
@@ -86,6 +87,7 @@ export function RegistrationForm() {
                         required
                         disabled={isDisabled}
                         icon={User}
+                        error={errors.name}
                     />
 
                     <FormField
@@ -100,6 +102,7 @@ export function RegistrationForm() {
                         required
                         disabled={isDisabled}
                         icon={Mail}
+                        error={errors.email}
                     />
 
                     <FormField
@@ -116,6 +119,7 @@ export function RegistrationForm() {
                         required
                         disabled={isDisabled}
                         icon={MessageSquare}
+                        error={errors.purpose}
                     />
 
                     <FormField
@@ -129,6 +133,7 @@ export function RegistrationForm() {
                         required
                         disabled={isDisabled}
                         icon={Send}
+                        error={errors.referral}
                     />
 
                     {isTurnstileConfigured && (

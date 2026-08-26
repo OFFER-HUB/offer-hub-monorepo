@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { submitContactInquiry } from "@/services/contact"
-import { isValidEmail } from "@/utils/email"
+import { contactFormSchema } from "@/lib/validation/contact.schema"
+import { formatFieldErrors } from "@/lib/validation/errors"
 
 export interface ContactFormData {
   company: string
@@ -23,15 +24,6 @@ const ERROR_MESSAGES = {
   error: "Something went wrong. Please try again.",
   network: "Network error. Please check your connection and try again.",
 } as const
-
-function validateContactForm(formData: ContactFormData) {
-  const next: Partial<Record<keyof ContactFormData, string>> = {}
-  if (!formData.company.trim()) next.company = "Company name is required"
-  if (!formData.name.trim()) next.name = "Contact name is required"
-  if (!formData.email.trim()) next.email = "Work email is required"
-  else if (!isValidEmail(formData.email)) next.email = "Enter a valid work email"
-  return next
-}
 
 export function useContactForm() {
   const [formData, setFormData] = useState<ContactFormData>(INITIAL_FORM_DATA)
@@ -55,27 +47,28 @@ export function useContactForm() {
     e.preventDefault()
     setSubmitError(null)
 
-    const validationErrors = validateContactForm(formData)
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors)
+    const parsed = contactFormSchema.safeParse(formData)
+    if (!parsed.success) {
+      setErrors(formatFieldErrors(parsed.error))
       return
     }
 
     setIsLoading(true)
 
-    const result = await submitContactInquiry({
-      company: formData.company,
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-    })
+    const result = await submitContactInquiry(parsed.data)
 
     if (result.ok) {
       setIsSubmitted(true)
       return
     }
 
-    setSubmitError(ERROR_MESSAGES[result.reason])
+    if (result.reason === "validation" && result.errors) {
+      setErrors(result.errors)
+      setIsLoading(false)
+      return
+    }
+
+    setSubmitError(ERROR_MESSAGES[result.reason as keyof typeof ERROR_MESSAGES] ?? ERROR_MESSAGES.error)
     setIsLoading(false)
   }
 
