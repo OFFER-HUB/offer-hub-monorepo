@@ -155,7 +155,7 @@ The escrow flow is the highest-risk operation in OFFER-HUB. A bug here can resul
 
 ### Verify State Before Releasing Funds
 
-Always verify order and escrow state from the API before triggering a resolution. Never rely solely on a webhook event.
+Always verify order and escrow state from the API before triggering a resolution. Never rely solely on an event pushed over the SSE stream.
 
 ```typescript
 async function releaseEscrow(orderId: string, requestedBy: string) {
