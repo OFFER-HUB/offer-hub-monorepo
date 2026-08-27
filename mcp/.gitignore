@@ -2,3 +2,7 @@ node_modules/
 build/
 *.log
 .DS_Store
+
+# Synced from src/lib/docs/collect-files.ts by scripts/sync-shared.mjs —
+# regenerated before every build/dev run, never hand-edited.
+src/collect-files.generated.ts

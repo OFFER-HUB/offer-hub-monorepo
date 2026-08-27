@@ -1,12 +1,9 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
+import { slugify } from "@/utils/slugify";
 
-function slugify(children: ReactNode): string {
-  return String(children ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
+function headingId(children: ReactNode): string {
+  return slugify(String(children ?? ""));
 }
 
 /**
@@ -15,7 +12,7 @@ function slugify(children: ReactNode): string {
  */
 export const BASE_MDX_COMPONENTS: MDXComponents = {
   h2: ({ children, ...props }) => {
-    const id = slugify(children);
+    const id = headingId(children);
     return (
       <h2
         id={id}
@@ -29,7 +26,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   },
 
   h3: ({ children, ...props }) => {
-    const id = slugify(children);
+    const id = headingId(children);
     return (
       <h3
         id={id}
@@ -79,7 +76,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   a: ({ href, children }) => (
     <a
       href={href}
-      className="font-bold underline decoration-2 underline-offset-4 decoration-theme-primary/40 hover:decoration-theme-primary transition-all text-theme-primary"
+      className="font-bold underline decoration-2 underline-offset-4 decoration-theme-primary/40 hover:decoration-theme-primary transition-colors text-theme-primary"
       target={href?.startsWith("http") ? "_blank" : undefined}
       rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
     >

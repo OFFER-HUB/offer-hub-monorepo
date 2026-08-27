@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Copy, Check, ExternalLink, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { highlightCache, escapeHtml } from "@/utils/shiki-highlight";
 
 export interface CodeTab {
   id: string;
@@ -29,15 +30,6 @@ export interface CodeIntegrationShowcaseProps {
   sdkCards: SdkCard[];
 }
 
-const highlightCache = new Map<string, string>();
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
-
 function DocTooltip({ href, label }: { href: string; label: string }) {
   return (
     <div className="group relative inline-flex">
@@ -49,7 +41,7 @@ function DocTooltip({ href, label }: { href: string; label: string }) {
         className={cn(
           "flex items-center gap-1.5 rounded-xl px-3 py-1.5",
           "text-[10px] font-bold uppercase tracking-widest text-content-muted",
-          "transition-all duration-200",
+          "transition-colors duration-200",
           "hover:text-theme-primary hover:bg-theme-primary/10"
         )}
       >
@@ -105,7 +97,7 @@ function CopyButton({ code }: { code: string }) {
       className={cn(
         "relative flex items-center gap-2 rounded-xl px-3 py-1.5",
         "text-[10px] font-black uppercase tracking-widest",
-        "transition-all duration-300",
+        "transition-[color,background-color,box-shadow] duration-300",
         copied
           ? "text-white shadow-lg"
           : "text-content-secondary hover:text-content-primary"
@@ -243,7 +235,7 @@ export function CodeIntegrationShowcase({
                     className={cn(
                       "flex items-center gap-1.5 rounded-xl px-4 py-2",
                       "text-[11px] font-bold uppercase tracking-widest font-mono",
-                      "transition-all duration-200 focus:outline-none",
+                      "transition-[color,background-color,box-shadow] duration-200 focus:outline-none",
                       isActive
                         ? "text-theme-primary"
                         : "text-content-muted hover:text-content-secondary"

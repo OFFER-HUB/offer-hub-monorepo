@@ -111,7 +111,7 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         href={href}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "group relative flex items-center gap-3.5 text-sm py-2.5 px-5 rounded-2xl transition-all duration-300 font-medium overflow-hidden",
+          "group relative flex items-center gap-3.5 text-sm py-2.5 px-5 rounded-2xl transition-[color,box-shadow] duration-300 font-medium overflow-hidden",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
           isActive
             ? "text-theme-primary"
@@ -136,7 +136,7 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         <div className="absolute inset-0 bg-theme-primary/0 group-hover:bg-theme-primary/5 transition-colors z-0" />
 
         <span className={cn(
-          "relative z-10 flex-shrink-0 transition-all duration-300",
+          "relative z-10 flex-shrink-0 transition-[color,transform] duration-300",
           isActive ? "text-theme-primary scale-110" : "text-content-secondary group-hover:text-content-primary group-hover:scale-110"
         )}>
           {icon}

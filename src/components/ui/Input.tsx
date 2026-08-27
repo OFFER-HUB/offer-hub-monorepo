@@ -51,7 +51,7 @@ export function Input({
                         "text-content-primary placeholder:text-content-muted",
                         "focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2",
                         "focus-visible:ring-2 focus-visible:ring-theme-primary",
-                        "transition-all duration-200",
+                        "transition-shadow duration-200",
                         icon && iconPosition === "left" && "pl-12",
                         icon && iconPosition === "right" && "pr-12",
                         error && "ring-2 ring-theme-error",

@@ -49,7 +49,7 @@ export function DataRightsForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="rounded-xl px-4 py-3 text-sm bg-bg-sunken shadow-neu-sunken-subtle text-content-primary placeholder:text-content-secondary/60 outline-none focus:ring-2 focus:ring-theme-primary/30 transition-all"
+          className="rounded-xl px-4 py-3 text-sm bg-bg-sunken shadow-neu-sunken-subtle text-content-primary placeholder:text-content-secondary/60 outline-none focus:ring-2 focus:ring-theme-primary/30 transition-shadow"
         />
         <button
           type="submit"

@@ -1,7 +1,8 @@
-import { readFileSync, readdirSync, statSync, existsSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join, relative, basename, dirname } from "path";
 import { fileURLToPath } from "url";
 import matter from "gray-matter";
+import { collectFilesByExtension } from "./collect-files.generated.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,27 +32,13 @@ interface DocSection {
 
 const docs: Map<string, DocPage> = new Map();
 
+/** Collects full file paths under `dir` matching `extension`. */
 function findFiles(dir: string, extension: string): string[] {
-  const files: string[] = [];
-
   if (!existsSync(dir)) {
-    return files;
+    return [];
   }
 
-  const entries = readdirSync(dir);
-
-  for (const entry of entries) {
-    const fullPath = join(dir, entry);
-    const stat = statSync(fullPath);
-
-    if (stat.isDirectory()) {
-      files.push(...findFiles(fullPath, extension));
-    } else if (entry.endsWith(extension)) {
-      files.push(fullPath);
-    }
-  }
-
-  return files;
+  return collectFilesByExtension(dir, extension).map((relativePath) => join(dir, relativePath));
 }
 
 function parseDocument(filePath: string, baseDir: string, source: "mdx" | "md"): DocPage | null {

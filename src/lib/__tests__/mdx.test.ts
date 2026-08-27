@@ -62,6 +62,7 @@ vi.mock("fs", () => {
 import {
   getAllDocSlugs,
   getDocBySlug,
+  getRawMarkdown,
   getSidebarNav,
   getStaticMdxContent,
   extractHeadings,
@@ -142,6 +143,42 @@ describe("getDocBySlug", () => {
     writeDoc("intro.mdx", "title: Intro", "Just the body.");
 
     expect(getDocBySlug("intro")!.content).not.toContain("title: Intro");
+  });
+});
+
+describe("getRawMarkdown", () => {
+  it("returns null for a slug with no matching file", () => {
+    vfs.dirs.add(DOCS_DIR);
+
+    expect(getRawMarkdown("does-not-exist")).toBeNull();
+  });
+
+  it("prepends a quoted title/description frontmatter block to the body", () => {
+    writeDoc(
+      "guide/quick-start.mdx",
+      "title: Quick Start\ndescription: Get going fast\norder: 2\nsection: Guides",
+      "## Step one\n\nDo the thing.",
+    );
+
+    const markdown = getRawMarkdown("guide/quick-start")!;
+    expect(markdown.startsWith('---\ntitle: "Quick Start"\ndescription: "Get going fast"\n---\n')).toBe(true);
+    expect(markdown).toContain("## Step one");
+    expect(markdown).toContain("Do the thing.");
+  });
+
+  it("omits the description line when the doc has none", () => {
+    writeDoc("intro.mdx", "title: Intro", "Body copy.");
+
+    const markdown = getRawMarkdown("intro")!;
+    expect(markdown.startsWith('---\ntitle: "Intro"\n---\n')).toBe(true);
+    expect(markdown).not.toContain("description:");
+    expect(markdown).toContain("Body copy.");
+  });
+
+  it("escapes embedded double quotes in frontmatter values", () => {
+    writeDoc("quoted.mdx", "title: 'Say \"Hi\"'", "Body.");
+
+    expect(getRawMarkdown("quoted")).toContain('title: "Say \\"Hi\\""');
   });
 });
 
