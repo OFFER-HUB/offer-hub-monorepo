@@ -1,6 +1,8 @@
 # OFFER-HUB MCP Documentation Server
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes OFFER-HUB documentation to AI assistants like Claude, ChatGPT, and Cursor. This allows developers to query the official documentation directly from their AI assistant.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes OFFER-HUB documentation to AI assistants like Claude, ChatGPT, Cursor, and Codex. This allows developers to query the official documentation directly from their AI assistant.
+
+The server is hosted and reachable over MCP's **Streamable HTTP** transport at a stable production URL, so there is no local installation or stdio setup required — the docs site's page-actions menu ("Connect with MCP", "Connect to VSCode", "Connect to Claude Code", "Connect to Codex") wires these up with one click.
 
 ## Features
 
@@ -8,22 +10,57 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that e
 - **get_doc_page**: Retrieve full content of a specific documentation page by slug
 - **list_doc_sections**: List all available documentation sections and pages
 
-## Installation & Usage
+## Hosted endpoint
 
-### Recommended: Hosted HTTP Transport
+The recommended way to connect is the hosted server — no clone, build, or absolute-path config needed:
 
-This MCP server is deployed within the main OFFER-HUB Next.js application as a serverless endpoint. You can configure your AI assistants to connect to the remote endpoint without running any local servers.
+```
+https://offer-hub.tech/api/mcp
+```
 
-#### Using Smithery / Hosted HTTP (Streamable HTTP)
+The server is deployed within the main OFFER-HUB Next.js application as a serverless Streamable HTTP endpoint. You can configure your AI assistants to connect to the remote endpoint without running any local servers.
 
-To connect via the remote HTTP endpoint in Claude Desktop, Cursor, or similar tools, you can use the MCP HTTP transport or Smithery CLI if supported.
-Since direct HTTP transport configuration depends on the assistant's implementation, refer to their latest documentation for connecting to a remote MCP URL.
-The production endpoint is accessible at:
-`https://offer-hub.tech/api/mcp`
+### Connect (one click)
 
-### Fallback: Local stdio Transport (For Development)
+**Generic MCP config (Claude Desktop, Cursor, `.mcp.json`)** — paste into any client that reads the `mcpServers` format:
 
-If you prefer to run the server locally over stdio (the standard local MCP method):
+```json
+{
+  "mcpServers": {
+    "offer-hub-docs": {
+      "type": "http",
+      "url": "https://offer-hub.tech/api/mcp"
+    }
+  }
+}
+```
+
+**VS Code** — click the install deep link (or open it in a browser):
+
+```
+vscode:mcp/install?%7B%22name%22%3A%22offer-hub-docs%22%2C%22transportType%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Foffer-hub.tech%2Fapi%2Fmcp%22%7D
+```
+
+**Claude Code** — run in your terminal:
+
+```bash
+claude mcp add --transport http offer-hub-docs https://offer-hub.tech/api/mcp
+```
+
+**Codex** — add to `~/.codex/config.toml` (or a project-scoped `.codex/config.toml`):
+
+```toml
+[mcp_servers.offer-hub-docs]
+url = "https://offer-hub.tech/api/mcp"
+```
+
+> **Note on remote HTTP transport** — since direct HTTP transport configuration depends on the assistant's implementation, refer to your assistant's latest documentation for connecting to a remote MCP URL. Some clients also support provisioning the hosted endpoint via Smithery.
+
+## Installation (local development only)
+
+Running the server locally from source is only needed when you want to develop the server itself. To connect to the docs, prefer the hosted endpoint above.
+
+### Option 1: Run from Source (Recommended for Development)
 
 ```bash
 # Navigate to the mcp directory
@@ -47,12 +84,29 @@ npx @offer-hub/mcp-docs-server
 
 ## Configuration
 
-### Claude Desktop (Local stdio)
+All clients below can use the hosted endpoint (recommended, see [Hosted endpoint](#hosted-endpoint)). The local stdio examples are kept as a development fallback for when you're running the server from source.
+
+### Claude Desktop
 
 Add the following to your Claude Desktop configuration file:
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+Hosted endpoint:
+
+```json
+{
+  "mcpServers": {
+    "offer-hub-docs": {
+      "type": "http",
+      "url": "https://offer-hub.tech/api/mcp"
+    }
+  }
+}
+```
+
+Local stdio (development fallback):
 
 ```json
 {
@@ -78,9 +132,15 @@ Or with npx (after publishing):
 }
 ```
 
-### Claude Code (CLI) (Local stdio)
+### Claude Code (CLI)
 
-Add to your `~/.claude.json` or project's `.mcp.json`:
+Hosted endpoint (one command):
+
+```bash
+claude mcp add --transport http offer-hub-docs https://offer-hub.tech/api/mcp
+```
+
+Local stdio (development fallback) — add to your `~/.claude.json` or project's `.mcp.json`:
 
 ```json
 {
@@ -93,9 +153,24 @@ Add to your `~/.claude.json` or project's `.mcp.json`:
 }
 ```
 
-### Cursor (Local stdio)
+### Cursor
 
-Add to your Cursor MCP configuration:
+Add to your Cursor MCP configuration.
+
+Hosted endpoint:
+
+```json
+{
+  "mcpServers": {
+    "offer-hub-docs": {
+      "type": "http",
+      "url": "https://offer-hub.tech/api/mcp"
+    }
+  }
+}
+```
+
+Local stdio (development fallback):
 
 ```json
 {
@@ -108,9 +183,22 @@ Add to your Cursor MCP configuration:
 }
 ```
 
-### VS Code with Claude Extension (Local stdio)
+### VS Code
 
-Add to your workspace `.vscode/mcp.json`:
+Click the [one-click install deep link](#connect-one-click), or add to your workspace `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "offer-hub-docs": {
+      "type": "http",
+      "url": "https://offer-hub.tech/api/mcp"
+    }
+  }
+}
+```
+
+Local stdio (development fallback):
 
 ```json
 {
@@ -121,6 +209,15 @@ Add to your workspace `.vscode/mcp.json`:
     }
   }
 }
+```
+
+### Codex
+
+Add to `~/.codex/config.toml` (or a project-scoped `.codex/config.toml`):
+
+```toml
+[mcp_servers.offer-hub-docs]
+url = "https://offer-hub.tech/api/mcp"
 ```
 
 ## Usage Examples

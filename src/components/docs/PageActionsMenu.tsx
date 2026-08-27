@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Bot,
+  Braces,
   Check,
   ChevronDown,
   Copy,
@@ -14,7 +15,17 @@ import {
   Github,
   Loader2,
   MessageSquare,
+  Plug,
+  SquareCode,
+  Terminal,
 } from "lucide-react";
+import { McpConnectDialog } from "@/components/docs/McpConnectDialog";
+import {
+  buildClaudeCodeMcpCommand,
+  buildCodexMcpConfigSnippet,
+  buildVscodeMcpInstallLink,
+  copyTextToClipboard,
+} from "@/utils/mcp-connect";
 import { logger } from "@/utils/logger";
 import { SITE_URL_FALLBACK } from "@/constants/site";
 import { DOCS_EDIT_BASE } from "@/constants/github";
@@ -37,10 +48,9 @@ interface PageActionsMenuProps {
 }
 
 /**
- * Groups menu items for divider placement. "connect" is reserved for
- * follow-up issues (Connect with MCP / VSCode / Claude Code / Codex) —
- * appending items with that group inserts a divider before them
- * automatically, with no changes needed elsewhere in this component.
+ * Groups menu items for divider placement. "connect" holds the one-click
+ * "Connect with MCP / VSCode / Claude Code / Codex" actions; appending items
+ * with that group inserts a divider before them automatically.
  */
 type MenuItemGroup = "copy" | "export" | "connect";
 
@@ -64,13 +74,17 @@ interface LinkMenuItem extends MenuItemBase {
 
 type DocPageMenuItem = ButtonMenuItem | LinkMenuItem;
 
+type CopiedItem = "page" | "claude" | "codex" | null;
+
 export function PageActionsMenu({ slug, title, description, markdownContent }: PageActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isMcpDialogOpen, setIsMcpDialogOpen] = useState(false);
+  const [copiedItem, setCopiedItem] = useState<CopiedItem>(null);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | HTMLAnchorElement | null>>([]);
+  const copyResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const rawMarkdownUrl = `/docs/${slug}/raw`;
   const absoluteRawMarkdownUrl = `${SITE_URL}${rawMarkdownUrl}`;
@@ -98,6 +112,14 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (copyResetTimerRef.current) {
+        clearTimeout(copyResetTimerRef.current);
+      }
+    };
+  }, []);
+
   function closeMenu() {
     setIsOpen(false);
     triggerRef.current?.focus();
@@ -121,11 +143,27 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
     }
   }
 
+  function flashCopied(item: CopiedItem) {
+    setCopiedItem(item);
+    if (copyResetTimerRef.current) {
+      clearTimeout(copyResetTimerRef.current);
+    }
+    copyResetTimerRef.current = setTimeout(() => setCopiedItem(null), 1500);
+  }
+
+  async function copyToClipboard(text: string, item: Exclude<CopiedItem, null>) {
+    try {
+      await copyTextToClipboard(text);
+      flashCopied(item);
+    } catch (error) {
+      logger.error("Failed to copy to clipboard", error);
+    }
+  }
+
   async function handleCopyPage() {
     try {
-      await navigator.clipboard.writeText(markdownContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      await copyTextToClipboard(markdownContent);
+      flashCopied("page");
     } catch (error) {
       logger.error("Failed to copy page markdown", error);
     } finally {
@@ -161,13 +199,31 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
     }
   }
 
+  function handleConnectWithMcp() {
+    closeMenu();
+    setIsMcpDialogOpen(true);
+  }
+
+  function handleCloseMcpDialog() {
+    setIsMcpDialogOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  function handleCopyClaudeCodeCommand() {
+    void copyToClipboard(buildClaudeCodeMcpCommand(), "claude");
+  }
+
+  function handleCopyCodexConfig() {
+    void copyToClipboard(buildCodexMcpConfigSnippet(), "codex");
+  }
+
   const items: DocPageMenuItem[] = [
     {
       id: "copy-page",
       kind: "button",
       group: "copy",
-      icon: copied ? Check : Copy,
-      label: copied ? "Copied!" : "Copy page",
+      icon: copiedItem === "page" ? Check : Copy,
+      label: copiedItem === "page" ? "Copied!" : "Copy page",
       onSelect: handleCopyPage,
     },
     {
@@ -227,6 +283,38 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
       label: "Edit on GitHub",
       href: githubEditUrl,
     },
+    {
+      id: "connect-mcp",
+      kind: "button",
+      group: "connect",
+      icon: Plug,
+      label: "Connect with MCP",
+      onSelect: handleConnectWithMcp,
+    },
+    {
+      id: "connect-vscode",
+      kind: "link",
+      group: "connect",
+      icon: SquareCode,
+      label: "Connect to VSCode",
+      href: buildVscodeMcpInstallLink(),
+    },
+    {
+      id: "connect-claude-code",
+      kind: "button",
+      group: "connect",
+      icon: copiedItem === "claude" ? Check : Terminal,
+      label: copiedItem === "claude" ? "Copied!" : "Connect to Claude Code",
+      onSelect: handleCopyClaudeCodeCommand,
+    },
+    {
+      id: "connect-codex",
+      kind: "button",
+      group: "connect",
+      icon: copiedItem === "codex" ? Check : Braces,
+      label: copiedItem === "codex" ? "Copied!" : "Connect to Codex",
+      onSelect: handleCopyCodexConfig,
+    },
   ];
 
   return (
@@ -240,8 +328,8 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
         aria-controls="page-actions-menu"
         className="neu-circle h-10 flex items-center gap-2 px-4 text-sm font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
       >
-        {copied ? <Check size={16} /> : <Copy size={16} />}
-        <span>{copied ? "Copied!" : "Copy page"}</span>
+        {copiedItem === "page" ? <Check size={16} /> : <Copy size={16} />}
+        <span>{copiedItem === "page" ? "Copied!" : "Copy page"}</span>
         <ChevronDown size={14} className={isOpen ? "rotate-180 transition-transform" : "transition-transform"} />
       </button>
 
@@ -295,6 +383,8 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
           })}
         </div>
       )}
+
+      {isMcpDialogOpen && <McpConnectDialog onClose={handleCloseMcpDialog} />}
     </div>
   );
 }

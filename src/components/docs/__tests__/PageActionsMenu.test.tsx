@@ -3,6 +3,20 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PageActionsMenu } from "../PageActionsMenu";
 import { DOCS_EDIT_BASE } from "@/constants/github";
+import { MCP_SERVER_URL } from "@/constants/mcp";
+import {
+  buildClaudeCodeMcpCommand,
+  buildCodexMcpConfigSnippet,
+  buildMcpConfigSnippet,
+  buildVscodeMcpInstallLink,
+} from "@/utils/mcp-connect";
+
+function mockClipboard(writeText: ReturnType<typeof vi.fn>) {
+  Object.defineProperty(navigator, "clipboard", {
+    value: { writeText },
+    configurable: true,
+  });
+}
 
 const loggerError = vi.fn();
 const exportDocMarkdown = vi.fn();
@@ -78,10 +92,14 @@ describe("PageActionsMenu", () => {
       "Export JSON",
       "Export PDF",
       "Edit on GitHub",
+      "Connect with MCP",
+      "Connect to VSCode",
+      "Connect to Claude Code",
+      "Connect to Codex",
     ]);
   });
 
-  it("renders exactly one divider between the copy/AI group and the export group", async () => {
+  it("renders exactly two dividers: copy/AI → export, and export → connect", async () => {
     const user = userEvent.setup({ delay: null });
     renderMenu();
 
@@ -89,15 +107,22 @@ describe("PageActionsMenu", () => {
 
     const menu = screen.getByRole("menu");
     const separators = screen.getAllByRole("separator");
-    expect(separators).toHaveLength(1);
+    expect(separators).toHaveLength(2);
 
     const children = Array.from(menu.children);
-    const separatorIndex = children.indexOf(separators[0]);
-    const exportMarkdownIndex = children.findIndex((child) => child.textContent === "Export Markdown");
-    const openClaudeIndex = children.findIndex((child) => child.textContent === "Open in Claude");
+    const [copyExportSeparator, exportConnectSeparator] = separators;
 
-    expect(separatorIndex).toBeGreaterThan(openClaudeIndex);
-    expect(separatorIndex).toBeLessThan(exportMarkdownIndex);
+    const copyExportSeparatorIndex = children.indexOf(copyExportSeparator);
+    const openClaudeIndex = children.findIndex((child) => child.textContent === "Open in Claude");
+    const exportMarkdownIndex = children.findIndex((child) => child.textContent === "Export Markdown");
+    expect(copyExportSeparatorIndex).toBeGreaterThan(openClaudeIndex);
+    expect(copyExportSeparatorIndex).toBeLessThan(exportMarkdownIndex);
+
+    const exportConnectSeparatorIndex = children.indexOf(exportConnectSeparator);
+    const editGithubIndex = children.findIndex((child) => child.textContent === "Edit on GitHub");
+    const connectMcpIndex = children.findIndex((child) => child.textContent === "Connect with MCP");
+    expect(exportConnectSeparatorIndex).toBeGreaterThan(editGithubIndex);
+    expect(exportConnectSeparatorIndex).toBeLessThan(connectMcpIndex);
   });
 
   it("closes the menu on Escape and returns focus to the trigger", async () => {
@@ -132,7 +157,7 @@ describe("PageActionsMenu", () => {
     });
   });
 
-  it("moves focus between all 8 items with ArrowDown/ArrowUp, wrapping at both ends", async () => {
+  it("moves focus between all 12 items with ArrowDown/ArrowUp, wrapping at both ends", async () => {
     const user = userEvent.setup({ delay: null });
     renderMenu();
 
@@ -147,6 +172,10 @@ describe("PageActionsMenu", () => {
       /export json/i,
       /^export pdf$/i,
       /edit on github/i,
+      /connect with mcp/i,
+      /connect to vscode/i,
+      /connect to claude code/i,
+      /connect to codex/i,
     ];
     const orderedItems = orderedLabels.map((name) => screen.getByRole("menuitem", { name }));
 
@@ -389,5 +418,100 @@ describe("PageActionsMenu", () => {
         expect(screen.queryByRole("menu")).not.toBeInTheDocument();
       });
     });
+  });
+
+  it("shows the four one-click MCP connect actions in the menu", async () => {
+    const user = userEvent.setup({ delay: null });
+    renderMenu();
+
+    await openMenu(user);
+
+    expect(screen.getByRole("menuitem", { name: /connect with mcp/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /connect to vscode/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /connect to claude code/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /connect to codex/i })).toBeInTheDocument();
+  });
+
+  it("links Connect to VSCode to the hosted MCP install deep link", async () => {
+    const user = userEvent.setup({ delay: null });
+    renderMenu();
+
+    await openMenu(user);
+
+    const link = screen.getByRole("menuitem", { name: /connect to vscode/i });
+    expect(link).toHaveAttribute("href", buildVscodeMcpInstallLink());
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("copies the hosted claude mcp add command from Connect to Claude Code", async () => {
+    const user = userEvent.setup({ delay: null });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+
+    renderMenu();
+    await openMenu(user);
+    await user.click(screen.getByRole("menuitem", { name: /connect to claude code/i }));
+
+    expect(writeText).toHaveBeenCalledWith(buildClaudeCodeMcpCommand());
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: "Copied!" })).toBeInTheDocument();
+    });
+  });
+
+  it("copies the hosted Codex config snippet from Connect to Codex", async () => {
+    const user = userEvent.setup({ delay: null });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+
+    renderMenu();
+    await openMenu(user);
+    await user.click(screen.getByRole("menuitem", { name: /connect to codex/i }));
+
+    expect(writeText).toHaveBeenCalledWith(buildCodexMcpConfigSnippet());
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: "Copied!" })).toBeInTheDocument();
+    });
+  });
+
+  it("opens the Connect with MCP dialog showing the hosted URL and a copyable config snippet", async () => {
+    const user = userEvent.setup({ delay: null });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+
+    renderMenu();
+    await openMenu(user);
+    await user.click(screen.getByRole("menuitem", { name: /connect with mcp/i }));
+
+    const dialog = await screen.findByRole("dialog", { name: /connect with mcp/i });
+    expect(dialog).toHaveTextContent(MCP_SERVER_URL);
+    // jsdom collapses whitespace in the <pre>, so assert the snippet's key
+    // fragments rather than the pretty-printed JSON verbatim — the clipboard
+    // assertion below pins the exact string that gets copied.
+    expect(dialog).toHaveTextContent("mcpServers");
+    expect(dialog).toHaveTextContent('"type": "http"');
+
+    await user.click(screen.getByRole("button", { name: /copy config snippet/i }));
+    expect(writeText).toHaveBeenCalledWith(buildMcpConfigSnippet());
+
+    await user.click(screen.getByRole("button", { name: /copy server url/i }));
+    expect(writeText).toHaveBeenCalledWith(MCP_SERVER_URL);
+  });
+
+  it("closes the Connect with MCP dialog on Escape and returns focus to the trigger", async () => {
+    const user = userEvent.setup({ delay: null });
+    renderMenu();
+
+    const trigger = screen.getByRole("button", { name: /copy page/i });
+    await openMenu(user);
+    await user.click(screen.getByRole("menuitem", { name: /connect with mcp/i }));
+
+    await screen.findByRole("dialog", { name: /connect with mcp/i });
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+    expect(trigger).toHaveFocus();
   });
 });
