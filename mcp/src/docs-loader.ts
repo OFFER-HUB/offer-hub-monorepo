@@ -6,8 +6,10 @@ import matter from "gray-matter";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Navigate from mcp/build/ to project root
-const PROJECT_ROOT = join(__dirname, "..", "..");
+// Navigate from mcp/build/ (or mcp/src/) to project root
+// In Next.js/Vercel environments, process.cwd() is typically the project root
+const isNextJsEnv = process.env.NEXT_RUNTIME || existsSync(join(process.cwd(), "next.config.ts")) || existsSync(join(process.cwd(), "next.config.js"));
+const PROJECT_ROOT = isNextJsEnv ? process.cwd() : join(__dirname, "..", "..");
 
 interface DocPage {
   title: string;

@@ -8,9 +8,22 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that e
 - **get_doc_page**: Retrieve full content of a specific documentation page by slug
 - **list_doc_sections**: List all available documentation sections and pages
 
-## Installation
+## Installation & Usage
 
-### Option 1: Run from Source (Recommended for Development)
+### Recommended: Hosted HTTP Transport
+
+This MCP server is deployed within the main OFFER-HUB Next.js application as a serverless endpoint. You can configure your AI assistants to connect to the remote endpoint without running any local servers.
+
+#### Using Smithery / Hosted HTTP (Streamable HTTP)
+
+To connect via the remote HTTP endpoint in Claude Desktop, Cursor, or similar tools, you can use the MCP HTTP transport or Smithery CLI if supported.
+Since direct HTTP transport configuration depends on the assistant's implementation, refer to their latest documentation for connecting to a remote MCP URL.
+The production endpoint is accessible at:
+`https://offer-hub.tech/api/mcp`
+
+### Fallback: Local stdio Transport (For Development)
+
+If you prefer to run the server locally over stdio (the standard local MCP method):
 
 ```bash
 # Navigate to the mcp directory
@@ -34,7 +47,7 @@ npx @offer-hub/mcp-docs-server
 
 ## Configuration
 
-### Claude Desktop
+### Claude Desktop (Local stdio)
 
 Add the following to your Claude Desktop configuration file:
 
@@ -65,7 +78,7 @@ Or with npx (after publishing):
 }
 ```
 
-### Claude Code (CLI)
+### Claude Code (CLI) (Local stdio)
 
 Add to your `~/.claude.json` or project's `.mcp.json`:
 
@@ -80,7 +93,7 @@ Add to your `~/.claude.json` or project's `.mcp.json`:
 }
 ```
 
-### Cursor
+### Cursor (Local stdio)
 
 Add to your Cursor MCP configuration:
 
@@ -95,7 +108,7 @@ Add to your Cursor MCP configuration:
 }
 ```
 
-### VS Code with Claude Extension
+### VS Code with Claude Extension (Local stdio)
 
 Add to your workspace `.vscode/mcp.json`:
 
