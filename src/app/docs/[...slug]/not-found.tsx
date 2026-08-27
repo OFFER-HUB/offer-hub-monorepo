@@ -15,7 +15,7 @@ const recommendedDocs = [
   },
   {
     title: "API Reference",
-    description: "Review authentication, endpoints, webhooks, and response shapes.",
+    description: "Review authentication, endpoints, real-time events, and response shapes.",
     href: "/docs/api-reference/overview",
   },
 ];

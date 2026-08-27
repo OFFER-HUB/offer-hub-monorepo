@@ -352,40 +352,42 @@ try {
     // Check if transaction was actually submitted
     const order = await sdk.orders.get(orderId);
     if (order.status === 'ESCROW_FUNDING') {
-      // Transaction pending, wait for webhook
+      // Transaction pending — wait for the order.escrow_funded SSE event or poll
       console.log('Funding in progress, waiting for confirmation...');
     }
   }
 }
 ```
 
-## Webhooks for Escrow Events
+## Real-Time Escrow Events (SSE)
 
-Subscribe to escrow lifecycle events:
+Escrow lifecycle events are delivered over the [SSE event stream](/docs/api-reference/webhooks) at `GET /api/v1/events` — there is no outbound webhook API:
 
 ```bash
-curl -X POST http://localhost:4000/api/v1/webhooks \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://your-app.com/webhooks",
-    "events": [
-      "escrow.created",
-      "escrow.funded",
-      "escrow.released",
-      "escrow.disputed",
-      "escrow.refunded"
-    ],
-    "secret": "your-webhook-secret"
-  }'
+curl -N "http://localhost:4000/api/v1/events?types=order.escrow_creating,order.escrow_funded,order.released,order.refunded" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
 ```
 
-See [Webhooks](/docs/api-reference/webhooks) for payload formats and signature verification.
+Or with the SDK:
+
+```typescript
+const events = sdk.events.subscribe();
+
+events.on('order.escrow_funded', (data) => {
+  console.log('Escrow funded:', data.fundedAt);
+});
+
+events.on('order.released', (data) => {
+  console.log('Released to seller:', data.amount);
+});
+```
+
+See [Real-Time Events & Webhooks](/docs/api-reference/webhooks) for the full event catalog, connection parameters, and replay support.
 
 ## Security Considerations
 
 1. **Never expose private keys** — All signing happens server-side
-2. **Verify webhook signatures** — Prevent spoofed events
+2. **Use the SSE stream** — Real-time updates arrive over `GET /api/v1/events`; there is no outbound webhook API
 3. **Use idempotency keys** — Prevent duplicate funding
 4. **Monitor contract state** — Cross-check with Stellar explorer
 

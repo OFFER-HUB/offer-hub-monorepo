@@ -269,24 +269,14 @@ Returns a deposit address for the user to fund their account.
 
 ---
 
-## Webhooks
+## Real-Time Events
 
-Receive real-time event notifications from OFFER-HUB via HTTP webhooks.
+OFFER-HUB does **not** provide an outbound webhook subscription API. The real-time integration path is the **SSE event stream** at `GET /api/v1/events`.
 
-See the [Webhooks documentation](/docs/api-reference/webhooks) for complete details on:
-- Payload structures
-- Signature verification
-- Retry logic
-
-**Available Events**
-
-| Event | Trigger |
-|-------|---------|
-| `escrow.created` | New escrow contract created |
-| `escrow.funded` | Escrow has received funds |
-| `escrow.released` | Seller paid; escrow completed |
-| `escrow.disputed` | Dispute opened on an escrow |
-| `escrow.refunded` | Escrow refunded to buyer |
+See the [Real-Time Events & Webhooks documentation](/docs/api-reference/webhooks) for:
+- Connecting to the SSE stream and replaying missed events
+- The full event catalog
+- The inbound provider webhook receivers (self-hosting only)
 
 ---
 
@@ -498,6 +488,6 @@ The API uses path versioning:
 
 ## Next Steps
 
-- [Webhooks](/docs/api-reference/webhooks) - Receive event notifications
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) - SSE event stream and event catalog
 - [Quick Start](/docs/guide/quick-start) - Your first API call
 - [SDK Guide](/docs/sdk/quick-start) - Use the TypeScript SDK

@@ -35,7 +35,7 @@ const features = [
     icon: Code2,
     title: "Developer-First API",
     description:
-      "REST endpoints, webhooks, and an SDK built for speed. Integrate in hours, not weeks.",
+      "REST endpoints, real-time SSE events, and an SDK built for speed. Integrate in hours, not weeks.",
     large: false,
   },
   {
@@ -61,9 +61,9 @@ const features = [
   },
   {
     icon: Bell,
-    title: "Real-Time Webhooks",
+    title: "Real-Time Events",
     description:
-      "Instant event notifications for every state change. Your systems stay in sync with zero polling.",
+      "Instant SSE event notifications for every state change. Your systems stay in sync with zero polling.",
     large: false,
   },
 ];

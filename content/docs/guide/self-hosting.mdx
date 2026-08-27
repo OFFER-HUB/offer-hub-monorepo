@@ -419,10 +419,10 @@ The Orchestrator uses BullMQ for background job processing:
 
 | Queue | Purpose |
 |-------|---------|
-| `blockchain-monitor` | Monitor Stellar for incoming deposits |
-| `transaction-submit` | Submit signed Stellar transactions |
-| `webhook-delivery` | Send webhooks to registered endpoints |
-| `balance-sync` | Reconcile on-chain and off-chain balances |
+| `webhooks` | Process **inbound** provider webhooks (AirTM, Trustless Work) |
+| `reconciliation` | Periodic sync jobs with external providers |
+| `notifications` | Send notifications (email, push, etc.) |
+| `dead-letter-queue` | Jobs that exhausted all retry attempts |
 
 Monitor job queues:
 
@@ -431,7 +431,7 @@ Monitor job queues:
 docker compose exec redis redis-cli keys "bull:*"
 
 # Check queue length
-docker compose exec redis redis-cli llen "bull:webhook-delivery:wait"
+docker compose exec redis redis-cli llen "bull:webhooks:wait"
 ```
 
 ## Updating
@@ -503,7 +503,7 @@ Before going to production, verify:
 - [ ] Firewall only exposes ports 80/443
 - [ ] Database is not publicly accessible
 - [ ] Redis is not publicly accessible
-- [ ] Webhook secrets are configured
+- [ ] Inbound webhook secrets are configured (`AIRTM_WEBHOOK_SECRET` / `TRUSTLESS_WEBHOOK_SECRET`)
 
 ## Troubleshooting
 
@@ -529,14 +529,16 @@ docker compose exec orchestrator npx prisma db pull
 docker compose exec orchestrator npx prisma migrate status
 ```
 
-### Webhook delivery failing
+### Inbound provider webhooks not being processed
 
 ```bash
-# Check webhook queue
-docker compose exec redis redis-cli lrange "bull:webhook-delivery:failed" 0 10
+# Check the inbound webhook queue
+docker compose exec redis redis-cli lrange "bull:webhooks:failed" 0 10
 
-# Verify webhook endpoint is reachable
-curl -X POST https://your-webhook-url/test
+# Common issues:
+# - AIRTM_WEBHOOK_SECRET / TRUSTLESS_WEBHOOK_SECRET don't match the provider's configured secret
+# - The provider can't reach POST /api/v1/webhooks/airtm or /api/v1/webhooks/trustless-work
+#   (PUBLIC_BASE_URL wrong, firewall, or TLS misconfiguration)
 ```
 
 ## Next Steps
@@ -544,4 +546,4 @@ curl -X POST https://your-webhook-url/test
 - [Configuration](/docs/configuration) — Full environment variable reference
 - [Quick Start](/docs/guide/quick-start) — Make your first API call
 - [API Reference](/docs/api-reference/overview) — Explore all endpoints
-- [Webhooks](/docs/api-reference/webhooks) — Set up event notifications
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — SSE event stream and event catalog
