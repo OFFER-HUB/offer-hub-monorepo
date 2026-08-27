@@ -20,7 +20,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
       {prev ? (
         <Link
           href={prev.href}
-          className="flex items-start gap-3 group max-w-[45%] rounded-2xl bg-bg-base shadow-neu-raised px-4 py-3 transition-all duration-200 hover:shadow-neu-raised-hover active:shadow-neu-sunken-subtle"
+          className="flex items-start gap-3 group max-w-[45%] rounded-2xl bg-bg-base shadow-neu-raised px-4 py-3 transition-shadow duration-200 hover:shadow-neu-raised-hover active:shadow-neu-sunken-subtle"
         >
           <ArrowLeft
             size={20}
@@ -42,7 +42,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
       {next ? (
         <Link
           href={next.href}
-          className="flex items-start gap-3 group max-w-[45%] ml-auto text-right rounded-2xl bg-bg-base shadow-neu-raised px-4 py-3 transition-all duration-200 hover:shadow-neu-raised-hover active:shadow-neu-sunken-subtle"
+          className="flex items-start gap-3 group max-w-[45%] ml-auto text-right rounded-2xl bg-bg-base shadow-neu-raised px-4 py-3 transition-shadow duration-200 hover:shadow-neu-raised-hover active:shadow-neu-sunken-subtle"
         >
           <div className="flex flex-col gap-1">
             <span className="text-xs uppercase tracking-widest text-content-secondary">

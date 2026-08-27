@@ -1,22 +1,22 @@
 // ── Freelance ──
 export { FreelanceSection } from "./freelance/FreelanceSection";
-export { ESCROW_STEPS as freelanceEscrowSteps } from "./freelance/escrow-steps";
+export { ESCROW_STEPS as freelanceEscrowSteps } from "./freelance/escrow-flow.data";
 
 // ── eCommerce ──
 export { EcommerceSection } from "./ecommerce/EcommerceSection";
-export { ESCROW_STEPS as ecommerceEscrowSteps } from "./ecommerce/escrow-steps";
+export { ESCROW_STEPS as ecommerceEscrowSteps } from "./ecommerce/escrow-flow.data";
 
 // ── DAO Payroll ──
 export { DaoPayrollSection } from "./dao-payroll/DaoPayrollSection";
-export { ESCROW_STEPS as daoPayrollEscrowSteps } from "./dao-payroll/escrow-steps";
+export { ESCROW_STEPS as daoPayrollEscrowSteps } from "./dao-payroll/escrow-flow.data";
 
 // ── Real Estate ──
 export { RealEstateSection } from "./real-estate/RealEstateSection";
-export { ESCROW_STEPS as realEstateEscrowSteps } from "./real-estate/escrow-steps";
+export { ESCROW_STEPS as realEstateEscrowSteps } from "./real-estate/escrow-flow.data";
 
 // ── Service Platforms ──
 export { ServicePlatformsSection } from "./service-platforms/ServicePlatformsSection";
-export { ESCROW_STEPS as servicePlatformsEscrowSteps } from "./service-platforms/escrow-steps";
+export { ESCROW_STEPS as servicePlatformsEscrowSteps } from "./service-platforms/escrow-flow.data";
 
 // ── Shared ──
 export {

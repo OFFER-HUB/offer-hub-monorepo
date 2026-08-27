@@ -246,7 +246,7 @@ export function UseCaseHero({
                       duration: 0.5,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="rounded-[1.75rem] border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised"
+                    className="rounded-[1.75rem] border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>

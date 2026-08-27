@@ -163,7 +163,7 @@ export function DocsSearchBar() {
                 <div 
                     id="docs-search-results"
                     role="listbox"
-                    className="absolute top-full left-0 mt-3 w-full rounded-2xl z-[150] animate-in fade-in slide-in-from-top-2 duration-200 bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 backdrop-blur-md"
+                    className="absolute top-full left-0 mt-3 w-full rounded-2xl z-[150] animate-dropdownIn bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 backdrop-blur-md"
                 >
                     <div className="max-h-[480px] overflow-y-auto scrollbar-thin">
                         {results.map((result, idx) => (
@@ -219,7 +219,7 @@ export function DocsSearchBar() {
             )}
 
             {isOpen && query.length > 1 && results.length === 0 && (
-                <div className="absolute top-full mt-3 w-full rounded-2xl p-8 text-center z-[100] animate-in fade-in slide-in-from-top-2 bg-bg-elevated/95 border border-theme-border/40 shadow-neu-raised backdrop-blur-xl">
+                <div className="absolute top-full mt-3 w-full rounded-2xl p-8 text-center z-[100] animate-dropdownIn bg-bg-elevated/95 border border-theme-border/40 shadow-neu-raised backdrop-blur-xl">
                     <p className="text-content-secondary">No results found for &quot;<span className="font-semibold text-content-primary">{query}</span>&quot;</p>
                     <p className="text-sm mt-1 text-content-secondary/80">Try a different search term</p>
                 </div>

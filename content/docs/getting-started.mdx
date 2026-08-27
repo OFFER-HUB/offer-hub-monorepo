@@ -30,7 +30,7 @@ Before you begin, ensure you have the following installed:
 
 | Requirement | Version | Purpose |
 |-------------|---------|---------|
-| Node.js | 18+ | Runtime environment |
+| Node.js | 20+ | Runtime environment |
 | npm or pnpm | Latest | Package management |
 | PostgreSQL | 14+ | Database |
 | Redis | 6+ | Caching and queues |
@@ -48,207 +48,32 @@ You'll also need:
 
 ## Installation
 
-### Clone the Repository
-
-<CommandLine>git clone https://github.com/OFFER-HUB/offer-hub-monorepo.git</CommandLine>
-
-<CommandLine>cd offer-hub-monorepo</CommandLine>
-
-### Install Dependencies
-
-<CommandLine>npm install</CommandLine>
-
-### Set Up the Database
-
-Create a PostgreSQL database:
-
-<CommandLine>createdb offerhub_dev</CommandLine>
-
-Run migrations:
-
-<CommandLine>npm run db:migrate</CommandLine>
-
-### Start the Development Server
-
-<CommandLine>npm run dev</CommandLine>
-
-The API will be available at `http://localhost:4000`.
+Follow the [Installation guide](/docs/installation) to clone the orchestrator repository, start infrastructure with Docker, configure environment variables, run database migrations, and start the development server.
 
 <Callout type="tip">
-  Run `npm run dev:watch` for auto-reload during development.
+  The installation takes about 5 minutes. You'll have a running API at `http://localhost:4000` when you're done.
 </Callout>
 
-## Configuration
+## Creating an API Key
 
-Create a `.env` file in the project root:
+After installation, you need an API key to make API calls. The fastest way is with the CLI:
 
-```bash
-# Database
-DATABASE_URL=postgresql://localhost:5432/offerhub_dev
+<CommandLine>npm install -g @offerhub/cli && offerhub keys create</CommandLine>
 
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Stellar Network
-STELLAR_NETWORK=testnet
-STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
-
-# Trustless Work (Escrow Provider)
-TRUSTLESS_WORK_API_URL=https://api.trustlesswork.com
-TRUSTLESS_WORK_SECRET=your_secret_here
-
-# API Security
-OFFERHUB_MASTER_KEY=your_master_key_here
-JWT_SECRET=your_jwt_secret_here
-
-# Payment Provider (crypto or airtm)
-PAYMENT_PROVIDER=crypto
-```
-
-### Key Configuration Options
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `REDIS_URL` | Yes | Redis connection string |
-| `STELLAR_NETWORK` | Yes | `testnet` or `mainnet` |
-| `TRUSTLESS_WORK_SECRET` | Yes | API key for escrow contracts |
-| `OFFERHUB_MASTER_KEY` | Yes | Master key for creating API keys |
-| `PAYMENT_PROVIDER` | No | `crypto` (default) or `airtm` |
-
-<Callout type="warning">
-  Never commit your `.env` file to version control. Add it to `.gitignore`.
-</Callout>
-
-See [Configuration](/docs/configuration) for the complete list of environment variables.
-
-## Your First Escrow
-
-Let's walk through creating your first escrow transaction.
-
-### 1. Create an API Key
-
-First, generate an API key using your master key:
-
-```bash
-curl -X POST http://localhost:4000/api/v1/auth/api-keys \
-  -H "Authorization: Bearer YOUR_MASTER_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "My Marketplace", "scopes": ["read", "write"]}'
-```
-
-Save the returned `key` value — it's only shown once.
-
-### 2. Create Users
-
-Create a buyer and seller:
-
-```bash
-# Create buyer
-curl -X POST http://localhost:4000/api/v1/users \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"external_id": "buyer_123", "email": "buyer@example.com"}'
-
-# Create seller
-curl -X POST http://localhost:4000/api/v1/users \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"external_id": "seller_456", "email": "seller@example.com"}'
-```
-
-### 3. Fund the Buyer's Account
-
-Get the buyer's deposit address:
-
-```bash
-curl -X GET http://localhost:4000/api/v1/users/buyer_123/wallet/deposit \
-  -H "Authorization: Bearer YOUR_API_KEY"
-```
-
-Send testnet USDC to the returned address. The balance will update automatically.
-
-### 4. Create an Order
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: order-001" \
-  -d '{
-    "buyer_id": "buyer_123",
-    "seller_id": "seller_456",
-    "amount": "100.00",
-    "currency": "USD",
-    "description": "Website development project"
-  }'
-```
-
-### 5. Fund the Escrow
-
-Reserve the buyer's funds in escrow:
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ORDER_ID/escrow/fund \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Idempotency-Key: fund-001"
-```
-
-The funds are now locked in a smart contract on Stellar.
-
-### 6. Release to Seller
-
-When the work is complete, release the funds:
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ORDER_ID/resolution/release \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Idempotency-Key: release-001"
-```
-
-The seller's balance is now credited with the payment amount.
-
-<Callout type="tip">
-  Use the same `Idempotency-Key` if you need to retry a request. The Orchestrator will return the cached response instead of processing a duplicate.
-</Callout>
-
-### TypeScript Example
-
-Here's the same flow using the TypeScript SDK:
-
-```ts
-import { OfferHubClient } from '@offer-hub/sdk';
-
-const client = new OfferHubClient({
-  baseUrl: 'http://localhost:4000',
-  apiKey: 'YOUR_API_KEY',
-});
-
-// Create an order
-const order = await client.orders.create({
-  buyerId: 'buyer_123',
-  sellerId: 'seller_456',
-  amount: '100.00',
-  currency: 'USD',
-  description: 'Website development project',
-});
-
-// Fund the escrow
-await client.orders.fundEscrow(order.id);
-
-// Release to seller when complete
-await client.orders.release(order.id);
-```
+You can also create keys with `curl` — see the [Installation guide](/docs/installation#creating-your-first-api-key) for both methods.
 
 ## Next Steps
 
-Now that you've completed your first escrow, explore these guides:
+Once the Orchestrator is running, explore these guides:
 
+- [CLI Guide](/docs/guide/cli) — Manage API keys and maintenance from the command line
+- [Quick Start](/docs/guide/quick-start) — Create your first user and order in 5 minutes
 - [Orchestrator Guide](/docs/guide/orchestrator) — Deep dive into the Orchestrator architecture
 - [Escrow Flows](/docs/guide/escrow) — Learn about escrow states and transitions
 - [Orders Guide](/docs/guide/orders) — Complete order lifecycle documentation
 - [Disputes](/docs/guide/disputes) — Handle disputes and resolutions
 - [API Reference](/docs/api-reference/overview) — Full REST API documentation
+- [Events Reference](/docs/api-reference/events) — SSE event envelope, subscriptions, and catalog
 - [SDK Quick Start](/docs/sdk/quick-start) — Use the TypeScript SDK
 
 <Callout type="note">

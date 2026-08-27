@@ -27,7 +27,7 @@ export function ParameterInput({
     "w-full rounded-xl px-3 py-2.5 text-sm font-medium",
     "bg-bg-sunken shadow-neu-sunken-subtle",
     "text-content-primary placeholder:text-content-muted",
-    "border border-transparent transition-all duration-200",
+    "border border-transparent transition-shadow duration-200",
     "focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2",
     "focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-0"
   );

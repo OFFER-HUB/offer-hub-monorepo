@@ -25,7 +25,7 @@ export function ZoomableDiagram({
         <MermaidDiagram chart={chart} className={className} variant="plain" />
         <button
           onClick={() => setIsZoomOpen(true)}
-          className="absolute top-4 right-4 rounded-xl bg-bg-base shadow-neu-raised-sm p-2 hover:shadow-neu-sunken transition-all z-10"
+          className="absolute top-4 right-4 rounded-xl bg-bg-base shadow-neu-raised-sm p-2 hover:shadow-neu-sunken transition-shadow z-10"
           aria-label="Expand diagram"
         >
           <Maximize2 size={15} className="text-theme-primary" />

@@ -24,7 +24,7 @@ Before you begin, make sure you have:
 
 ### Step 1 - Clone the Repository
 
-<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB-Orchestrator.git && cd OFFER-HUB-Orchestrator</CommandLine>
+<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB</CommandLine>
 
 ### Step 2 - Install Dependencies
 
@@ -154,7 +154,19 @@ See the [SDK Guide](/docs/sdk/quick-start) for complete documentation.
 
 ## Creating Your First API Key
 
-Once the server is running, create an API key using your master key:
+Once the server is running, create an API key using your master key.
+
+### Option A: Using the CLI (Recommended)
+
+The `@offerhub/cli` is the fastest way to create an API key:
+
+<CommandLine>npm install -g @offerhub/cli</CommandLine>
+
+<CommandLine>offerhub keys create</CommandLine>
+
+This runs an interactive wizard that prompts for user ID, scopes, and key name. See the [CLI Guide](/docs/guide/cli) for all available commands.
+
+### Option B: Using curl
 
 ```bash
 curl -X POST http://localhost:4000/api/v1/auth/api-keys \

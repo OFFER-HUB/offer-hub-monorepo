@@ -25,7 +25,7 @@ export function Hero() {
   return (
     <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-4xl mx-auto animate-fade-in-up">
+        <div className="text-center max-w-4xl mx-auto animate-fadeInUp">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             Self-hosted Payments Orchestrator
@@ -44,7 +44,7 @@ export function Hero() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Link
               href="/#waitlist-form"
-              className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-xl text-base font-medium transition-all duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-xl text-base font-medium transition-[background-color,box-shadow,transform] duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
               Start Building Free
               <ArrowRight size={18} />
@@ -52,7 +52,7 @@ export function Hero() {
 
             <Link
               href="#docs"
-              className="w-full sm:w-auto bg-background text-text-primary px-8 py-4 rounded-xl text-base font-medium transition-all duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 border border-gray-200 flex items-center justify-center"
+              className="w-full sm:w-auto bg-background text-text-primary px-8 py-4 rounded-xl text-base font-medium transition-[box-shadow,transform] duration-400 ease-out shadow-raised hover:shadow-raised-hover hover:-translate-y-0.5 border border-gray-200 flex items-center justify-center"
             >
               View Documentation
             </Link>
@@ -63,7 +63,7 @@ export function Hero() {
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="bg-background rounded-2xl p-6 shadow-raised hover:shadow-raised-hover transition-all duration-400 ease-out hover:-translate-y-1 animate-fade-in-up"
+              className="bg-background rounded-2xl p-6 shadow-raised hover:shadow-raised-hover transition-[box-shadow,transform] duration-400 ease-out hover:-translate-y-1 animate-fadeInUp"
               style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mb-4">

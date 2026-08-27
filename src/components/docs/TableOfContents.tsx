@@ -65,7 +65,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}
                 className={cn(
-                  "text-[13px] transition-all duration-200 block py-1.5 px-4 rounded-lg font-medium",
+                  "text-[13px] transition-[color,background-color,box-shadow] duration-200 block py-1.5 px-4 rounded-lg font-medium",
                   activeId === heading.id
                     ? "text-theme-primary bg-bg-sunken shadow-neu-sunken-subtle"
                     : "text-content-secondary hover:text-content-primary hover:bg-bg-elevated"

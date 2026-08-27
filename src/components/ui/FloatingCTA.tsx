@@ -74,7 +74,7 @@ export function FloatingCTA() {
 
   return (
     <div
-        className={`fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 transition-all duration-300 ease-out print:hidden ${isVisible
+        className={`fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 transition-[opacity,transform] duration-300 ease-out print:hidden ${isVisible
           ? "opacity-100 translate-y-0 scale-100"
           : "opacity-0 translate-y-4 scale-95"
           }`}
@@ -84,7 +84,7 @@ export function FloatingCTA() {
           {/* Dismiss button */}
           <button
             onClick={handleDismiss}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-bg-base shadow-neu-raised-sm flex items-center justify-center text-content-secondary hover:text-content-primary hover:shadow-neu-raised-hover transition-all z-20"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-bg-base shadow-neu-raised-sm flex items-center justify-center text-content-secondary hover:text-content-primary hover:shadow-neu-raised-hover transition-[box-shadow,color] z-20"
             aria-label="Dismiss"
           >
             <X size={12} aria-hidden="true" />

@@ -11,21 +11,31 @@ This guide walks through every escrow flow in OFFER-HUB: from creating and fundi
   OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on Stellar for non-custodial escrow. All flows ultimately resolve on-chain.
 </Callout>
 
+## State Machines
+
+Escrow and order lifecycles are governed by two canonical state machines (matching `docs/architecture/state-machines.md` in the orchestrator repository exactly). The **Order state machine** tracks the order lifecycle, while the internal **Escrow state machine** tracks the smart contract itself. The flows below map onto these two machines.
+
+<OrderStateMachineDiagram />
+
+<EscrowStateMachineDiagram />
+
+---
+
 ## Creating an Escrow
 
 An escrow contract is created after an order is placed and the buyer's funds are reserved off-chain.
 
 ### Steps
 
-1. **Create the order** — Buyer's balance is reserved
-2. **Call the escrow creation endpoint** — Deploys a Trustless Work contract on Stellar
-3. **Wait for confirmation** — Contract becomes `ESCROW_CREATED`
+1. **Create the order** — Buyer's balance is reserved (`ORDER_CREATED` → `FUNDS_RESERVED`)
+2. **Call the escrow creation endpoint** — Deploys a Trustless Work contract on Stellar (`ESCROW_CREATING`)
+3. **Wait for confirmation** — Contract becomes `CREATED`; the order advances to `ESCROW_FUNDING`
 
 ```mermaid
 flowchart LR
-    A[Order Created] --> B[Funds Reserved]
-    B --> C[Contract Deploying]
-    C --> D[Contract Ready]
+    A[ORDER_CREATED] --> B[FUNDS_RESERVED]
+    B --> C[ESCROW_CREATING]
+    C --> D[CREATED]
 ```
 
 ### REST
@@ -64,12 +74,12 @@ const sdk = new OfferHubSDK({
 // Create escrow contract
 await sdk.escrow.create('ord_xyz789');
 
-// Wait until contract is deployed
-await sdk.orders.waitForStatus('ord_xyz789', 'ESCROW_CREATED');
+// Wait until the contract is deployed (order advances to ESCROW_FUNDING)
+await sdk.orders.waitForStatus('ord_xyz789', 'ESCROW_FUNDING');
 ```
 
 <Callout type="tip">
-  Contract deployment is asynchronous. Use `waitForStatus` or subscribe to the `order.escrow_created` event rather than polling manually.
+  Contract deployment is asynchronous. Use `waitForStatus` or subscribe to the `order.escrow_creating` event rather than polling manually.
 </Callout>
 
 ---
@@ -87,9 +97,8 @@ Once the contract is deployed, the buyer's reserved USDC is transferred on-chain
 
 ```mermaid
 flowchart LR
-    A[ESCROW_CREATED] --> B[ESCROW_FUNDING]
-    B --> C[ESCROW_FUNDED]
-    C --> D[IN_PROGRESS]
+    A[CREATED] --> B[FUNDING]
+    B --> C[FUNDED]
 ```
 
 ### REST
@@ -167,16 +176,17 @@ When the buyer approves the delivered work, funds are released to the seller in 
 
 ### Steps
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `complete_escrow` | Buyer confirms delivery |
-| 2 | `release_escrow` | Platform authorizes release |
-| 3 | Claim funds | Seller receives USDC |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `changeMilestoneStatus` | **Seller** | `serviceProvider` |
+| 2 | `approveMilestone` | **Buyer** | `approver` |
+| 3 | `releaseFunds` | **Buyer** | `releaseSigner` |
 
 ```mermaid
 flowchart LR
-    A[Buyer signs complete] --> B[Platform signs release]
-    B --> C[Seller claims USDC]
+    A["Seller signs\nchangeMilestoneStatus\n(serviceProvider)"] --> B["Buyer signs\napproveMilestone\n(approver)"]
+    B --> C["Buyer signs\nreleaseFunds\n(releaseSigner)"]
+    C --> D[USDC sent to seller]
 ```
 
 ### REST
@@ -227,15 +237,13 @@ If the buyer believes the work was not delivered as agreed, they can open a disp
 ### Steps
 
 1. **Buyer opens dispute** — Provides a reason
-2. **Status changes** — Order moves to `DISPUTING` then `DISPUTED`
+2. **Status changes** — Order moves to `DISPUTED` (funds stay locked in the contract)
 3. **Funds remain locked** — Neither party can access the escrow
 4. **Platform reviews** — Manual or automated resolution begins
 
 ```mermaid
 flowchart LR
-    A[IN_PROGRESS] --> B[DISPUTING]
-    B --> C[DISPUTED]
-    C --> D[resolution pending]
+    A[IN_PROGRESS] --> B[DISPUTED]: Open dispute
 ```
 
 ### REST
@@ -245,8 +253,8 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "requestedBy": "usr_buyer123",
-    "reason": "Work delivered does not match agreed specifications"
+    "openedBy": "BUYER",
+    "reason": "QUALITY_ISSUE"
   }'
 ```
 
@@ -259,9 +267,9 @@ Response:
     "status": "DISPUTED",
     "dispute": {
       "id": "dsp_abc123",
-      "reason": "Work delivered does not match agreed specifications",
+      "reason": "QUALITY_ISSUE",
       "openedAt": "2026-03-01T10:00:00.000Z",
-      "openedBy": "usr_buyer123"
+      "openedBy": "BUYER"
     }
   }
 }
@@ -271,8 +279,8 @@ Response:
 
 ```ts
 await sdk.resolution.dispute('ord_xyz789', {
-  requestedBy: 'usr_buyer123',
-  reason: 'Work delivered does not match agreed specifications',
+  openedBy: 'BUYER',
+  reason: 'QUALITY_ISSUE',
 });
 ```
 
@@ -288,11 +296,11 @@ After a dispute is opened, the platform reviews evidence and resolves with a **r
 
 ### Resolution Options
 
-| Resolution | Outcome | On-Chain Transaction |
+| Decision | Outcome | On-Chain Transaction |
 |------------|---------|----------------------|
-| `release` | Funds go to seller | `resolve_dispute` → release |
-| `refund` | Funds return to buyer | `resolve_dispute` → refund |
-| `split` | Custom split between parties | `resolve_dispute` → split |
+| `FULL_RELEASE` | Funds go to seller | `resolve_dispute` → release |
+| `FULL_REFUND` | Funds return to buyer | `resolve_dispute` → refund |
+| `SPLIT` | Custom split between parties | `resolve_dispute` → split |
 
 ### REST — Resolve with Refund
 
@@ -301,7 +309,7 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "resolution": "refund",
+    "decision": "FULL_REFUND",
     "note": "Seller did not deliver agreed deliverables"
   }'
 ```
@@ -313,7 +321,7 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "resolution": "release",
+    "decision": "FULL_RELEASE",
     "note": "Evidence confirms work was delivered as agreed"
   }'
 ```
@@ -323,13 +331,13 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
 ```ts
 // Resolve in favor of buyer (refund)
 await sdk.disputes.resolve('dsp_abc123', {
-  resolution: 'refund',
+  decision: 'FULL_REFUND',
   note: 'Seller did not deliver agreed deliverables',
 });
 
 // Resolve in favor of seller (release)
 await sdk.disputes.resolve('dsp_abc123', {
-  resolution: 'release',
+  decision: 'FULL_RELEASE',
   note: 'Evidence confirms work was delivered as agreed',
 });
 ```
@@ -355,10 +363,14 @@ flowchart LR
 
 Two on-chain transactions are required:
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `dispute_escrow` | Buyer opens dispute |
-| 2 | `resolve_dispute` | Platform issues refund |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `disputeEscrow` | **Buyer** | `approver` (disputer) |
+| 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
+
+<Callout type="danger">
+  **Role separation is enforced by the smart contract.** The `disputeResolver` must be a different party from the disputer. Because the buyer signs step 1, the platform wallet is the only valid signer for step 2. Neither the buyer nor the seller can unilaterally resolve a dispute to reclaim funds.
+</Callout>
 
 ### Refund via Cancellation
 
@@ -380,8 +392,8 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/cancel \
 ```ts
 // Step 1: Buyer raises dispute
 await sdk.resolution.dispute('ord_xyz789', {
-  requestedBy: 'usr_buyer123',
-  reason: 'Work not delivered',
+  openedBy: 'BUYER',
+  reason: 'NOT_DELIVERED',
 });
 
 // Step 2: Platform fetches the dispute
@@ -390,7 +402,7 @@ const dispute = disputes[0];
 
 // Step 3: Platform resolves with refund
 await sdk.disputes.resolve(dispute.id, {
-  resolution: 'refund',
+  decision: 'FULL_REFUND',
   note: 'Verified: seller did not deliver',
 });
 
@@ -408,8 +420,8 @@ Subscribe to lifecycle events to keep your application in sync:
 ```ts
 const events = sdk.events.subscribe();
 
-events.on('order.escrow_created', (data) => {
-  console.log('Contract deployed:', data.contractId);
+events.on('order.escrow_creating', (data) => {
+  console.log('Contract deploying:', data.contractId);
 });
 
 events.on('order.escrow_funded', (data) => {

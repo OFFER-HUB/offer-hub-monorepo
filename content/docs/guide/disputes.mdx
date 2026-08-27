@@ -6,7 +6,7 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/disputes.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/disputes.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/disputes.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/disputes.md) in the repo.
 </Callout>
 
 Disputes are a critical part of any marketplace. When a buyer and seller disagree, OFFER-HUB provides a structured process to resolve conflicts fairly while funds remain safely locked in escrow.
@@ -35,24 +35,24 @@ A dispute should be opened when:
 ```
 IN_PROGRESS
       ↓
-DISPUTING (opening dispute)
-      ↓
 DISPUTED (awaiting resolution)
       ↓
   ┌───┴───┐
   ↓       ↓
-REFUNDED  CLOSED
+REFUNDED  RELEASED
 (buyer)   (seller)
+      ↓
+    CLOSED
 ```
 
 ### State Descriptions
 
 | State | Description |
 |-------|-------------|
-| `DISPUTING` | Dispute transaction being submitted |
 | `DISPUTED` | Funds locked, awaiting platform resolution |
 | `REFUNDED` | Dispute resolved in buyer's favor |
-| `CLOSED` | Dispute resolved in seller's favor |
+| `RELEASED` | Dispute resolved in seller's favor |
+| `CLOSED` | Order completed after resolution |
 
 ## Opening a Dispute
 
@@ -63,8 +63,8 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "requestedBy": "usr_buyer123",
-    "reason": "Seller has not delivered the agreed work after 2 weeks"
+    "openedBy": "BUYER",
+    "reason": "NOT_DELIVERED"
   }'
 ```
 
@@ -72,8 +72,8 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `requestedBy` | string | Yes | User ID of the buyer |
-| `reason` | string | Yes | Description of the issue |
+| `openedBy` | string | Yes | `"BUYER"` or `"SELLER"` |
+| `reason` | string | Yes | `"NOT_DELIVERED"`, `"QUALITY_ISSUE"`, or `"OTHER"` |
 
 ### Response
 
@@ -84,8 +84,8 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
     "status": "DISPUTED",
     "dispute": {
       "id": "dsp_abc123",
-      "openedBy": "usr_buyer123",
-      "reason": "Seller has not delivered the agreed work after 2 weeks",
+      "openedBy": "BUYER",
+      "reason": "NOT_DELIVERED",
       "status": "open",
       "openedAt": "2026-02-25T10:00:00.000Z"
     }
@@ -127,7 +127,7 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "resolution": "refund",
+    "decision": "FULL_REFUND",
     "note": "Seller failed to deliver work within agreed timeframe"
   }'
 ```
@@ -141,7 +141,7 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "resolution": "release",
+    "decision": "FULL_RELEASE",
     "note": "Buyer confirmed delivery via email, dispute was a misunderstanding"
   }'
 ```
@@ -155,25 +155,25 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "resolution": "split",
-    "buyerAmount": "30.00",
-    "sellerAmount": "20.00",
+    "decision": "SPLIT",
+    "releaseAmount": "20.00",
+    "refundAmount": "30.00",
     "note": "Seller delivered 40% of agreed work"
   }'
 ```
 
 <Callout type="note">
-  Split resolution requires both amounts to sum to the original escrow amount minus any platform fees.
+  Split resolution requires both `releaseAmount` (seller) and `refundAmount` (buyer) to sum to the original escrow amount.
 </Callout>
 
 ### Resolution Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `resolution` | string | Yes | `refund`, `release`, or `split` |
-| `note` | string | Yes | Explanation of the decision |
-| `buyerAmount` | string | Split only | Amount to refund to buyer |
-| `sellerAmount` | string | Split only | Amount to release to seller |
+| `decision` | string | Yes | `"FULL_RELEASE"`, `"FULL_REFUND"`, or `"SPLIT"` |
+| `note` | string | No | Internal note for the decision |
+| `releaseAmount` | string | Split only | Amount to release to seller |
+| `refundAmount` | string | Split only | Amount to refund to buyer |
 
 ### Resolution Response
 
@@ -182,7 +182,7 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   "data": {
     "id": "dsp_abc123",
     "status": "resolved",
-    "resolution": "refund",
+    "decision": "FULL_REFUND",
     "resolvedBy": "usr_support",
     "resolvedAt": "2026-02-25T14:00:00.000Z",
     "note": "Seller failed to deliver work within agreed timeframe",
@@ -313,8 +313,8 @@ const sdk = new OfferHubSDK({
 
 // Open a dispute
 const dispute = await sdk.resolution.dispute('ord_xyz789', {
-  requestedBy: 'usr_buyer123',
-  reason: 'Work not delivered as specified'
+  openedBy: 'BUYER',
+  reason: 'NOT_DELIVERED'
 });
 
 // Add a comment
@@ -326,7 +326,7 @@ await sdk.disputes.addComment(dispute.id, {
 
 // Resolve the dispute (requires support scope)
 await sdk.disputes.resolve(dispute.id, {
-  resolution: 'refund',
+  decision: 'FULL_REFUND',
   note: 'Seller confirmed they could not complete the work'
 });
 ```
@@ -343,7 +343,7 @@ events.on('order.disputed', (data) => {
 });
 
 events.on('dispute.resolved', (data) => {
-  console.log('Dispute resolved:', data.resolution);
+  console.log('Dispute resolved:', data.decision);
   // Notify both parties
   notifyParties(data);
 });
@@ -376,8 +376,8 @@ curl -X POST http://localhost:4000/api/v1/webhooks \
   "data": {
     "escrow_id": "esc_xyz789",
     "dispute_id": "dsp_abc123",
-    "opened_by": "usr_buyer123",
-    "reason": "Work not delivered",
+    "opened_by": "BUYER",
+    "reason": "NOT_DELIVERED",
     "order_id": "ord_xyz789"
   }
 }
@@ -424,7 +424,7 @@ curl -X POST http://localhost:4000/api/v1/webhooks \
 | `ORDER_NOT_IN_PROGRESS` | Order not in disputable state | Check order status first |
 | `DISPUTE_ALREADY_EXISTS` | Order already has open dispute | Get existing dispute details |
 | `UNAUTHORIZED_DISPUTE` | Non-buyer trying to open dispute | Only buyers can open disputes |
-| `INVALID_RESOLUTION` | Invalid resolution type | Use `refund`, `release`, or `split` |
+| `INVALID_RESOLUTION` | Invalid decision value | Use `FULL_RELEASE`, `FULL_REFUND`, or `SPLIT` |
 | `INSUFFICIENT_SCOPE` | API key lacks `support` scope | Use key with support permissions |
 
 ## Idempotency
@@ -436,7 +436,7 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
-  -d '{"requestedBy": "usr_buyer123", "reason": "Work not delivered"}'
+  -d '{"openedBy": "BUYER", "reason": "NOT_DELIVERED"}'
 ```
 
 Dispute idempotency keys are stored **forever** — you cannot open the same dispute twice.
