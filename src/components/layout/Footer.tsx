@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Twitter, Send, Github, Disc3 } from "lucide-react";
@@ -49,6 +49,11 @@ export function Footer() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -158,7 +163,7 @@ export function Footer() {
 
           <div className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-theme-border">
             <p className="text-xs text-content-muted">
-              © {new Date().getFullYear()} OFFER-HUB. All rights reserved.
+              © {year ?? ""} OFFER-HUB. All rights reserved.
             </p>
 
             <p className="text-xs text-content-muted">

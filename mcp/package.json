@@ -11,7 +11,10 @@
     "build"
   ],
   "scripts": {
+    "sync-shared": "node scripts/sync-shared.mjs",
+    "prebuild": "npm run sync-shared",
     "build": "tsc && chmod +x build/index.js",
+    "predev": "npm run sync-shared",
     "dev": "tsc --watch",
     "start": "node build/index.js",
     "prepublishOnly": "npm run build"

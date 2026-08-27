@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { collectFilesByExtension } from "@/lib/docs/collect-files";
+import { slugify } from "@/utils/slugify";
 
 const DOCS_DIR = path.join(process.cwd(), "content/docs");
 
@@ -35,20 +37,8 @@ export interface Heading {
 }
 
 /** Recursively collect all .mdx file paths under a directory */
-function collectMdxFiles(dir: string, base = ""): string[] {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const results: string[] = [];
-
-  for (const entry of entries) {
-    const rel = base ? `${base}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) {
-      results.push(...collectMdxFiles(path.join(dir, entry.name), rel));
-    } else if (entry.isFile() && entry.name.endsWith(".mdx")) {
-      results.push(rel);
-    }
-  }
-
-  return results;
+function collectMdxFiles(dir: string): string[] {
+  return collectFilesByExtension(dir, ".mdx");
 }
 
 /** Convert a file path like "api-reference/webhooks.mdx" to a slug "api-reference/webhooks" */
@@ -75,6 +65,25 @@ export function getDocBySlug(slug: string): DocPage | null {
     content,
     slug,
   };
+}
+
+/** YAML-safe double-quoting for trusted frontmatter values (local .mdx files, not user input). */
+function yamlQuote(value: string): string {
+  return `"${value.replace(/"/g, '\\"')}"`;
+}
+
+/** Serialize a doc's frontmatter + body back into a raw Markdown document. */
+export function getRawMarkdown(slug: string): string | null {
+  const doc = getDocBySlug(slug);
+  if (!doc) return null;
+
+  const { title, description } = doc.frontmatter;
+  const frontmatterLines = [`title: ${yamlQuote(title ?? "")}`];
+  if (description) {
+    frontmatterLines.push(`description: ${yamlQuote(description)}`);
+  }
+
+  return `---\n${frontmatterLines.join("\n")}\n---\n\n${doc.content}`;
 }
 
 /** Build sidebar navigation grouped by section, sorted by order within each section. */
@@ -130,11 +139,7 @@ export function extractHeadings(content: string): Heading[] {
   while ((match = regex.exec(content)) !== null) {
     const level = match[1].length as 2 | 3;
     const text = match[2].trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-");
+    const id = slugify(text);
 
     headings.push({ level, text, id });
   }

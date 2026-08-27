@@ -13,32 +13,13 @@ Orders are the core of OFFER-HUB. They represent a transaction between a buyer a
 
 ## Order Lifecycle
 
-Every order follows a strict state machine:
+Every order follows a strict state machine — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly:
 
-```mermaid
-stateDiagram-v2
-    [*] --> ORDER_CREATED
-    ORDER_CREATED --> FUNDS_RESERVED: Reserve funds
-    FUNDS_RESERVED --> ESCROW_CREATING: Create escrow
-    ESCROW_CREATING --> ESCROW_CREATED
-    ESCROW_CREATED --> ESCROW_FUNDING: Fund escrow
-    ESCROW_FUNDING --> ESCROW_FUNDED
-    ESCROW_FUNDED --> IN_PROGRESS: Work begins
+<OrderStateMachineDiagram />
 
-    IN_PROGRESS --> RELEASE_REQUESTED: Buyer approves
-    IN_PROGRESS --> REFUND_REQUESTED: Request refund
-    IN_PROGRESS --> DISPUTED: Open dispute
-
-    RELEASE_REQUESTED --> RELEASED
-    REFUND_REQUESTED --> REFUNDED
-    DISPUTED --> RESOLVED
-
-    RELEASED --> CLOSED
-    REFUNDED --> CLOSED
-    RESOLVED --> CLOSED
-
-    CLOSED --> [*]
-```
+<Callout type="note">
+  The escrow contract itself follows a separate internal [Escrow state machine](/docs/guide/escrow) while the order machine above advances in parallel.
+</Callout>
 
 ## Creating an Order
 

@@ -220,6 +220,15 @@ body::before {
     box-shadow: 0 8px 20px #d1d5db, 0 -2px 10px #ffffff;
   }
 
+  /* Shared elevation press/lift transition — animates only box-shadow so raised/sunken
+     surfaces feel neumorphic instead of fading or sliding. Reference this everywhere
+     a surface swaps between shadow-neu-raised* / shadow-neu-sunken* on hover or press. */
+  .transition-elevation {
+    transition-property: box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+  }
+
   .neu-input {
     background: var(--color-bg-sunken);
     box-shadow:
@@ -232,7 +241,7 @@ body::before {
     box-shadow:
       6px 6px 12px var(--shadow-dark),
       -6px -6px 12px var(--shadow-light);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
   }
 
   .neu-btn:active {
@@ -247,7 +256,7 @@ body::before {
     box-shadow:
       6px 6px 12px var(--shadow-dark),
       -6px -6px 12px var(--shadow-light);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
   }
 
   .neu-circle:active {
@@ -452,6 +461,22 @@ body::before {
 
 .animate-fadeInScale {
   animation: fadeInScale 0.6s ease-out both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdownIn {
+  animation: dropdownIn 0.2s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {

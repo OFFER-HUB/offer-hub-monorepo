@@ -180,7 +180,7 @@ function ModeToggleDetailed({
           key={key}
           onClick={() => onChange(key)}
           className={cn(
-            "relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+            "relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-[color,box-shadow] duration-300",
             mode === key
               ? "text-theme-primary shadow-neu-raised"
               : "text-content-muted hover:text-content-secondary",
@@ -339,7 +339,7 @@ function DetailedMetricCardComponent({
       onClick={() => setExpanded((p) => !p)}
       className={cn(
         "relative rounded-[1.75rem] bg-bg-elevated cursor-pointer select-none",
-        "p-6 md:p-7 transition-all duration-300",
+        "p-6 md:p-7 transition-shadow duration-300",
         "shadow-neu-raised hover:shadow-neu-raised-hover",
         "overflow-hidden",
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { flushSync } from "react-dom";
 import { MotionConfig } from "framer-motion";
 import { THEME_STORAGE_KEY } from "@/constants/storage";
@@ -22,33 +22,43 @@ function getSystemTheme(): ResolvedTheme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+  return stored && ["light", "dark", "system"].includes(stored) ? stored : "system";
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
+  // Seeded to "light" on both server and the first client render so this
+  // state never mismatches during hydration. The blocking script in
+  // layout.tsx already applied the correct light/dark class to
+  // documentElement before paint, so the page never visibly flashes —
+  // only JS-driven consumers (icons, logo swaps) pick up the real value
+  // one tick after mount, via the effect below.
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
-  const [mounted, setMounted] = useState(false);
+  const isFirstRender = useRef(true);
 
-  // Initialize theme from localStorage
+  // Read the class the blocking script already applied instead of
+  // recomputing it, so a manually-set "light"/"dark" theme (not "system")
+  // doesn't get silently overridden by the current system preference.
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-    if (stored && ["light", "dark", "system"].includes(stored)) {
-      setThemeState(stored);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      const applied = document.documentElement.classList.contains("dark") ? "dark" : "light";
+      setResolvedTheme(applied);
+      return;
     }
-    setMounted(true);
-  }, []);
-
-  // Sync resolved theme with class on documentElement
-  useEffect(() => {
-    if (!mounted) return;
     const root = document.documentElement;
     const resolved: ResolvedTheme = theme === "system" ? getSystemTheme() : theme;
     setResolvedTheme(resolved);
     root.classList.remove("light", "dark");
     root.classList.add(resolved);
-  }, [theme, mounted]);
+  }, [theme]);
 
   // Handle system theme changes
   useEffect(() => {
-    if (!mounted || theme !== "system") return;
+    if (theme !== "system") return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
       const resolved = getSystemTheme();
@@ -58,7 +68,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);

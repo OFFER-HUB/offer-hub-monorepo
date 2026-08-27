@@ -122,7 +122,7 @@ export function EvolutionTimelineView() {
               <button
                 key={domainOption.key}
                 onClick={() => setActiveDomain(domainOption.key)}
-                className={`whitespace-nowrap rounded-xl px-4 py-2 text-[13px] font-semibold transition-all duration-200 ${
+                className={`whitespace-nowrap rounded-xl px-4 py-2 text-[13px] font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   active
                     ? `${NEU_ELEVATED} bg-[var(--color-primary)] text-white`
                     : "text-content-secondary hover:text-content-primary"

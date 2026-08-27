@@ -120,10 +120,10 @@ export default function AccessibilityPage() {
                               return (
                                    <div
                                         key={feature.title}
-                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-all duration-500"
+                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500"
                                    >
                                         <div
-                                             className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-all duration-300"
+                                             className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-shadow duration-300"
                                         >
                                              <Icon size={24} className="text-theme-primary" />
                                         </div>
@@ -161,7 +161,7 @@ export default function AccessibilityPage() {
                                    return (
                                         <div
                                              key={feature.title}
-                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-all duration-300"
+                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300"
                                         >
                                              <div className="flex items-center gap-3">
                                                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-theme-primary/10">
@@ -201,7 +201,7 @@ export default function AccessibilityPage() {
                                         href={contact.href}
                                         target={contact.external ? "_blank" : undefined}
                                         rel={contact.external ? "noopener noreferrer" : undefined}
-                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-all duration-300 group"
+                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-shadow duration-300 group"
                                    >
                                         <div className="flex items-start justify-between mb-4">
                                              <div>
@@ -320,7 +320,7 @@ export default function AccessibilityPage() {
                                         description: "We follow accessibility guidance from organizations like IAAP and 18F",
                                    },
                               ].map((item) => (
-                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-all duration-300">
+                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
                                         <h4 className="font-black text-content-primary mb-2">{item.standard}</h4>
                                         <p className="text-sm text-content-secondary">{item.description}</p>
                                    </div>

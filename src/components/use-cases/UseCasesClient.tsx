@@ -184,7 +184,7 @@ export function UseCasesClient() {
                     "relative z-10 flex items-center gap-1.5",
                     "min-w-[44px] min-h-[44px] px-4 sm:px-6 py-2.5",
                     "rounded-xl text-xs sm:text-sm font-bold",
-                    "transition-all duration-300 select-none",
+                    "transition-[color,box-shadow,transform] duration-300 select-none",
                     "touch-manipulation",
                     isActive
                       ? "text-white"
@@ -232,7 +232,7 @@ export function UseCasesClient() {
                   onClick={() => handleUseCaseSwitch(uc.id)}
                   className={cn(
                     "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold",
-                    "transition-all duration-300 select-none touch-manipulation",
+                    "transition-[color,box-shadow] duration-300 select-none touch-manipulation",
                     isActive
                       ? "btn-neumorphic-primary text-white shadow-neu-sunken"
                       : "bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover text-content-secondary hover:text-content-primary",

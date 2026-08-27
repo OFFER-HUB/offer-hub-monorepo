@@ -309,7 +309,7 @@ export function MarketplaceTemplate() {
                 href="https://docs.offerhub.io/sdk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold btn-neumorphic-primary transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold btn-neumorphic-primary transition-[background-color,box-shadow,transform]"
               >
                 SDK Documentation
                 <ArrowUpRight size={14} />

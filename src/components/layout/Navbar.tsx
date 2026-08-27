@@ -66,7 +66,7 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          "fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl xl:max-w-7xl md:w-full z-[500] transition-all duration-300 ease-out rounded-full bg-bg-base print:hidden",
+          "fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl xl:max-w-7xl md:w-full z-[500] transition-shadow duration-300 ease-out rounded-full bg-bg-base print:hidden",
           isScrolled
             ? "shadow-neu-raised-scrolled py-1"
             : "shadow-neu-raised py-2"
@@ -97,7 +97,7 @@ export function Navbar() {
                 href="/"
                 className={cn(
                   "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
-                  "transition-all duration-300 ease-out bg-bg-base",
+                  "transition-[color,box-shadow] duration-300 ease-out bg-bg-base",
                   isLinkActive("/", pathname)
                     ? "text-content-primary shadow-neu-sunken-subtle"
                     : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
@@ -111,7 +111,7 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
-                    "transition-all duration-300 ease-out bg-bg-base",
+                    "transition-[color,box-shadow] duration-300 ease-out bg-bg-base",
                     isLinkActive(link.href, pathname)
                       ? "text-content-primary shadow-neu-sunken-subtle"
                       : "text-content-secondary hover:text-content-primary hover:shadow-neu-sunken-subtle"
@@ -144,7 +144,7 @@ export function Navbar() {
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
-              className="lg:hidden p-2 rounded-full transition-all duration-300 ease-out bg-bg-base text-content-secondary shadow-neu-raised hover:shadow-neu-sunken-subtle"
+              className="lg:hidden p-2 rounded-full transition-shadow duration-300 ease-out bg-bg-base text-content-secondary shadow-neu-raised hover:shadow-neu-sunken-subtle"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -172,7 +172,7 @@ export function Navbar() {
               <Link
                 href="/"
                 className={cn(
-                  "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
+                  "px-4 py-3.5 rounded-2xl text-sm font-medium transition-colors duration-300 ease-out",
                   isLinkActive("/", pathname)
                     ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
                     : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"
@@ -186,7 +186,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "px-4 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 ease-out",
+                    "px-4 py-3.5 rounded-2xl text-sm font-medium transition-colors duration-300 ease-out",
                     isLinkActive(link.href, pathname)
                       ? "text-content-primary bg-white/50 dark:bg-white/5 shadow-neu-sunken-subtle"
                       : "text-content-secondary hover:text-content-primary hover:bg-white/30 dark:hover:bg-white/5"

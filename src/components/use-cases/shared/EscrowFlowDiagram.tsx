@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export interface EscrowStep {
   stepNumber: number;
@@ -99,7 +98,7 @@ function StepCard({
       aria-expanded={isActive}
       aria-label={`Step ${step.stepNumber}: ${step.label}`}
       className={cn(
-        "flex flex-col p-5 md:p-6 rounded-[1.5rem] bg-bg-elevated transition-all duration-300 ease-out cursor-pointer select-none",
+        "flex flex-col p-5 md:p-6 rounded-[1.5rem] bg-bg-elevated transition-elevation cursor-pointer select-none",
         "w-full md:flex-1 min-w-0",
         "animate-fadeInUp",
         isActive
@@ -151,10 +150,10 @@ function StepCard({
   );
 }
 
-function ConnectorLine({ vertical }: { vertical: boolean }) {
-  if (vertical) {
-    return (
-      <div className="flex justify-center py-1">
+function ConnectorLine() {
+  return (
+    <>
+      <div className="flex md:hidden justify-center py-1">
         <svg width="2" height="32" className="overflow-visible">
           <line
             x1="1"
@@ -169,25 +168,23 @@ function ConnectorLine({ vertical }: { vertical: boolean }) {
           />
         </svg>
       </div>
-    );
-  }
 
-  return (
-    <div className="hidden md:flex items-center justify-center flex-shrink-0 w-8 lg:w-12">
-      <svg width="100%" height="2" className="overflow-visible">
-        <line
-          x1="0"
-          y1="1"
-          x2="100%"
-          y2="1"
-          stroke="var(--color-primary)"
-          strokeWidth="2"
-          strokeDasharray="6 6"
-          strokeOpacity="0.4"
-          className="animate-connectorDash"
-        />
-      </svg>
-    </div>
+      <div className="hidden md:flex items-center justify-center flex-shrink-0 w-8 lg:w-12">
+        <svg width="100%" height="2" className="overflow-visible">
+          <line
+            x1="0"
+            y1="1"
+            x2="100%"
+            y2="1"
+            stroke="var(--color-primary)"
+            strokeWidth="2"
+            strokeDasharray="6 6"
+            strokeOpacity="0.4"
+            className="animate-connectorDash"
+          />
+        </svg>
+      </div>
+    </>
   );
 }
 
@@ -253,7 +250,6 @@ export function EscrowFlowDiagram({
   className,
 }: EscrowFlowDiagramProps) {
   const [activeStep, setActiveStep] = useState<number | null>(null);
-  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const isOnChainActive =
     activeStep !== null && steps[activeStep - 1]?.isOnChain;
@@ -267,15 +263,10 @@ export function EscrowFlowDiagram({
     >
       <BlockchainPulse active={!!isOnChainActive} />
 
-      <div
-        className={cn(
-          "relative z-10 flex gap-3 h-full",
-          isMobile ? "flex-col" : "flex-row items-start",
-        )}
-      >
+      <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-3 h-full">
         {steps.map((step, i) => (
           <div key={step.stepNumber} className="contents">
-            {i > 0 && <ConnectorLine vertical={isMobile} />}
+            {i > 0 && <ConnectorLine />}
             <StepCard
               step={step}
               index={i}
