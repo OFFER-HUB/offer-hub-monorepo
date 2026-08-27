@@ -4,6 +4,8 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllDocSlugs, getDocBySlug } from "@/lib/mdx";
 import { MDX_COMPONENTS } from "@/components/docs/mdx-components";
 import { EditOnGitHub } from "@/components/docs/EditOnGitHub";
+import { DocPageActions } from "@/components/docs/DocPageActions";
+import { PageActionsMenu } from "@/components/docs/PageActionsMenu";
 
 import remarkGfm from "remark-gfm";
 
@@ -56,6 +58,16 @@ export default async function DocPage({ params }: PageProps) {
               </p>
             )}
           </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <PageActionsMenu slug={doc.slug} markdownContent={doc.content} />
+            <DocPageActions
+              slug={doc.slug}
+              title={doc.frontmatter.title}
+              description={doc.frontmatter.description}
+              markdownContent={doc.content}
+            />
+          </div>
         </div>
       </div>
 
@@ -71,15 +83,6 @@ export default async function DocPage({ params }: PageProps) {
           }}
         />
       </div>
-
-      {/* Hidden metadata for layout actions */}
-      <div
-        id="doc-metadata-for-actions"
-        style={{ display: "none" }}
-        data-slug={doc.slug}
-        data-title={doc.frontmatter.title}
-        data-markdown={doc.content}
-      />
 
       {/* Edit on GitHub link */}
       <div className="mt-8 pt-6 border-t" style={{ borderColor: "#d1d5db" }}>

@@ -13,7 +13,7 @@ interface ContributorsSectionProps {
 // Memoized contributor card to prevent unnecessary re-renders
 const ContributorCard = memo(function ContributorCard({ person }: { person: ContributorData }) {
   return (
-    <article className="group relative rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-all duration-300 hover:shadow-neu-raised-hover hover:-translate-y-1">
+    <article className="group relative rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-[box-shadow,transform] duration-300 hover:shadow-neu-raised-hover hover:-translate-y-1">
       <div className="flex flex-col items-center text-center gap-4">
         {person.avatar ? (
           <div className="p-1 rounded-full bg-bg-base shadow-neu-sunken-subtle group-hover:shadow-neu-sunken transition-shadow">
@@ -50,7 +50,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
             href={person.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-[10px] font-black uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-all"
+            className="mt-1 p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-[10px] font-black uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow"
           >
             Profile
           </a>
@@ -105,7 +105,7 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
           <div className="mt-16 text-center">
             <button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-all duration-300 btn-neumorphic-primary group"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-[background-color,box-shadow,transform] duration-300 btn-neumorphic-primary group"
             >
               Show more creators
               <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />

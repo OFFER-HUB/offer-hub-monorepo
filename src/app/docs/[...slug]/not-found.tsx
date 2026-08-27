@@ -66,7 +66,7 @@ export default function DocsNotFound() {
           <Link
             key={doc.href}
             href={doc.href}
-            className="group rounded-2xl bg-bg-base p-5 shadow-neu-raised-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-neu-raised-hover"
+            className="group rounded-2xl bg-bg-base p-5 shadow-neu-raised-sm transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-neu-raised-hover"
           >
             <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
               <FileText size={20} />

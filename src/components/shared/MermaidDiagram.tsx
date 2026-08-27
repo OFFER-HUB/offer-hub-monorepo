@@ -226,7 +226,7 @@ export function MermaidDiagram({
               onClick={handleCopy}
               aria-label={copied ? "Copied" : "Copy diagram source"}
               className={cn(
-                "relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-[10.5px] font-black uppercase tracking-widest transition-all duration-300",
+                "relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-[10.5px] font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
                 copied
                   ? "text-white bg-theme-primary shadow-lg shadow-theme-primary/25"
                   : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",

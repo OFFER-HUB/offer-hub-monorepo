@@ -1,0 +1,221 @@
+---
+title: Events
+description: Server-Sent Events (SSE) reference and complete domain event catalog for OFFER-HUB.
+order: 2
+section: API Reference
+---
+
+OFFER-HUB delivers real-time domain events over Server-Sent Events (SSE). Connect your marketplace backend once and react to changes such as a credited balance, funded escrow, or resolved dispute without polling.
+
+<Callout type="note">
+  This is an outbound stream from the Orchestrator. OFFER-HUB does not send outbound webhooks to your application.
+</Callout>
+
+## Subscribe to the event stream
+
+<Badge variant="success">GET</Badge> `/api/v1/events`
+
+The endpoint requires an API key accepted by the API key guard. Send the key in the `Authorization` header and request the SSE media type:
+
+```bash
+curl -N \
+  -H "Authorization: Bearer ohk_live_..." \
+  -H "Accept: text/event-stream" \
+  "http://localhost:4000/api/v1/events"
+```
+
+`-N` keeps curl from buffering the stream. The server also sends a `ping` event every 30 seconds to keep an idle connection alive.
+
+### Filter the stream
+
+Use repeated query parameters to filter by exact event or aggregate type:
+
+```bash
+curl -N \
+  -H "Authorization: Bearer ohk_live_..." \
+  "http://localhost:4000/api/v1/events?types=order.created&types=order.closed&resources=Order"
+```
+
+| Parameter | Values | Description |
+| --- | --- | --- |
+| `types` | One or more exact event types | Includes only events with a matching `eventType`. |
+| `resources` | One or more aggregate types, such as `Order` or `Balance` | Includes only events with a matching `aggregateType`. |
+| `since` | ISO 8601 timestamp | Replays buffered events after the timestamp when no `Last-Event-ID` header is supplied. |
+
+<Callout type="warning">
+  SSE filters use exact matches. `types=order.*` and `types=*` are not public SSE subscription patterns; use individual event types such as `order.created` and `order.closed`.
+</Callout>
+
+## Event envelope
+
+Every event is a `DomainEvent`. `payload` varies by `eventType`; the remaining fields use the same shape for every event.
+
+```typescript
+interface DomainEvent<T = unknown> {
+  eventId: string;
+  eventType: string;
+  occurredAt: string;
+  aggregateId: string;
+  aggregateType: string;
+  payload: T;
+  metadata: {
+    correlationId?: string;
+    causationId?: string;
+    userId?: string;
+    marketplaceId?: string;
+    [key: string]: unknown;
+  };
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `eventId` | string | Unique event identifier, generated with the `evt_` prefix. Use it for deduplication. |
+| `eventType` | string | The event name from the catalog below, such as `order.escrow_funded`. |
+| `occurredAt` | string | ISO 8601 timestamp at which the event was emitted. |
+| `aggregateId` | string | ID of the resource that produced the event. |
+| `aggregateType` | string | Resource type, such as `Order`, `TopUp`, or `Withdrawal`. |
+| `payload` | object | Data specific to the event type. |
+| `metadata` | object | Correlation, causation, user, marketplace, and any additional context. |
+
+On the wire, each SSE message uses the event’s timestamp as its SSE `id`, its `eventType` as the SSE event name, and the complete envelope as JSON data:
+
+```text
+id: 2026-02-18T17:37:12.000Z
+event: order.escrow_funded
+data: {"eventId":"evt_abc123","eventType":"order.escrow_funded","occurredAt":"2026-02-18T17:37:12.000Z","aggregateId":"ord_abc123","aggregateType":"Order","payload":{"orderId":"ord_abc123","escrowId":"esc_abc123","fundedAt":"2026-02-18T17:37:12.000Z"},"metadata":{}}
+```
+
+### Reconnect and replay
+
+The service buffers the latest 1,000 events in Redis for one hour. To replay events after a disconnect, send the previous SSE `id` in `Last-Event-ID`; this header takes precedence over `since`.
+
+```bash
+curl -N \
+  -H "Authorization: Bearer ohk_live_..." \
+  -H "Last-Event-ID: 2026-02-18T17:37:12.000Z" \
+  "http://localhost:4000/api/v1/events"
+```
+
+Treat the stream as at-least-once delivery: persist processed `eventId` values and ignore a duplicate before performing side effects.
+
+## Event catalog
+
+The catalog below is derived from `apps/api/src/modules/events/event-catalog.ts` in the Orchestrator repository. Payload properties are the contract documented alongside each catalog entry.
+
+### User events
+
+| Event | Payload |
+| --- | --- |
+| `user.created` | `{ userId, externalUserId, type }` |
+| `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
+| `user.stellar_linked` | `{ userId, stellarAddress }` |
+
+### Wallet events
+
+There are currently no `wallet.*` entries in the Orchestrator event catalog. Wallet activity that changes available funds is represented by the balance events below.
+
+### Balance events
+
+| Event | Payload |
+| --- | --- |
+| `balance.credited` | `{ userId, amount, source, newBalance }` |
+| `balance.debited` | `{ userId, amount, destination, newBalance }` |
+| `balance.reserved` | `{ userId, amount, orderId, reservedBalance }` |
+| `balance.released` | `{ userId, amount, orderId, availableBalance }` |
+
+### Top-up events
+
+| Event | Payload |
+| --- | --- |
+| `topup.created` | `{ userId, amount, currency }` |
+| `topup.confirmation_required` | `{ topupId, confirmationUri }` |
+| `topup.processing` | `{ topupId, airtmPayinId }` |
+| `topup.succeeded` | `{ topupId, userId, amount, newBalance }` |
+| `topup.failed` | `{ topupId, reason, errorCode }` |
+| `topup.canceled` | `{ topupId, canceledBy }` |
+
+### Order events
+
+| Event | Payload |
+| --- | --- |
+| `order.created` | `{ orderId, buyerId, sellerId, amount, title }` |
+| `order.funds_reserved` | `{ orderId, amount, buyerId, reservedBalance }` |
+| `order.escrow_creating` | `{ orderId, escrowId }` |
+| `order.escrow_funding` | `{ orderId, escrowId, trustlessContractId }` |
+| `order.escrow_funded` | `{ orderId, escrowId, fundedAt }` |
+| `order.in_progress` | `{ orderId }` |
+| `order.release_requested` | `{ orderId, requestedBy }` |
+| `order.released` | `{ orderId, sellerId, amount, releasedAt }` |
+| `order.refund_requested` | `{ orderId, requestedBy }` |
+| `order.refunded` | `{ orderId, buyerId, amount, refundedAt }` |
+| `order.disputed` | `{ orderId, disputeId, openedBy, reason }` |
+| `order.closed` | `{ orderId, finalStatus, closedAt }` |
+| `order.canceled` | `{ orderId, canceledBy, reason }` |
+
+### Escrow events
+
+| Event | Payload |
+| --- | --- |
+| `escrow.created` | `{ escrowId, orderId, amount }` |
+| `escrow.funding_started` | `{ escrowId, trustlessContractId }` |
+| `escrow.funded` | `{ escrowId, fundedAt, amount }` |
+| `escrow.milestone_completed` | `{ escrowId, milestoneRef, completedAt }` |
+| `escrow.released` | `{ escrowId, releasedAt, amount }` |
+| `escrow.refunded` | `{ escrowId, refundedAt, amount }` |
+
+### Dispute events
+
+| Event | Payload |
+| --- | --- |
+| `dispute.opened` | `{ disputeId, orderId, openedBy, reason }` |
+| `dispute.under_review` | `{ disputeId, reviewedBy }` |
+| `dispute.resolved` | `{ disputeId, decision, resolvedBy, resolvedAt }` |
+
+### Withdrawal events
+
+| Event | Payload |
+| --- | --- |
+| `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
+| `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
+| `withdrawal.pending` | `{ withdrawalId, airtmPayoutId }` |
+| `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
+| `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
+| `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |
+| `withdrawal.canceled` | `{ withdrawalId, canceledBy, refundedToBalance }` |
+
+## Wildcard subscriptions
+
+Wildcard patterns are available to code running inside the Orchestrator through `EventBusService`. A trailing `.*` matches all events in that domain, and `*` matches every event.
+
+```typescript
+eventBus.subscribe('order.*', (event) => {
+  // Handles order.created, order.funds_reserved, and every other order event.
+  processOrderEvent(event);
+});
+
+eventBus.subscribe('*', (event) => {
+  recordEvent(event);
+});
+```
+
+These patterns are for internal event-bus listeners. External integrations subscribe through `GET /api/v1/events` and should use exact `types` values as shown above.
+
+## Handle named SSE events
+
+SSE messages are emitted with the catalog value as their event name. Register a listener for that name and parse the envelope from `event.data`:
+
+```typescript
+eventSource.addEventListener('order.escrow_funded', (message) => {
+  const event = JSON.parse(message.data);
+  updateOrder(event.payload.orderId);
+});
+```
+
+For authenticated browser integrations, connect through your backend or another credential-safe proxy: the native browser `EventSource` API cannot set an `Authorization` header.
+
+## Related documentation
+
+- [API Reference](/docs/api-reference/overview) — REST endpoints and authentication
+- [Orders Guide](/docs/guide/orders) — Order lifecycle and order-event examples
+- [Deposits Guide](/docs/guide/deposits) — Balance credit events for deposits

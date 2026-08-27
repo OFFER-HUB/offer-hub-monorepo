@@ -73,7 +73,7 @@ export function ContributorGrid({ contributors }: ContributorGridProps) {
                         href={`${GITHUB_REPO_URL}/graphs/contributors`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-[400ms] ease-out border border-theme-primary text-theme-primary hover:shadow-neu-raised-hover"
+            className="inline-block px-6 py-3 rounded-xl text-sm font-semibold transition-shadow duration-[400ms] ease-out border border-theme-primary text-theme-primary hover:shadow-neu-raised-hover"
           >
             View all on GitHub
           </a>

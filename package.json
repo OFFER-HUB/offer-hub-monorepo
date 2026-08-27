@@ -7,12 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:classes": "node scripts/check-undefined-utility-classes.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "generate:openapi": "npx tsx scripts/generate-openapi.ts",
-    "docs:index": "node scripts/generate-docs-index.mjs",
-    "prebuild": "node scripts/generate-docs-index.mjs"
+    "docs:index": "npx tsx scripts/generate-docs-index.ts",
+    "prebuild": "npx tsx scripts/generate-docs-index.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",

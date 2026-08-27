@@ -77,7 +77,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-200",
+          "w-full flex items-center gap-3 px-5 py-4 text-left transition-[background-color,box-shadow] duration-200",
           isOpen
             ? "bg-bg-sunken"
             : "bg-bg-base hover:bg-bg-sunken/50",
@@ -167,7 +167,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
                     value={bodyValue}
                     onChange={(e) => setBodyValue(e.target.value)}
                     rows={Math.min(bodyValue.split("\n").length + 1, 12)}
-                    className="w-full rounded-xl px-4 py-3 text-sm font-mono text-content-primary resize-y transition-all focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-0"
+                    className="w-full rounded-xl px-4 py-3 text-sm font-mono text-content-primary resize-y transition-shadow focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-0"
                     style={{
                       background: "var(--color-bg-sunken)",
                       boxShadow: "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
@@ -199,7 +199,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
           <button
             onClick={handleTryIt}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-neumorphic-primary disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-neumorphic-primary disabled:opacity-60 disabled:cursor-not-allowed transition-[background-color,box-shadow,transform,opacity] duration-200"
           >
             {loading ? <Loader2 size={16} aria-hidden="true" className="animate-spin" /> : <Play size={16} aria-hidden="true" />}
             {loading ? "Sending..." : "Try it"}

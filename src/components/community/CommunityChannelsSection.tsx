@@ -58,7 +58,7 @@ export const CommunityChannelsSection = () => {
                 href={channel.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex h-full flex-col rounded-3xl bg-bg-base p-8 shadow-neu-raised transition-all duration-300 hover:-translate-y-1 hover:shadow-neu-raised-hover"
+                className="group flex h-full flex-col rounded-3xl bg-bg-base p-8 shadow-neu-raised transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-neu-raised-hover"
               >
                 <div className="w-12 h-12 rounded-xl bg-bg-base shadow-neu-sunken-subtle flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Icon size={20} className="text-theme-primary" />
@@ -69,7 +69,7 @@ export const CommunityChannelsSection = () => {
                 <p className="mt-4 text-sm font-medium leading-relaxed text-content-secondary">
                   {channel.description}
                 </p>
-                <span className="mt-8 pt-6 border-t border-theme-border/10 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary group-hover:gap-3 transition-all">
+                <span className="mt-8 pt-6 border-t border-theme-border/10 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary group-hover:gap-3 transition-[gap]">
                   Join channel <ArrowUpRight size={14} />
                 </span>
               </a>

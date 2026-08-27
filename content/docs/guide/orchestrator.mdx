@@ -119,35 +119,49 @@ The seller requests a withdrawal. The Orchestrator signs a Stellar payment trans
 
 <CommandLine>POST /api/withdrawals</CommandLine>
 
-## Escrow State Machine
+## State Machines
 
-Every escrow moves through a strict set of states. Invalid transitions are rejected with a `409 Conflict` error.
+The Orchestrator runs two distinct state machines: an **Order state machine** that tracks the order lifecycle, and an internal **Escrow state machine** that tracks the on-chain escrow contract. Invalid transitions are rejected with a `409 Conflict` error. Both diagrams below match `docs/architecture/state-machines.md` in the orchestrator repository exactly.
 
-```mermaid
-stateDiagram-v2
-    [*] --> CREATED: fund()
-    CREATED --> FUNDED: fund()
-    FUNDED --> RELEASED: release()
-    FUNDED --> DISPUTED: dispute()
-    FUNDED --> REFUNDED: refund()
-    DISPUTED --> RELEASED: resolveToSeller()
-    DISPUTED --> SPLIT: resolveToSplit()
-    RELEASED --> [*]
-    REFUNDED --> [*]
-    SPLIT --> [*]
-```
+### Order State Machine
+
+<OrderStateMachineDiagram />
 
 | State | Description |
 |-------|-------------|
-| `CREATED` | Order exists in the ledger, funds reserved but not yet on-chain |
-| `FUNDED` | USDC is locked in the Soroban smart contract |
-| `RELEASED` | Funds sent to seller, escrow is complete |
-| `DISPUTED` | Buyer opened a dispute, funds frozen pending resolution |
-| `REFUNDED` | Funds returned to buyer's available balance |
-| `SPLIT` | Dispute resolved with partial payment to both parties |
+| `ORDER_CREATED` | Order created off-chain, no funds reserved |
+| `FUNDS_RESERVED` | Buyer balance reserved (logical hold) |
+| `ESCROW_CREATING` | Creating escrow contract in Trustless Work |
+| `ESCROW_FUNDING` | Funding escrow with reserved balance |
+| `ESCROW_FUNDED` | Escrow funded, funds locked on-chain |
+| `IN_PROGRESS` | Work in progress |
+| `RELEASE_REQUESTED` | Release requested for the seller |
+| `RELEASED` | Funds released to the seller |
+| `REFUND_REQUESTED` | Refund requested for the buyer |
+| `REFUNDED` | Funds returned to the buyer |
+| `DISPUTED` | Dispute opened, flow frozen |
+| `CLOSED` | Order completed |
+
+### Escrow State Machine (internal)
+
+The escrow contract moves through its own lifecycle inside the Orchestrator while the order machine advances in parallel.
+
+<EscrowStateMachineDiagram />
+
+| State | Description |
+|-------|-------------|
+| `CREATING` | Creating contract in Trustless Work |
+| `CREATED` | Contract created, not funded |
+| `FUNDING` | Funding contract |
+| `FUNDED` | Funds locked in contract |
+| `RELEASING` | Releasing funds to the seller |
+| `RELEASED` | Funds released |
+| `REFUNDING` | Returning funds to the buyer |
+| `REFUNDED` | Funds returned |
+| `DISPUTED` | Active dispute |
 
 <Callout variant="warning">
-  Once an escrow reaches `RELEASED`, `REFUNDED`, or `SPLIT` it is terminal — no further transitions are allowed.
+  Once an escrow reaches `RELEASED` or `REFUNDED` the contract is terminal — no further on-chain transitions are allowed. The order itself only reaches `CLOSED` after the escrow resolves and cleanup completes.
 </Callout>
 
 ## Error Handling

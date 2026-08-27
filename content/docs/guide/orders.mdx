@@ -6,39 +6,20 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/orders.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/orders.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/orders.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/orders.md) in the repo.
 </Callout>
 
 Orders are the core of OFFER-HUB. They represent a transaction between a buyer and seller, with funds protected by escrow until work is completed.
 
 ## Order Lifecycle
 
-Every order follows a strict state machine:
+Every order follows a strict state machine — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly:
 
-```mermaid
-stateDiagram-v2
-    [*] --> ORDER_CREATED
-    ORDER_CREATED --> FUNDS_RESERVED: Reserve funds
-    FUNDS_RESERVED --> ESCROW_CREATING: Create escrow
-    ESCROW_CREATING --> ESCROW_CREATED
-    ESCROW_CREATED --> ESCROW_FUNDING: Fund escrow
-    ESCROW_FUNDING --> ESCROW_FUNDED
-    ESCROW_FUNDED --> IN_PROGRESS: Work begins
+<OrderStateMachineDiagram />
 
-    IN_PROGRESS --> RELEASE_REQUESTED: Buyer approves
-    IN_PROGRESS --> REFUND_REQUESTED: Request refund
-    IN_PROGRESS --> DISPUTED: Open dispute
-
-    RELEASE_REQUESTED --> RELEASED
-    REFUND_REQUESTED --> REFUNDED
-    DISPUTED --> RESOLVED
-
-    RELEASED --> CLOSED
-    REFUNDED --> CLOSED
-    RESOLVED --> CLOSED
-
-    CLOSED --> [*]
-```
+<Callout type="note">
+  The escrow contract itself follows a separate internal [Escrow state machine](/docs/guide/escrow) while the order machine above advances in parallel.
+</Callout>
 
 ## Creating an Order
 
@@ -219,16 +200,19 @@ Reasons: `NOT_DELIVERED`, `QUALITY_ISSUE`, `OTHER`
 # Full release to seller
 curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
   -d '{"decision": "FULL_RELEASE"}'
 
 # Full refund to buyer
 curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
   -d '{"decision": "FULL_REFUND"}'
 
 # Split between both
 curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
   -d '{
     "decision": "SPLIT",
     "releaseAmount": "80.00",

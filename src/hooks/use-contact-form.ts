@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { submitContactInquiry } from "@/services/contact"
+import { isValidEmail } from "@/utils/email"
 
 export interface ContactFormData {
   company: string
@@ -28,10 +29,7 @@ function validateContactForm(formData: ContactFormData) {
   if (!formData.company.trim()) next.company = "Company name is required"
   if (!formData.name.trim()) next.name = "Contact name is required"
   if (!formData.email.trim()) next.email = "Work email is required"
-  else {
-    const re = /^\S+@\S+\.\S+$/
-    if (!re.test(formData.email)) next.email = "Enter a valid work email"
-  }
+  else if (!isValidEmail(formData.email)) next.email = "Enter a valid work email"
   return next
 }
 

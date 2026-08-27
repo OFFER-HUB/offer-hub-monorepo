@@ -38,7 +38,7 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 href={GITHUB_REPO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-4 rounded-xl bg-content-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black transition-all"
+                className="px-8 py-4 rounded-xl bg-content-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black transition-colors"
               >
                 Star on GitHub
               </a>
@@ -65,7 +65,7 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 {repoStats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-6 transition-all duration-500 hover:scale-[1.02]"
+                    className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-6 transition-transform duration-500 hover:scale-[1.02]"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle">
