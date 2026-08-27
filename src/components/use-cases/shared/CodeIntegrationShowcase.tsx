@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Copy, Check, ExternalLink, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { highlightCache, escapeHtml } from "@/utils/shiki-highlight";
 
 export interface CodeTab {
   id: string;
@@ -27,15 +28,6 @@ export interface CodeIntegrationShowcaseProps {
   description: string;
   tabs: CodeTab[];
   sdkCards: SdkCard[];
-}
-
-const highlightCache = new Map<string, string>();
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
 }
 
 function DocTooltip({ href, label }: { href: string; label: string }) {

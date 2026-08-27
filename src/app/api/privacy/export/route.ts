@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import type { WaitlistRow } from '@/types/database';
-
-function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
+import { isValidEmail } from '@/utils/email';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json().catch(() => null);

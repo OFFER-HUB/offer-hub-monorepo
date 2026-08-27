@@ -5,6 +5,7 @@ import { Copy, Check, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { logger } from "@/utils/logger";
+import { highlightCache, escapeHtml } from "@/utils/shiki-highlight";
 
 interface CodeBlockProps {
   code?: string;
@@ -21,18 +22,6 @@ const LANGUAGE_ALIASES: Record<string, string> = {
   conf: "ini",
   config: "ini",
 };
-
-// Global cache — persists across renders and component instances
-const highlightCache = new Map<string, string>();
-
-function escapeHtml(text: string) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 export function CodeBlock({
   code: codeProp,
