@@ -1,4 +1,4 @@
-import { handleMcpRequest } from "../../../../mcp/build/index.js";
+import { handleMcpRequest } from "../../../../mcp/src/index";
 
 export const maxDuration = 60;
 
