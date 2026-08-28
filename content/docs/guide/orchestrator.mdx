@@ -201,20 +201,17 @@ const response = await fetch("/api/orders", {
 # Blockchain
 STELLAR_NETWORK=mainnet
 STELLAR_HORIZON_URL=https://horizon.stellar.org
-TRUSTLESS_WORK_API_URL=https://api.trustlesswork.com
+
+# Trustless Work (Escrow)
+TRUSTLESS_API_URL=https://api.trustlesswork.com
+TRUSTLESS_API_KEY=your-trustless-api-key
+TRUSTLESS_WEBHOOK_SECRET=your-webhook-secret
 
 # Payment Provider
 PAYMENT_PROVIDER=crypto
 
-# Escrow timing
-ESCROW_DISPUTE_WINDOW_HOURS=72
-ESCROW_AUTO_RELEASE_HOURS=168
-
 # Security
 WALLET_ENCRYPTION_KEY=your-aes-256-key
-
-# Events
-SSE_KEEPALIVE_INTERVAL_MS=30000
 ```
 
 ### Stellar and USDC
