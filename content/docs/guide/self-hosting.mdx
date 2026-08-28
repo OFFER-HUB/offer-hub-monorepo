@@ -235,6 +235,10 @@ Apply Prisma migrations before the first launch (or after pulling a new source r
 
 <CommandLine>npm run prisma:generate && npx prisma migrate deploy --schema packages/database/prisma/schema.prisma</CommandLine>
 
+<Callout type="tip">
+  To understand exactly what gets created — every table, field, and relationship — see the [Data Model](/docs/guide/data-model) reference.
+</Callout>
+
 <Callout type="warning">
   Always back up your database before running migrations in production.
 </Callout>
@@ -474,5 +478,6 @@ curl -X POST https://your-webhook-url/test
 
 - [Configuration](/docs/configuration) — Full environment variable reference
 - [Quick Start](/docs/guide/quick-start) — Make your first API call
+- [Data Model](/docs/guide/data-model) — Every database table and relationship
 - [API Reference](/docs/api-reference/overview) — Explore all endpoints
 - [Webhooks](/docs/api-reference/webhooks) — Set up event notifications
