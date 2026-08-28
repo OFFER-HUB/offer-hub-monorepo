@@ -1,8 +1,26 @@
+"use client";
+
+import { useCallback, useMemo } from "react";
+import { FileJson } from "lucide-react";
 import { downloadBlob } from "@/utils/downloadBlob";
-import { docExportBaseName } from "@/lib/docs/export-filenames";
+
+interface ExportJSONProps {
+  /**
+   * The documentation slug of the current page.
+   *
+   * This is used both in the exported payload and as the base
+   * for the downloaded filename (e.g. "getting-started.json").
+   */
+  slug: string;
+
+  /**
+   * The human-readable title of the current doc page.
+   */
+  title: string;
+}
 
 /**
- * JSON structure produced for a doc page export.
+ * JSON structure produced by the `ExportJSON` component.
  *
  * This is intentionally simple and stable so it can be consumed
  * by AI tools, external integrations, or an MCP server.
@@ -118,41 +136,52 @@ function extractSectionContent(nodes: Element[]): { content: string; codeBlocks:
   return { content, codeBlocks };
 }
 
-/**
- * Walks the exported content root's h2/h3 headings and builds the
- * exported JSON payload. Takes the root element as a parameter (rather
- * than looking it up itself) so it stays a pure, directly-testable
- * function independent of the live DOM/page.
- */
-export function buildDocExportJson(root: HTMLElement, slug: string, title: string): ExportedDocJSON {
-  const headingNodes = Array.from(root.querySelectorAll<HTMLElement>("h2[id], h3[id]"));
-  const flatChildren = Array.from(root.children) as Element[];
+export function ExportJSON({ slug, title }: ExportJSONProps) {
+  const filename = useMemo(() => `${slug.replace(/\//g, "-")}.json`, [slug]);
 
-  const sections: ExportedSectionJSON[] = headingNodes.map((heading) => {
-    const level = heading.tagName.toLowerCase() === "h2" ? 2 : 3;
-    const headingText = heading.textContent?.trim() ?? "";
+  const handleClick = useCallback(() => {
+    const root = document.getElementById("doc-page-export-content");
+    if (!root) return;
 
-    const indexInRoot = flatChildren.indexOf(heading);
-    const sectionNodes = indexInRoot >= 0 ? getSectionNodes(flatChildren, indexInRoot) : [];
+    const headingNodes = Array.from(root.querySelectorAll<HTMLElement>("h2[id], h3[id]"));
+    const flatChildren = Array.from(root.children) as Element[];
 
-    const { content, codeBlocks } = extractSectionContent(sectionNodes);
+    const sections: ExportedSectionJSON[] = headingNodes.map((heading) => {
+      const level = heading.tagName.toLowerCase() === "h2" ? 2 : 3;
+      const headingText = heading.textContent?.trim() ?? "";
 
-    return {
-      heading: headingText,
-      level,
-      content,
-      codeBlocks,
+      const indexInRoot = flatChildren.indexOf(heading);
+      const sectionNodes = indexInRoot >= 0 ? getSectionNodes(flatChildren, indexInRoot) : [];
+
+      const { content, codeBlocks } = extractSectionContent(sectionNodes);
+
+      return {
+        heading: headingText,
+        level,
+        content,
+        codeBlocks,
+      };
+    });
+
+    const payload: ExportedDocJSON = {
+      title,
+      slug,
+      sections,
     };
-  });
 
-  return { title, slug, sections };
+    downloadBlob(filename, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+  }, [filename, slug, title]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      title="Export JSON"
+      aria-label="Export JSON"
+      className="neu-circle w-10 h-10 flex items-center justify-center text-content-secondary hover:text-[#149A9B]"
+    >
+      <FileJson size={18} aria-hidden="true" />
+    </button>
+  );
 }
 
-/** Reads the doc content from the DOM and downloads it as a `.json` file. */
-export function exportDocJson(slug: string, title: string): void {
-  const root = document.getElementById("doc-page-export-content");
-  if (!root) return;
-
-  const payload = buildDocExportJson(root, slug, title);
-  downloadBlob(`${docExportBaseName(slug)}.json`, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
-}

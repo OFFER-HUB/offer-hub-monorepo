@@ -13,7 +13,7 @@ export function EditOnGitHub({ filePath }: EditOnGitHubProps) {
       href={githubEditUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-sm text-content-secondary hover:text-theme-primary transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm text-content-secondary hover:text-[#149A9B] transition-colors"
     >
       <Pencil size={14} />
       <span>Edit this page on GitHub</span>
