@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
@@ -10,13 +10,7 @@ import { DocsSidebar } from "@/components/docs/DocsSidebar";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Navbar } from "@/components/layout/Navbar";
 import { Breadcrumb } from "@/components/docs/Breadcrumb";
-import { FileCode2, FileText, Github } from "lucide-react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { SITE_URL_FALLBACK } from "@/constants/site";
-import { DOCS_REPO_BASE } from "@/constants/github";
-
-// Use production URL for AI assistant links
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
 
 interface DocsLayoutShellProps {
   nav: SidebarSection[];
@@ -45,60 +39,6 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   const drawerRef = useRef<HTMLElement>(null);
 
   const isHub = pathname === "/docs" || pathname === "/docs/";
-
-  const pathSegments = useMemo(() => {
-    const [, docs, ...rest] = pathname.split("/");
-    if (docs !== "docs") return [];
-    return rest.filter(Boolean);
-  }, [pathname]);
-
-  const currentDocSlug = pathSegments.join("/");
-
-  const isKnownDocPage = useMemo(() => {
-    if (!currentDocSlug) return false;
-
-    return nav.some((section) =>
-      section.links.some((link) => link.slug === currentDocSlug)
-    );
-  }, [currentDocSlug, nav]);
-
-  // Inline DocActionsMenu to avoid missing import error
-  function DocActionsMenu({ slug }: { slug: string }) {
-    const viewUrl = `${SITE_URL}/docs/${slug}`;
-    const githubUrl = `${DOCS_REPO_BASE}/${slug}.mdx`;
-
-    return (
-      <div className="flex items-center gap-3">
-        <a
-          href={viewUrl}
-          className="inline-flex items-center gap-2 text-content-secondary hover:text-content-primary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FileText size={16} aria-hidden="true" />
-          <span className="sr-only">View</span>
-        </a>
-        <a
-          href={githubUrl}
-          className="inline-flex items-center gap-2 text-content-secondary hover:text-content-primary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Github size={16} aria-hidden="true" />
-          <span className="sr-only">Edit on GitHub</span>
-        </a>
-        <a
-          href={`${viewUrl}#source`}
-          className="inline-flex items-center gap-2 text-content-secondary hover:text-content-primary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FileCode2 size={16} aria-hidden="true" />
-          <span className="sr-only">View source</span>
-        </a>
-      </div>
-    );
-  }
 
   useEffect(() => {
     setIsDrawerOpen(false);
@@ -155,14 +95,6 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 <Breadcrumb />
               )}
             </nav>
-
-
-            {/* Actions toolbar */}
-            {!isHub && isKnownDocPage && (
-              <div className="flex items-center justify-start md:justify-end print:hidden">
-                <DocActionsMenu slug={currentDocSlug} />
-              </div>
-            )}
           </div>
         </div>
 
