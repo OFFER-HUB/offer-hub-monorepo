@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { MDX_PRIVACY_COMPONENTS } from "@/components/mdx/PrivacyComponents";
 import { buildPageMetadata } from "@/lib/seo";
@@ -28,7 +28,7 @@ export default async function PrivacyPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
       <main className="flex-grow pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 px-4 sm:px-8 md:px-12 lg:px-24">
         <div className="text-center mb-20 md:mb-28 animate-fadeInUp">

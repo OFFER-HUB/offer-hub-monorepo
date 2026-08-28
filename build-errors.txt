@@ -1,0 +1,24 @@
+[33m⚠️ WARNING: NEXT_PUBLIC_SITE_URL is not set in the production environment. CORS will fall back to 'https://offer-hub.tech' which may cause client-side issues if the site is hosted elsewhere.[0m
+[33m⚠️ WARNING: NEXT_PUBLIC_SITE_URL is not set in the production environment. CORS will fall back to 'https://offer-hub.tech' which may cause client-side issues if the site is hosted elsewhere.[0m
+
+> Build error occurred
+Error: Turbopack build failed with 1 error:
+./src/app
+Error: Could not find the Next.js package (next/package.json)
+Resolved from: C:\Users\USER\Documents\GitHub\offer-hub-monorepo\src\app
+Filesystem root used for resolution: C:\Users\USER\Documents\GitHub\offer-hub-monorepo
+
+Possible causes:
+  - node_modules is being reorganized by a concurrent install (e.g. pnpm adding a package with a `next` peer dependency). This is transient and should clear once the install completes.
+  - node_modules/next was removed, renamed, or has a broken symlink.
+  - The workspace root is incorrect — see turbopack.root in the Next.js config docs for how to configure it.
+  - In a monorepo, the Next.js package may only exist in a directory above the closest directory containing a package manager lockfile. The workspace root is detected by locating the nearest package manager lockfile.
+  - Next.js is installed globally rather than as a project dependency. This is not supported; install it locally.
+
+Note: To ensure a hermetic build and a portable cache, files outside of the workspace root are not compiled.
+
+https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+
+
+    at <unknown> (Filesystem root used for resolution: C:\Users\USER\Documents\GitHub\offer-hub-monorepo)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory)

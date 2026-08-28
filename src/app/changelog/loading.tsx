@@ -1,12 +1,12 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function ChangelogLoading() {
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
 
       <main className="flex-grow pt-32 pb-24 px-6 md:px-8">

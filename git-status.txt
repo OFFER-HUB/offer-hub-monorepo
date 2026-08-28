@@ -1,0 +1,18 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	build-before.txt
+	build-errors.txt
+	build-out.txt
+	build-output.txt
+	git-status.txt
+	npm-install.txt
+	offer-hub-monorepo/
+	src/components/ui/TopProgressBar.tsx
+	src/lib/statusColors.ts
+	tsc-errors.txt
+	tsc-out.txt
+
+nothing added to commit but untracked files present (use "git add" to track)

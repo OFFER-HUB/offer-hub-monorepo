@@ -1,0 +1,32 @@
+
+> offer-hub@0.1.0 prebuild
+> node scripts/generate-docs-index.mjs
+
+Generated search index with 509 entries from c:\Users\USER\Documents\GitHub\offer-hub-monorepo\content\docs.
+
+> offer-hub@0.1.0 build
+> next build
+
+[33m⚠️ WARNING: NEXT_PUBLIC_SITE_URL is not set in the production environment. CORS will fall back to 'https://offer-hub.tech' which may cause client-side issues if the site is hosted elsewhere.[0m
+   ▲ Next.js 15.5.12
+
+   Creating an optimized production build ...
+[33m⚠️ WARNING: NEXT_PUBLIC_SITE_URL is not set in the production environment. CORS will fall back to 'https://offer-hub.tech' which may cause client-side issues if the site is hosted elsewhere.[0m
+[33m⚠️ WARNING: NEXT_PUBLIC_SITE_URL is not set in the production environment. CORS will fall back to 'https://offer-hub.tech' which may cause client-side issues if the site is hosted elsewhere.[0m
+[33m⚠️ WARNING: NEXT_PUBLIC_SITE_URL is not set in the production environment. CORS will fall back to 'https://offer-hub.tech' which may cause client-side issues if the site is hosted elsewhere.[0m
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ ✓ Compiled successfully in 3.7min
+   Linting and checking validity of types ...
+Failed to compile.
+
+./offer-hub-monorepo/backend/src/index.ts:1:21
+Type error: Cannot find module 'express' or its corresponding type declarations.
+
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m express [36mfrom[39m [32m"express"[39m[33m;[39m
+ [90m   |[39m                     [31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m cors [36mfrom[39m [32m"cors"[39m[33m;[39m
+ [90m 3 |[39m
+ [90m 4 |[39m [36mconst[39m app [33m=[39m express()[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -1,0 +1,4 @@
+▲ Next.js 16.3.3 (Turbopack)
+✓ Running next.config.ts took 148ms
+
+  Creating an optimized production build ...

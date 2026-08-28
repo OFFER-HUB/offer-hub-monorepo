@@ -1,12 +1,12 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function UseCasesLoading() {
   return (
     <div className="bg-transparent min-h-[100dvh]">
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
 
       <main>

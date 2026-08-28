@@ -7,7 +7,7 @@ import { OpenIssuesSection } from "@/components/community/OpenIssuesSection";
 import { RepoLinksSection } from "@/components/community/RepoLinksSection";
 import { CommunityChannelsSection } from "@/components/community/CommunityChannelsSection";
 import { RegistrationForm } from "@/components/community/RegistrationForm";
-import { LoadingBar } from "@/components/ui/LoadingBar";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { buildPageMetadata } from "@/lib/seo";
@@ -168,7 +168,7 @@ export default async function CommunityPage() {
 
   return (
     <>
-      <LoadingBar />
+      <TopProgressBar mode="scroll-progress" />
       <Navbar />
       <main className="pt-28">
         <HeroRepoStatsSection stats={stats} />

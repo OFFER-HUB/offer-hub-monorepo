@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { Analytics } from "@/components/Analytics";
 import { ClientBackground } from "@/components/layout/ClientBackground";
-import { NavigationProgress } from "@/components/ui/NavigationProgress";
+import { TopProgressBar } from "@/components/ui/TopProgressBar";
 import { FloatingCTA } from "@/components/ui/FloatingCTA";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
@@ -163,7 +163,7 @@ export default function RootLayout({
         </a>
         <ThemeProvider>
           <Suspense fallback={null}>
-            <NavigationProgress />
+            <TopProgressBar mode="route-change" />
           </Suspense>
           <Analytics />
           <ClientBackground />
