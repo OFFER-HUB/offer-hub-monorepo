@@ -360,6 +360,20 @@ curl -N "http://localhost:4000/api/v1/events?types=order.disputed,dispute.opened
 
 Or with the SDK:
 
+```js
+events.on('order.disputed', (data) => {
+  console.log('New dispute:', data.disputeId);
+  notifySupport(data);
+});
+
+events.on('dispute.resolved', (data) => {
+  console.log('Dispute resolved:', data.decision);
+  notifyParties(data);
+});
+```
+
+The `order.disputed` event payload looks like this:
+
 ```json
 {
   "id": "evt_abc123",
@@ -373,17 +387,6 @@ Or with the SDK:
     "order_id": "ord_xyz789"
   }
 }
-```
-
-events.on('order.disputed', (data) => {
-  console.log('New dispute:', data.disputeId);
-  notifySupport(data);
-});
-
-events.on('dispute.resolved', (data) => {
-  console.log('Dispute resolved:', data.decision);
-  notifyParties(data);
-});
 ```
 
 When a dispute is resolved, the escrow settles and the corresponding order events (`order.released` or `order.refunded`) fire on the same stream.
