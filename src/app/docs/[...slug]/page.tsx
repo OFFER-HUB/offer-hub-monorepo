@@ -4,7 +4,6 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllDocSlugs, getDocBySlug } from "@/lib/mdx";
 import { MDX_COMPONENTS } from "@/components/docs/mdx-components";
 import { EditOnGitHub } from "@/components/docs/EditOnGitHub";
-import { DocPageActions } from "@/components/docs/DocPageActions";
 import { PageActionsMenu } from "@/components/docs/PageActionsMenu";
 
 import remarkGfm from "remark-gfm";
@@ -60,8 +59,7 @@ export default async function DocPage({ params }: PageProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <PageActionsMenu slug={doc.slug} title={doc.frontmatter.title} markdownContent={doc.content} />
-            <DocPageActions
+            <PageActionsMenu
               slug={doc.slug}
               title={doc.frontmatter.title}
               description={doc.frontmatter.description}
