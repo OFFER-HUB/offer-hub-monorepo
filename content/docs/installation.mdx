@@ -1,15 +1,95 @@
 ---
 title: Installation
-description: Set up OFFER-HUB Orchestrator locally with Node.js, PostgreSQL, and Redis.
+description: Set up OFFER-HUB Orchestrator locally — fast path with the setup wizard or manual Docker setup.
 order: 2
 section: Getting Started
 ---
 
-This guide walks you through setting up the OFFER-HUB Orchestrator for local development. You can also use the SDK without running your own instance - see [Using the SDK](#using-the-sdk-only) below.
+Choose the setup path that fits your workflow:
 
-## Prerequisites
+| Option | Best for | Time |
+|--------|----------|------|
+| [**Option 1 — Setup wizard**](#option-1-setup-wizard-recommended) | Hackathons, first-time setup, staging/production | ~2 min |
+| [Option 2 — Full local setup](#option-2-full-local-setup) | Custom environments, CI/CD pipelines, advanced control | ~10 min |
+| [Option 3 — SDK only](#option-3-using-the-sdk-only) | Integrating with an existing Orchestrator instance | ~1 min |
 
-Before you begin, make sure you have:
+---
+
+## Option 1: Setup Wizard <Badge variant="success">Recommended</Badge>
+
+`create-offer-hub-orchestrator` is a one-command interactive setup wizard. It configures your `.env`, runs database migrations, and bootstraps the platform user — so you can skip the manual steps entirely.
+
+<Callout type="tip">
+  This is the fastest way to get a working Orchestrator. Run the wizard, answer the prompts, and you'll have a running API in under 2 minutes.
+</Callout>
+
+### Step 1 — Clone and install
+
+<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB && npm install</CommandLine>
+
+### Step 2 — Run the setup wizard
+
+<CommandLine>npx create-offer-hub-orchestrator</CommandLine>
+
+The wizard prompts for:
+
+| Prompt | Description |
+|--------|-------------|
+| API Port | Default: `4000` |
+| PostgreSQL URL | Use the **pooler** URL (port `6543`) for Supabase |
+| Redis URL | `redis://` or `rediss://` for TLS connections |
+| Payment provider | `crypto` (Stellar/USDC, default) or `airtm` |
+| Stellar network | `testnet` for development, `mainnet` for production |
+| Trustless Work API key | From [dapp.trustlesswork.com](https://dapp.trustlesswork.com) |
+| Trustless Work Webhook Secret | From your TW dashboard |
+| Public URL | Your server's HTTPS URL (used for webhook callbacks) |
+| Run migrations? | Yes — applies all pending DB migrations |
+| Generate API key? | Optional — requires the server to be running |
+
+The wizard then automatically:
+
+1. Generates a secure `OFFERHUB_MASTER_KEY`
+2. Generates a secure `WALLET_ENCRYPTION_KEY` (crypto mode)
+3. Writes `.env` with all values filled in
+4. Runs `prisma migrate deploy`
+5. Runs `npm run bootstrap` — creates the platform Stellar wallet and writes `PLATFORM_USER_ID` into `.env`
+
+### Step 3 — Start the API
+
+<CommandLine>npm run dev</CommandLine>
+
+The API starts on `http://localhost:4000`.
+
+### Step 4 — Verify installation
+
+<CommandLine>curl http://localhost:4000/api/v1/health</CommandLine>
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-02-25T12:00:00.000Z",
+  "services": {
+    "database": "connected",
+    "redis": "connected"
+  }
+}
+```
+
+<Callout type="warning">
+  **Back up `WALLET_ENCRYPTION_KEY` immediately.** If you lose it, all user wallets become unrecoverable. Store it in a secrets manager (Railway Variables, AWS Secrets Manager, or 1Password). Do not commit `.env` to git.
+</Callout>
+
+<Callout type="note">
+  The wizard is **idempotent for bootstrap** — safe to re-run. It will ask before overwriting an existing `.env`. Run with `testnet` first; switch to `mainnet` only when ready for production.
+</Callout>
+
+---
+
+## Option 2: Full Local Setup
+
+Use this path when you need full manual control — custom Docker networks, CI/CD pipelines, or environments where running an interactive wizard isn't appropriate.
+
+### Prerequisites
 
 - **Node.js** v20 or later ([nodejs.org](https://nodejs.org))
 - **npm** v10 or later
@@ -20,17 +100,15 @@ Before you begin, make sure you have:
   You can also use managed services like [Supabase](https://supabase.com) for PostgreSQL and [Upstash](https://upstash.com) for Redis instead of Docker.
 </Callout>
 
-## Option 1: Full Local Setup
-
-### Step 1 - Clone the Repository
+### Step 1 — Clone the Repository
 
 <CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB</CommandLine>
 
-### Step 2 - Install Dependencies
+### Step 2 — Install Dependencies
 
 <CommandLine>npm install</CommandLine>
 
-### Step 3 - Start Infrastructure
+### Step 3 — Start Infrastructure
 
 Start PostgreSQL and Redis using Docker Compose:
 
@@ -40,7 +118,7 @@ This starts:
 - PostgreSQL on port `5432`
 - Redis on port `6379`
 
-### Step 4 - Configure Environment
+### Step 4 — Configure Environment
 
 Copy the example environment file:
 
@@ -81,28 +159,28 @@ STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
 <Callout type="warning">
   Generate your `WALLET_ENCRYPTION_KEY` with: `openssl rand -hex 32`
 
-  Store this key securely - losing it makes wallet private keys unrecoverable.
+  Store this key securely — losing it makes wallet private keys unrecoverable.
 </Callout>
 
-### Step 5 - Run Database Migrations
+### Step 5 — Run Database Migrations
 
 Generate the Prisma client and apply migrations:
 
 <CommandLine>npm run prisma:generate && npm run prisma:migrate</CommandLine>
 
-### Step 6 - Bootstrap Platform User
+### Step 6 — Bootstrap Platform User
 
 Create the internal platform user required for escrow operations:
 
 <CommandLine>npm run bootstrap</CommandLine>
 
-### Step 7 - Start the API
+### Step 7 — Start the API
 
 <CommandLine>npm run dev</CommandLine>
 
 The API starts on `http://localhost:4000`.
 
-### Step 8 - Verify Installation
+### Step 8 — Verify Installation
 
 Test that everything is working:
 
@@ -121,7 +199,9 @@ You should see:
 }
 ```
 
-## Option 2: Using the SDK Only
+---
+
+## Option 3: Using the SDK Only
 
 If you want to integrate with an existing OFFER-HUB Orchestrator instance (hosted by you or a partner), you only need the SDK:
 
@@ -146,11 +226,7 @@ const user = await sdk.users.create({
 
 See the [SDK Guide](/docs/sdk/quick-start) for complete documentation.
 
-## Option 3: Using npm create (Coming Soon)
-
-<Callout type="note">
-  The installer script `npm create offer-hub-orchestrator@latest` is coming soon and will automate this entire setup process.
-</Callout>
+---
 
 ## Creating Your First API Key
 
@@ -189,8 +265,10 @@ Response:
 ```
 
 <Callout type="danger">
-  Save the `key` value immediately - it's only shown once. Use this key for all subsequent API calls.
+  Save the `key` value immediately — it's only shown once. Use this key for all subsequent API calls.
 </Callout>
+
+---
 
 ## Troubleshooting
 
@@ -218,9 +296,12 @@ If you see migration errors, try resetting the database:
 
 If port 4000 is already in use, change the `PORT` in your `.env` file or stop the conflicting service.
 
+---
+
 ## Next Steps
 
-- [Configuration](/docs/configuration) - Learn about all environment variables
-- [Quick Start](/docs/guide/quick-start) - Create your first user and order
-- [API Reference](/docs/api-reference/overview) - Explore all endpoints
-- [SDK Guide](/docs/sdk/quick-start) - Integrate using TypeScript
+- [Configuration](/docs/configuration) — Learn about all environment variables
+- [Quick Start](/docs/guide/quick-start) — Create your first user and order
+- [API Reference](/docs/api-reference/overview) — Explore all endpoints
+- [SDK Guide](/docs/sdk/quick-start) — Integrate using TypeScript
+- [npm Packages](/docs/guide/cli) — Overview of all published packages
