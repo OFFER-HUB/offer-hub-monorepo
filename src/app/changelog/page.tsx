@@ -199,14 +199,14 @@ export default async function ChangelogPage() {
                   <div
                     className={`hidden md:block w-5/12 ${index % 2 === 0 ? "text-left" : "text-right"}`}
                   >
-                    <span className="text-sm font-black text-content-primary uppercase tracking-widest opacity-40">
+                    <span className="text-sm font-black text-content-primary uppercase tracking-widest opacity-70">
                       {entry.date}
                     </span>
                   </div>
 
                   {/* Enhanced Card content */}
                   <div className="w-full md:w-5/12 pl-12 md:pl-0">
-                    <div className="bg-bg-elevated rounded-[2.5rem] p-8 md:p-10 shadow-neu-raised hover:shadow-neu-raised-hover transition-all duration-500 ease-out group">
+                    <div className="bg-bg-elevated rounded-[2.5rem] p-8 md:p-10 shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-500 ease-out group">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl font-black text-content-primary tracking-tight group-hover:text-theme-primary transition-colors">

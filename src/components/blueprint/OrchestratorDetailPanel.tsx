@@ -59,7 +59,7 @@ function ArchitectureCard({
 
       <div
         id={`${card.key}-details`}
-        className={`grid transition-all duration-300 ${expanded ? "mt-6 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-70"}`}
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ${expanded ? "mt-6 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-70"}`}
         aria-hidden={!expanded}
       >
         <div className="overflow-hidden">

@@ -46,14 +46,14 @@ export function HowItWorksSection() {
               className={cn(
                 "group flex flex-col items-center text-center gap-8 p-10 rounded-3xl",
                 "bg-bg-elevated shadow-neu-raised",
-                "transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+                "transition-[box-shadow,transform] duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
                 "hover:translate-y-[-12px] hover:shadow-neu-raised-hover",
                 "animate-fadeInUp"
               )}
               style={{ animationDelay: `${i * 150}ms` }}
             >
               {/* Step number container - uses sunken effect */}
-              <div className="w-20 h-20 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 relative z-10 transition-all duration-700 ease-out group-hover:scale-110 group-hover:rotate-[360deg]">
+              <div className="w-20 h-20 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 relative z-10 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-[360deg]">
                 <span className="text-3xl font-black text-theme-primary drop-shadow-sm">
                   {step.number}
                 </span>
@@ -69,7 +69,7 @@ export function HowItWorksSection() {
               </div>
 
               {/* Decorative accent dot that appears on hover */}
-              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-all duration-300 scale-0 group-hover:scale-100" />
+              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-300 scale-0 group-hover:scale-100" />
             </div>
           ))}
         </div>

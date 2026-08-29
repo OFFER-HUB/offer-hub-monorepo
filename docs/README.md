@@ -16,6 +16,8 @@ Some topics exist in both `/docs/guides/` and `/content/docs/guide/` (e.g. `escr
 
 Both `/docs/` and `/content/docs/` are indexed by the standalone [`mcp/`](../mcp/README.md) package — an MCP (Model Context Protocol) server that lets AI assistants search and fetch this documentation directly. It's not part of the root npm workspace (there isn't one); it has its own `package.json` and is installed/run independently from `mcp/`.
 
+For crawlers and assistants that don't speak MCP, the public docs site also serves `/llms.txt` (an index of `/content/docs/` per the [llms.txt convention](https://llmstxt.org/)) and `/llms-full.txt` (the full concatenated Markdown of every page), generated at request time from the same `content/docs/` source via `src/lib/mdx.ts`.
+
 ## Quick Start
 
 1. **New to the project?** Start with [Project Context](./project-context.md)

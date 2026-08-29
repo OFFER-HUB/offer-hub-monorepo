@@ -6,7 +6,7 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/withdrawals.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/withdrawals.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/withdrawals.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/withdrawals.md) in the repo.
 </Callout>
 
 When users want to move funds off the platform, they create a withdrawal request. OFFER-HUB supports withdrawals to external Stellar wallets (crypto mode) or bank accounts/local methods (AirTM mode).
@@ -299,57 +299,27 @@ events.on('withdrawal.failed', (data) => {
 });
 ```
 
-## Webhooks
+## Real-Time Notifications (SSE)
 
-Subscribe to withdrawal events:
+There is no outbound webhook API — withdrawal events are delivered over the [SSE event stream](/docs/api-reference/webhooks) at `GET /api/v1/events`:
 
 ```bash
-curl -X POST http://localhost:4000/api/v1/webhooks \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://your-app.com/webhooks",
-    "events": ["withdrawal.completed", "withdrawal.failed"],
-    "secret": "your-webhook-secret"
-  }'
+curl -N "http://localhost:4000/api/v1/events?types=withdrawal.completed,withdrawal.failed" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
 ```
 
-### Webhook Payloads
+Or with the SDK:
 
-**withdrawal.completed:**
+```typescript
+const events = sdk.events.subscribe();
 
-```json
-{
-  "id": "evt_abc123",
-  "type": "withdrawal.completed",
-  "created_at": "2026-02-25T12:00:05.000Z",
-  "data": {
-    "withdrawal_id": "wth_xyz789",
-    "user_id": "usr_abc123",
-    "amount": "50.00",
-    "currency": "USD",
-    "destination_type": "stellar",
-    "transaction_hash": "abc123def456..."
-  }
-}
-```
+events.on('withdrawal.completed', (data) => {
+  console.log('Withdrawal completed:', data.withdrawalId);
+});
 
-**withdrawal.failed:**
-
-```json
-{
-  "id": "evt_def456",
-  "type": "withdrawal.failed",
-  "created_at": "2026-02-25T12:00:05.000Z",
-  "data": {
-    "withdrawal_id": "wth_xyz789",
-    "user_id": "usr_abc123",
-    "amount": "50.00",
-    "currency": "USD",
-    "reason": "Destination account does not have USDC trustline",
-    "funds_returned": true
-  }
-}
+events.on('withdrawal.failed', (data) => {
+  console.log('Withdrawal failed:', data.reason);
+});
 ```
 
 ## Limits and Fees
@@ -493,7 +463,7 @@ if (withdrawal.status === 'COMPLETED') {
 2. **Confirm large withdrawals** — Require 2FA for amounts over threshold
 3. **Monitor patterns** — Alert on unusual withdrawal activity
 4. **Use idempotency** — Prevent duplicate withdrawals
-5. **Verify webhooks** — Check signatures before processing
+5. **Cross-check events** — Verify order/withdrawal state via the API before acting; never trust an event alone
 
 ## Next Steps
 

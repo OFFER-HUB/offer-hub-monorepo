@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { EscrowFlowDiagram } from "../shared/EscrowFlowDiagram";
-import { ESCROW_STEPS } from "./escrow-steps";
+import { ESCROW_STEPS } from "./escrow-flow.data";
 import {
   heroData,
   featureCards,

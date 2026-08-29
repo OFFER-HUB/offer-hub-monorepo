@@ -1,4 +1,8 @@
 import "@testing-library/jest-dom/vitest";
+import { expect } from "vitest";
+import { toHaveNoViolations } from "vitest-axe/dist/matchers";
+
+expect.extend({ toHaveNoViolations });
 
 /**
  * Browser APIs jsdom does not implement, installed once for every suite.

@@ -22,7 +22,7 @@ interface FormFieldProps {
 }
 
 const INPUT_CLASS =
-  "w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
+  "w-full pl-12 pr-6 py-3.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-sm text-content-primary placeholder:text-content-muted border-none transition-[box-shadow,opacity] font-medium disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary"
 
 export function FormField({
   id,

@@ -32,20 +32,19 @@ Verify that Docker is installed and running:
 
 ## Architecture Overview
 
-The OFFER-HUB deployment consists of:
+The repository's root Compose file starts only the infrastructure dependencies. The API is built and
+run from the repository separately:
 
 ```mermaid
 flowchart LR
-    Frontend[Frontend Next.js]
-    Orchestrator[Orchestrator NestJS]
+    API[apps/api NestJS]
     Postgres[PostgreSQL]
     Redis[Redis BullMQ]
     Stellar[Stellar Network]
 
-    Frontend --> Orchestrator
-    Orchestrator --> Postgres
-    Orchestrator --> Redis
-    Orchestrator --> Stellar
+    API --> Postgres
+    API --> Redis
+    API --> Stellar
 ```
 
 ## Docker Setup
@@ -105,73 +104,14 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      - offerhub
-
-  orchestrator:
-    image: offerhub/orchestrator:latest
-    ports:
-      - "4000:4000"
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=postgresql://offerhub:${POSTGRES_PASSWORD:-offerhub_secret}@postgres:5432/offerhub_db
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-    networks:
-      - offerhub
-
-  frontend:
-    image: offerhub/frontend:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://orchestrator:4000
-      - NEXT_PUBLIC_STELLAR_NETWORK=${STELLAR_NETWORK:-testnet}
-    depends_on:
-      orchestrator:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - offerhub
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs:/etc/nginx/certs:ro
-    depends_on:
-      - frontend
-      - orchestrator
-    restart: unless-stopped
-    networks:
-      - offerhub
-
 volumes:
   postgres_data:
   redis_data:
-
-networks:
-  offerhub:
-    driver: bridge
 ```
 
 <Callout type="warning">
-  The `nginx` service is optional for development but strongly recommended for production. It handles TLS termination and reverse-proxying.
+  This Compose file provides PostgreSQL and Redis only. Run the API from the repository with the
+  commands below, or deploy it with a build-based platform configuration.
 </Callout>
 
 ### Using External Services
@@ -180,25 +120,20 @@ If you prefer managed databases, remove `postgres` and `redis` services and upda
 
 ```yaml
 services:
-  orchestrator:
-    image: offerhub/orchestrator:latest
-    ports:
-      - "4000:4000"
-    environment:
-      # Supabase PostgreSQL
-      - DATABASE_URL=postgresql://postgres:password@db.xxxx.supabase.co:5432/postgres?sslmode=require
-      # Upstash Redis
-      - REDIS_URL=rediss://default:xxx@us1-xxx.upstash.io:6379
-    # ... rest of config
+  postgres:
+    image: postgres:15-alpine
+  redis:
+    image: redis:7-alpine
 ```
 
-### Building from Source
+### Building and running the API from source
 
-To build images locally instead of pulling pre-built ones:
+Clone the source repository, install its dependencies, and run the API directly. No published
+application images are required.
 
-<CommandLine>git clone https://github.com/OFFER-HUB/offer-hub-orchestrator.git && cd offer-hub-orchestrator</CommandLine>
+<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB</CommandLine>
 
-<CommandLine>docker build -t offerhub/orchestrator:latest .</CommandLine>
+<CommandLine>npm ci && npm run build && npm start -w @offerhub/api</CommandLine>
 
 ## Environment Variables
 
@@ -296,9 +231,13 @@ Watch the logs to confirm all services start cleanly:
 
 ### Running Database Migrations
 
-Apply Prisma migrations before the first launch (or after pulling a new version):
+Apply Prisma migrations before the first launch (or after pulling a new source revision):
 
-<CommandLine>docker compose exec orchestrator npx prisma migrate deploy</CommandLine>
+<CommandLine>npm run prisma:generate && npx prisma migrate deploy --schema packages/database/prisma/schema.prisma</CommandLine>
+
+<Callout type="tip">
+  To understand exactly what gets created — every table, field, and relationship — see the [Data Model](/docs/guide/data-model) reference.
+</Callout>
 
 <Callout type="warning">
   Always back up your database before running migrations in production.
@@ -315,7 +254,7 @@ Make sure `NODE_ENV=production` is set in your `.env` file. This enables:
 
 ### TLS / HTTPS
 
-For production deployments you should terminate TLS at the reverse proxy. If you use the `nginx` service from the Compose file above, place your certificate and key in the `certs/` directory and update `nginx.conf` accordingly.
+For production deployments you should terminate TLS at your hosting platform or an external reverse proxy. The dependency Compose file does not include an application or proxy service.
 
 Example `nginx.conf`:
 
@@ -419,10 +358,10 @@ The Orchestrator uses BullMQ for background job processing:
 
 | Queue | Purpose |
 |-------|---------|
-| `blockchain-monitor` | Monitor Stellar for incoming deposits |
-| `transaction-submit` | Submit signed Stellar transactions |
-| `webhook-delivery` | Send webhooks to registered endpoints |
-| `balance-sync` | Reconcile on-chain and off-chain balances |
+| `webhooks` | Process **inbound** provider webhooks (AirTM, Trustless Work) |
+| `reconciliation` | Periodic sync jobs with external providers |
+| `notifications` | Send notifications (email, push, etc.) |
+| `dead-letter-queue` | Jobs that exhausted all retry attempts |
 
 Monitor job queues:
 
@@ -431,64 +370,60 @@ Monitor job queues:
 docker compose exec redis redis-cli keys "bull:*"
 
 # Check queue length
-docker compose exec redis redis-cli llen "bull:webhook-delivery:wait"
+docker compose exec redis redis-cli llen "bull:webhooks:wait"
 ```
 
 ## Updating
 
-### Pulling the Latest Images
+### Updating the source and infrastructure
 
-<CommandLine>docker compose pull</CommandLine>
+<CommandLine>git pull --ff-only</CommandLine>
 
 ### Applying the Update
 
-<CommandLine>docker compose up -d --remove-orphans</CommandLine>
+<CommandLine>docker compose up -d</CommandLine>
 
-This pulls the newest images, recreates only the containers that changed, and removes any services no longer defined in the Compose file.
+This starts or updates the PostgreSQL and Redis dependencies. Rebuild and restart the API separately.
 
 ### Full Update Workflow
 
 The recommended update procedure:
 
 1. **Back up your database** before any update.
-2. Pull the latest images.
+2. Pull the latest source.
 3. Run migrations.
-4. Restart the stack.
+4. Rebuild and restart the API.
 
 ```bash
 # 1. Backup database
 docker compose exec postgres pg_dump -U offerhub offerhub_db > backup-$(date +%Y%m%d).sql
 
-# 2. Pull latest images
-docker compose pull
+# 2. Pull the latest source
+git pull --ff-only
 
-# 3. Restart with new images
-docker compose up -d --remove-orphans
+# 3. Rebuild the API
+npm ci && npm run build
 
 # 4. Run any new migrations
-docker compose exec orchestrator npx prisma migrate deploy
+npx prisma migrate deploy --schema packages/database/prisma/schema.prisma
 
 # 5. Verify health
-curl http://localhost:4000/health
+curl http://localhost:4000/api/v1/health
 ```
 
 ### Rolling Back
 
-If something goes wrong, roll back to a specific image tag:
+If something goes wrong, roll back the source checkout to a known-good commit:
 
-```yaml
-services:
-  orchestrator:
-    image: offerhub/orchestrator:1.2.0   # pin to a known-good version
+```bash
+git log --oneline -10
+git checkout <known-good-commit>
+npm ci && npm run build
 ```
 
-Then restart:
+Then restart the API:
 
-<CommandLine>docker compose up -d</CommandLine>
-
-<Callout type="note">
-  Check the [GitHub Releases](https://github.com/OFFER-HUB/offer-hub-orchestrator/releases) page for available tags and changelogs.
-</Callout>
+<CommandLine>npm start -w @offerhub/api</CommandLine>
 
 ## Security Checklist
 
@@ -503,15 +438,15 @@ Before going to production, verify:
 - [ ] Firewall only exposes ports 80/443
 - [ ] Database is not publicly accessible
 - [ ] Redis is not publicly accessible
-- [ ] Webhook secrets are configured
+- [ ] Inbound webhook secrets are configured (`AIRTM_WEBHOOK_SECRET` / `TRUSTLESS_WEBHOOK_SECRET`)
 
 ## Troubleshooting
 
-### Orchestrator won't start
+### API won't start
 
 ```bash
 # Check logs
-docker compose logs orchestrator --tail 100
+npm start -w @offerhub/api
 
 # Common issues:
 # - DATABASE_URL invalid
@@ -523,25 +458,28 @@ docker compose logs orchestrator --tail 100
 
 ```bash
 # Test PostgreSQL connection
-docker compose exec orchestrator npx prisma db pull
+npx prisma db pull --schema packages/database/prisma/schema.prisma
 
 # Check if migrations are applied
-docker compose exec orchestrator npx prisma migrate status
+npx prisma migrate status --schema packages/database/prisma/schema.prisma
 ```
 
-### Webhook delivery failing
+### Inbound provider webhooks not being processed
 
 ```bash
-# Check webhook queue
-docker compose exec redis redis-cli lrange "bull:webhook-delivery:failed" 0 10
+# Check the inbound webhook queue
+docker compose exec redis redis-cli lrange "bull:webhooks:failed" 0 10
 
-# Verify webhook endpoint is reachable
-curl -X POST https://your-webhook-url/test
+# Common issues:
+# - AIRTM_WEBHOOK_SECRET / TRUSTLESS_WEBHOOK_SECRET don't match the provider's configured secret
+# - The provider can't reach POST /api/v1/webhooks/airtm or /api/v1/webhooks/trustless-work
+#   (PUBLIC_BASE_URL wrong, firewall, or TLS misconfiguration)
 ```
 
 ## Next Steps
 
 - [Configuration](/docs/configuration) — Full environment variable reference
 - [Quick Start](/docs/guide/quick-start) — Make your first API call
+- [Data Model](/docs/guide/data-model) — Every database table and relationship
 - [API Reference](/docs/api-reference/overview) — Explore all endpoints
-- [Webhooks](/docs/api-reference/webhooks) — Set up event notifications
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — SSE event stream and event catalog

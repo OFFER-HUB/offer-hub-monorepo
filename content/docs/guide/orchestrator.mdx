@@ -7,7 +7,7 @@ section: Guides
 
 The Orchestrator is the central engine of OFFER-HUB. It coordinates every step of a transaction — from the moment a buyer deposits USDC to the moment a seller withdraws funds — enforcing rules, managing state, and communicating with the Stellar blockchain so your marketplace never has to.
 
-<Callout variant="tip">
+<Callout type="tip">
   This guide covers the internal architecture. If you just want to make your first API call, go to [Quick Start](/docs/guide/quick-start) instead.
 </Callout>
 
@@ -23,9 +23,14 @@ The Orchestrator is a state machine-driven backend service that sits between you
 
 Your marketplace communicates with the Orchestrator via REST API. The Orchestrator handles everything on-chain.
 
-<Callout variant="note">
+<Callout type="note">
   The Orchestrator is intentionally narrow in scope. It handles payments, escrow, and balances. Authentication, listings, and communication are your marketplace's responsibility.
 </Callout>
+
+## API and background jobs
+
+The API in `apps/api` serves the REST API and processes BullMQ background jobs in the same service.
+The separate `apps/worker` package is deprecated; do not deploy it as a second required process.
 
 ## Architecture Overview
 
@@ -88,7 +93,7 @@ const order = await client.orders.create({
 
 The Orchestrator signs and submits a Stellar transaction that locks the USDC into a Soroban smart contract via Trustless Work. The escrow state moves to `FUNDED`.
 
-<Callout variant="note">
+<Callout type="note">
   At this point funds are held by the smart contract — not by OFFER-HUB. The Orchestrator cannot unilaterally move them. Only valid contract calls can release, dispute, or refund.
 </Callout>
 
@@ -114,35 +119,49 @@ The seller requests a withdrawal. The Orchestrator signs a Stellar payment trans
 
 <CommandLine>POST /api/withdrawals</CommandLine>
 
-## Escrow State Machine
+## State Machines
 
-Every escrow moves through a strict set of states. Invalid transitions are rejected with a `409 Conflict` error.
+The Orchestrator runs two distinct state machines: an **Order state machine** that tracks the order lifecycle, and an internal **Escrow state machine** that tracks the on-chain escrow contract. Invalid transitions are rejected with a `409 Conflict` error. Both diagrams below match `docs/architecture/state-machines.md` in the orchestrator repository exactly.
 
-```mermaid
-stateDiagram-v2
-    [*] --> CREATED: fund()
-    CREATED --> FUNDED: fund()
-    FUNDED --> RELEASED: release()
-    FUNDED --> DISPUTED: dispute()
-    FUNDED --> REFUNDED: refund()
-    DISPUTED --> RELEASED: resolveToSeller()
-    DISPUTED --> SPLIT: resolveToSplit()
-    RELEASED --> [*]
-    REFUNDED --> [*]
-    SPLIT --> [*]
-```
+### Order State Machine
+
+<OrderStateMachineDiagram />
 
 | State | Description |
 |-------|-------------|
-| `CREATED` | Order exists in the ledger, funds reserved but not yet on-chain |
-| `FUNDED` | USDC is locked in the Soroban smart contract |
-| `RELEASED` | Funds sent to seller, escrow is complete |
-| `DISPUTED` | Buyer opened a dispute, funds frozen pending resolution |
-| `REFUNDED` | Funds returned to buyer's available balance |
-| `SPLIT` | Dispute resolved with partial payment to both parties |
+| `ORDER_CREATED` | Order created off-chain, no funds reserved |
+| `FUNDS_RESERVED` | Buyer balance reserved (logical hold) |
+| `ESCROW_CREATING` | Creating escrow contract in Trustless Work |
+| `ESCROW_FUNDING` | Funding escrow with reserved balance |
+| `ESCROW_FUNDED` | Escrow funded, funds locked on-chain |
+| `IN_PROGRESS` | Work in progress |
+| `RELEASE_REQUESTED` | Release requested for the seller |
+| `RELEASED` | Funds released to the seller |
+| `REFUND_REQUESTED` | Refund requested for the buyer |
+| `REFUNDED` | Funds returned to the buyer |
+| `DISPUTED` | Dispute opened, flow frozen |
+| `CLOSED` | Order completed |
+
+### Escrow State Machine (internal)
+
+The escrow contract moves through its own lifecycle inside the Orchestrator while the order machine advances in parallel.
+
+<EscrowStateMachineDiagram />
+
+| State | Description |
+|-------|-------------|
+| `CREATING` | Creating contract in Trustless Work |
+| `CREATED` | Contract created, not funded |
+| `FUNDING` | Funding contract |
+| `FUNDED` | Funds locked in contract |
+| `RELEASING` | Releasing funds to the seller |
+| `RELEASED` | Funds released |
+| `REFUNDING` | Returning funds to the buyer |
+| `REFUNDED` | Funds returned |
+| `DISPUTED` | Active dispute |
 
 <Callout variant="warning">
-  Once an escrow reaches `RELEASED`, `REFUNDED`, or `SPLIT` it is terminal — no further transitions are allowed.
+  Once an escrow reaches `RELEASED` or `REFUNDED` the contract is terminal — no further on-chain transitions are allowed. The order itself only reaches `CLOSED` after the escrow resolves and cleanup completes.
 </Callout>
 
 ## Error Handling
@@ -172,7 +191,7 @@ const response = await fetch("/api/orders", {
 })
 ```
 
-<Callout variant="danger">
+<Callout type="danger">
   Never generate a new idempotency key when retrying a failed request. A new key will create a duplicate operation.
 </Callout>
 
@@ -204,7 +223,7 @@ SSE_KEEPALIVE_INTERVAL_MS=30000
 
 The Orchestrator is built exclusively for USDC on Stellar. Stellar was chosen for its low fees (fractions of a cent), fast finality (3-5 seconds), and native USDC support via Circle. Smart contracts run on Soroban, managed through the Trustless Work protocol.
 
-<Callout variant="note">
+<Callout type="note">
   For local development, set `STELLAR_NETWORK=testnet`. You can fund test wallets using the [Stellar Friendbot](https://friendbot.stellar.org).
 </Callout>
 
@@ -216,6 +235,6 @@ AIRTM_API_KEY=your-airtm-key
 AIRTM_WEBHOOK_SECRET=your-webhook-secret
 ```
 
-<Callout variant="warning">
+<Callout type="warning">
   AirTM requires users to complete KYC on their platform. Crypto mode has no KYC requirement.
 </Callout>

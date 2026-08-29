@@ -46,7 +46,7 @@ export function DiagramZoomModal({ title, isOpen, onClose, children }: Props) {
               </span>
               <button
                 onClick={onClose}
-                className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-2.5 hover:shadow-neu-sunken transition-all text-content-secondary hover:text-content-primary"
+                className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-2.5 hover:shadow-neu-sunken transition-[color,box-shadow] text-content-secondary hover:text-content-primary"
                 aria-label="Close"
               >
                 <X size={16} />

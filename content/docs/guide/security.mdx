@@ -1,12 +1,12 @@
 ---
 title: Security Best Practices
-description: Concrete guidance for platform integrators on API key management, webhook validation, wallet security, escrow verification, and blockchain-specific attack mitigations.
+description: Concrete guidance for platform integrators on API key management, real-time event security, wallet security, escrow verification, and blockchain-specific attack mitigations.
 order: 9
 section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/security.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/security.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/deployment/security-hardening.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/deployment/security-hardening.md) in the repo.
 </Callout>
 
 Integrating OFFER-HUB into your marketplace means handling real USDC transactions on a public blockchain. A misconfiguration can expose user funds or allow spoofed payment events to reach your system. This guide gives you concrete, OFFER-HUB-specific security practices — not generic web security advice.
@@ -28,7 +28,6 @@ OFFER-HUB API keys follow the format `ohk_live_xxx` (production) and `ohk_test_x
 ```bash
 # .env — never commit this file
 OFFER_HUB_API_KEY=ohk_live_abc123...
-OFFER_HUB_WEBHOOK_SECRET=whsec_xyz789...
 ```
 
 ```typescript
@@ -76,74 +75,32 @@ Use the minimum scope each service needs:
 
 ---
 
-## Webhook Signature Validation
+## Real-Time Event Security
 
-OFFER-HUB signs every webhook payload with an HMAC-SHA256 signature. **Always validate this signature.** Without validation, any actor who knows your webhook URL can send spoofed events — such as a fake `escrow.released` — and trick your system into delivering services without payment.
+OFFER-HUB does **not** send outbound webhooks, so there is no webhook signature for you to verify and no `X-OfferHub-Signature` header. Real-time events arrive over the **SSE stream** (`GET /api/v1/events`), which is authenticated with your API key over HTTPS.
 
-### Validation Implementation
+### Protecting Your Event Consumers
 
-Each webhook request carries:
-
-```
-X-OfferHub-Signature: sha256=<hex_digest>
-```
-
-```typescript
-import { createHmac, timingSafeEqual } from 'crypto';
-
-function verifyWebhookSignature(
-  rawBody: Buffer,
-  signatureHeader: string,
-  secret: string,
-): boolean {
-  const expected = `sha256=${createHmac('sha256', secret)
-    .update(rawBody)
-    .digest('hex')}`;
-
-  try {
-    // Use timingSafeEqual to prevent timing attacks
-    return timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expected));
-  } catch {
-    return false; // Different lengths — always invalid
-  }
-}
-
-// Express example — use raw body parser
-app.post('/webhooks/offerhub', express.raw({ type: 'application/json' }), (req, res) => {
-  const sig = req.headers['x-offerhub-signature'] as string;
-
-  if (!verifyWebhookSignature(req.body, sig, process.env.OFFER_HUB_WEBHOOK_SECRET!)) {
-    return res.status(401).json({ error: 'Invalid signature' });
-  }
-
-  const event = JSON.parse(req.body.toString());
-  // Safe to process
-});
-```
+1. **Authenticate every connection** — SSE requires a valid API key (`events.read` scope) in the `Authorization` header. Never expose the stream unauthenticated.
+2. **Reconnect with `Last-Event-ID`** — Replay missed events after a dropped connection instead of polling; a gap could hide a critical settlement event.
+3. **Never trust an event alone** — A client-side event is a hint, not proof. Before releasing funds, changing balances, or triggering payouts, re-verify order and escrow state from the API (see [Escrow Integration Security](#escrow-integration-security)).
+4. **Treat webhook secrets as server-side only** — The `AIRTM_WEBHOOK_SECRET` and `TRUSTLESS_WEBHOOK_SECRET` environment variables protect the Orchestrator's **inbound** provider webhook receivers. They belong in your Orchestrator's environment, never in client code.
 
 <Callout type="warning">
-  Parse the **raw body** before JSON.parse — the signature covers the raw bytes, not the parsed object. Using `express.json()` instead of `express.raw()` will always fail validation.
+  An attacker cannot forge events from your Orchestrator: the SSE stream requires your API key and travels over TLS. The risk is trusting an event without confirming state — always cross-check with the API before acting on it.
 </Callout>
 
-### Replay Attack Prevention
+### Replay Attack Prevention (Your Side)
 
-A valid signature doesn't mean the event is fresh. Store processed event IDs in Redis to prevent duplicate processing:
+If you process events from the stream (for example, to trigger downstream effects), make them idempotent. Track processed `eventId` values so a replayed event after reconnection can't cause duplicate processing:
 
 ```typescript
-const FIVE_MINUTES_MS = 5 * 60 * 1000;
+const processed = new Set<string>(); // persist in Redis/DB for durability
 
-async function processWebhook(event: any) {
-  // Check timestamp freshness
-  const age = Math.abs(Date.now() - new Date(event.timestamp).getTime());
-  if (age > FIVE_MINUTES_MS) throw new Error('Stale event rejected');
-
-  // Deduplicate using event ID
-  const key = `webhook:processed:${event.id}`;
-  const alreadyProcessed = await redis.exists(key);
-  if (alreadyProcessed) return { status: 'duplicate' };
-
-  await redis.setex(key, 3600, '1');
-  // Process the event
+function onEvent(event: { eventId: string }) {
+  if (processed.has(event.eventId)) return; // duplicate — already handled
+  processed.add(event.eventId);
+  // Process the event exactly once
 }
 ```
 
@@ -198,7 +155,7 @@ The escrow flow is the highest-risk operation in OFFER-HUB. A bug here can resul
 
 ### Verify State Before Releasing Funds
 
-Always verify order and escrow state from the API before triggering a resolution. Never rely solely on a webhook event.
+Always verify order and escrow state from the API before triggering a resolution. Never rely solely on an event pushed over the SSE stream.
 
 ```typescript
 async function releaseEscrow(orderId: string, requestedBy: string) {
@@ -347,6 +304,6 @@ const depositAddress = req.body.depositAddress; // Attacker-controlled
 ## Next Steps
 
 - [Escrow Guide](/docs/guide/escrow) — Smart contract escrow mechanics
-- [Webhooks Reference](/docs/api-reference/webhooks) — Payload formats and headers
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — SSE event stream and event catalog
 - [Self-Hosting Guide](/docs/guide/self-hosting) — Secure production deployment
 - [API Reference](/docs/api-reference/overview) — Authentication and rate limiting

@@ -220,6 +220,15 @@ body::before {
     box-shadow: 0 8px 20px #d1d5db, 0 -2px 10px #ffffff;
   }
 
+  /* Shared elevation press/lift transition — animates only box-shadow so raised/sunken
+     surfaces feel neumorphic instead of fading or sliding. Reference this everywhere
+     a surface swaps between shadow-neu-raised* / shadow-neu-sunken* on hover or press. */
+  .transition-elevation {
+    transition-property: box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+  }
+
   .neu-input {
     background: var(--color-bg-sunken);
     box-shadow:
@@ -232,7 +241,7 @@ body::before {
     box-shadow:
       6px 6px 12px var(--shadow-dark),
       -6px -6px 12px var(--shadow-light);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
   }
 
   .neu-btn:active {
@@ -247,7 +256,7 @@ body::before {
     box-shadow:
       6px 6px 12px var(--shadow-dark),
       -6px -6px 12px var(--shadow-light);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
   }
 
   .neu-circle:active {
@@ -295,8 +304,11 @@ body::before {
   }
 
   /* ── 3D Colored Neumorphic Buttons ── */
+  /* Ramp darkened from the brand teal (#149A9B/#15A9AA/#0D7377) so white
+     text clears WCAG AA 4.5:1 in every state: default 4.93:1, hover 6.29:1,
+     active 8.10:1 (was as low as 2.43:1 on hover). See issue #1499. */
   .btn-neumorphic-primary {
-    background: #149A9B;
+    background: #107D7E;
     box-shadow:
       /* Outer drop shadow (on #F1F3F7 gray bg) */
       6px 6px 12px #d1d5db,
@@ -310,7 +322,7 @@ body::before {
   }
 
   .btn-neumorphic-primary:hover {
-    background: #15A9AA;
+    background: #0E6B6C;
     /* Slightly brighter highlight */
     box-shadow:
       /* Noticeably lower the outer shadow */
@@ -322,7 +334,7 @@ body::before {
   }
 
   .btn-neumorphic-primary:active {
-    background: #0d7377;
+    background: #0C595A;
     box-shadow:
       /* Completely sunk into the page */
       inset 5px 5px 10px rgba(0, 0, 0, 0.2),
@@ -358,8 +370,10 @@ body::before {
   }
 
   /* ── Dark Mode Neumorphic Buttons ── */
+  /* Same AA-compliant ramp as the light mode button above (contrast is a
+     property of the button's own bg/fg pair, not the surrounding page). */
   .dark .btn-neumorphic-primary {
-    background: #1fb8b9;
+    background: #107D7E;
     box-shadow:
       6px 6px 12px #1a1a26,
       -6px -6px 12px #2e2e3f,
@@ -368,7 +382,7 @@ body::before {
   }
 
   .dark .btn-neumorphic-primary:hover {
-    background: #25d4d5;
+    background: #0E6B6C;
     box-shadow:
       3px 3px 6px #1a1a26,
       -3px -3px 6px #2e2e3f,
@@ -377,7 +391,7 @@ body::before {
   }
 
   .dark .btn-neumorphic-primary:active {
-    background: #149A9B;
+    background: #0C595A;
     box-shadow:
       inset 5px 5px 10px rgba(0, 0, 0, 0.4),
       inset -5px -5px 10px rgba(255, 255, 255, 0.05);
@@ -452,6 +466,22 @@ body::before {
 
 .animate-fadeInScale {
   animation: fadeInScale 0.6s ease-out both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdownIn {
+  animation: dropdownIn 0.2s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {

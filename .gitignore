@@ -45,3 +45,8 @@ src/data/docs-index.json
 
 # Manual QA reports (local scratch space, see docs/CONTRIBUTING.md)
 /reports/
+
+# Playwright
+/playwright-report/
+/test-results/
+/blob-report/

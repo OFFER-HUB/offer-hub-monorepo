@@ -106,13 +106,38 @@ server.tool(
   }
 );
 
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+
+// Initialize HTTP transport in stateful mode so it can be reused
+const httpTransport = new WebStandardStreamableHTTPServerTransport({
+  sessionIdGenerator: () => crypto.randomUUID(),
+});
+server.connect(httpTransport);
+
+/**
+ * Handle HTTP requests (e.g. from Next.js API routes or Cloudflare Workers)
+ * using the MCP Streamable HTTP transport.
+ */
+export async function handleMcpRequest(req: Request) {
+  await ensureDocsLoaded();
+  return httpTransport.handleRequest(req);
+}
+
+async function runStdio() {
+  const stdioTransport = new StdioServerTransport();
+  await server.connect(stdioTransport);
   console.error("OFFER-HUB MCP Documentation Server running on stdio");
 }
 
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
+// Check if running directly as a script (stdio mode)
+import { fileURLToPath } from 'url';
+const isMain = typeof process !== 'undefined' && process.argv[1] && 
+  (process.argv[1] === fileURLToPath(import.meta.url) || 
+   process.argv[1].endsWith('build/index.js'));
+
+if (isMain) {
+  runStdio().catch((error) => {
+    console.error("Fatal error:", error);
+    process.exit(1);
+  });
+}

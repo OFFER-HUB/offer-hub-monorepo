@@ -48,22 +48,36 @@ You'll also need:
 
 ## Installation
 
-Follow the [Installation guide](/docs/installation) to clone the orchestrator repository, start infrastructure with Docker, configure environment variables, run database migrations, and start the development server.
+Follow the [Installation guide](/docs/installation) to get a running Orchestrator. The fastest path is the one-command setup wizard:
+
+<CommandLine>npx create-offer-hub-orchestrator</CommandLine>
+
+It configures your `.env`, runs migrations, and bootstraps the platform user automatically. A manual Docker-based setup is also available for custom environments.
 
 <Callout type="tip">
-  The installation takes about 5 minutes. You'll have a running API at `http://localhost:4000` when you're done.
+  The setup wizard takes about 2 minutes. You'll have a running API at `http://localhost:4000` when you're done.
 </Callout>
+
+## Creating an API Key
+
+After installation, you need an API key to make API calls. The fastest way is with the CLI:
+
+<CommandLine>npm install -g @offerhub/cli && offerhub keys create</CommandLine>
+
+You can also create keys with `curl` — see the [Installation guide](/docs/installation#creating-your-first-api-key) for both methods.
 
 ## Next Steps
 
 Once the Orchestrator is running, explore these guides:
 
+- [CLI Guide](/docs/guide/cli) — Manage API keys and maintenance from the command line
 - [Quick Start](/docs/guide/quick-start) — Create your first user and order in 5 minutes
 - [Orchestrator Guide](/docs/guide/orchestrator) — Deep dive into the Orchestrator architecture
 - [Escrow Flows](/docs/guide/escrow) — Learn about escrow states and transitions
 - [Orders Guide](/docs/guide/orders) — Complete order lifecycle documentation
 - [Disputes](/docs/guide/disputes) — Handle disputes and resolutions
 - [API Reference](/docs/api-reference/overview) — Full REST API documentation
+- [Events Reference](/docs/api-reference/events) — SSE event envelope, subscriptions, and catalog
 - [SDK Quick Start](/docs/sdk/quick-start) — Use the TypeScript SDK
 
 <Callout type="note">

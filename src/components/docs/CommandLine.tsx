@@ -97,7 +97,7 @@ export function CommandLine({
           aria-label={copied ? "Command copied" : "Copy command"}
           className={cn(
             "ml-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium",
-            "transition-all duration-200",
+            "transition-colors duration-200",
             copied
               ? "text-green-500"
               : "text-content-secondary hover:text-content-primary",

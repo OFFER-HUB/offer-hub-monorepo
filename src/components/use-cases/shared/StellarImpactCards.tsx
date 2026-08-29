@@ -180,7 +180,7 @@ function ModeToggleDetailed({
           key={key}
           onClick={() => onChange(key)}
           className={cn(
-            "relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+            "relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-[color,box-shadow] duration-300",
             mode === key
               ? "text-theme-primary shadow-neu-raised"
               : "text-content-muted hover:text-content-secondary",
@@ -339,7 +339,7 @@ function DetailedMetricCardComponent({
       onClick={() => setExpanded((p) => !p)}
       className={cn(
         "relative rounded-[1.75rem] bg-bg-elevated cursor-pointer select-none",
-        "p-6 md:p-7 transition-all duration-300",
+        "p-6 md:p-7 transition-shadow duration-300",
         "shadow-neu-raised hover:shadow-neu-raised-hover",
         "overflow-hidden",
       )}
@@ -414,7 +414,7 @@ function DetailedMetricCardComponent({
             <span className="text-[10px] uppercase font-bold tracking-wider text-content-muted">
               vs
             </span>
-            <span className="text-xs font-black text-theme-warning">
+            <span className="text-xs font-black text-content-secondary">
               {metric.traditional.value}
               <span className="ml-0.5 font-bold">
                 {metric.traditional.unit}
@@ -479,8 +479,8 @@ function SimpleMetricCardComponent({
           className={cn(
             "text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow-neu-raised-sm",
             isGood
-              ? "bg-theme-success/12 text-theme-success"
-              : "bg-theme-warning/12 text-theme-warning",
+              ? "bg-theme-primary/12 text-theme-primary"
+              : "bg-content-muted/12 text-content-secondary",
           )}
         >
           {metric.savingsValue}
@@ -509,7 +509,7 @@ function SimpleMetricCardComponent({
         <div
           className={cn(
             "w-1.5 h-1.5 rounded-full",
-            isGood ? "bg-theme-success" : "bg-theme-warning",
+            isGood ? "bg-theme-primary" : "bg-content-muted",
           )}
         />
         <span className="text-[10px] font-medium text-content-muted">
