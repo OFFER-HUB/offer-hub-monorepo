@@ -20,7 +20,12 @@ export const ROUTES = [
 
 export const VIEWPORT_WIDTHS = [320, 375, 412, 768] as const;
 
+export const COLOR_SCHEMES = ["light", "dark"] as const;
+
 export const VIEWPORT_HEIGHT = 800;
+
+/** Must match `THEME_STORAGE_KEY` so ThemeProvider and the layout boot script agree. */
+export const E2E_THEME_STORAGE_KEY = "offer-hub-theme";
 
 /** WCAG 2.2 SC 2.5.8 minimum target size, in CSS pixels. */
 export const MIN_TARGET_PX = 24;
@@ -43,6 +48,7 @@ export const INTERACTIVE_SELECTOR = "a, button, [role=button], input, select";
 
 export type RoutePath = (typeof ROUTES)[number];
 export type ViewportWidth = (typeof VIEWPORT_WIDTHS)[number];
+export type ColorScheme = (typeof COLOR_SCHEMES)[number];
 
 export interface OverflowSnapshot {
   readonly scrollWidth: number;
@@ -64,20 +70,23 @@ export interface UndersizedControl {
 export interface ViewportCase {
   readonly route: RoutePath;
   readonly width: ViewportWidth;
+  readonly colorScheme: ColorScheme;
 }
 
 export function allViewportCases(): readonly ViewportCase[] {
   const cases: ViewportCase[] = [];
-  for (const route of ROUTES) {
-    for (const width of VIEWPORT_WIDTHS) {
-      cases.push({ route, width });
+  for (const colorScheme of COLOR_SCHEMES) {
+    for (const route of ROUTES) {
+      for (const width of VIEWPORT_WIDTHS) {
+        cases.push({ route, width, colorScheme });
+      }
     }
   }
   return cases;
 }
 
 export function describeCase(viewportCase: ViewportCase): string {
-  return `${viewportCase.route} @ ${viewportCase.width}px`;
+  return `${viewportCase.route} @ ${viewportCase.width}px (${viewportCase.colorScheme})`;
 }
 
 function roundCssPx(value: number): number {
@@ -92,14 +101,36 @@ export async function waitForDocumentFonts(page: Page): Promise<void> {
   });
 }
 
+export async function applyColorScheme(
+  page: Page,
+  colorScheme: ColorScheme,
+): Promise<void> {
+  await page.emulateMedia({ colorScheme });
+  await page.addInitScript(
+    ({ key, scheme }: { key: string; scheme: ColorScheme }) => {
+      try {
+        window.localStorage.setItem(key, scheme);
+      } catch {
+        // Storage may be unavailable in locked-down contexts.
+      }
+    },
+    { key: E2E_THEME_STORAGE_KEY, scheme: colorScheme },
+  );
+}
+
 export async function preparePage(
   page: Page,
   route: RoutePath,
   width: ViewportWidth,
+  colorScheme: ColorScheme = "light",
 ): Promise<void> {
+  await applyColorScheme(page, colorScheme);
   await page.setViewportSize({ width, height: VIEWPORT_HEIGHT });
   await page.goto(route, { waitUntil: "domcontentloaded" });
   await waitForDocumentFonts(page);
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  }));
   await expect(page.locator("body")).toBeVisible();
 }
 

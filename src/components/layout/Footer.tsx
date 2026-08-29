@@ -82,7 +82,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="rounded-3xl px-10 py-12 bg-bg-elevated shadow-neu-raised">
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
-            <div className="flex flex-col gap-6 md:w-72 flex-shrink-0">
+            <div className="flex flex-col gap-6 md:w-72 md:flex-shrink-0 min-w-0 w-full max-w-full">
               <Link href="/" className="flex items-center gap-2.5">
                 <Image
                   src={
@@ -103,7 +103,7 @@ export function Footer() {
                 manage, and pay.
               </p>
 
-              <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1 min-w-0 max-w-full overflow-hidden">
                 {socialLinks.map((s) => (
                   <a
                     key={s.label}
@@ -111,7 +111,7 @@ export function Footer() {
                     aria-label={s.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center min-w-11 min-h-11 text-content-secondary hover:text-content-primary transition-colors duration-200"
+                    className="inline-flex items-center justify-center p-2 min-w-11 min-h-11 shrink-0 text-content-secondary hover:text-content-primary transition-colors duration-200"
                   >
                     <s.icon size={18} aria-hidden="true" />
                   </a>

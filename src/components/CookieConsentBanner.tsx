@@ -66,11 +66,11 @@ export function CookieConsentBanner() {
           to learn what data is collected and how it is used.
         </p>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={accept}
-            className="flex-1 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-theme-primary text-white text-xs font-black uppercase tracking-wider shadow-lg hover:bg-theme-primary-hover transition-colors"
+            className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-theme-primary text-white text-xs font-black uppercase tracking-wider shadow-lg hover:bg-theme-primary-hover transition-colors"
           >
             Accept all
           </button>
@@ -78,7 +78,7 @@ export function CookieConsentBanner() {
           <button
             type="button"
             onClick={reject}
-            className="flex-1 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-content-secondary text-xs font-black uppercase tracking-wider hover:text-content-primary transition-colors"
+            className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-content-secondary text-xs font-black uppercase tracking-wider hover:text-content-primary transition-colors"
           >
             Necessary only
           </button>

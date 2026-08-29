@@ -35,13 +35,13 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
                 @{pr.author}
               </div>
               <div className="w-1 h-1 rounded-full bg-content-muted/30" />
-              <div className="text-[10px] font-bold text-content-secondary lowercase">
+              <div className="min-w-0 max-w-full truncate text-[10px] font-bold text-content-secondary lowercase">
                 {isMerged ? `merged ${pr.timestamp}` : `opened ${pr.timestamp}`}
               </div>
               {!isMerged && (
                 <>
                   <div className="w-1 h-1 rounded-full bg-content-muted/30" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-theme-primary px-1.5 py-0.5 rounded bg-theme-primary/10 shadow-sm">
+                  <span className="min-w-0 max-w-full truncate text-[9px] font-black uppercase tracking-widest text-theme-primary px-1.5 py-0.5 rounded bg-theme-primary/10 shadow-sm">
                     Open
                   </span>
                 </>

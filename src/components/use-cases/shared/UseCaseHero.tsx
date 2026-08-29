@@ -175,9 +175,9 @@ export function UseCaseHero({
     >
       <NetworkPattern gradientId={gradientId} nodes={nodes} links={links} />
 
-      <div className="absolute inset-x-0 top-24 bottom-10 mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="sticky top-28">
-          <div className="relative overflow-hidden rounded-[2.75rem] border border-theme-primary/10 bg-bg-elevated/80 px-6 py-10 shadow-neu-raised backdrop-blur-sm md:px-10 md:py-12">
+      <div className="absolute inset-x-0 top-24 bottom-10 mx-auto max-w-7xl w-full min-w-0 overflow-hidden px-6 lg:px-8">
+        <div className="sticky top-28 min-w-0 max-w-full">
+          <div className="relative overflow-hidden rounded-[2.75rem] border border-theme-primary/10 bg-bg-elevated/80 px-4 py-10 shadow-neu-raised backdrop-blur-sm sm:px-6 md:px-10 md:py-12">
             <div
               className="absolute inset-0"
               style={{
@@ -186,22 +186,22 @@ export function UseCaseHero({
               }}
             />
 
-            <div className="relative z-10 grid items-end gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-              <div className="max-w-3xl">
+            <div className="relative z-10 grid min-w-0 max-w-full items-end gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <div className="min-w-0 w-full max-w-3xl">
                 <motion.div
                   style={{ y: badgeY }}
-                  className="mb-8 inline-flex items-center gap-3 rounded-full border border-theme-primary/10 bg-bg-base px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-theme-primary shadow-neu-raised"
+                  className="mb-8 inline-flex max-w-full min-w-0 flex-wrap items-center gap-3 rounded-full border border-theme-primary/10 bg-bg-base px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-theme-primary shadow-neu-raised sm:px-5"
                 >
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-theme-primary/55" />
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-theme-primary" />
                   </span>
-                  <span>{badgeLabel}</span>
+                  <span className="min-w-0 max-w-full break-words">{badgeLabel}</span>
                 </motion.div>
 
                 <motion.h1
                   style={{ y: titleY }}
-                  className="text-5xl font-black tracking-tight text-content-primary md:text-7xl"
+                  className="max-w-full min-w-0 break-words text-5xl font-black tracking-tight text-content-primary md:text-7xl"
                 >
                   {headline}
                 </motion.h1>
@@ -222,15 +222,15 @@ export function UseCaseHero({
                     <ArrowUpRight size={15} />
                   </a>
 
-                  <div className="inline-flex items-center gap-2 rounded-xl bg-bg-base px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary shadow-neu-sunken-subtle">
-                    <FooterIcon size={14} className="text-theme-primary" />
-                    {footerLabel}
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2 rounded-xl bg-bg-base px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary shadow-neu-sunken-subtle">
+                    <FooterIcon size={14} className="text-theme-primary shrink-0" />
+                    <span className="min-w-0 break-words">{footerLabel}</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-4">
-                <div className="flex items-center gap-3 px-5 text-[11px] font-black uppercase tracking-[0.32em] text-content-muted">
+                <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3 px-1 text-[11px] font-black uppercase tracking-[0.32em] text-content-muted sm:px-5">
                   <Sparkles size={14} className="text-theme-primary" />
                   At a glance
                 </div>
@@ -246,7 +246,7 @@ export function UseCaseHero({
                       duration: 0.5,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="rounded-[1.75rem] border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover"
+                    className="rounded-[1.75rem] border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover min-w-0 max-w-full overflow-hidden"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>

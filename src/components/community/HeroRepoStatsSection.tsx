@@ -17,14 +17,14 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
   ];
 
   return (
-    <section id="hero-repo-stats" className="py-20 overflow-hidden bg-transparent">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section id="hero-repo-stats" className="py-20 overflow-hidden bg-transparent w-full min-w-0 max-w-full">
+      <div className="mx-auto max-w-7xl w-full min-w-0 px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 items-center">
-          <div className="lg:col-span-7">
-            <p className="mb-6 text-[11px] font-black uppercase tracking-[0.4em] text-theme-primary">
+          <div className="lg:col-span-7 min-w-0 w-full max-w-full">
+            <p className="mb-6 text-[11px] font-black uppercase tracking-[0.4em] text-theme-primary max-w-full break-words">
               Community Network
             </p>
-            <h1 className="text-5xl font-black tracking-tighter text-content-primary md:text-7xl leading-[1.05]">
+            <h1 className="text-5xl font-black tracking-tighter text-content-primary md:text-7xl leading-[1.05] max-w-full">
               Building the Future <br />of <span className="text-theme-primary">Payments</span>
             </h1>
             <p className="mt-8 max-w-xl text-lg font-medium leading-relaxed text-content-secondary">
@@ -38,14 +38,14 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 href={GITHUB_REPO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-4 rounded-xl bg-content-primary text-bg-base text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black hover:text-white transition-all"
+                className="max-w-full min-w-0 px-6 py-4 sm:px-8 rounded-xl bg-content-primary text-bg-base text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black hover:text-white transition-all"
               >
                 Star on GitHub
               </a>
             </div>
           </div>
 
-          <div className="lg:col-span-5 relative">
+          <div className="lg:col-span-5 relative min-w-0 w-full max-w-full">
             {statsUnavailable ? (
               <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-8">
                 <div className="flex items-center gap-3">
@@ -61,11 +61,11 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 min-w-0 w-full max-w-full">
                 {repoStats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-6 transition-transform duration-500 hover:scale-[1.02]"
+                    className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-4 sm:p-6 transition-transform duration-500 hover:scale-[1.02] min-w-0 w-full overflow-hidden"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle">
@@ -73,10 +73,10 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                       </div>
                       <div className="h-1 w-4 rounded-full bg-theme-primary/20" />
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary truncate">
                       {stat.label}
                     </p>
-                    <p className="mt-1 text-3xl font-black text-content-primary tracking-tight">
+                    <p className="mt-1 text-3xl font-black text-content-primary tracking-tight truncate">
                       {stat.value}
                     </p>
                   </div>

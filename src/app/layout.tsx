@@ -167,7 +167,7 @@ export default function RootLayout({
           </Suspense>
           <Analytics />
           <ClientBackground />
-          <div id="main-content">
+          <div id="main-content" className="w-full max-w-full min-w-0 overflow-x-clip">
             {children}
           </div>
           <FloatingCTA />

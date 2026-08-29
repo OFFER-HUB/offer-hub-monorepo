@@ -223,7 +223,7 @@ export function UseCasesClient() {
         >
           <div
             role="tablist"
-            className="max-w-5xl mx-auto px-4 sm:px-6 w-full min-w-0 flex flex-wrap justify-center gap-3 overflow-x-auto no-scrollbar scroll-smooth"
+            className="mx-auto w-full min-w-0 max-w-5xl px-4 sm:px-6 flex flex-wrap justify-center gap-3 overflow-x-auto no-scrollbar scroll-smooth"
           >
             {USE_CASES.map((uc) => {
               const isActive = activeUseCase === uc.id;

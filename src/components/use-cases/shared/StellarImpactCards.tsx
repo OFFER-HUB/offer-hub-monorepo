@@ -169,7 +169,7 @@ function ModeToggleDetailed({
   toggleId: string;
 }) {
   return (
-    <div className="inline-flex items-center bg-bg-sunken shadow-neu-sunken rounded-2xl p-1 gap-1">
+    <div className="inline-flex max-w-full min-w-0 flex-wrap items-center bg-bg-sunken shadow-neu-sunken rounded-2xl p-1 gap-1">
       {(
         [
           { key: "offerhub" as const, label: "OFFER-HUB Engine", icon: Zap },
@@ -180,7 +180,7 @@ function ModeToggleDetailed({
           key={key}
           onClick={() => onChange(key)}
           className={cn(
-            "relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-[color,box-shadow] duration-300",
+            "relative flex min-w-0 items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-[color,box-shadow] duration-300 sm:px-4",
             mode === key
               ? "text-theme-primary shadow-neu-raised"
               : "text-content-muted hover:text-content-secondary",
@@ -265,7 +265,7 @@ function SummaryBarDetailed({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 12 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-bg-elevated shadow-neu-raised rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4"
+      className="bg-bg-elevated shadow-neu-raised rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 min-w-0 max-w-full overflow-hidden"
     >
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-theme-success/10 flex items-center justify-center">
@@ -275,7 +275,7 @@ function SummaryBarDetailed({
           {content?.offerhub?.text}
         </p>
       </div>
-      <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-content-muted bg-bg-base shadow-neu-sunken-subtle rounded-full px-3 py-1">
+      <span className="min-w-0 max-w-full text-center text-[10px] font-bold uppercase tracking-widest text-content-muted bg-bg-base shadow-neu-sunken-subtle rounded-full px-3 py-1 md:flex-shrink-0">
         Stellar Network &middot; Current averages
       </span>
     </motion.div>
