@@ -85,7 +85,7 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
         />
 
         {totalContributors > 0 ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 mt-12">
+          <div className="grid w-full max-w-full min-w-0 overflow-hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
             {visibleContributors.map((person) => (
               <ContributorCard key={person.username} person={person} />
             ))}

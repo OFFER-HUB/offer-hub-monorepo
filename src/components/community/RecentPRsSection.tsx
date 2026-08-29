@@ -55,7 +55,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open pull request: ${pr.title}`}
-          className="p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-all max-w-full overflow-hidden truncate flex items-center justify-center shrink-0 min-w-11 min-h-11"
+          className="min-h-11 min-w-11 max-w-full shrink-0 truncate p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow flex items-center justify-center"
         >
           <ArrowUpRight size={14} aria-hidden="true" />
         </a>
