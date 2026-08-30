@@ -110,6 +110,23 @@ describe("useDataRightsForm", () => {
     expect(result.current.email).toBe("ghost@acme.com");
   });
 
+  it("applies server-side field errors when the response reports a validation failure", async () => {
+    submitDataRightsRequest.mockResolvedValue({
+      ok: false,
+      reason: "validation",
+      message: "A valid email address is required.",
+      errors: { email: "A valid email address is required." },
+    });
+    const { result } = renderHook(() => useDataRightsForm(ENDPOINT));
+    act(() => result.current.setEmail("a@@b.co"));
+
+    await submit(result);
+
+    expect(result.current.errors.email).toBe(
+      "A valid email address is required.",
+    );
+  });
+
   it("does not substitute the success message on a failed request", async () => {
     submitDataRightsRequest.mockResolvedValue({
       ok: false,

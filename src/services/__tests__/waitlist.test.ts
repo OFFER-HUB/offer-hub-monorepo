@@ -98,4 +98,19 @@ describe("submitWaitlistEntry", () => {
       reason: "network",
     });
   });
+
+  it("falls back to an empty body when the response is not valid JSON", async () => {
+    mockFetch(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new SyntaxError("Unexpected end of JSON input");
+      },
+    }));
+
+    await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
+      ok: false,
+      reason: "error",
+    });
+  });
 });

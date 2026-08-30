@@ -99,6 +99,21 @@ describe("submitDataRightsRequest", () => {
     });
   });
 
+  it("falls back to a generic validation message when the errors body has no email key", async () => {
+    mockFetch(async () =>
+      jsonResponse(400, { errors: { other: "Some other field is invalid." } }),
+    );
+
+    await expect(
+      submitDataRightsRequest(ENDPOINT, "a@@b.co"),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "validation",
+      message: "A valid email address is required.",
+      errors: { other: "Some other field is invalid." },
+    });
+  });
+
   it("returns a network result when fetch rejects", async () => {
     mockFetch(async () => {
       throw new TypeError("Failed to fetch");

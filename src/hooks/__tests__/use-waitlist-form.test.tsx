@@ -164,6 +164,22 @@ describe("useWaitlistForm", () => {
 
     expect(result.current.error).toBeNull();
   });
+
+  it("applies server-side field errors when the response reports a validation failure", async () => {
+    submitWaitlistEntry.mockResolvedValue({
+      ok: false,
+      reason: "validation",
+      errors: { email: "Enter a valid work email" },
+    });
+    const { result } = renderHook(() => useWaitlistForm());
+    fill(result, VALID);
+
+    await submit(result);
+
+    expect(result.current.errors.email).toBe("Enter a valid work email");
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
 });
 
 describe("useWaitlistForm cooldown", () => {
