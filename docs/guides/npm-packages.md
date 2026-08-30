@@ -127,7 +127,7 @@ const order = await sdk.orders.create({
 });
 
 // Release funds after work is complete
-await sdk.orders.release(order.data.id);
+await sdk.orders.release(order.data.id, 'Work completed');
 ```
 
 ### Available resources

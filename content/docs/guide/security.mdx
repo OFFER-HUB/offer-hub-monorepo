@@ -171,7 +171,7 @@ async function releaseEscrow(orderId: string, requestedBy: string) {
     throw new Error('Escrow is not in FUNDED state');
   }
 
-  return offerHubClient.orders.release(orderId, { requestedBy });
+  return offerHubClient.orders.release(orderId, 'Buyer approved release');
 }
 ```
 
@@ -192,13 +192,8 @@ Before calling `POST /orders/:id/resolution/release`:
 Protect against double-releases caused by network retries:
 
 ```typescript
-// Key must be deterministic per operation — not random per retry
-const idempotencyKey = `release:${orderId}:${buyerId}`;
-
-await offerHubClient.orders.release(orderId, {
-  requestedBy: buyerId,
-  idempotencyKey,
-});
+const idempotentClient = offerHubClient.withIdempotencyKey(`release:${orderId}:${buyerId}`);
+await idempotentClient.orders.release(orderId, 'Buyer approved release');
 ```
 
 ---

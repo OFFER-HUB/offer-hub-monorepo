@@ -291,7 +291,7 @@ async function releaseEscrow(orderId: string, requestedBy: string) {
     throw new Error('Escrow is not in FUNDED state');
   }
 
-  return offerHubClient.orders.release(orderId, { requestedBy });
+  return offerHubClient.orders.release(orderId, 'Buyer approved release');
 }
 ```
 
@@ -312,12 +312,8 @@ Before calling `POST /orders/:id/resolution/release`, confirm:
 All state-changing operations must use idempotency keys to prevent double-releases caused by network retries:
 
 ```typescript
-const idempotencyKey = `release-${orderId}-${requestedBy}-${Date.now()}`;
-
-await offerHubClient.orders.release(orderId, {
-  requestedBy,
-  idempotencyKey,
-});
+const idempotentClient = offerHubClient.withIdempotencyKey(`release-${orderId}-${requestedBy}`);
+await idempotentClient.orders.release(orderId, 'Buyer approved release');
 ```
 
 Store the idempotency key and its result so retries return the cached response rather than executing twice.

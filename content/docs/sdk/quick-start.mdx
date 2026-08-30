@@ -95,9 +95,7 @@ await sdk.orders.createEscrow(order.id);
 await sdk.orders.fundEscrow(order.id);
 
 // 4. Release to seller when work is done
-await sdk.orders.release(order.id, {
-  requestedBy: 'usr_buyer123'
-});
+await sdk.orders.release(order.id, 'Work completed');
 ```
 
 ## Available Resources

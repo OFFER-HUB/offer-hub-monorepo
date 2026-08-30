@@ -105,12 +105,8 @@ Your marketplace manages communication, deliverables, and reviews. The Orchestra
 
 The buyer approves the delivery. The Orchestrator submits transactions to release USDC from the smart contract to the seller's Stellar address.
 
-```
-const release = await client.orders.release({
-  orderId: "ord_789",
-  approvedBy: "usr_123",
-  idempotencyKey: "release_abc_001",
-})
+```ts
+const release = await client.orders.release('ord_789', 'Work approved');
 ```
 
 ### 6. Seller Withdraws

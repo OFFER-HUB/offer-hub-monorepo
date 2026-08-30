@@ -232,9 +232,7 @@ await sdk.orders.fundEscrow(order.id);
 await sdk.orders.waitForStatus(order.id, 'IN_PROGRESS');
 
 // Later: release to seller
-await sdk.orders.release(order.id, {
-  requestedBy: order.buyerId
-});
+await sdk.orders.release(order.id, 'Buyer approved release');
 ```
 
 ### Listening to Escrow Events
