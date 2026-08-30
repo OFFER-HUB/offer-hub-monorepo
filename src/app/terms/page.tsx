@@ -41,7 +41,7 @@ export default async function TermsOfServicePage() {
               components={TERMS_MDX_COMPONENTS}
               options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
             />
-            <div className="p-8 md:p-10 rounded-[2.5rem] bg-bg-base shadow-sunken-subtle">
+            <div className="p-8 md:p-10 rounded-[2.5rem] bg-bg-base shadow-neu-sunken-subtle">
               <p className="text-sm font-medium italic leading-relaxed text-content-secondary">
                 This document was drafted for the OFFER-HUB open-source project and should be reviewed by a licensed
                 attorney before publication in a production environment. It is intended as a comprehensive starting point

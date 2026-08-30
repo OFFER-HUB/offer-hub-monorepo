@@ -3,6 +3,7 @@
 import React from "react";
 import { ShieldCheck, Trash2, Download } from "lucide-react";
 import { useDataRightsForm } from "@/hooks/use-data-rights-form";
+import { Input } from "@/components/ui/Input";
 
 const iconMap = {
   ShieldCheck,
@@ -27,7 +28,7 @@ export function DataRightsForm({
   buttonLabel: string;
   destructive?: boolean;
 }) {
-  const { email, status, loading, setEmail, handleSubmit } = useDataRightsForm(
+  const { email, errors, status, loading, setEmail, handleSubmit } = useDataRightsForm(
     endpoint,
     successMessage
   );
@@ -42,14 +43,17 @@ export function DataRightsForm({
         <h3 className="text-xl font-black tracking-tight mb-2 text-content-primary">{title}</h3>
         <p className="text-sm font-medium leading-relaxed text-content-secondary">{description}</p>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+        <Input
+          id={`data-rights-email-${endpoint}`}
+          label="Email address"
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="rounded-xl px-4 py-3 text-sm bg-bg-sunken shadow-neu-sunken-subtle text-content-primary placeholder:text-content-secondary/60 outline-none focus:ring-2 focus:ring-theme-primary/30 transition-all"
+          error={errors.email}
+          disabled={loading}
         />
         <button
           type="submit"
@@ -63,7 +67,10 @@ export function DataRightsForm({
           {loading ? "Processing…" : buttonLabel}
         </button>
         {status && (
-          <p className={`text-xs font-medium ${status.ok ? "text-theme-primary" : "text-red-500"}`}>
+          <p
+            role="alert"
+            className={`text-xs font-medium ${status.ok ? "text-theme-primary" : "text-red-500"}`}
+          >
             {status.message}
           </p>
         )}

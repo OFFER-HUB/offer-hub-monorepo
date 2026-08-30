@@ -1,22 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const state = vi.hoisted(() => ({
-  supabase: null as { from: (table: string) => { insert: unknown } } | null,
-}));
-
-vi.mock("@/lib/supabase", () => ({
-  get supabase() {
-    return state.supabase;
-  },
-  get isSupabaseConfigured() {
-    return state.supabase !== null;
-  },
-}));
-
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { submitContactInquiry, type ContactSubmission } from "../contact";
-
-const insert = vi.fn();
-const from = vi.fn(() => ({ insert }));
 
 const INQUIRY: ContactSubmission = {
   company: "Acme Inc",
@@ -25,69 +8,70 @@ const INQUIRY: ContactSubmission = {
   message: "We'd like to discuss enterprise pricing.",
 };
 
+function mockFetch(impl: () => Promise<unknown>) {
+  const fn = vi.fn(impl);
+  vi.stubGlobal("fetch", fn);
+  return fn;
+}
+
+function jsonResponse(status: number, body: unknown) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  };
+}
+
 describe("submitContactInquiry", () => {
   beforeEach(() => {
-    insert.mockReset();
-    from.mockClear();
-    state.supabase = { from } as unknown as typeof state.supabase;
+    vi.restoreAllMocks();
   });
 
-  it("returns not_configured without touching the network when Supabase is null", async () => {
-    state.supabase = null;
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("POSTs the inquiry as JSON to /api/contact", async () => {
+    const fetchMock = mockFetch(async () => jsonResponse(200, { ok: true }));
+
+    await submitContactInquiry(INQUIRY);
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(INQUIRY),
+    });
+  });
+
+  it("returns ok on success", async () => {
+    mockFetch(async () => jsonResponse(200, { ok: true }));
+
+    await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({ ok: true });
+  });
+
+  it("maps 400 field errors to validation", async () => {
+    mockFetch(async () =>
+      jsonResponse(400, { errors: { email: "Enter a valid work email" } }),
+    );
+
+    await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({
+      ok: false,
+      reason: "validation",
+      errors: { email: "Enter a valid work email" },
+    });
+  });
+
+  it("maps 503 to not_configured", async () => {
+    mockFetch(async () => jsonResponse(503, { error: "unavailable" }));
 
     await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({
       ok: false,
       reason: "not_configured",
     });
-    expect(from).not.toHaveBeenCalled();
-    expect(insert).not.toHaveBeenCalled();
   });
 
-  it("inserts into contact_inquiries, mapping name to contact_name", async () => {
-    insert.mockResolvedValueOnce({ error: null });
-
-    await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({ ok: true });
-
-    expect(from).toHaveBeenCalledWith("contact_inquiries");
-    expect(insert).toHaveBeenCalledWith([
-      {
-        company: "Acme Inc",
-        contact_name: "Jane Doe",
-        email: "jane@acme.com",
-        message: "We'd like to discuss enterprise pricing.",
-      },
-    ]);
-  });
-
-  it("sends only the four declared columns", async () => {
-    insert.mockResolvedValueOnce({ error: null });
-
-    await submitContactInquiry({
-      ...INQUIRY,
-      ...({ role: "admin" } as unknown as ContactSubmission),
-    });
-
-    const [[rows]] = insert.mock.calls as [[Record<string, unknown>[]]];
-    expect(Object.keys(rows[0]).sort()).toEqual([
-      "company",
-      "contact_name",
-      "email",
-      "message",
-    ]);
-  });
-
-  it("forwards an empty message through rather than dropping the column", async () => {
-    insert.mockResolvedValueOnce({ error: null });
-
-    await submitContactInquiry({ ...INQUIRY, message: "" });
-
-    expect(insert).toHaveBeenCalledWith([
-      expect.objectContaining({ message: "" }),
-    ]);
-  });
-
-  it("maps a Supabase error to error", async () => {
-    insert.mockResolvedValueOnce({ error: { message: "permission denied" } });
+  it("maps other non-2xx responses to error", async () => {
+    mockFetch(async () => jsonResponse(500, { error: "boom" }));
 
     await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({
       ok: false,
@@ -95,12 +79,29 @@ describe("submitContactInquiry", () => {
     });
   });
 
-  it("maps a thrown request (network failure) to network", async () => {
-    insert.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+  it("maps a thrown request to network", async () => {
+    mockFetch(async () => {
+      throw new TypeError("Failed to fetch");
+    });
 
     await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({
       ok: false,
       reason: "network",
+    });
+  });
+
+  it("falls back to an empty body when the response is not valid JSON", async () => {
+    mockFetch(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new SyntaxError("Unexpected end of JSON input");
+      },
+    }));
+
+    await expect(submitContactInquiry(INQUIRY)).resolves.toEqual({
+      ok: false,
+      reason: "error",
     });
   });
 });

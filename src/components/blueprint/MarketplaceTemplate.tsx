@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Terminal, Layers, Wallet, Clock, TrendingUp, Package } from "lucide-react";
 import { BlueprintMotionSection } from "@/components/shared/BlueprintMotionSection";
+import { cn } from "@/lib/cn";
 
 type View = "freelancer" | "business";
 
@@ -16,13 +17,7 @@ function FreelancerView() {
         <span className="text-xs px-2 py-0.5 rounded-full bg-theme-primary/10 text-theme-primary font-mono">v2.4.1</span>
       </div>
 
-      <div
-        className="rounded-xl p-4"
-        style={{
-          background: "var(--color-bg-sunken)",
-          boxShadow: "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
-        }}
-      >
+      <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
         <div className="flex items-center gap-2 mb-3">
           <Clock size={14} className="text-theme-primary" />
           <span className="text-xs font-semibold text-content-secondary uppercase tracking-wide">Pending Escrows</span>
@@ -44,13 +39,7 @@ function FreelancerView() {
         </div>
       </div>
 
-      <div
-        className="rounded-xl p-4"
-        style={{
-          background: "var(--color-bg-sunken)",
-          boxShadow: "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
-        }}
-      >
+      <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
         <div className="flex items-center gap-2 mb-3">
           <Wallet size={14} className="text-theme-primary" />
           <span className="text-xs font-semibold text-content-secondary uppercase tracking-wide">Payout Status</span>
@@ -79,13 +68,7 @@ function BusinessView() {
         <span className="text-xs px-2 py-0.5 rounded-full bg-theme-primary/10 text-theme-primary font-mono">v2.4.1</span>
       </div>
 
-      <div
-        className="rounded-xl p-4"
-        style={{
-          background: "var(--color-bg-sunken)",
-          boxShadow: "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
-        }}
-      >
+      <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp size={14} className="text-theme-primary" />
           <span className="text-xs font-semibold text-content-secondary uppercase tracking-wide">Fund Project</span>
@@ -101,13 +84,7 @@ function BusinessView() {
                 <span className="text-content-primary">{item.label}</span>
                 <span className="font-mono text-theme-primary font-semibold">{item.total}</span>
               </div>
-              <div
-                className="h-1.5 rounded-full w-full"
-                style={{
-                  background: "var(--color-bg-base)",
-                  boxShadow: "inset 1px 1px 3px var(--shadow-dark), inset -1px -1px 3px var(--shadow-light)",
-                }}
-              >
+              <div className="h-1.5 rounded-full w-full bg-bg-base shadow-neu-sunken-subtle">
                 <div
                   className="h-full rounded-full bg-theme-primary"
                   style={{ width: item.funded, opacity: 0.85 }}
@@ -118,13 +95,7 @@ function BusinessView() {
         </div>
       </div>
 
-      <div
-        className="rounded-xl p-4"
-        style={{
-          background: "var(--color-bg-sunken)",
-          boxShadow: "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
-        }}
-      >
+      <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
         <div className="flex items-center gap-2 mb-3">
           <Package size={14} className="text-theme-primary" />
           <span className="text-xs font-semibold text-content-secondary uppercase tracking-wide">Asset Tracking</span>
@@ -137,11 +108,7 @@ function BusinessView() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-lg p-2 text-center"
-              style={{
-                background: "var(--color-bg-base)",
-                boxShadow: "3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)",
-              }}
+              className="rounded-lg p-2 text-center bg-bg-base shadow-neu-raised-sm"
             >
               <p className="text-lg font-bold font-mono text-content-primary">{stat.value}</p>
               <p className="text-[10px] text-content-muted leading-tight">{stat.label}</p>
@@ -160,13 +127,7 @@ export function MarketplaceTemplate() {
     <BlueprintMotionSection id="templates" className="py-24 px-6 bg-transparent">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <div
-            className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-semibold text-theme-primary uppercase tracking-widest"
-            style={{
-              background: "var(--color-bg-base)",
-              boxShadow: "inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)",
-            }}
-          >
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-semibold text-theme-primary uppercase tracking-widest bg-bg-base shadow-neu-sunken">
             <Layers size={12} />
             Marketplace Template
           </div>
@@ -180,71 +141,36 @@ export function MarketplaceTemplate() {
 
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="flex flex-col items-center gap-6">
-            <div
-              className="flex items-center gap-1 p-1 rounded-full"
-              style={{
-                background: "var(--color-bg-base)",
-                boxShadow: "inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)",
-              }}
-            >
+            <div className="flex items-center gap-1 p-1 rounded-full bg-bg-base shadow-neu-sunken">
               {(["freelancer", "business"] as View[]).map((v) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
-                  className="relative px-5 py-2 rounded-full text-xs font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
-                  style={
+                  className={cn(
+                    "relative px-5 py-2 rounded-full text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
                     view === v
-                      ? {
-                          background: "var(--color-bg-base)",
-                          boxShadow: "4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light)",
-                          color: "var(--color-primary)",
-                        }
-                      : { color: "var(--color-text-secondary)" }
-                  }
+                      ? "bg-bg-base shadow-neu-raised text-theme-primary"
+                      : "text-content-secondary"
+                  )}
                 >
                   {v === "freelancer" ? "Freelancer Dashboard" : "Business Dashboard"}
                 </button>
               ))}
             </div>
 
-            <div
-              className="w-full rounded-3xl p-4"
-              style={{
-                background: "var(--color-bg-base)",
-                boxShadow:
-                  "12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light), 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)",
-              }}
-            >
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3"
-                style={{
-                  background: "var(--color-bg-sunken)",
-                  boxShadow: "inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)",
-                }}
-              >
+            <div className="w-full rounded-3xl p-4 bg-bg-base shadow-neu-raised-l2">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 bg-bg-sunken shadow-neu-sunken-subtle">
                 <div className="flex gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
                   <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
                   <span className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
                 </div>
-                <div
-                  className="flex-1 mx-2 px-3 py-0.5 rounded-full text-[10px] text-content-muted font-mono"
-                  style={{
-                    background: "var(--color-bg-base)",
-                    boxShadow: "inset 1px 1px 3px var(--shadow-dark), inset -1px -1px 3px var(--shadow-light)",
-                  }}
-                >
+                <div className="flex-1 mx-2 px-3 py-0.5 rounded-full text-[10px] text-content-muted font-mono bg-bg-base shadow-neu-sunken-subtle">
                   app.offerhub.io/{view}
                 </div>
               </div>
 
-              <div
-                className="rounded-2xl p-4 min-h-[280px]"
-                style={{
-                  background: "var(--color-bg-elevated)",
-                  boxShadow: "inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light)",
-                }}
-              >
+              <div className="rounded-2xl p-4 min-h-[280px] bg-bg-elevated shadow-neu-sunken-subtle">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={view}
@@ -280,21 +206,9 @@ export function MarketplaceTemplate() {
               </div>
             </div>
 
-            <div
-              className="rounded-2xl p-6"
-              style={{
-                background: "var(--color-bg-base)",
-                boxShadow: "6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)",
-              }}
-            >
+            <div className="rounded-2xl p-6 bg-bg-base shadow-neu-raised">
               <div className="flex items-start gap-3 mb-4">
-                <div
-                  className="mt-0.5 p-2 rounded-xl"
-                  style={{
-                    background: "var(--color-bg-base)",
-                    boxShadow: "4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light)",
-                  }}
-                >
+                <div className="mt-0.5 p-2 rounded-xl bg-bg-base shadow-neu-raised-sm">
                   <Layers size={16} className="text-theme-primary" />
                 </div>
                 <div>
@@ -309,7 +223,7 @@ export function MarketplaceTemplate() {
                 href="https://docs.offerhub.io/sdk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold btn-neumorphic-primary transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold btn-neumorphic-primary transition-[background-color,box-shadow,transform]"
               >
                 SDK Documentation
                 <ArrowUpRight size={14} />
@@ -325,11 +239,7 @@ export function MarketplaceTemplate() {
               ].map((feat) => (
                 <div
                   key={feat.label}
-                  className="rounded-xl px-4 py-3"
-                  style={{
-                    background: "var(--color-bg-base)",
-                    boxShadow: "4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light)",
-                  }}
+                  className="rounded-xl px-4 py-3 bg-bg-base shadow-neu-raised-sm"
                 >
                   <p className="text-xs font-semibold text-content-primary">{feat.label}</p>
                   <p className="text-[10px] text-content-muted mt-0.5">{feat.desc}</p>

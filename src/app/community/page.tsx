@@ -167,10 +167,10 @@ export default async function CommunityPage() {
   const { stats, contributors, pullRequests, issues } = await fetchGitHubData();
 
   return (
-    <>
+    <div className="w-full max-w-full overflow-x-hidden min-w-0">
       <LoadingBar />
       <Navbar />
-      <main className="pt-28">
+      <main className="pt-28 w-full max-w-full overflow-x-hidden min-w-0">
         <HeroRepoStatsSection stats={stats} />
         <RepoLinksSection />
         <ContributorsSection contributors={contributors} />
@@ -181,6 +181,6 @@ export default async function CommunityPage() {
         <RegistrationForm />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

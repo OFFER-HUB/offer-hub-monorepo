@@ -22,7 +22,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
   }
 
   return (
-    <div className="rounded-2xl shadow-sunken overflow-hidden" style={{ background: "#0f172a" }}>
+    <div className="rounded-2xl shadow-neu-sunken overflow-hidden" style={{ background: "#0f172a" }}>
       {/* Tab bar */}
       <div
         className="flex items-center justify-between px-4 py-2 border-b"
@@ -37,7 +37,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
                 key={res.status}
                 onClick={() => setActiveTab(i)}
                 className={cn(
-                  "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all duration-200"
+                  "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors duration-200"
                 )}
                 style={{
                   color: isActive
@@ -59,7 +59,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
           aria-label="Copy response"
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium",
-            "transition-all duration-200",
+            "transition-colors duration-200",
             copied ? "text-green-400" : "text-white/40 hover:text-white/80"
           )}
         >

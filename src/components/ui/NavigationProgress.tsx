@@ -101,7 +101,7 @@ export function NavigationProgress() {
       style={{ opacity: isLoading ? 1 : 0, transition: "opacity 0.2s" }}
     >
       <div
-        className="h-full bg-gradient-to-r from-[#149A9B] to-[#22e0e2]"
+        className="h-full bg-gradient-to-r from-theme-primary to-[#22e0e2]"
         style={{
           width: `${progress}%`,
           transition: progress === 100 ? "width 0.1s ease-out" : "width 0.4s ease",

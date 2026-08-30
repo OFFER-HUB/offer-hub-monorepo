@@ -2,13 +2,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import { RegistrationForm } from "../RegistrationForm";
 
-const insert = vi.fn();
+function mockFetch(impl: () => Promise<unknown>) {
+  const fn = vi.fn(impl);
+  vi.stubGlobal("fetch", fn);
+  return fn;
+}
 
-vi.mock("@/lib/supabase", () => ({
-  supabase: {
-    from: vi.fn(() => ({ insert })),
-  },
-}));
+function jsonResponse(status: number, body: unknown) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  };
+}
 
 function fillRequiredFields(container: HTMLElement) {
   const name = container.querySelector<HTMLInputElement>("#name")!;
@@ -33,14 +39,16 @@ function fireInput(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
 
 describe("RegistrationForm", () => {
   beforeEach(() => {
-    insert.mockReset();
+    vi.restoreAllMocks();
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.useRealTimers();
   });
 
-  it("blocks submission via native field validation when required fields are empty", async () => {
+  it("blocks submission and shows field errors when required fields are empty", async () => {
     render(<RegistrationForm />);
 
     const submitButton = screen.getByRole("button", { name: /submit application/i });
@@ -48,11 +56,12 @@ describe("RegistrationForm", () => {
       submitButton.click();
     });
 
-    expect(insert).not.toHaveBeenCalled();
+    expect(screen.getByText(/full name is required/i)).toBeInTheDocument();
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
   });
 
-  it("submits to Supabase and shows the success state on valid submission", async () => {
-    insert.mockResolvedValueOnce({ error: null });
+  it("submits to the waitlist API and shows the success state on valid submission", async () => {
+    mockFetch(async () => jsonResponse(200, { ok: true }));
     const { container } = render(<RegistrationForm />);
 
     fillRequiredFields(container);
@@ -62,20 +71,21 @@ describe("RegistrationForm", () => {
       submitButton.click();
     });
 
-    expect(insert).toHaveBeenCalledWith([
-      expect.objectContaining({
-        email: "jane@example.com",
+    expect(fetch).toHaveBeenCalledWith("/api/waitlist", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify({
         name: "Jane Doe",
+        email: "jane@example.com",
         purpose: "Building a marketplace",
         referral: "Friend",
       }),
-    ]);
+    }));
 
     expect(await screen.findByText(/you're on the list/i)).toBeInTheDocument();
   });
 
-  it("shows a duplicate-email error and starts the cooldown on a unique-violation response", async () => {
-    insert.mockResolvedValueOnce({ error: { code: "23505" } });
+  it("shows a duplicate-email error and starts the cooldown on a 409 response", async () => {
+    mockFetch(async () => jsonResponse(409, { error: "duplicate" }));
     const { container } = render(<RegistrationForm />);
 
     fillRequiredFields(container);
@@ -91,7 +101,7 @@ describe("RegistrationForm", () => {
 
   it("prevents resubmission while the cooldown is active", async () => {
     vi.useFakeTimers();
-    insert.mockResolvedValueOnce({ error: { code: "unexpected" } });
+    mockFetch(async () => jsonResponse(500, { error: "boom" }));
     const { container } = render(<RegistrationForm />);
 
     fillRequiredFields(container);
@@ -103,7 +113,7 @@ describe("RegistrationForm", () => {
     });
 
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
-    expect(insert).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(5000);

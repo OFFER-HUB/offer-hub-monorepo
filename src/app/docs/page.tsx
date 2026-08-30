@@ -38,7 +38,7 @@ const docSections = [
   {
     icon: <Terminal />,
     title: "API Reference",
-    description: "Complete REST API documentation with authentication, endpoints, and webhooks.",
+    description: "Complete REST API documentation with authentication, endpoints, and real-time events.",
     link: "/docs/api-reference/overview",
     count: "3 articles",
     highlight: false,
@@ -176,13 +176,11 @@ export default function DocsPage() {
                 <Link
                   href={section.link}
                   className={cn(
-                    "block p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 border bg-bg-base/50 backdrop-blur-sm",
-                    section.highlight
-                      ? "border-theme-primary/40 shadow-neu-raised hover:shadow-neu-raised hover:border-theme-primary/60"
-                      : "border-black/[0.03] dark:border-white/[0.03] hover:border-theme-primary/20 hover:shadow-neu-raised"
+                    "block p-8 rounded-3xl transition-[border-color,box-shadow,transform] duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
+                    "hover:border-theme-primary/20 hover:shadow-neu-raised"
                   )}
                 >
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-[background-color,color,transform] duration-500 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
                     {section.icon}
                   </div>
                   <div className="flex items-center gap-3 flex-wrap mb-4">
@@ -200,7 +198,7 @@ export default function DocsPage() {
                   </p>
                   <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-content-secondary/40">
                     <span>{section.count}</span>
-                    <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
+                    <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
                       Explore <ChevronRight size={14} />
                     </span>
                   </div>
@@ -210,7 +208,7 @@ export default function DocsPage() {
                     href={section.externalLink.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative z-10 inline-block mt-2 ml-8 text-xs font-bold text-theme-primary hover:underline"
+                    className="relative z-10 inline-flex items-center min-h-11 mt-2 ml-8 text-xs font-bold text-theme-primary hover:underline"
                   >
                     {section.externalLink.label}
                   </a>
@@ -226,9 +224,9 @@ export default function DocsPage() {
             Can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex justify-center items-center gap-8">
-            <Link href="/community" className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">Help Center</Link>
+            <Link href="/community" className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">Help Center</Link>
             <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
-            <Link href={`${GITHUB_REPO_URL}/issues`} className="text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">GitHub Issues</Link>
+            <Link href={`${GITHUB_REPO_URL}/issues`} className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">GitHub Issues</Link>
           </div>
         </div>
       </div>

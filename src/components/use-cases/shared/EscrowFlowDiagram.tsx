@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export interface EscrowStep {
   stepNumber: number;
@@ -42,20 +41,20 @@ function HoverDetailPanel({ step }: { step: EscrowStep }) {
           {step.description}
         </p>
 
-        <div className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl p-3">
+        <div className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl p-3 overflow-x-auto">
           <p className="text-[10px] font-bold uppercase tracking-wider text-content-muted mb-1">
             API Endpoint
           </p>
-          <code className="text-xs font-mono text-theme-primary break-all">
+          <code className="text-xs font-mono text-theme-primary break-words">
             {step.apiMethod}
           </code>
         </div>
 
-        <div className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl p-3">
+        <div className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl p-3 overflow-x-auto">
           <p className="text-[10px] font-bold uppercase tracking-wider text-content-muted mb-1">
             SDK
           </p>
-          <code className="text-xs font-mono text-content-primary break-all">
+          <code className="text-xs font-mono text-content-primary break-words">
             {step.apiSnippet}
           </code>
         </div>
@@ -100,7 +99,8 @@ function StepCard({
       aria-label={`Step ${step.stepNumber}: ${step.label}`}
       className={cn(
         "flex flex-col p-5 md:p-6 rounded-[1.5rem] bg-bg-elevated transition-all duration-300 ease-out cursor-pointer select-none",
-        "w-full md:flex-1 min-w-0",
+        "w-full min-w-0",
+        isActive ? "md:flex-[2.2]" : "md:flex-1",
         "animate-fadeInUp",
         isActive
           ? "shadow-neu-raised-hover"
@@ -122,23 +122,23 @@ function StepCard({
           <span className="text-[10px] font-bold uppercase tracking-wider text-content-muted">
             Step {step.stepNumber}
           </span>
-          <h4 className="text-sm md:text-base font-bold text-content-primary truncate">
+          <h4 className="text-sm md:text-base font-bold text-content-primary">
             {step.label}
           </h4>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex flex-nowrap items-center gap-2 mb-1">
         <span
           className={cn(
-            "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium shadow-neu-raised-sm",
+            "inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-medium shadow-neu-raised-sm",
             STATUS_STYLES[step.status],
           )}
         >
           {step.status.replace(/_/g, " ")}
         </span>
         {step.isOnChain && (
-          <span className="text-[10px] font-bold text-theme-primary opacity-70">
+          <span className="whitespace-nowrap text-[10px] font-bold text-theme-primary opacity-70">
             On-chain
           </span>
         )}
@@ -151,10 +151,10 @@ function StepCard({
   );
 }
 
-function ConnectorLine({ vertical }: { vertical: boolean }) {
-  if (vertical) {
-    return (
-      <div className="flex justify-center py-1">
+function ConnectorLine() {
+  return (
+    <>
+      <div className="flex md:hidden justify-center py-1">
         <svg width="2" height="32" className="overflow-visible">
           <line
             x1="1"
@@ -169,25 +169,23 @@ function ConnectorLine({ vertical }: { vertical: boolean }) {
           />
         </svg>
       </div>
-    );
-  }
 
-  return (
-    <div className="hidden md:flex items-center justify-center flex-shrink-0 w-8 lg:w-12">
-      <svg width="100%" height="2" className="overflow-visible">
-        <line
-          x1="0"
-          y1="1"
-          x2="100%"
-          y2="1"
-          stroke="var(--color-primary)"
-          strokeWidth="2"
-          strokeDasharray="6 6"
-          strokeOpacity="0.4"
-          className="animate-connectorDash"
-        />
-      </svg>
-    </div>
+      <div className="hidden md:flex items-center justify-center flex-shrink-0 w-8 lg:w-12">
+        <svg width="100%" height="2" className="overflow-visible">
+          <line
+            x1="0"
+            y1="1"
+            x2="100%"
+            y2="1"
+            stroke="var(--color-primary)"
+            strokeWidth="2"
+            strokeDasharray="6 6"
+            strokeOpacity="0.4"
+            className="animate-connectorDash"
+          />
+        </svg>
+      </div>
+    </>
   );
 }
 
@@ -253,7 +251,6 @@ export function EscrowFlowDiagram({
   className,
 }: EscrowFlowDiagramProps) {
   const [activeStep, setActiveStep] = useState<number | null>(null);
-  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const isOnChainActive =
     activeStep !== null && steps[activeStep - 1]?.isOnChain;
@@ -261,21 +258,16 @@ export function EscrowFlowDiagram({
   return (
     <div
       className={cn(
-        "relative min-h-[400px] md:min-h-[550px] rounded-[3rem] shadow-neu-sunken w-full max-w-5xl mx-auto bg-bg-base p-6 md:p-12 animate-fadeInScale overflow-hidden",
+        "relative rounded-[3rem] shadow-neu-sunken w-full max-w-7xl mx-auto bg-bg-base p-6 md:p-12 animate-fadeInScale overflow-hidden",
         className,
       )}
     >
       <BlockchainPulse active={!!isOnChainActive} />
 
-      <div
-        className={cn(
-          "relative z-10 flex gap-3 h-full",
-          isMobile ? "flex-col" : "flex-row items-start",
-        )}
-      >
+      <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-3 h-full">
         {steps.map((step, i) => (
           <div key={step.stepNumber} className="contents">
-            {i > 0 && <ConnectorLine vertical={isMobile} />}
+            {i > 0 && <ConnectorLine />}
             <StepCard
               step={step}
               index={i}

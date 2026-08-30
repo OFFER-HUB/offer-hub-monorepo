@@ -149,34 +149,6 @@ body::before {
        Light shadow → L + 5%  (--shadow-light)
   */
 
-  /* L2 Raised — elements elevated above nested card layers */
-  .shadow-raised-l2 {
-    box-shadow:
-      12px 12px 24px var(--shadow-dark),
-      -12px -12px 24px var(--shadow-light);
-  }
-
-  /* L2 Raised (compact) — moderate lift for mid-level nesting */
-  .shadow-raised-l2-sm {
-    box-shadow:
-      8px 8px 16px var(--shadow-dark),
-      -8px -8px 16px var(--shadow-light);
-  }
-
-  /* L2 Sunken — deep depression for containers holding complex technical data */
-  .shadow-sunken-l2 {
-    box-shadow:
-      inset 8px 8px 16px var(--shadow-dark),
-      inset -8px -8px 16px var(--shadow-light);
-  }
-
-  /* L2 Sunken (subtle) — lighter depression for code/data panels */
-  .shadow-sunken-l2-subtle {
-    box-shadow:
-      inset 6px 6px 12px var(--shadow-dark),
-      inset -6px -6px 12px var(--shadow-light);
-  }
-
   /* Blueprint performance layer — promotes to GPU compositor for Safari/Mobile.
      Apply to any container with ≥ 3 concurrent box-shadows to avoid repaints. */
   .blueprint-layer {
@@ -184,40 +156,13 @@ body::before {
     transform: translateZ(0);
   }
 
-  /* ── Standard Neumorphic shadow system — light source at 145° (top-left)
-     Background base: #F1F3F7 · Dark shadow: #d1d5db · Light highlight: #ffffff */
-
-  .shadow-raised {
-    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-  }
-
-  .shadow-raised-hover {
-    box-shadow: 2px 2px 4px #d1d5db, -2px -2px 4px #ffffff;
-  }
-
-  .shadow-raised-sm {
-    box-shadow: 3px 3px 6px #d1d5db, -3px -3px 6px #ffffff;
-  }
-
-  .shadow-raised-sm-hover {
-    box-shadow: 1px 1px 3px #d1d5db, -1px -1px 3px #ffffff;
-  }
-
-  .shadow-sunken {
-    box-shadow: inset 4px 4px 8px #d1d5db, inset -4px -4px 8px #ffffff;
-  }
-
-  .shadow-sunken-subtle {
-    box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
-  }
-
-  /* For the navbar: flat surface elevation (bottom-only) */
-  .shadow-nav {
-    box-shadow: 0 6px 16px #d1d5db, 0 -2px 8px #ffffff;
-  }
-
-  .shadow-nav-scrolled {
-    box-shadow: 0 8px 20px #d1d5db, 0 -2px 10px #ffffff;
+  /* Shared elevation press/lift transition — animates only box-shadow so raised/sunken
+     surfaces feel neumorphic instead of fading or sliding. Reference this everywhere
+     a surface swaps between shadow-neu-raised* / shadow-neu-sunken* on hover or press. */
+  .transition-elevation {
+    transition-property: box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
   }
 
   .neu-input {
@@ -232,7 +177,7 @@ body::before {
     box-shadow:
       6px 6px 12px var(--shadow-dark),
       -6px -6px 12px var(--shadow-light);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
   }
 
   .neu-btn:active {
@@ -247,7 +192,7 @@ body::before {
     box-shadow:
       6px 6px 12px var(--shadow-dark),
       -6px -6px 12px var(--shadow-light);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
   }
 
   .neu-circle:active {
@@ -295,36 +240,34 @@ body::before {
   }
 
   /* ── 3D Colored Neumorphic Buttons ── */
+  /* Ramp darkened from the brand teal (#149A9B/#15A9AA/#0D7377) so white
+     text clears WCAG AA 4.5:1 in every state: default 4.93:1, hover 6.29:1,
+     active 8.10:1 (was as low as 2.43:1 on hover). See issue #1499. */
   .btn-neumorphic-primary {
-    background: #149A9B;
+    background: #107D7E;
     box-shadow:
-      /* Outer drop shadow (on #F1F3F7 gray bg) */
-      6px 6px 12px #d1d5db,
-      -6px -6px 12px #ffffff,
-      /* Inner highlight (top-left) to simulate 3D glossy curve */
+      6px 6px 12px var(--shadow-dark),
+      -6px -6px 12px var(--shadow-light),
       inset 2px 2px 5px rgba(255, 255, 255, 0.4),
-      /* Inner shadow (bottom-right) to simulate volume */
       inset -3px -3px 7px rgba(0, 0, 0, 0.15);
     transition: all 400ms cubic-bezier(0.25, 1, 0.5, 1);
     color: white;
   }
 
   .btn-neumorphic-primary:hover {
-    background: #15A9AA;
+    background: #0E6B6C;
     /* Slightly brighter highlight */
     box-shadow:
-      /* Noticeably lower the outer shadow */
-      3px 3px 6px #d1d5db,
-      -3px -3px 6px #ffffff,
+      3px 3px 6px var(--shadow-dark),
+      -3px -3px 6px var(--shadow-light),
       inset 2px 2px 4px rgba(255, 255, 255, 0.5),
       inset -2px -2px 5px rgba(0, 0, 0, 0.1);
     transform: translateY(2px);
   }
 
   .btn-neumorphic-primary:active {
-    background: #0d7377;
+    background: #0C595A;
     box-shadow:
-      /* Completely sunk into the page */
       inset 5px 5px 10px rgba(0, 0, 0, 0.2),
       inset -5px -5px 10px rgba(255, 255, 255, 0.15);
     transform: translateY(4px);
@@ -332,78 +275,79 @@ body::before {
 
   /* Secondary Base color Neumorphic Buttons */
   .btn-neumorphic-secondary {
-    background: #F1F3F7;
+    background: var(--color-bg-base);
     box-shadow:
-      6px 6px 12px #d1d5db,
-      -6px -6px 12px #ffffff,
+      6px 6px 12px var(--shadow-dark),
+      -6px -6px 12px var(--shadow-light),
       inset 1px 1px 2px rgba(255, 255, 255, 0.8),
       inset -1px -1px 2px rgba(0, 0, 0, 0.05);
     transition: all 400ms cubic-bezier(0.25, 1, 0.5, 1);
-    color: #19213D;
+    color: var(--color-text-primary);
   }
 
   .btn-neumorphic-secondary:hover {
     box-shadow:
-      3px 3px 6px #d1d5db,
-      -3px -3px 6px #ffffff,
+      3px 3px 6px var(--shadow-dark),
+      -3px -3px 6px var(--shadow-light),
       inset 1px 1px 2px rgba(255, 255, 255, 0.9);
     transform: translateY(2px);
   }
 
   .btn-neumorphic-secondary:active {
     box-shadow:
-      inset 4px 4px 8px #d1d5db,
-      inset -4px -4px 8px #ffffff;
+      inset 4px 4px 8px var(--shadow-dark),
+      inset -4px -4px 8px var(--shadow-light);
     transform: translateY(4px);
   }
 
   /* ── Dark Mode Neumorphic Buttons ── */
+  /* Same AA-compliant ramp as the light mode button above (contrast is a
+     property of the button's own bg/fg pair, not the surrounding page). */
   .dark .btn-neumorphic-primary {
-    background: #1fb8b9;
+    background: #107D7E;
     box-shadow:
-      6px 6px 12px #1a1a26,
-      -6px -6px 12px #2e2e3f,
+      6px 6px 12px var(--shadow-dark),
+      -6px -6px 12px var(--shadow-light),
       inset 2px 2px 5px rgba(255, 255, 255, 0.15),
       inset -3px -3px 7px rgba(0, 0, 0, 0.3);
   }
 
   .dark .btn-neumorphic-primary:hover {
-    background: #25d4d5;
+    background: #0E6B6C;
     box-shadow:
-      3px 3px 6px #1a1a26,
-      -3px -3px 6px #2e2e3f,
+      3px 3px 6px var(--shadow-dark),
+      -3px -3px 6px var(--shadow-light),
       inset 2px 2px 4px rgba(255, 255, 255, 0.2),
       inset -2px -2px 5px rgba(0, 0, 0, 0.2);
   }
 
   .dark .btn-neumorphic-primary:active {
-    background: #149A9B;
+    background: #0C595A;
     box-shadow:
       inset 5px 5px 10px rgba(0, 0, 0, 0.4),
       inset -5px -5px 10px rgba(255, 255, 255, 0.05);
   }
 
   .dark .btn-neumorphic-secondary {
-    background: #242433;
     box-shadow:
-      6px 6px 12px #1a1a26,
-      -6px -6px 12px #2e2e3f,
+      6px 6px 12px var(--shadow-dark),
+      -6px -6px 12px var(--shadow-light),
       inset 1px 1px 2px rgba(255, 255, 255, 0.1),
       inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-    color: #f1f3f7;
+    color: var(--color-text-primary);
   }
 
   .dark .btn-neumorphic-secondary:hover {
     box-shadow:
-      3px 3px 6px #1a1a26,
-      -3px -3px 6px #2e2e3f,
+      3px 3px 6px var(--shadow-dark),
+      -3px -3px 6px var(--shadow-light),
       inset 1px 1px 2px rgba(255, 255, 255, 0.15);
   }
 
   .dark .btn-neumorphic-secondary:active {
     box-shadow:
-      inset 4px 4px 8px #1a1a26,
-      inset -4px -4px 8px #2e2e3f;
+      inset 4px 4px 8px var(--shadow-dark),
+      inset -4px -4px 8px var(--shadow-light);
   }
 }
 
@@ -452,6 +396,22 @@ body::before {
 
 .animate-fadeInScale {
   animation: fadeInScale 0.6s ease-out both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdownIn {
+  animation: dropdownIn 0.2s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {

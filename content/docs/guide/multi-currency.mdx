@@ -1,82 +1,69 @@
 ---
 title: Multi-Currency
-description: Supported assets, automatic conversion at settlement, and currency configuration in OFFER-HUB.
+description: Supported assets, currency configuration, and the multi-asset roadmap in OFFER-HUB.
 order: 3
 section: Guides
 ---
 
-OFFER-HUB provides native support for multiple assets, from stablecoins and native XLM to custom curated Stellar tokens, ensuring flexibility for all modern marketplaces.
+<Callout type="note">
+  The Orchestrator is currently built exclusively for <Badge variant="primary">USDC</Badge> on Stellar. Support for additional assets is on the roadmap. See [Supported Assets](#supported-assets) below for details.
+</Callout>
 
 ## Supported Assets
 
-Below is a list of the primary assets officially supported on the platform:
+### Currently Supported
 
-| Name | Symbol | Type |
-| :--- | :--- | :--- |
-| USD Coin | USDC | Stablecoin |
-| Stellar Lumens | XLM | Native Asset |
-| Argentine Peso Token | ARST | Custom Stellar Token |
-| Euro Token | EURT | Custom Stellar Token |
+| Name | Symbol | Type | Status |
+| :--- | :--- | :--- | :--- |
+| USD Coin | USDC | Stablecoin | Available |
 
-### Stablecoins
+<Badge variant="primary">USDC</Badge> is the only settlement asset supported by the Orchestrator today. All balances, escrow contracts, and settlement amounts are denominated in USDC.
 
-The most common settlement asset is USDC, providing price stability for buyers and sellers across your marketplace.
+The crypto deposit provider accepts USDC via Stellar wallet transfers, and all on-chain escrow operations use USDC through the Trustless Work integration.
 
-<Callout variant="tip">
-  Stablecoin settlements typically incur lower volatility risk, making them the preferred choice for escrow.
+### Planned Assets
+
+The following assets are planned for future releases:
+
+| Name | Symbol | Type | Status |
+| :--- | :--- | :--- | :--- |
+| Euro Coin | EURC | Stablecoin | Planned |
+| Stellar Lumens | XLM | Native Asset | Planned |
+| Argentine Peso Token | ARST | Custom Stellar Token | Planned |
+| Euro Token | EURT | Custom Stellar Token | Planned |
+
+<Callout type="tip">
+  If you need support for a specific asset not listed above, [open a discussion](https://github.com/OFFER-HUB/offer-hub-monorepo/issues) on the repository.
 </Callout>
 
-### Native XLM
+## Automatic Conversion at Settlement (Planned)
 
-You can also use <Badge variant="primary">XLM</Badge>, the native asset of the Stellar network, which provides fast settlement and low transaction costs.
-
-### Custom Stellar Tokens
-
-OFFER-HUB can be configured to support other custom tokens issued on the Stellar network (e.g., ARST, EURT) by specifying the `issuer` address and `code` in the specific environment configuration.
-
-## Automatic Conversion at Settlement
-
-You have the ability to automatically convert assets during settlement. For example, if a buyer deposits XLM, the seller can receive USDC.
-
-<Callout variant="note">
-  Automatic conversion relies on path payments on the Stellar Decentralized Exchange (DEX). Sufficient liquidity must exist between the assets to prevent excessive slippage.
+<Callout type="warning">
+  This feature is not yet implemented. The details below describe the planned design.
 </Callout>
+
+A future release will allow automatic conversion of assets during settlement via Stellar path payments. For example, a buyer could deposit XLM while the seller receives USDC, with the conversion happening atomically at settlement.
+
+Path payments rely on the Stellar Decentralized Exchange (DEX) for liquidity. Sufficient liquidity between the asset pairs must exist to prevent excessive slippage.
 
 ## Configuration
 
-To enable specific assets or set default conversion preferences, update your configuration in your integration environment.
+The Orchestrator is configured for USDC settlement through environment variables:
 
-Here is an example configuring supported currencies using our SDK or API:
+```env
+# Stellar network asset configuration
+STELLAR_NETWORK=mainnet
+STELLAR_USDC_ASSET_CODE=USDC
+```
 
-<CodeBlock language="ts">{`
-import { OfferHubClient } from '@offer-hub/sdk';
+See the [Configuration](/docs/configuration) page for the full list of environment variables.
 
-const client = new OfferHubClient({
-  apiKey: process.env.OFFER_HUB_API_KEY,
-  supportedAssets: [
-    {
-      code: 'USDC',
-      type: 'stablecoin',
-      primary: true,
-    },
-    {
-      code: 'XLM',
-      type: 'native',
-    },
-    {
-      code: 'ARST',
-      type: 'custom',
-      issuer: 'GB...ARST_ISSUER_ADDRESS...',
-    }
-  ],
-  settlementPreferences: {
-    autoConvert: true,
-    targetAssetCode: 'USDC',
-    maxSlippageBps: 50 // 0.5% max slippage
-  }
-});
-`}</CodeBlock>
-
-<Callout variant="warning">
-  Ensure that when adding `custom` tokens, the `issuer` address is completely verified and trusted to prevent spoofed tokens.
+<Callout type="note">
+  When additional assets are supported, they will be configurable through the same environment configuration. No changes to your integration code will be needed beyond updating environment variables.
 </Callout>
+
+## Cross-References
+
+- [Deposits Guide](/docs/guide/deposits) — How users add USDC to their balance
+- [Orchestrator Guide](/docs/guide/orchestrator) — How the payment engine processes USDC transactions
+- [Withdrawals Guide](/docs/guide/withdrawals) — Moving USDC off-platform

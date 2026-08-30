@@ -21,14 +21,14 @@ const contributionTypes = [
 
 export function HowToContribute() {
     return (
-        <section id="how-to-contribute" className="py-24">
-            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <section id="how-to-contribute" className="py-24 w-full min-w-0 max-w-full overflow-hidden">
+            <div className="max-w-7xl mx-auto w-full min-w-0 px-6 lg:px-8">
                 {/* Heading */}
                 <div className="text-center mb-16">
-                    <p className="text-xs font-medium uppercase tracking-[0.4em] mb-4 text-theme-primary">
+                    <p className="text-xs font-medium uppercase tracking-[0.4em] mb-4 text-theme-primary max-w-full break-words">
                         How to Contribute
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-content-primary">
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-content-primary max-w-full">
                         Join the OFFER HUB Community
                     </h2>
                     <p className="text-lg max-w-2xl mx-auto text-content-secondary">
@@ -40,7 +40,7 @@ export function HowToContribute() {
                 <div className="mb-24">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
                         {steps.map((step) => (
-                            <div key={step.number} className="flex flex-col items-center text-center gap-6">
+                            <div key={step.number} className="flex flex-col items-center text-center gap-6 min-w-0 w-full max-w-full overflow-hidden">
                                 <div className="w-24 h-24 rounded-full bg-bg-elevated shadow-neu-raised flex items-center justify-center flex-shrink-0 relative z-10">
                                     <span className="text-2xl font-black text-theme-primary">
                                         {step.number}
@@ -68,7 +68,7 @@ export function HowToContribute() {
                             return (
                                 <div
                                     key={type.title}
-                                    className="rounded-2xl p-6 bg-bg-elevated shadow-neu-raised flex flex-col gap-4"
+                                    className="rounded-2xl p-6 bg-bg-elevated shadow-neu-raised flex flex-col gap-4 min-w-0 w-full max-w-full overflow-hidden"
                                 >
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center bg-bg-sunken shadow-neu-sunken-subtle">
                                         <Icon className="w-5 h-5 text-theme-primary" />

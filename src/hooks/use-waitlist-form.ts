@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { submitWaitlistEntry } from "@/services/waitlist"
+import { waitlistFormSchema } from "@/lib/validation/waitlist.schema"
+import { formatFieldErrors } from "@/lib/validation/errors"
 
 const COOLDOWN_SECONDS = 30
 
@@ -48,6 +50,9 @@ export function useWaitlistForm() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof WaitlistFormData, string>>
+  >({})
   const [cooldownSeconds, setCooldownSeconds] = useState(0)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [formData, setFormData] = useState<WaitlistFormData>(INITIAL_FORM_DATA)
@@ -122,6 +127,7 @@ export function useWaitlistForm() {
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    setErrors((prev) => ({ ...prev, [name]: undefined }))
     setError(null)
   }
 
@@ -134,17 +140,29 @@ export function useWaitlistForm() {
       return
     }
 
+    const parsed = waitlistFormSchema.safeParse(formData)
+    if (!parsed.success) {
+      setErrors(formatFieldErrors(parsed.error))
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
-    const result = await submitWaitlistEntry(formData)
+    const result = await submitWaitlistEntry(parsed.data)
 
     if (result.ok) {
       setIsSubmitted(true)
       return
     }
 
-    setError(ERROR_MESSAGES[result.reason])
+    if (result.reason === "validation" && result.errors) {
+      setErrors(result.errors)
+      setIsLoading(false)
+      return
+    }
+
+    setError(ERROR_MESSAGES[result.reason as keyof typeof ERROR_MESSAGES] ?? ERROR_MESSAGES.error)
     setIsLoading(false)
     startCooldown()
     resetTurnstile()
@@ -155,6 +173,7 @@ export function useWaitlistForm() {
     isSubmitted,
     isLoading,
     error,
+    errors,
     cooldownSeconds,
     turnstileContainerRef,
     isTurnstileConfigured,

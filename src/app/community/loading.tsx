@@ -5,11 +5,11 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function CommunityLoading() {
   return (
-    <>
+    <div className="w-full max-w-full overflow-x-hidden min-w-0">
       <LoadingBar />
       <Navbar />
 
-      <main className="pt-16">
+      <main className="pt-16 w-full max-w-full overflow-x-hidden min-w-0">
         <section className="py-24">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
@@ -20,7 +20,7 @@ export default function CommunityLoading() {
                 <Skeleton className="h-4 w-5/6" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 lg:col-span-5">
+              <div className="grid grid-cols-1 gap-4 lg:col-span-5">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="rounded-2xl p-6 space-y-3">
                     <Skeleton className="h-3 w-16" />
@@ -36,8 +36,8 @@ export default function CommunityLoading() {
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="text-center mb-16 space-y-4">
               <Skeleton className="h-3 w-24 mx-auto" />
-              <Skeleton className="h-10 w-64 mx-auto" />
-              <Skeleton className="h-4 w-96 mx-auto" />
+              <Skeleton className="h-10 w-full max-w-xs mx-auto" />
+              <Skeleton className="h-4 w-full max-w-sm mx-auto" />
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,8 +57,8 @@ export default function CommunityLoading() {
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="text-center mb-16 space-y-4">
               <Skeleton className="h-3 w-32 mx-auto" />
-              <Skeleton className="h-10 w-80 mx-auto" />
-              <Skeleton className="h-4 w-96 mx-auto" />
+              <Skeleton className="h-10 w-full max-w-xs mx-auto" />
+              <Skeleton className="h-4 w-full max-w-sm mx-auto" />
             </div>
 
             <div className="space-y-4">
@@ -83,6 +83,6 @@ export default function CommunityLoading() {
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }

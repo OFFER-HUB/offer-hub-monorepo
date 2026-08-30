@@ -37,21 +37,9 @@ const RouteErrorCard = ({
           ease: "easeInOut" as const,
           repeat: Infinity,
         }}
-        className="rounded-3xl p-10 flex flex-col items-center text-center"
-        style={{
-          background: "var(--color-bg-base)",
-          boxShadow:
-            "10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light)",
-        }}
+        className="rounded-3xl p-10 flex flex-col items-center text-center bg-bg-base shadow-neu-raised-l2"
       >
-        <div
-          className="w-36 h-36 rounded-2xl flex items-center justify-center mb-6"
-          style={{
-            background: "var(--color-bg-sunken)",
-            boxShadow:
-              "inset 10px 10px 20px var(--shadow-dark), inset -10px -10px 20px var(--shadow-light)",
-          }}
-        >
+        <div className="w-36 h-36 rounded-2xl flex items-center justify-center mb-6 bg-bg-sunken shadow-neu-sunken-l2">
           <AlertTriangle
             size={48}
             strokeWidth={1.5}
@@ -60,17 +48,11 @@ const RouteErrorCard = ({
           />
         </div>
 
-        <h1
-          className="text-xl font-bold mb-3 leading-snug"
-          style={{ color: "var(--color-text-primary)" }}
-        >
+        <h1 className="text-xl font-bold mb-3 leading-snug text-content-primary">
           {title}
         </h1>
 
-        <p
-          className="text-sm leading-relaxed mb-8"
-          style={{ color: "var(--color-text-secondary)" }}
-        >
+        <p className="text-sm leading-relaxed mb-8 text-content-secondary">
           {message}
         </p>
 
@@ -143,7 +125,7 @@ export const RouteError = ({
 
   return (
     <main
-      className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-4"
+      className="min-h-screen flex items-center justify-center bg-bg-base px-4"
       role="alert"
       aria-live="assertive"
     >

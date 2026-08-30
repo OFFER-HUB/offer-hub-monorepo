@@ -6,7 +6,7 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/escrow.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/escrow.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/escrow.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/escrow.md) in the repo.
 </Callout>
 
 Escrow is the core security mechanism in OFFER-HUB. When a buyer pays for a service, funds are locked in a Stellar smart contract until the work is delivered and approved. Neither party can unilaterally access the funds — the contract enforces fair resolution.
@@ -28,59 +28,36 @@ OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on th
 
 | Role | Description |
 |------|-------------|
-| **Buyer** | Deposits funds into escrow |
-| **Seller** | Receives funds when work is approved |
-| **Platform** | OFFER-HUB's signer for dispute resolution |
-| **Arbiter** | Trustless Work's contract for on-chain enforcement |
+| **Buyer** | Funds the escrow; approves milestones; signs fund-release transactions |
+| **Seller** | Receives funds; marks milestones as completed (`serviceProvider` role) |
+| **Platform** | OFFER-HUB's signer; acts as `disputeResolver` — required for any dispute resolution |
+| **Arbiter** | Trustless Work's smart contract; enforces that `disputeResolver` ≠ `disputer` on-chain |
 
 ## Escrow Lifecycle
 
 ### State Machine
 
-```mermaid
-stateDiagram-v2
-    [*] --> ORDER_CREATED
-    ORDER_CREATED --> FUNDS_RESERVED: Off-chain lock
+The escrow contract follows the internal **Escrow state machine** below — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly. The order around it follows the [Order lifecycle](/docs/guide/orders).
 
-    state "Contract Setup" as setup {
-        FUNDS_RESERVED --> ESCROW_CREATING: Init contract
-        ESCROW_CREATING --> ESCROW_CREATED: Deployed
-    }
-
-    state "Funding" as funding {
-        ESCROW_CREATED --> ESCROW_FUNDING: Send USDC
-        ESCROW_FUNDING --> ESCROW_FUNDED: Confirmed
-    }
-
-    ESCROW_FUNDED --> IN_PROGRESS: Work begins
-
-    state "Resolution" as resolution {
-        IN_PROGRESS --> RELEASING: Buyer approves
-        IN_PROGRESS --> DISPUTING: Open dispute
-        RELEASING --> CLOSED: Released
-        DISPUTING --> DISPUTED: Under review
-        DISPUTED --> REFUNDED: Refund
-        DISPUTED --> CLOSED: Release
-    }
-
-    CLOSED --> [*]
-    REFUNDED --> [*]
-```
+<EscrowStateMachineDiagram />
 
 ### State Descriptions
 
 | State | Description |
 |-------|-------------|
-| `ESCROW_CREATING` | Smart contract being deployed |
-| `ESCROW_CREATED` | Contract ready, waiting for funding |
-| `ESCROW_FUNDING` | USDC transfer to contract in progress |
-| `ESCROW_FUNDED` | Funds locked, work can begin |
-| `IN_PROGRESS` | Seller is working on the order |
-| `RELEASING` | Release transaction in progress |
-| `DISPUTING` | Dispute transaction in progress |
-| `DISPUTED` | Awaiting resolution |
-| `CLOSED` | Funds released to seller |
-| `REFUNDED` | Funds returned to buyer |
+| `CREATING` | Creating contract in Trustless Work |
+| `CREATED` | Contract created, not funded |
+| `FUNDING` | Funding contract |
+| `FUNDED` | Funds locked in contract |
+| `RELEASING` | Releasing funds to the seller |
+| `RELEASED` | Funds released |
+| `REFUNDING` | Returning funds to the buyer |
+| `REFUNDED` | Funds returned |
+| `DISPUTED` | Active dispute |
+
+<Callout type="note">
+  Order-level statuses (e.g. `ESCROW_CREATING`, `ESCROW_FUNDING`, `ESCROW_FUNDED`, `IN_PROGRESS`, `CLOSED`) belong to the [Order state machine](/docs/guide/orders). The escrow machine above tracks the smart contract itself.
+</Callout>
 
 ## Creating Escrow
 
@@ -145,18 +122,23 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/release \
 
 ### The 3-Transaction Release Flow
 
-Releasing funds requires three separate blockchain transactions:
+Releasing funds requires three separate Stellar transactions signed by different parties:
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `complete_escrow` | Buyer approves work |
-| 2 | `release_escrow` | Platform authorizes release |
-| 3 | Claim funds | Seller receives USDC |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `changeMilestoneStatus` | **Seller** | `serviceProvider` |
+| 2 | `approveMilestone` | **Buyer** | `approver` |
+| 3 | `releaseFunds` | **Buyer** | `releaseSigner` |
+
+<Callout type="note">
+  The seller signs first to mark the milestone as completed, then the buyer signs twice — once to approve and once to trigger the actual fund transfer. All signing happens server-side via the parties' invisible wallets.
+</Callout>
 
 ```mermaid
 flowchart LR
-    A[Buyer signs complete] --> B[Platform signs release]
-    B --> C[Seller claims funds]
+    A["Seller signs\nchangeMilestoneStatus\n(serviceProvider)"] --> B["Buyer signs\napproveMilestone\n(approver)"]
+    B --> C["Buyer signs\nreleaseFunds\n(releaseSigner)"]
+    C --> D[USDC sent to seller]
 ```
 
 ### Release Response
@@ -187,8 +169,8 @@ curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "requestedBy": "usr_buyer123",
-    "reason": "Work not delivered as specified"
+    "openedBy": "BUYER",
+    "reason": "QUALITY_ISSUE"
   }'
 ```
 
@@ -201,20 +183,24 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
-    "resolution": "refund",
+    "decision": "FULL_REFUND",
     "note": "Seller did not deliver agreed work"
   }'
 ```
 
 ### The 2-Transaction Refund Flow
 
-| Step | Transaction | Signer |
-|------|-------------|--------|
-| 1 | `dispute_escrow` | Buyer opens dispute |
-| 2 | `resolve_dispute` | Platform refunds buyer |
+| Step | Contract call | Signer | Role in contract |
+|------|---------------|--------|------------------|
+| 1 | `disputeEscrow` | **Buyer** | `approver` (disputer) |
+| 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
 
 <Callout type="warning">
-  Disputes require platform intervention. The smart contract won't release funds until the platform signs the resolution transaction.
+  Disputes require platform intervention. The smart contract won't transfer funds until the platform signs the `resolveDispute` transaction as `disputeResolver`.
+</Callout>
+
+<Callout type="danger">
+  **Role separation is enforced on-chain.** The `disputeResolver` must be a different party from the disputer. Because the buyer opens the dispute (step 1), only the platform wallet — never the buyer or seller — can sign the resolution (step 2). This prevents either party from unilaterally reclaiming funds.
 </Callout>
 
 ## Using the SDK
@@ -235,8 +221,9 @@ const order = await sdk.orders.get('ord_xyz789');
 // Create escrow contract
 await sdk.escrow.create(order.id);
 
-// Wait for contract creation (or use events)
-await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
+// Wait for contract creation (or use events) — the order advances to
+// ESCROW_FUNDING once Trustless Work confirms the deployment
+await sdk.orders.waitForStatus(order.id, 'ESCROW_FUNDING');
 
 // Fund the escrow
 await sdk.escrow.fund(order.id);
@@ -255,8 +242,8 @@ await sdk.resolution.release(order.id, {
 ```typescript
 const events = sdk.events.subscribe();
 
-events.on('order.escrow_created', (data) => {
-  console.log('Contract deployed:', data.contractId);
+events.on('order.escrow_creating', (data) => {
+  console.log('Contract deploying:', data.contractId);
 });
 
 events.on('order.escrow_funded', (data) => {
@@ -352,40 +339,42 @@ try {
     // Check if transaction was actually submitted
     const order = await sdk.orders.get(orderId);
     if (order.status === 'ESCROW_FUNDING') {
-      // Transaction pending, wait for webhook
+      // Transaction pending — wait for the order.escrow_funded SSE event or poll
       console.log('Funding in progress, waiting for confirmation...');
     }
   }
 }
 ```
 
-## Webhooks for Escrow Events
+## Real-Time Escrow Events (SSE)
 
-Subscribe to escrow lifecycle events:
+Escrow lifecycle events are delivered over the [SSE event stream](/docs/api-reference/webhooks) at `GET /api/v1/events` — there is no outbound webhook API:
 
 ```bash
-curl -X POST http://localhost:4000/api/v1/webhooks \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://your-app.com/webhooks",
-    "events": [
-      "escrow.created",
-      "escrow.funded",
-      "escrow.released",
-      "escrow.disputed",
-      "escrow.refunded"
-    ],
-    "secret": "your-webhook-secret"
-  }'
+curl -N "http://localhost:4000/api/v1/events?types=order.escrow_creating,order.escrow_funded,order.released,order.refunded" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
 ```
 
-See [Webhooks](/docs/api-reference/webhooks) for payload formats and signature verification.
+Or with the SDK:
+
+```typescript
+const events = sdk.events.subscribe();
+
+events.on('order.escrow_funded', (data) => {
+  console.log('Escrow funded:', data.fundedAt);
+});
+
+events.on('order.released', (data) => {
+  console.log('Released to seller:', data.amount);
+});
+```
+
+See [Real-Time Events & Webhooks](/docs/api-reference/webhooks) for the full event catalog, connection parameters, and replay support.
 
 ## Security Considerations
 
 1. **Never expose private keys** — All signing happens server-side
-2. **Verify webhook signatures** — Prevent spoofed events
+2. **Use the SSE stream** — Real-time updates arrive over `GET /api/v1/events`; there is no outbound webhook API
 3. **Use idempotency keys** — Prevent duplicate funding
 4. **Monitor contract state** — Cross-check with Stellar explorer
 

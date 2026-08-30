@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
@@ -15,6 +15,9 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     globalSetup: ["./vitest.globalSetup.ts"],
     css: true,
+    // e2e/ holds Playwright specs (run via `npm run test:e2e`), which use
+    // an incompatible test()/expect() from @playwright/test.
+    exclude: [...configDefaults.exclude, "**/e2e/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],

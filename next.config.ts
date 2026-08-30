@@ -32,10 +32,28 @@ const nextConfig: NextConfig = {
       { source: "/api/:path*", headers: [...securityHeaders, ...corsHeaders] },
     ];
   },
+  async rewrites() {
+    // `[...slug]` is a catch-all and Next.js requires catch-all segments to be
+    // the last part of a route, so `/docs/[...slug]/raw/route.ts` cannot exist
+    // alongside `/docs/[...slug]/page.tsx`. The raw-Markdown handler instead
+    // lives at the non-conflicting `/api/docs-raw/[...slug]` path, and this
+    // rewrite keeps the public URL at the documented `/docs/<slug>/raw`.
+    return [
+      { source: "/docs/:slug*/raw", destination: "/api/docs-raw/:slug*" },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "avatars.githubusercontent.com", pathname: "/**" },
     ],
+  },
+  webpack: (config) => {
+    config.resolve.extensionAlias = {
+      ".js": [".ts", ".tsx", ".js", ".jsx"],
+      ".mjs": [".mts", ".mjs"],
+      ".cjs": [".cts", ".cjs"],
+    };
+    return config;
   },
 };
 

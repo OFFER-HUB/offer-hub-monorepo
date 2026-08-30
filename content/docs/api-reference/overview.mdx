@@ -269,24 +269,9 @@ Returns a deposit address for the user to fund their account.
 
 ---
 
-## Webhooks
+## Real-Time Events
 
-Receive real-time event notifications from OFFER-HUB via HTTP webhooks.
-
-See the [Webhooks documentation](/docs/api-reference/webhooks) for complete details on:
-- Payload structures
-- Signature verification
-- Retry logic
-
-**Available Events**
-
-| Event | Trigger |
-|-------|---------|
-| `escrow.created` | New escrow contract created |
-| `escrow.funded` | Escrow has received funds |
-| `escrow.released` | Seller paid; escrow completed |
-| `escrow.disputed` | Dispute opened on an escrow |
-| `escrow.refunded` | Escrow refunded to buyer |
+The Orchestrator receives inbound webhooks from external providers (Airtm, Trustless Work) to process payment and escrow lifecycle events. See the [Webhooks documentation](/docs/api-reference/webhooks) for full payload structures, signature verification, and retry logic.
 
 ---
 
@@ -426,23 +411,73 @@ Retry-After: 60
 
 ## Available Endpoints
 
-### Auth & Config
+Every entry below was verified against the real controllers in `apps/api/src/modules`. All paths are relative to the `/api/v1` prefix.
+
+### Auth
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/auth/api-keys` | <Badge variant="primary">POST</Badge> | Create API key |
 | `/auth/api-keys` | <Badge variant="success">GET</Badge> | List API keys |
-| `/health` | <Badge variant="success">GET</Badge> | Health check |
+| `/auth/api-keys/{id}/token` | <Badge variant="primary">POST</Badge> | Generate short-lived token |
+| `/auth/me` | <Badge variant="success">GET</Badge> | Current auth context |
+
+### Config
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/config` | <Badge variant="success">GET</Badge> | Platform configuration (public) |
+
+### Health
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | <Badge variant="success">GET</Badge> | Basic health check (public) |
+| `/health/detailed` | <Badge variant="success">GET</Badge> | Detailed health check (public) |
 
 ### Users
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/users` | <Badge variant="primary">POST</Badge> | Create user |
-| `/users` | <Badge variant="success">GET</Badge> | List users |
-| `/users/{id}` | <Badge variant="success">GET</Badge> | Get user |
-| `/users/{id}/balance` | <Badge variant="success">GET</Badge> | Get balance |
-| `/users/{id}/wallet/deposit` | <Badge variant="success">GET</Badge> | Get deposit address |
+| `/users/{id}/airtm/link` | <Badge variant="primary">POST</Badge> | Link Airtm account |
+
+### Balance
+
+All balance endpoints are scoped to a user: `/users/{userId}/balance`.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/users/{userId}/balance` | <Badge variant="success">GET</Badge> | Get user balance |
+| `/users/{userId}/balance/credit` | <Badge variant="primary">POST</Badge> | Credit available balance |
+| `/users/{userId}/balance/debit` | <Badge variant="primary">POST</Badge> | Debit available balance |
+| `/users/{userId}/balance/reserve` | <Badge variant="primary">POST</Badge> | Reserve funds |
+| `/users/{userId}/balance/release` | <Badge variant="primary">POST</Badge> | Release reserved funds |
+| `/users/{userId}/balance/cancel-reservation` | <Badge variant="primary">POST</Badge> | Cancel reservation |
+| `/users/{userId}/balance/deduct-reserved` | <Badge variant="primary">POST</Badge> | Deduct from reserved |
+| `/users/{userId}/balance/sync` | <Badge variant="primary">POST</Badge> | Sync with provider |
+| `/users/{userId}/balance/verify` | <Badge variant="success">GET</Badge> | Verify with provider |
+
+### Wallet
+
+Wallet endpoints are scoped to a user: `/users/{userId}/wallet`.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | Get wallet info |
+| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | Get deposit address |
+| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | Transaction history |
+
+### Top-ups
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/topups` | <Badge variant="primary">POST</Badge> | Create top-up |
+| `/topups` | <Badge variant="success">GET</Badge> | List top-ups |
+| `/topups/{id}` | <Badge variant="success">GET</Badge> | Get top-up |
+| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | Refresh status from Airtm |
+| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | Cancel top-up |
+| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | Airtm callback (public) |
 
 ### Orders
 
@@ -453,12 +488,14 @@ Retry-After: 60
 | `/orders/{id}` | <Badge variant="success">GET</Badge> | Get order |
 | `/orders/{id}/reserve` | <Badge variant="primary">POST</Badge> | Reserve funds |
 | `/orders/{id}/cancel` | <Badge variant="primary">POST</Badge> | Cancel order |
+| `/orders/{id}/milestones` | <Badge variant="success">GET</Badge> | Get milestones |
+| `/orders/{id}/milestones/{ref}/complete` | <Badge variant="primary">POST</Badge> | Complete milestone |
 
 ### Escrow
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/orders/{id}/escrow` | <Badge variant="primary">POST</Badge> | Create escrow |
+| `/orders/{id}/escrow` | <Badge variant="primary">POST</Badge> | Create escrow contract |
 | `/orders/{id}/escrow/fund` | <Badge variant="primary">POST</Badge> | Fund escrow |
 
 ### Resolution
@@ -468,6 +505,14 @@ Retry-After: 60
 | `/orders/{id}/resolution/release` | <Badge variant="primary">POST</Badge> | Release to seller |
 | `/orders/{id}/resolution/refund` | <Badge variant="primary">POST</Badge> | Refund to buyer |
 | `/orders/{id}/resolution/dispute` | <Badge variant="primary">POST</Badge> | Open dispute |
+
+### Disputes
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/disputes` | <Badge variant="success">GET</Badge> | List disputes |
+| `/disputes/{id}` | <Badge variant="success">GET</Badge> | Get dispute |
+| `/disputes/{id}/assign` | <Badge variant="primary">POST</Badge> | Assign to agent |
 | `/disputes/{id}/resolve` | <Badge variant="primary">POST</Badge> | Resolve dispute |
 
 ### Withdrawals
@@ -475,14 +520,29 @@ Retry-After: 60
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/withdrawals` | <Badge variant="primary">POST</Badge> | Create withdrawal |
+| `/withdrawals` | <Badge variant="success">GET</Badge> | List withdrawals |
 | `/withdrawals/{id}` | <Badge variant="success">GET</Badge> | Get withdrawal |
-| `/withdrawals/{id}/commit` | <Badge variant="primary">POST</Badge> | Commit withdrawal (AirTM) |
+| `/withdrawals/{id}/commit` | <Badge variant="primary">POST</Badge> | Commit withdrawal |
+| `/withdrawals/{id}/refresh` | <Badge variant="primary">POST</Badge> | Refresh status from Airtm |
 
 ### Events
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/events` | <Badge variant="success">GET</Badge> | SSE event stream |
+
+### Webhooks (inbound)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/webhooks/airtm` | <Badge variant="primary">POST</Badge> | Receive Airtm webhooks |
+| `/webhooks/trustless-work` | <Badge variant="primary">POST</Badge> | Receive Trustless Work webhooks |
+
+### Audit Logs
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/audit/logs` | <Badge variant="success">GET</Badge> | List audit entries |
 
 ## Versioning
 
@@ -498,6 +558,6 @@ The API uses path versioning:
 
 ## Next Steps
 
-- [Webhooks](/docs/api-reference/webhooks) - Receive event notifications
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) - SSE event stream and event catalog
 - [Quick Start](/docs/guide/quick-start) - Your first API call
 - [SDK Guide](/docs/sdk/quick-start) - Use the TypeScript SDK

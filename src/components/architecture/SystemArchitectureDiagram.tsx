@@ -21,15 +21,15 @@ export function SystemArchitectureDiagram() {
 
       <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm font-medium">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#149A9B] shadow-neu-raised-sm"></span>
+          <span className="w-3 h-3 rounded-full bg-theme-primary shadow-neu-raised-sm"></span>
           <span className="text-content-secondary">SCF Integration / Client</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#002333] shadow-neu-raised-sm"></span>
+          <span className="w-3 h-3 rounded-full bg-theme-secondary shadow-neu-raised-sm"></span>
           <span className="text-content-secondary">Internal API</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#F1F3F7] border border-[var(--color-border)] shadow-neu-raised-sm"></span>
+          <span className="w-3 h-3 rounded-full bg-bg-base border border-theme-border shadow-neu-raised-sm"></span>
           <span className="text-content-secondary">Persistence / Chain</span>
         </div>
       </div>

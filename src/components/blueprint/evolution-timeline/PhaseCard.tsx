@@ -49,7 +49,7 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
           }
           ${isInProgress ? "ring-1 ring-[var(--color-primary)]/30" : ""}
           md:w-[calc(50%_-_2.5rem)]
-          cursor-pointer select-none transition-all duration-300
+          cursor-pointer select-none transition-[box-shadow,opacity,border-color] duration-300
         `}
         onClick={() => setExpanded((v) => !v)}
         whileHover={!isPlanned ? { y: -3, transition: { duration: 0.2 } } : {}}

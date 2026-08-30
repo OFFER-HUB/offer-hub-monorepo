@@ -36,14 +36,14 @@ export function SupportedBySection() {
           </p>
 
           {/* Partner Logos - Inline */}
-          <div className="relative z-10 flex items-center gap-6">
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 max-w-full">
             {partners.map((partner) => (
               <Link
                 key={partner.name}
                 href={partner.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="opacity-70 hover:opacity-100 transition-opacity duration-200"
+                className="inline-flex items-center justify-center min-w-11 min-h-11 opacity-70 hover:opacity-100 transition-opacity duration-200"
               >
                 <Image
                   src={partner.logo}

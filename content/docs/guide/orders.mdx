@@ -6,39 +6,20 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/orders.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/orders.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/orders.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/orders.md) in the repo.
 </Callout>
 
 Orders are the core of OFFER-HUB. They represent a transaction between a buyer and seller, with funds protected by escrow until work is completed.
 
 ## Order Lifecycle
 
-Every order follows a strict state machine:
+Every order follows a strict state machine — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly:
 
-```mermaid
-stateDiagram-v2
-    [*] --> ORDER_CREATED
-    ORDER_CREATED --> FUNDS_RESERVED: Reserve funds
-    FUNDS_RESERVED --> ESCROW_CREATING: Create escrow
-    ESCROW_CREATING --> ESCROW_CREATED
-    ESCROW_CREATED --> ESCROW_FUNDING: Fund escrow
-    ESCROW_FUNDING --> ESCROW_FUNDED
-    ESCROW_FUNDED --> IN_PROGRESS: Work begins
+<OrderStateMachineDiagram />
 
-    IN_PROGRESS --> RELEASE_REQUESTED: Buyer approves
-    IN_PROGRESS --> REFUND_REQUESTED: Request refund
-    IN_PROGRESS --> DISPUTED: Open dispute
-
-    RELEASE_REQUESTED --> RELEASED
-    REFUND_REQUESTED --> REFUNDED
-    DISPUTED --> RESOLVED
-
-    RELEASED --> CLOSED
-    REFUNDED --> CLOSED
-    RESOLVED --> CLOSED
-
-    CLOSED --> [*]
-```
+<Callout type="note">
+  The escrow contract itself follows a separate internal [Escrow state machine](/docs/guide/escrow) while the order machine above advances in parallel.
+</Callout>
 
 ## Creating an Order
 
@@ -91,7 +72,7 @@ const order = await sdk.orders.create({
 
 ## Order with Milestones
 
-For large projects, break payment into milestones:
+For large projects, create one order with multiple milestones. The milestones belong to the same order and share its escrow; they are not separate orders.
 
 ```typescript
 const order = await sdk.orders.create({
@@ -111,6 +92,66 @@ const order = await sdk.orders.create({
 
 <Callout type="note">
   Milestone amounts must add up to the total order amount.
+</Callout>
+
+## Managing Milestones
+
+Milestones are created as part of the parent order. After the order reaches `IN_PROGRESS`, use the milestone reference to inspect or complete an individual milestone. Completing a milestone updates that milestone within the same order; it does not create a new order or escrow contract.
+
+### List Milestones
+
+```bash
+curl http://localhost:4000/api/v1/orders/ord_xyz789/milestones \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "mls_abc123",
+      "orderId": "ord_xyz789",
+      "milestoneRef": "design",
+      "title": "UI/UX Design",
+      "amount": "1000.00",
+      "status": "OPEN",
+      "createdAt": "2026-02-25T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Complete a Milestone
+
+The completion endpoint has no request body. The `ref` path parameter is the `milestoneRef` supplied when the order was created.
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/milestones/design/complete \
+  -H "Authorization: Bearer ohk_live_..."
+```
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "mls_abc123",
+    "orderId": "ord_xyz789",
+    "milestoneRef": "design",
+    "title": "UI/UX Design",
+    "amount": "1000.00",
+    "status": "COMPLETED",
+    "createdAt": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+<Callout type="note">
+  A milestone can be completed only while its parent order is `IN_PROGRESS`. Completing all milestones does not replace the order resolution flow; release the order's funds separately.
 </Callout>
 
 ## Reserving Funds
@@ -219,16 +260,19 @@ Reasons: `NOT_DELIVERED`, `QUALITY_ISSUE`, `OTHER`
 # Full release to seller
 curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
   -d '{"decision": "FULL_RELEASE"}'
 
 # Full refund to buyer
 curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
   -d '{"decision": "FULL_REFUND"}'
 
 # Split between both
 curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
   -H "Authorization: Bearer ohk_live_..." \
+  -H "Content-Type: application/json" \
   -d '{
     "decision": "SPLIT",
     "releaseAmount": "80.00",

@@ -1,11 +1,8 @@
 import { CheckCircle2, Lock, Loader2 } from "lucide-react";
 import type { PhaseDomain, PhaseStatus, StatusConfig } from "./types";
 
-export const NEU_ELEVATED =
-  "shadow-[6px_6px_14px_var(--shadow-dark),-6px_-6px_14px_var(--shadow-light)]";
-
-export const NEU_SUNKEN =
-  "shadow-[inset_4px_4px_10px_var(--shadow-dark),inset_-4px_-4px_10px_var(--shadow-light)]";
+export const NEU_ELEVATED = "shadow-neu-raised";
+export const NEU_SUNKEN = "shadow-neu-sunken";
 
 export const DOMAINS: { key: "all" | PhaseDomain; label: string }[] = [
   { key: "all", label: "All Phases" },
@@ -24,7 +21,7 @@ export function statusConfig(status: PhaseStatus): StatusConfig {
         bg: "bg-[var(--color-success)]/10",
         border: "border-[var(--color-success)]/30",
         label: "Completed",
-        dotColor: "#16a34a",
+        dotColor: "var(--color-success)",
         dotBg: "bg-[var(--color-success)]",
       };
     case "in-progress":

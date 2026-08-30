@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Copy, Check, ExternalLink, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { highlightCache, escapeHtml } from "@/utils/shiki-highlight";
 
 export interface CodeTab {
   id: string;
@@ -29,15 +30,6 @@ export interface CodeIntegrationShowcaseProps {
   sdkCards: SdkCard[];
 }
 
-const highlightCache = new Map<string, string>();
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
-
 function DocTooltip({ href, label }: { href: string; label: string }) {
   return (
     <div className="group relative inline-flex">
@@ -47,9 +39,9 @@ function DocTooltip({ href, label }: { href: string; label: string }) {
         rel="noreferrer"
         aria-label={`See full ${label}`}
         className={cn(
-          "flex items-center gap-1.5 rounded-xl px-3 py-1.5",
+          "flex items-center gap-1.5 rounded-xl px-3 py-1.5 min-h-11",
           "text-[10px] font-bold uppercase tracking-widest text-content-muted",
-          "transition-all duration-200",
+          "transition-colors duration-200",
           "hover:text-theme-primary hover:bg-theme-primary/10"
         )}
       >
@@ -103,9 +95,9 @@ function CopyButton({ code }: { code: string }) {
       onClick={handleCopy}
       aria-label={copied ? "Copied to clipboard" : "Copy code"}
       className={cn(
-        "relative flex items-center gap-2 rounded-xl px-3 py-1.5",
+        "relative flex items-center gap-2 rounded-xl px-3 py-1.5 min-h-11",
         "text-[10px] font-black uppercase tracking-widest",
-        "transition-all duration-300",
+        "transition-[color,background-color,box-shadow] duration-300",
         copied
           ? "text-white shadow-lg"
           : "text-content-secondary hover:text-content-primary"
@@ -204,7 +196,7 @@ export function CodeIntegrationShowcase({
   const currentTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]!;
 
   return (
-    <section className="px-6 py-24">
+    <section className="px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-bg-base px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary shadow-neu-sunken mb-6">
@@ -225,13 +217,10 @@ export function CodeIntegrationShowcase({
         </div>
 
         <div
-          className="rounded-[2.5rem] bg-bg-elevated blueprint-layer"
-          style={{
-            boxShadow: "12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light)",
-          }}
+          className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 blueprint-layer"
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-[2.5rem] bg-bg-sunken px-6 py-4 shadow-neu-sunken-subtle">
-            <div className="flex items-center gap-1">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3 rounded-t-[2.5rem] bg-bg-sunken px-4 py-4 shadow-neu-sunken-subtle sm:px-6">
+            <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1" role="tablist" aria-label="SDK language">
               {tabs.map((tab) => {
                 const TabIcon = tab.icon;
                 const isActive = tab.id === activeTabId;
@@ -239,25 +228,19 @@ export function CodeIntegrationShowcase({
                   <button
                     key={tab.id}
                     type="button"
+                    id={`${tab.id}-tab`}
                     onClick={() => setActiveTabId(tab.id)}
                     className={cn(
                       "flex items-center gap-1.5 rounded-xl px-4 py-2",
                       "text-[11px] font-bold uppercase tracking-widest font-mono",
-                      "transition-all duration-200 focus:outline-none",
+                      "transition-[color,background-color,box-shadow] duration-200 focus:outline-none",
                       isActive
-                        ? "text-theme-primary"
+                        ? "text-theme-primary bg-bg-base shadow-neu-raised"
                         : "text-content-muted hover:text-content-secondary"
                     )}
-                    style={
-                      isActive
-                        ? {
-                            background: "var(--color-bg-base)",
-                            boxShadow: "4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light)",
-                          }
-                        : {}
-                    }
                     role="tab"
                     aria-selected={isActive}
+                    aria-controls={`${tab.id}-panel`}
                   >
                     <TabIcon size={12} />
                     <span>{tab.label}</span>
@@ -288,9 +271,14 @@ export function CodeIntegrationShowcase({
             {tabs.map((tab) => (
               <div
                 key={tab.id}
+                id={`${tab.id}-panel`}
+                role="tabpanel"
+                aria-labelledby={`${tab.id}-tab`}
+                tabIndex={0}
+                hidden={tab.id !== activeTabId}
                 className={cn(
                   "transition-opacity duration-300",
-                  tab.id === activeTabId ? "block opacity-100" : "hidden opacity-0"
+                  tab.id === activeTabId ? "block opacity-100" : "opacity-0"
                 )}
               >
                 <CodePanel tab={tab} />
@@ -303,10 +291,7 @@ export function CodeIntegrationShowcase({
           {sdkCards.map((item) => (
             <div
               key={item.method}
-              className="rounded-[1.5rem] bg-bg-elevated p-5 blueprint-layer overflow-visible"
-              style={{
-                boxShadow: "8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light)",
-              }}
+              className="rounded-[1.5rem] bg-bg-elevated shadow-neu-raised-l2-sm p-5 blueprint-layer overflow-visible"
             >
               <div className="mb-3 inline-flex rounded-full bg-theme-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-theme-primary">
                 SDK

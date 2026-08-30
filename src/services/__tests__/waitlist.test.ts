@@ -1,27 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-/**
- * `waitlist.ts` reads `supabase` at call time, so a getter-backed mock lets
- * each test swap the client (or drop it to `null` for the
- * "Supabase not configured" path) without re-importing the module.
- */
-const state = vi.hoisted(() => ({
-  supabase: null as { from: (table: string) => { insert: unknown } } | null,
-}));
-
-vi.mock("@/lib/supabase", () => ({
-  get supabase() {
-    return state.supabase;
-  },
-  get isSupabaseConfigured() {
-    return state.supabase !== null;
-  },
-}));
-
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { submitWaitlistEntry, type WaitlistSubmission } from "../waitlist";
-
-const insert = vi.fn();
-const from = vi.fn(() => ({ insert }));
 
 const ENTRY: WaitlistSubmission = {
   email: "jane@acme.com",
@@ -30,60 +8,70 @@ const ENTRY: WaitlistSubmission = {
   referral: "Twitter",
 };
 
+function mockFetch(impl: () => Promise<unknown>) {
+  const fn = vi.fn(impl);
+  vi.stubGlobal("fetch", fn);
+  return fn;
+}
+
+function jsonResponse(status: number, body: unknown) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  };
+}
+
 describe("submitWaitlistEntry", () => {
   beforeEach(() => {
-    insert.mockReset();
-    from.mockClear();
-    state.supabase = { from } as unknown as typeof state.supabase;
+    vi.restoreAllMocks();
   });
 
-  it("returns not_configured without touching the network when Supabase is null", async () => {
-    state.supabase = null;
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("POSTs the entry as JSON to /api/waitlist", async () => {
+    const fetchMock = mockFetch(async () => jsonResponse(200, { ok: true }));
+
+    await submitWaitlistEntry(ENTRY);
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ENTRY),
+    });
+  });
+
+  it("returns ok on success", async () => {
+    mockFetch(async () => jsonResponse(200, { ok: true }));
+
+    await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({ ok: true });
+  });
+
+  it("maps 400 field errors to validation", async () => {
+    mockFetch(async () =>
+      jsonResponse(400, { errors: { email: "Enter a valid work email" } }),
+    );
+
+    await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
+      ok: false,
+      reason: "validation",
+      errors: { email: "Enter a valid work email" },
+    });
+  });
+
+  it("maps 503 to not_configured", async () => {
+    mockFetch(async () => jsonResponse(503, { error: "unavailable" }));
 
     await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
       ok: false,
       reason: "not_configured",
     });
-    expect(from).not.toHaveBeenCalled();
-    expect(insert).not.toHaveBeenCalled();
   });
 
-  it("inserts the entry into the waitlist table and reports success", async () => {
-    insert.mockResolvedValueOnce({ error: null });
-
-    await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({ ok: true });
-
-    expect(from).toHaveBeenCalledWith("waitlist");
-    expect(insert).toHaveBeenCalledWith([
-      {
-        email: "jane@acme.com",
-        name: "Jane Doe",
-        purpose: "Marketplace payouts",
-        referral: "Twitter",
-      },
-    ]);
-  });
-
-  it("sends only the four declared columns (no extra fields leak through)", async () => {
-    insert.mockResolvedValueOnce({ error: null });
-
-    await submitWaitlistEntry({
-      ...ENTRY,
-      // Simulates a caller passing a wider object than the interface allows.
-      ...({ isAdmin: true } as unknown as WaitlistSubmission),
-    });
-
-    const [[rows]] = insert.mock.calls as [[Record<string, unknown>[]]];
-    expect(Object.keys(rows[0]).sort()).toEqual([
-      "email",
-      "name",
-      "purpose",
-      "referral",
-    ]);
-  });
-
-  it("maps the unique-violation code 23505 to duplicate", async () => {
-    insert.mockResolvedValueOnce({ error: { code: "23505" } });
+  it("maps 409 duplicate to duplicate", async () => {
+    mockFetch(async () => jsonResponse(409, { error: "duplicate" }));
 
     await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
       ok: false,
@@ -91,8 +79,8 @@ describe("submitWaitlistEntry", () => {
     });
   });
 
-  it("maps any other Postgres error to error", async () => {
-    insert.mockResolvedValueOnce({ error: { code: "42501" } });
+  it("maps other non-2xx responses to error", async () => {
+    mockFetch(async () => jsonResponse(500, { error: "boom" }));
 
     await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
       ok: false,
@@ -100,21 +88,29 @@ describe("submitWaitlistEntry", () => {
     });
   });
 
-  it("maps an error without a code to error", async () => {
-    insert.mockResolvedValueOnce({ error: { message: "boom" } });
-
-    await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
-      ok: false,
-      reason: "error",
+  it("maps a thrown request to network", async () => {
+    mockFetch(async () => {
+      throw new TypeError("Failed to fetch");
     });
-  });
-
-  it("maps a thrown request (network failure) to network", async () => {
-    insert.mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
     await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
       ok: false,
       reason: "network",
+    });
+  });
+
+  it("falls back to an empty body when the response is not valid JSON", async () => {
+    mockFetch(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new SyntaxError("Unexpected end of JSON input");
+      },
+    }));
+
+    await expect(submitWaitlistEntry(ENTRY)).resolves.toEqual({
+      ok: false,
+      reason: "error",
     });
   });
 });

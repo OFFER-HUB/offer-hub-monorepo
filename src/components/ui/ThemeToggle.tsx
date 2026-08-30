@@ -16,8 +16,8 @@ export function ThemeToggle({ className, size = 18 }: ThemeToggleProps) {
     <button
       onClick={(e) => toggleTheme(e)}
       className={cn(
-        "neu-circle flex items-center justify-center transition-all duration-300 ease-out",
-        "text-content-secondary hover:text-[#149A9B]",
+        "neu-circle flex items-center justify-center transition-colors duration-300 ease-out",
+        "text-content-secondary hover:text-theme-primary",
         className
       )}
       style={{ width: "40px", height: "40px" }}

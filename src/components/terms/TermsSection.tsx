@@ -10,9 +10,9 @@ interface TermsSectionProps {
 export function TermsSection({ icon, title, children }: TermsSectionProps) {
   const Icon = getIcon(icon, "FileText");
   return (
-    <section className="p-8 md:p-12 rounded-[2.5rem] bg-bg-base shadow-raised">
+    <section className="p-8 md:p-12 rounded-[2.5rem] bg-bg-base shadow-neu-raised">
       <div className="flex items-center gap-5 mb-8">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-bg-base shadow-sunken-subtle text-theme-primary">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-bg-base shadow-neu-sunken-subtle text-theme-primary">
           <Icon size={20} />
         </div>
         <h2 className="text-2xl font-black text-content-primary tracking-tight">{title}</h2>

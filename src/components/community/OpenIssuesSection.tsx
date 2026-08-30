@@ -15,7 +15,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
   const isGoodFirstIssue = issue.labels.some(l => l.toLowerCase().includes('good') || l.toLowerCase().includes('help'));
 
   return (
-    <article className="group relative flex flex-col justify-between rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-all duration-300 hover:shadow-neu-raised-hover">
+    <article className="group relative flex flex-col justify-between rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-shadow duration-300 hover:shadow-neu-raised-hover">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg-base text-[10px] font-bold text-content-secondary tracking-wider shadow-neu-sunken-subtle uppercase">
@@ -32,7 +32,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-base font-black text-content-primary hover:text-theme-primary transition-colors leading-tight line-clamp-2 mb-4 tracking-tight"
+          className="block text-base font-black text-content-primary hover:text-theme-primary transition-colors leading-tight line-clamp-2 mb-4 tracking-tight min-h-6 max-w-full overflow-hidden"
         >
           {issue.title}
         </a>
@@ -71,9 +71,10 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-10 h-10 rounded-xl text-white transition-all btn-neumorphic-primary flex items-center justify-center shadow-neu-raised-sm hover:scale-105"
+          aria-label={`Open issue #${issue.number}: ${issue.title}`}
+          className="w-11 h-11 rounded-xl text-white transition-[background-color,box-shadow,transform] btn-neumorphic-primary flex items-center justify-center shadow-neu-raised-sm hover:scale-105 shrink-0"
         >
-          <ArrowUpRight size={18} />
+          <ArrowUpRight size={18} aria-hidden="true" />
         </a>
       </div>
     </article>
@@ -115,7 +116,7 @@ export const OpenIssuesSection = ({ issues }: OpenIssuesSectionProps) => {
           <div className="mt-16 text-center">
             <button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary hover:gap-3 transition-all group"
+              className="inline-flex items-center justify-center min-h-11 gap-2 px-4 text-[11px] font-black uppercase tracking-widest text-theme-primary hover:gap-3 transition-[gap] group"
             >
               Load more issues
               <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />

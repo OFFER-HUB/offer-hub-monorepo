@@ -70,6 +70,23 @@ describe("submitDataRightsRequest", () => {
     });
   });
 
+  it("maps 400 field errors to validation", async () => {
+    mockFetch(async () =>
+      jsonResponse(400, {
+        errors: { email: "A valid email address is required." },
+      }),
+    );
+
+    await expect(
+      submitDataRightsRequest(ENDPOINT, "a@@b.co"),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "validation",
+      message: "A valid email address is required.",
+      errors: { email: "A valid email address is required." },
+    });
+  });
+
   it("falls back to a generic error message when the error body has none", async () => {
     mockFetch(async () => jsonResponse(500, {}));
 
@@ -79,6 +96,21 @@ describe("submitDataRightsRequest", () => {
       ok: false,
       reason: "error",
       message: "An error occurred.",
+    });
+  });
+
+  it("falls back to a generic validation message when the errors body has no email key", async () => {
+    mockFetch(async () =>
+      jsonResponse(400, { errors: { other: "Some other field is invalid." } }),
+    );
+
+    await expect(
+      submitDataRightsRequest(ENDPOINT, "a@@b.co"),
+    ).resolves.toEqual({
+      ok: false,
+      reason: "validation",
+      message: "A valid email address is required.",
+      errors: { other: "Some other field is invalid." },
     });
   });
 

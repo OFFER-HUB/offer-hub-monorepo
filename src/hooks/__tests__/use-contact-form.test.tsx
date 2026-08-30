@@ -120,7 +120,7 @@ describe("useContactForm", () => {
     expect(submitContactInquiry).toHaveBeenCalled();
   });
 
-  it.each(["not-an-email", "jane@acme", "jane acme.com", "@acme.com"])(
+  it.each(["not-an-email", "jane@acme", "jane acme.com", "@acme.com", "a@@b.co", "a@b@c.co"])(
     "rejects %j as a work email",
     async (email) => {
       const { result } = renderHook(() => useContactForm());
@@ -178,6 +178,22 @@ describe("useContactForm", () => {
     expect(result.current.submitError).toBe(message);
     expect(result.current.isSubmitted).toBe(false);
     expect(result.current.isLoading).toBe(false);
+  });
+
+  it("applies server-side field errors when the response reports validation failures", async () => {
+    submitContactInquiry.mockResolvedValue({
+      ok: false,
+      reason: "validation",
+      errors: { email: "Enter a valid work email" },
+    });
+    const { result } = renderHook(() => useContactForm());
+    fill(result, VALID);
+
+    await submit(result);
+
+    expect(result.current.errors.email).toBe("Enter a valid work email");
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.submitError).toBeNull();
   });
 
   it("clears a previous submit error when the user edits any field", async () => {

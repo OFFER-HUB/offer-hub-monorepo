@@ -25,7 +25,7 @@ export function LoadingBar() {
 
     return (
         <div
-            className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#149A9B] to-[#22e0e2] z-[9999] origin-left"
+            className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-theme-primary to-[#22e0e2] z-[9999] origin-left"
             style={{ transform: `scaleX(${progress})`, transition: isLoading ? "transform 0.4s ease" : "none" }}
         />
     );

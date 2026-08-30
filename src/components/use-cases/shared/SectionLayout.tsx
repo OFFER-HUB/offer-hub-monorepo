@@ -22,16 +22,16 @@ export function FeaturesGrid({ features }: { features: FeatureCard[] }) {
       className="py-24 relative bg-transparent"
       style={{ scrollMarginTop: `${SCROLL_OFFSET}px` }}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl overflow-x-clip px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feat) => {
             const FeatIcon = feat.icon;
             return (
               <div
                 key={feat.title}
-                className="flex flex-col items-center text-center p-10 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover transition-all duration-300 ease-out group"
+                className="flex flex-col items-center text-center p-10 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-300 ease-out group"
               >
-                <div className="w-16 h-16 rounded-2xl shadow-neu-sunken-subtle bg-bg-base flex items-center justify-center mb-8 group-hover:shadow-neu-sunken transition-all duration-300 text-theme-primary">
+                <div className="w-16 h-16 rounded-2xl shadow-neu-sunken-subtle bg-bg-base flex items-center justify-center mb-8 group-hover:shadow-neu-sunken transition-shadow duration-300 text-theme-primary">
                   <FeatIcon size={28} />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-content-primary">
@@ -57,7 +57,7 @@ export function MetricsSection({ children }: { children: ReactNode }) {
       className="py-24 relative bg-transparent"
       style={{ scrollMarginTop: `${SCROLL_OFFSET}px` }}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl overflow-x-clip px-6 lg:px-8 relative z-10">
         {children}
       </div>
     </section>
@@ -72,7 +72,7 @@ export function ArchitectureSection({ children }: { children: ReactNode }) {
       className="py-24 relative bg-transparent"
       style={{ scrollMarginTop: `${SCROLL_OFFSET}px` }}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center w-full min-w-0 max-w-full overflow-x-clip">
         <div className="w-16 h-16 rounded-2xl shadow-neu-raised bg-bg-base mx-auto mb-8 flex items-center justify-center text-theme-primary">
           <Users size={24} />
         </div>

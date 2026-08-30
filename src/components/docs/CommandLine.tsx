@@ -68,20 +68,13 @@ export function CommandLine({
   return (
     <div
       className={cn(
-        "my-6 rounded-2xl overflow-hidden bg-bg-base relative z-10",
+        "my-6 rounded-2xl overflow-hidden bg-bg-base shadow-neu-raised relative z-10",
         className,
       )}
-      style={{
-        boxShadow: "6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light)",
-      }}
     >
       {/* Terminal header bar */}
       <div
-        className="flex items-center gap-2 px-4 py-2.5 border-b border-theme-border/20"
-        style={{
-          background: "var(--color-bg-sunken)",
-          boxShadow: "inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)",
-        }}
+        className="flex items-center gap-2 px-4 py-2.5 border-b border-theme-border/20 bg-bg-sunken shadow-neu-sunken-subtle"
       >
         <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
@@ -97,7 +90,7 @@ export function CommandLine({
           aria-label={copied ? "Command copied" : "Copy command"}
           className={cn(
             "ml-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium",
-            "transition-all duration-200",
+            "transition-colors duration-200",
             copied
               ? "text-green-500"
               : "text-content-secondary hover:text-content-primary",

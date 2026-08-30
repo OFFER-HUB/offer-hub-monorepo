@@ -59,7 +59,7 @@ export function SectionNav({
       <div className="max-w-3xl mx-auto px-6 flex justify-center">
         <div
           className={cn(
-            "pointer-events-auto flex items-center p-2 rounded-2xl transition-all duration-500 bg-bg-base",
+            "pointer-events-auto flex items-center p-2 rounded-2xl transition-shadow duration-500 bg-bg-base",
             isNavPinned ? "shadow-neu-raised-scrolled" : "shadow-neu-raised"
           )}
         >

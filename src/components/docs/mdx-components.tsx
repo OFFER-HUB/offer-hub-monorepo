@@ -5,6 +5,8 @@ import { Callout } from "./Callout";
 import { CommandLine } from "./CommandLine";
 import { Badge } from "./Badge";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { OrderStateMachineDiagram } from "./OrderStateMachineDiagram";
+import { EscrowStateMachineDiagram } from "./EscrowStateMachineDiagram";
 import { BASE_MDX_COMPONENTS } from "@/components/mdx/base-mdx-components";
 
 export const MDX_COMPONENTS: MDXComponents = {
@@ -16,6 +18,8 @@ export const MDX_COMPONENTS: MDXComponents = {
   CommandLine,
   Badge,
   MermaidDiagram,
+  OrderStateMachineDiagram,
+  EscrowStateMachineDiagram,
 
   // Blockquote → Callout note (docs-specific override of base)
   blockquote: ({ children }) => <Callout type="note">{children}</Callout>,

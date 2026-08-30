@@ -13,21 +13,21 @@ const features = [
           title: "WCAG 2.1 Level AA Target",
           description:
                "We are committed to achieving Web Content Accessibility Guidelines 2.1 Level AA compliance — the industry standard for web accessibility. This standard ensures our platform is usable by individuals with vision, hearing, motor, and cognitive impairments.",
-          iconColor: "#149A9B",
+          iconColor: "var(--color-primary)",
      },
      {
           icon: AlertCircle,
           title: "Known Limitations",
           description:
                "Some PDF documents, third-party integrations, and real-time data visualizations have limited accessibility support. We're actively working on remediation with scheduled improvements through Q3 2026.",
-          iconColor: "#149A9B",
+          iconColor: "var(--color-primary)",
      },
      {
           icon: Mail,
           title: "Report Accessibility Issues",
           description:
                "Encountered an accessibility barrier? Email support@offerhub.io with details about the issue. We respond within 2 business days and work to resolve problems as quickly as possible.",
-          iconColor: "#149A9B",
+          iconColor: "var(--color-primary)",
      },
 ];
 
@@ -120,10 +120,10 @@ export default function AccessibilityPage() {
                               return (
                                    <div
                                         key={feature.title}
-                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-all duration-500"
+                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500"
                                    >
                                         <div
-                                             className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-all duration-300"
+                                             className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-shadow duration-300"
                                         >
                                              <Icon size={24} className="text-theme-primary" />
                                         </div>
@@ -161,7 +161,7 @@ export default function AccessibilityPage() {
                                    return (
                                         <div
                                              key={feature.title}
-                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-all duration-300"
+                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300"
                                         >
                                              <div className="flex items-center gap-3">
                                                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-theme-primary/10">
@@ -201,7 +201,7 @@ export default function AccessibilityPage() {
                                         href={contact.href}
                                         target={contact.external ? "_blank" : undefined}
                                         rel={contact.external ? "noopener noreferrer" : undefined}
-                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-all duration-300 group"
+                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-shadow duration-300 group"
                                    >
                                         <div className="flex items-start justify-between mb-4">
                                              <div>
@@ -249,11 +249,11 @@ export default function AccessibilityPage() {
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="p-4 rounded-lg bg-theme-primary/5 border border-theme-primary/20">
                                              <p className="text-xs font-bold text-theme-primary uppercase tracking-wider mb-1">Last Full Audit</p>
-                                             <p className="text-lg font-black text-content-primary">April 2026</p>
+                                             <p className="text-lg font-black text-content-primary">August 2026</p>
                                         </div>
                                         <div className="p-4 rounded-lg bg-theme-primary/5 border border-theme-primary/20">
                                              <p className="text-xs font-bold text-theme-primary uppercase tracking-wider mb-1">Next Review</p>
-                                             <p className="text-lg font-black text-content-primary">October 2026</p>
+                                             <p className="text-lg font-black text-content-primary">November 2026</p>
                                         </div>
                                    </div>
                               </div>
@@ -276,6 +276,14 @@ export default function AccessibilityPage() {
                                         <div>
                                              <p className="font-bold text-content-primary mb-2">Video Content</p>
                                              <p className="text-sm text-content-secondary mb-2">Archived videos may lack captions. All new videos include captions; existing ones updated progressively through Q3 2026.</p>
+                                        </div>
+                                        <div>
+                                             <p className="font-bold text-content-primary mb-2">Color Contrast</p>
+                                             <p className="text-sm text-content-secondary mb-2">Automated route-level testing (axe-core) still finds color-contrast failures on every page we check, most commonly small text using the brand teal, secondary, or muted text colors against light surfaces. The primary navigation call-to-action and two dark-mode-specific bugs have been fixed and verified this way; the broader palette has not. This needs a design-approved update to the color tokens, not a mechanical fix, and is tracked as active work rather than resolved. Remediation target: Q4 2026.</p>
+                                        </div>
+                                        <div>
+                                             <p className="font-bold text-content-primary mb-2">Keyboard Navigation</p>
+                                             <p className="text-sm text-content-secondary mb-2">An automated check now runs on every change to confirm interactive elements are reachable via Tab with no focus trap and a visible focus indicator. This is a smoke test, not a full manual audit - reading order and screen-reader announcement quality still need a human pass, which has not yet been done.</p>
                                         </div>
                                    </div>
                               </div>
@@ -320,7 +328,7 @@ export default function AccessibilityPage() {
                                         description: "We follow accessibility guidance from organizations like IAAP and 18F",
                                    },
                               ].map((item) => (
-                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-all duration-300">
+                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
                                         <h4 className="font-black text-content-primary mb-2">{item.standard}</h4>
                                         <p className="text-sm text-content-secondary">{item.description}</p>
                                    </div>

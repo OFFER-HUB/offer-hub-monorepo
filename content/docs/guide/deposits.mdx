@@ -6,7 +6,7 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/deposits.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/guides/deposits.md) in the repo.
+  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/deposits.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/deposits.md) in the repo.
 </Callout>
 
 Before users can create orders or fund escrow, they need balance in their account. OFFER-HUB supports two deposit methods depending on your payment provider configuration.
@@ -67,7 +67,7 @@ OFFER-HUB monitors the blockchain for incoming transactions. When USDC arrives:
 
 1. **Transaction detected** — Horizon streaming catches the payment
 2. **Balance updated** — Off-chain balance incremented
-3. **Event emitted** — `balance.credited` sent via SSE/webhook
+3. **Event emitted** — `balance.credited` pushed over the SSE event stream
 4. **User notified** — UI can update in real-time
 
 <Callout type="note">
@@ -132,26 +132,14 @@ Redirect the user to the `paymentUrl` where they:
 2. Choose payment method (bank, mobile money, crypto, etc.)
 3. Complete the payment
 
-### Step 3: Webhook Confirmation
+### Step 3: Provider Confirmation (Inbound Webhook)
 
-AirTM sends a webhook when payment completes:
+AirTM notifies your Orchestrator's inbound webhook receiver (`POST /api/v1/webhooks/airtm`) when payment completes. This is a provider-to-Orchestrator callback — you don't register anything, and your app isn't called.
 
-```json
-{
-  "event": "payment.completed",
-  "data": {
-    "topup_id": "top_xyz789",
-    "amount": "100.00",
-    "currency": "USD",
-    "status": "completed"
-  }
-}
-```
-
-OFFER-HUB:
-1. Verifies webhook signature
-2. Credits user balance
-3. Emits `balance.credited` event
+The Orchestrator then:
+1. Verifies the AirTM webhook signature (Svix headers + `AIRTM_WEBHOOK_SECRET`)
+2. Credits the user's balance
+3. Emits `balance.credited` on the SSE stream, which your app can listen to
 
 <Callout type="warning">
   AirTM deposits can take 1-24 hours depending on the user's payment method. Set user expectations accordingly.
@@ -202,7 +190,7 @@ window.location.href = topup.airtm.paymentUrl;
 // <iframe src={topup.airtm.paymentUrl} />
 
 // Listen for completion
-sdk.events.on('topup.completed', (event) => {
+sdk.events.on('topup.succeeded', (event) => {
   if (event.topupId === topup.id) {
     console.log('Payment received!');
     // Update UI
@@ -233,41 +221,9 @@ events.onmessage = (e) => {
 };
 ```
 
-### Webhooks
-
-Register for balance events:
-
-```bash
-curl -X POST http://localhost:4000/api/v1/webhooks \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://your-app.com/webhooks",
-    "events": ["balance.credited"],
-    "secret": "your-webhook-secret"
-  }'
-```
-
-Webhook payload:
-
-```json
-{
-  "id": "evt_abc123",
-  "type": "balance.credited",
-  "created_at": "2026-02-25T12:05:00.000Z",
-  "data": {
-    "userId": "usr_abc123",
-    "amount": "100.00",
-    "currency": "USD",
-    "source": "deposit",
-    "transactionId": "tx_stellar_abc...",
-    "newBalance": {
-      "available": "100.00",
-      "reserved": "0.00"
-    }
-  }
-}
-```
+<Callout type="note">
+  SSE is the **only** real-time event mechanism — there is no outbound webhook subscription API. See [Real-Time Events & Webhooks](/docs/api-reference/webhooks) for the full event catalog and connection details.
+</Callout>
 
 ## Checking Balance
 

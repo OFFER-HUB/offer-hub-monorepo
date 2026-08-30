@@ -70,8 +70,8 @@ console.log('Reserved:', balance.reserved);    // "0.00"
 
 ```typescript
 const order = await sdk.orders.create({
-  buyerId: 'usr_buyer123',
-  sellerId: 'usr_seller456',
+  buyer_id: 'usr_buyer123',
+  seller_id: 'usr_seller456',
   amount: '100.00',
   currency: 'USD',
   title: 'Logo Design',
@@ -80,6 +80,17 @@ const order = await sdk.orders.create({
 
 console.log('Order ID:', order.id);      // ord_xyz789
 console.log('Status:', order.status);    // ORDER_CREATED
+```
+
+### Complete a Milestone
+
+Milestones are part of one order. List them with `sdk.orders.getMilestones()` and complete one by its `milestone_ref` using `sdk.orders.completeMilestone()` after the order reaches `IN_PROGRESS`:
+
+```typescript
+const milestones = await sdk.orders.getMilestones(order.id);
+
+const completedMilestone = await sdk.orders.completeMilestone(order.id, 'design');
+console.log('Milestone status:', completedMilestone.status); // COMPLETED
 ```
 
 ### Complete Order Flow

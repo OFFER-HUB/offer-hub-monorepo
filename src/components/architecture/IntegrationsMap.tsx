@@ -30,10 +30,10 @@ export function IntegrationsMap() {
             </style>
             
             {/* Hub to SWK (Left) */}
-            <path d="M 500 300 Q 350 300 250 300" fill="none" stroke="#149A9B" strokeWidth="2" opacity="0.4" className="anim-line-left" />
+            <path d="M 500 300 Q 350 300 250 300" fill="none" stroke="var(--color-primary)" strokeWidth="2" opacity="0.4" className="anim-line-left" />
             
             {/* Hub to BlindPay (Right) */}
-            <path d="M 500 300 Q 650 300 750 300" fill="none" stroke="#149A9B" strokeWidth="2" opacity="0.4" className="anim-line-right" />
+            <path d="M 500 300 Q 650 300 750 300" fill="none" stroke="var(--color-primary)" strokeWidth="2" opacity="0.4" className="anim-line-right" />
           </svg>
 
           {/* Mobile Connectors */}
@@ -44,7 +44,7 @@ export function IntegrationsMap() {
           {/* Center Hub: OfferHub */}
           <div className="relative z-10 w-full md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[220px]">
             <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 flex flex-col items-center text-center border border-[var(--color-border)]">
-              <div className="w-4 h-4 rounded-full bg-[#149A9B] animate-pulse mb-3 shadow-[0_0_15px_rgba(20,154,155,0.6)]"></div>
+              <div className="w-4 h-4 rounded-full bg-theme-primary animate-pulse mb-3 shadow-neu-raised-sm"></div>
               <h3 className="text-xl font-bold text-content-primary">OfferHub</h3>
               <p className="text-sm text-theme-primary font-medium mt-1 mb-3">NestJS Orchestrator</p>
               <div className="rounded-xl bg-bg-base shadow-neu-sunken-subtle p-3 w-full">

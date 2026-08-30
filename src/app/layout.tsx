@@ -9,6 +9,18 @@ import { FloatingCTA } from "@/components/ui/FloatingCTA";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { SITE_URL_FALLBACK, SITE_NAME } from "@/constants/site";
+import { THEME_STORAGE_KEY } from "@/constants/storage";
+
+const themeInitScript = `(function () {
+  try {
+    var stored = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
+    var theme = stored === "light" || stored === "dark" ? stored : null;
+    if (!theme) {
+      theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.classList.add(theme);
+  } catch (e) {}
+})();`;
 
 const inter = Inter({
   subsets: ["latin"],
@@ -116,7 +128,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
+    // suppressHydrationWarning is required because the blocking theme script below
+    // mutates documentElement's class before React hydrates, which React would
+    // otherwise flag as a class-attribute mismatch on <html>.
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className={`${inter.className} antialiased relative min-h-screen`}>
         <noscript>
           <div
@@ -149,7 +167,7 @@ export default function RootLayout({
           </Suspense>
           <Analytics />
           <ClientBackground />
-          <div id="main-content">
+          <div id="main-content" className="w-full max-w-full min-w-0 overflow-x-clip">
             {children}
           </div>
           <FloatingCTA />
