@@ -15,10 +15,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const parsed = dataRightsSchema.safeParse(body ?? {});
 
   if (!parsed.success) {
+    // dataRightsSchema only validates `email`, so any failure is an email
+    // failure — normalize it to the user-facing message.
     const errors = formatFieldErrors(parsed.error);
-    if (errors.email) {
-      errors.email = DATA_RIGHTS_EMAIL_ERROR;
-    }
+    errors.email = DATA_RIGHTS_EMAIL_ERROR;
     return NextResponse.json(validationErrorResponse(errors), { status: 400 });
   }
 
