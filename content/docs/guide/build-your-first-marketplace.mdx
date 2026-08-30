@@ -456,7 +456,7 @@ import { sdk } from './sdk.js';
 
 async function fundEscrow(orderId: string) {
   // Step 1: Deploy the Soroban smart contract
-  await sdk.escrow.create(orderId);
+  await sdk.orders.createEscrow(orderId);
   console.log('Deploying escrow contract for order:', orderId);
 
   // Step 2: Wait for contract deployment (async on-chain)
@@ -464,7 +464,7 @@ async function fundEscrow(orderId: string) {
   console.log('Contract deployed. Status: ESCROW_CREATED');
 
   // Step 3: Transfer USDC from buyer's wallet into the contract
-  await sdk.escrow.fund(orderId);
+  await sdk.orders.fundEscrow(orderId);
   console.log('Funding escrow...');
 
   // Step 4: Wait for on-chain confirmation (3–10 seconds on testnet)
