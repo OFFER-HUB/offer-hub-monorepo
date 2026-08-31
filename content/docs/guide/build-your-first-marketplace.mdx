@@ -437,12 +437,12 @@ sequenceDiagram
     participant TW as Trustless Work
     participant Stellar as Stellar Testnet
 
-    App->>Orch: sdk.escrow.create(orderId)
+    App->>Orch: sdk.orders.createEscrow(orderId)
     Orch->>TW: deploy Soroban contract
     TW->>Stellar: contract deployed
     Orch-->>App: status → ESCROW_CREATED
 
-    App->>Orch: sdk.escrow.fund(orderId)
+    
     Orch->>Stellar: transfer USDC into contract
     Stellar-->>Orch: tx confirmed
     Orch-->>App: status → IN_PROGRESS
@@ -508,7 +508,7 @@ sequenceDiagram
     participant TW as Trustless Work
     participant Seller as Seller Wallet
 
-    App->>Orch: sdk.resolution.release(orderId, { requestedBy: buyerId })
+    App->>Orch: sdk.orders.release(orderId, reasonString)
     Orch->>TW: release_escrow (buyer + platform co-sign)
     TW->>Seller: transfer USDC
     Orch->>Orch: credit seller.available
@@ -576,12 +576,16 @@ Create `src/06-dispute.ts`:
 import 'dotenv/config';
 import { sdk } from './sdk.js';
 
-async function handleDispute(orderId: string, buyerId: string) {
+async function handleDispute(
+  orderId: string,
+  buyerId: string,
+  orderAmount: string
+) {
   // Step 1: Buyer opens a dispute (must be IN_PROGRESS)
- await sdk.disputes.open(orderId, {
-  reason: 'Delivered work does not match agreed specifications',
-  evidence: [],
-});
+  await sdk.disputes.open(orderId, {
+    reason: 'Delivered work does not match agreed specifications',
+    evidence: [],
+  });
   console.log('Dispute opened. Funds frozen in contract.');
 
   // Step 2: Platform fetches the dispute record
@@ -591,16 +595,18 @@ async function handleDispute(orderId: string, buyerId: string) {
 
   // Step 3: Platform reviews evidence and resolves
   // Option A: Refund the buyer
- await sdk.disputes.resolve(dispute.id, {
+  await sdk.disputes.resolve(dispute.id, {
   decision: 'FULL_REFUND',
-  releaseAmount: 0,
+  releaseAmount: '0.00',
   refundAmount: orderAmount,
   note: 'Verified: deliverables did not meet specification',
-});
+  });
 
   // Option B (alternative): Release to seller
   // await sdk.disputes.resolve(dispute.id, {
-  //   resolution: 'release',
+  //   decision: 'FULL_RELEASE',
+  //   releaseAmount: orderAmount,
+  //   refundAmount: '0.00',
   //   note: 'Verified: work was delivered as agreed',
   // });
 
@@ -612,7 +618,7 @@ async function handleDispute(orderId: string, buyerId: string) {
 }
 
 // Replace with your actual IDs
-handleDispute('ord_xyz789', 'usr_buyer123').catch(console.error);
+handleDispute('ord_xyz789', 'usr_buyer123', '75.00').catch(console.error);
 ```
 
 <CommandLine>npx tsx src/06-dispute.ts</CommandLine>
