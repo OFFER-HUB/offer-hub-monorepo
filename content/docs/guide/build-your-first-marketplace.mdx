@@ -524,9 +524,7 @@ import { sdk } from './sdk.js';
 
 async function releaseToSeller(orderId: string, buyerId: string, sellerId: string) {
   // Buyer approves the completed work
-  await sdk.resolution.release(orderId, {
-    requestedBy: buyerId,
-  });
+  await sdk.orders.release(orderId, "Buyer approved the order");
   console.log('Release initiated...');
 
   // Wait for settlement
@@ -580,10 +578,10 @@ import { sdk } from './sdk.js';
 
 async function handleDispute(orderId: string, buyerId: string) {
   // Step 1: Buyer opens a dispute (must be IN_PROGRESS)
-  await sdk.resolution.dispute(orderId, {
-    requestedBy: buyerId,
-    reason: 'Delivered work does not match agreed specifications',
-  });
+ await sdk.disputes.open(orderId, {
+  reason: 'Delivered work does not match agreed specifications',
+  evidence: [],
+});
   console.log('Dispute opened. Funds frozen in contract.');
 
   // Step 2: Platform fetches the dispute record
@@ -593,10 +591,12 @@ async function handleDispute(orderId: string, buyerId: string) {
 
   // Step 3: Platform reviews evidence and resolves
   // Option A: Refund the buyer
-  await sdk.disputes.resolve(dispute.id, {
-    resolution: 'refund',
-    note: 'Verified: deliverables did not meet specification',
-  });
+ await sdk.disputes.resolve(dispute.id, {
+  decision: 'FULL_REFUND',
+  releaseAmount: 0,
+  refundAmount: orderAmount,
+  note: 'Verified: deliverables did not meet specification',
+});
 
   // Option B (alternative): Release to seller
   // await sdk.disputes.resolve(dispute.id, {
@@ -753,16 +753,16 @@ async function fullDemoFlow() {
   console.log('✓ Funds reserved');
 
   // 5. Create + fund escrow
-  await sdk.escrow.create(order.id);
+  await sdk.orders.createEscrow(order.id);
   await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
   console.log('✓ Escrow contract deployed');
 
-  await sdk.escrow.fund(order.id);
+  await sdk.orders.fundEscrow(order.id);
   await sdk.orders.waitForStatus(order.id, 'IN_PROGRESS');
   console.log('✓ Escrow funded (USDC on-chain)');
 
   // 6. Simulate work delivery + buyer approval
-  await sdk.resolution.release(order.id, { requestedBy: buyer.id });
+  await sdk.orders.release(order.id, "Buyer approved the order");
   await sdk.orders.waitForStatus(order.id, 'CLOSED');
   console.log('✓ Funds released to seller');
 
@@ -845,7 +845,7 @@ async function safeCreateOrder(buyerId: string, sellerId: string, amount: string
 const idempotentSdk = sdk.withIdempotencyKey(`fund-${orderId}-v1`);
 
 // Safe to retry — same key returns the cached result
-await idempotentSdk.escrow.fund(orderId);
+ await idempotentSdk.orders.fundEscrow(orderId);
 ```
 
 <Callout type="warning">
