@@ -151,7 +151,7 @@ export function DocsSearchBar() {
                         </button>
                     ) : !inputFocused && isMac !== null ? (
                         <div className="flex items-center gap-1 pointer-events-none text-content-secondary px-2 py-1 rounded-md bg-bg-base shadow-neu-raised-sm">
-                            <span className="text-[11px] font-medium text-content-secondary">
+                            <span className="text-xs font-medium text-content-secondary">
                                 {isMac ? '⌘K' : 'Ctrl K'}
                             </span>
                         </div>
@@ -179,10 +179,9 @@ export function DocsSearchBar() {
                                     setIsOpen(false);
                                     setQuery("");
                                 }}
-                                className="w-full p-4 flex items-start gap-4 cursor-pointer transition-colors text-left appearance-none border-0 bg-transparent"
-                                style={{
-                                    backgroundColor: activeIndex === idx ? "rgba(20, 154, 155, 0.08)" : "transparent",
-                                }}
+                                className={`w-full p-4 flex items-start gap-4 cursor-pointer transition-colors text-left appearance-none border-0 ${
+                                    activeIndex === idx ? "bg-theme-primary/10" : "bg-transparent"
+                                }`}
                             >
                                 <div className={`mt-1 p-2 rounded-lg ${activeIndex === idx ? "bg-theme-primary/10 shadow-neu-sunken-subtle" : "bg-bg-base shadow-neu-raised-sm"}`}>
                                     <FileText size={18} className={activeIndex === idx ? "text-theme-primary" : "text-content-secondary"} />
@@ -204,7 +203,7 @@ export function DocsSearchBar() {
                             </button>
                         ))}
                     </div>
-                    <div className="p-3 flex justify-between items-center text-[10px] font-bold tracking-wider uppercase bg-bg-sunken/60 text-content-secondary border-t border-theme-border/40">
+                    <div className="p-3 flex justify-between items-center text-xs font-bold tracking-wider uppercase bg-bg-sunken/60 text-content-secondary border-t border-theme-border/40">
                         <span>{results.length} results found</span>
                         <div className="flex gap-3">
                             <span className="flex items-center gap-1">
