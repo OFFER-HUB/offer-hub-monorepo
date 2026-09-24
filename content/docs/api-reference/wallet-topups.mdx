@@ -1,0 +1,806 @@
+---
+title: Wallet & Top-ups
+description: Per-endpoint reference for wallet info, crypto deposits, transaction history, and Airtm top-ups.
+order: 3
+section: API Reference
+---
+
+Wallet endpoints expose a user's Stellar wallet (balance, deposit address, and transaction history). Top-up endpoints handle the AirTM pay-in flow that credits a user's balance when `PAYMENT_PROVIDER=airtm`. The two groups are split by provider: with `PAYMENT_PROVIDER=crypto` you use `GET /users/{userId}/wallet/deposit` and point the user to send USDC; with `PAYMENT_PROVIDER=airtm` you create a top-up and redirect the user to the returned `confirmationUri`.
+
+This reference is generated from the real controllers and DTOs in the Orchestrator:
+
+- `apps/api/src/modules/topups/topups.controller.ts` and `apps/api/src/modules/topups/topups.service.ts`
+- `apps/api/src/modules/topups/dto/create-topup.dto.ts`
+- `apps/api/src/modules/wallet/wallet.controller.ts` and `apps/api/src/modules/wallet/wallet.service.ts`
+- `apps/api/src/modules/wallet/dto/wallet-response.dto.ts`
+- `packages/shared/src/enums/topup-status.enum.ts` and `packages/shared/src/constants/error-codes.ts`
+
+## Endpoints at a glance
+
+| Endpoint | Method | Scope | Description |
+| --- | --- | --- | --- |
+| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | `read` | [Get wallet info](#get-users-userid-wallet) |
+| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | `read` | [Get deposit address](#get-users-userid-wallet-deposit) |
+| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | `read` | [Transaction history](#get-users-userid-wallet-transactions) |
+| `/topups` | <Badge variant="primary">POST</Badge> | `write` | [Create top-up](#post-topups) |
+| `/topups` | <Badge variant="success">GET</Badge> | `read` | [List top-ups](#get-topups) |
+| `/topups/{id}` | <Badge variant="success">GET</Badge> | `read` | [Get top-up](#get-topups-id) |
+| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | `read` | [Refresh status from AirTM](#post-topups-id-refresh) |
+| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | `write` | [Cancel top-up](#post-topups-id-cancel) |
+| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | public | [AirTM callback redirect](#get-topups-id-callback) |
+
+All paths are relative to the global `/api/v1` prefix (for example, the full URL of `GET /users/{userId}/wallet` is `/api/v1/users/{userId}/wallet`).
+
+## Authentication and scopes
+
+Every endpoint except the callback is protected by `ApiKeyGuard` + `ScopeGuard` and requires a Bearer API key:
+
+```http
+Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+The required scope is enforced per endpoint via `@Scopes('read')` / `@Scopes('write')` (see `Scopes` in `apps/api/src/common/decorators/scopes.decorator.ts`). An API key with the master scope `*` satisfies any requirement.
+
+| Scope | Covers |
+| --- | --- |
+| `read` | All three wallet GET endpoints plus `GET /topups`, `GET /topups/{id}`, and `POST /topups/{id}/refresh` |
+| `write` | `POST /topups` and `POST /topups/{id}/cancel` |
+| none | `GET /topups/{id}/callback` is public (`@Public()`) |
+
+## Response envelope
+
+Success responses follow the `{ "data": ... }` envelope produced by the global response interceptor (`apps/api/src/common/interceptors/response.interceptor.ts`). Controller handlers that already return `{ data }` are passed through unchanged. Non-GET endpoints additionally include a `meta` object with `requestId` and `timestamp`.
+
+```json
+{
+  "data": { "..." : "..." },
+  "meta": { "requestId": "uuid", "timestamp": "2026-09-24T10:00:00.000Z" }
+}
+```
+
+### Error responses
+
+Errors use a uniform `{ "error": ... }` shape produced by the global exception filter (`apps/api/src/common/filters/global-exception.filter.ts`):
+
+```json
+{
+  "error": {
+    "code": "TOPUP_NOT_FOUND",
+    "message": "Top-up not found",
+    "details": {}
+  }
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `error.code` | string | Machine-readable code from `packages/shared/src/constants/error-codes.ts` |
+| `error.message` | string | Human-readable message |
+| `error.details` | object | Optional context (validation errors, current status, allowed statuses, etc.) |
+
+## Idempotency
+
+`POST /topups` accepts an optional `Idempotency-Key` header (UUID v4) enforced by the global idempotency guard/interceptor (`apps/api/src/common/guards/idempotency.guard.ts`). Behavior:
+
+1. **No header** — the request proceeds normally.
+2. **First request with a key** — processed, response cached.
+3. **Same key + same body** — original response replayed with the `Idempotency-Replay: true` header.
+4. **Same key + different body** — `409 IDEMPOTENCY_KEY_REUSED`.
+5. **Non-UUID v4 key** — `400 VALIDATION_ERROR`.
+
+Idempotency records for top-ups are retained for 24 hours (see the idempotency windows in the [API overview](/docs/api-reference/overview#idempotency)).
+
+## Rate limiting
+
+All endpoints are behind the global `RateLimitGuard` (`apps/api/src/common/guards/rate-limit.guard.ts`). No per-endpoint overrides exist for wallet or top-up routes, so the default applies: **100 requests per minute per API key** (identified by the authenticated key; otherwise by IP). Responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`. Exceeding the limit returns `429 RATE_LIMITED`.
+
+---
+
+## GET /users/{userId}/wallet
+
+<Badge variant="success">GET</Badge> `/api/v1/users/{userId}/wallet`
+
+Returns the user's primary Stellar wallet with the current on-chain USDC and XLM balances.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `userId` | string | path | Yes | Internal OFFER-HUB user ID (prefix `usr_`) |
+
+### Response schema
+
+The wallet object follows the `WalletResponseDto` in `apps/api/src/modules/wallet/dto/wallet-response.dto.ts`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.publicKey` | string | Yes | Stellar public key (`G...`) |
+| `data.type` | enum | Yes | `INVISIBLE` \| `EXTERNAL` |
+| `data.provider` | enum | Yes | `STELLAR` |
+| `data.isActive` | boolean | Yes | Whether the wallet is active |
+| `data.isPrimary` | boolean | Yes | Whether this is the primary wallet |
+| `data.balance.usdc` | string | Yes | USDC balance as a decimal string |
+| `data.balance.xlm` | string | Yes | XLM balance as a decimal string |
+| `data.createdAt` | string | Yes | ISO 8601 creation timestamp |
+
+### Response example
+
+```json
+{
+  "data": {
+    "publicKey": "GABCDEF...",
+    "type": "INVISIBLE",
+    "provider": "STELLAR",
+    "isActive": true,
+    "isPrimary": true,
+    "balance": {
+      "usdc": "150.0000000",
+      "xlm": "5.0000000"
+    },
+    "createdAt": "2026-09-24T10:00:00.000Z"
+  }
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
+| 404 | — | No active primary wallet found for the user (`NotFoundException` from `getPrimaryWallet`) |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+
+### Idempotency
+
+Not applicable (GET).
+
+### Examples
+
+<CommandLine>curl http://localhost:4000/api/v1/users/usr_abc123def456/wallet -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const wallet = await sdk.wallet.getInfo('usr_abc123def456');
+
+console.log(wallet.publicKey);         // 'GABCDEF...'
+console.log(wallet.balance.usdc);      // '150.0000000'
+console.log(wallet.isPrimary);         // true
+```
+
+---
+
+## GET /users/{userId}/wallet/deposit
+
+<Badge variant="success">GET</Badge> `/api/v1/users/{userId}/wallet/deposit`
+
+Returns deposit instructions: the Stellar address a buyer should send USDC to, plus asset and network details. Deposits to this address are detected automatically by `BlockchainMonitorService` and credited within seconds.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `userId` | string | path | Yes | Internal OFFER-HUB user ID (prefix `usr_`) |
+
+### Response schema
+
+Follows the `DepositInfoDto` in `apps/api/src/modules/wallet/dto/wallet-response.dto.ts`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.provider` | enum | Yes | `crypto` |
+| `data.method` | enum | Yes | `stellar_address` |
+| `data.address` | string | Yes | Stellar address to receive USDC |
+| `data.asset.code` | string | Yes | USDC asset code |
+| `data.asset.issuer` | string | Yes | USDC issuer account ID |
+| `data.network` | enum | Yes | `testnet` \| `mainnet` |
+| `data.instructions` | string | Yes | Human-readable instructions |
+
+### Response example
+
+```json
+{
+  "data": {
+    "provider": "crypto",
+    "method": "stellar_address",
+    "address": "GCV24WNJYXPG3QFNP6ZQMLVEMHQX5S6J2OWKGVF5U3XC6HF4QQHG7WMD",
+    "asset": {
+      "code": "USDC",
+      "issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+    },
+    "network": "testnet",
+    "instructions": "Send USDC to this Stellar address. Deposits are detected automatically within seconds."
+  }
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
+| 404 | — | No active primary wallet found for the user |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+
+### Idempotency
+
+Not applicable (GET).
+
+### Examples
+
+<CommandLine>curl http://localhost:4000/api/v1/users/usr_abc123def456/wallet/deposit -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const deposit = await sdk.wallet.getDepositAddress('usr_abc123def456');
+
+console.log(`Send USDC ${deposit.asset.code} to: ${deposit.address}`);
+console.log(`Network: ${deposit.network}`);
+```
+
+---
+
+## GET /users/{userId}/wallet/transactions
+
+<Badge variant="success">GET</Badge> `/api/v1/users/{userId}/wallet/transactions`
+
+Returns recent USDC/XLM activity for the user's wallet, read from the Stellar Horizon API. Filtering keeps only `payment` and `create_account` operations.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `userId` | string | path | Yes | — | Internal OFFER-HUB user ID (prefix `usr_`) |
+| `limit` | number | query | No | `20` | Number of transactions to return, capped at `100` |
+
+### Response schema
+
+`data` is an array of transaction objects matching `TransactionDto` in `apps/api/src/modules/wallet/dto/wallet-response.dto.ts`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `[].id` | string | Yes | Horizon operation ID |
+| `[].type` | enum | Yes | `payment` \| `create_account` |
+| `[].from` | string | Yes | Sending account |
+| `[].to` | string | Yes | Receiving account |
+| `[].amount` | string | Yes | Transferred amount as a string |
+| `[].asset` | string | Yes | `USDC:{issuer}` or `XLM` |
+| `[].createdAt` | string | Yes | ISO 8601 timestamp |
+| `[].hash` | string | Yes | Transaction hash |
+| `[].successful` | boolean | Yes | Whether the transaction succeeded |
+
+### Response example
+
+```json
+{
+  "data": [
+    {
+      "id": "3574536253440001",
+      "type": "payment",
+      "from": "GSENDER...",
+      "to": "GABCDEF...",
+      "amount": "50.0000000",
+      "asset": "USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+      "createdAt": "2026-09-24T09:58:00Z",
+      "hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b",
+      "successful": true
+    }
+  ]
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
+| 404 | — | No active primary wallet found for the user |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+
+### Idempotency
+
+Not applicable (GET).
+
+### Examples
+
+<CommandLine>curl "http://localhost:4000/api/v1/users/usr_abc123def456/wallet/transactions?limit=10" -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const txs = await sdk.wallet.getTransactions('usr_abc123def456', 10);
+
+txs.forEach((tx) => {
+  console.log(`${tx.type}: ${tx.amount} ${tx.asset} → ${tx.to}`);
+});
+```
+
+---
+
+## POST /topups
+
+<Badge variant="primary">POST</Badge> `/api/v1/topups`
+
+Creates an AirTM pay-in for the authenticated user and returns a `confirmationUri` the user must open to complete the payment. The user is resolved from the request auth context (see `@CurrentUser('userId')` in `topups.controller.ts`), **not** from the request body.
+
+### Request body
+
+Validated by `CreateTopUpDto` in `apps/api/src/modules/topups/dto/create-topup.dto.ts`.
+
+| Parameter | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `amount` | string | Yes | — | Decimal string with exactly 2 decimals (regex `^\d+\.\d{2}$`, e.g. `"100.00"`) |
+| `currency` | string | No | `"USD"` | ISO 4217 currency code (currently only `USD`) |
+| `description` | string | No | — | Optional description, stored in top-up metadata |
+
+### Request example
+
+```json
+{
+  "amount": "100.00",
+  "currency": "USD",
+  "description": "Wallet top-up"
+}
+```
+
+### Response schema
+
+Matching `CreateTopUpResponse` in `apps/api/src/modules/topups/topups.service.ts`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.id` | string | Yes | Top-up ID (prefix `topup_`) |
+| `data.amount` | string | Yes | Top-up amount as a decimal string |
+| `data.currency` | string | Yes | Currency code |
+| `data.status` | enum | Yes | One of [`TopUpStatus`](#topupstatus-reference) |
+| `data.confirmationUri` | string | Yes | HTTPS URL to redirect the user to for payment |
+| `data.expiresAt` | string | No | ISO 8601 expiry for the confirmation URI |
+| `data.createdAt` | string | Yes | ISO 8601 creation timestamp |
+
+### Response example
+
+```json
+{
+  "data": {
+    "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "TOPUP_AWAITING_USER_CONFIRMATION",
+    "confirmationUri": "https://app.airtm.com/payin/abc123...",
+    "expiresAt": "2026-09-25T10:00:00.000Z",
+    "createdAt": "2026-09-24T10:00:00.000Z"
+  }
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 400 | `VALIDATION_ERROR` | `amount` does not match the decimal format |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `write` scope |
+| 404 | `USER_NOT_FOUND` | Authenticated user does not exist |
+| 422 | `AIRTM_USER_NOT_LINKED` | User has no linked AirTM account |
+| 422 | `AIRTM_USER_INVALID` | AirTM eligibility check failed (`details.failureReason`) |
+| 409 | `IDEMPOTENCY_KEY_REUSED` | Same key used with a different body |
+| 409 | `IDEMPOTENCY_KEY_IN_PROGRESS` | Original request still processing |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 502 | `PROVIDER_ERROR` | AirTM pay-in creation failed; the top-up is marked `TOPUP_FAILED` internally |
+
+### Idempotency
+
+Supported. Send an `Idempotency-Key: {uuid-v4}` header to safely retry; duplicates for 24 hours return the original response. See [Idempotency](#idempotency).
+
+### Examples
+
+<CommandLine>curl -X POST http://localhost:4000/api/v1/topups \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -d '{"amount":"100.00","currency":"USD"}'</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const topup = await sdk.topups.create({
+  amount: '100.00',
+  description: 'Wallet top-up',
+});
+
+// Redirect the user to complete payment in AirTM
+window.location.href = topup.confirmationUri;
+```
+
+---
+
+## GET /topups
+
+<Badge variant="success">GET</Badge> `/api/v1/topups`
+
+Lists the authenticated user's top-ups, newest first. Uses cursor-based pagination.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `limit` | number | query | No | `20` | Items per page, capped at `100` |
+| `cursor` | string | query | No | — | ID of the last top-up from the previous page |
+
+### Response schema
+
+`data` is an array of `TopUpResponse` objects (see [GET /topups/{id}](#get-topups-id)); `hasMore` and `nextCursor` support the next page.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data` | array | Yes | `TopUpResponse` items, ordered by `createdAt` descending |
+| `hasMore` | boolean | Yes | Whether more results exist |
+| `nextCursor` | string | No | Last item ID to pass as `cursor` for the next page. Present only when `hasMore` is `true` |
+
+### Response example
+
+```json
+{
+  "data": [
+    {
+      "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
+      "userId": "usr_abc123def456",
+      "amount": "100.00",
+      "currency": "USD",
+      "status": "TOPUP_SUCCEEDED",
+      "airtmPayinId": "payin_2026-01-01x123",
+      "confirmationUri": "https://app.airtm.com/payin/abc123...",
+      "createdAt": "2026-09-24T10:00:00.000Z",
+      "updatedAt": "2026-09-24T10:05:00.000Z"
+    }
+  ],
+  "hasMore": true,
+  "nextCursor": "topup_jKL3mN0PqR4sT5uV6wX7yZ"
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+
+### Idempotency
+
+Not applicable (GET).
+
+### Examples
+
+<CommandLine>curl "http://localhost:4000/api/v1/topups?limit=20" -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const page = await sdk.topups.list({ limit: 20 });
+
+page.data.forEach((topup) => {
+  console.log(`${topup.id} — ${topup.amount} ${topup.currency} (${topup.status})`);
+});
+```
+
+---
+
+## GET /topups/{id}
+
+<Badge variant="success">GET</Badge> `/api/v1/topups/{id}`
+
+Returns a single top-up owned by the authenticated user.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | path | Yes | Top-up ID (prefix `topup_`) |
+
+### Response schema
+
+Matching `TopUpResponse` in `apps/api/src/modules/topups/topups.service.ts`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.id` | string | Yes | Top-up ID (prefix `topup_`) |
+| `data.userId` | string | Yes | Owner user ID (prefix `usr_`) |
+| `data.amount` | string | Yes | Top-up amount as a decimal string |
+| `data.currency` | string | Yes | Currency code |
+| `data.status` | enum | Yes | One of [`TopUpStatus`](#topupstatus-reference) |
+| `data.airtmPayinId` | string | No | AirTM pay-in reference (after AirTM call) |
+| `data.confirmationUri` | string | No | Redirect URL for a pending confirmation |
+| `data.failureReason` | string | No | Failure reason when `status` is `TOPUP_FAILED` |
+| `data.createdAt` | string | Yes | ISO 8601 creation timestamp |
+| `data.updatedAt` | string | Yes | ISO 8601 last-update timestamp |
+
+### Response example
+
+```json
+{
+  "data": {
+    "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
+    "userId": "usr_abc123def456",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "TOPUP_PROCESSING",
+    "airtmPayinId": "payin_2026-01-01x123",
+    "confirmationUri": "https://app.airtm.com/payin/abc123...",
+    "createdAt": "2026-09-24T10:00:00.000Z",
+    "updatedAt": "2026-09-24T10:03:00.000Z"
+  }
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
+| 404 | `TOPUP_NOT_FOUND` | Top-up does not exist or belongs to another user |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+
+### Idempotency
+
+Not applicable (GET).
+
+### Examples
+
+<CommandLine>curl http://localhost:4000/api/v1/topups/topup_jKL3mN0PqR4sT5uV6wX7yZ -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const topup = await sdk.topups.get('topup_jKL3mN0PqR4sT5uV6wX7yZ');
+
+console.log(topup.status);        // 'TOPUP_PROCESSING'
+console.log(topup.failureReason); // undefined when no failure
+```
+
+---
+
+## POST /topups/{id}/refresh
+
+<Badge variant="primary">POST</Badge> `/api/v1/topups/{id}/refresh`
+
+Re-checks the top-up status with AirTM and returns the fresh state. Use this when a webhook may have been missed. Refreshing a top-up already in a terminal state (`TOPUP_SUCCEEDED`, `TOPUP_FAILED`, `TOPUP_CANCELED`) is a no-op. On transition to `TOPUP_SUCCEEDED` the user's available balance is credited automatically.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | path | Yes | Top-up ID (prefix `topup_`) |
+
+### Response schema
+
+Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id).
+
+### Response example
+
+```json
+{
+  "data": {
+    "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
+    "userId": "usr_abc123def456",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "TOPUP_SUCCEEDED",
+    "airtmPayinId": "payin_2026-01-01x123",
+    "createdAt": "2026-09-24T10:00:00.000Z",
+    "updatedAt": "2026-09-24T10:07:00.000Z"
+  }
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
+| 404 | `TOPUP_NOT_FOUND` | Top-up does not exist or belongs to another user |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 502 | `PROVIDER_ERROR` | AirTM refresh call failed |
+
+### Idempotency
+
+Supported (the global guard applies to all POST requests). The operation is naturally idempotent — it only re-reads status from AirTM — so a replayed key just returns the cached result.
+
+### Examples
+
+<CommandLine>curl -X POST http://localhost:4000/api/v1/topups/topup_jKL3mN0PqR4sT5uV6wX7yZ/refresh -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const topup = await sdk.topups.refresh('topup_jKL3mN0PqR4sT5uV6wX7yZ');
+
+console.log(topup.status); // refreshed from AirTM
+```
+
+---
+
+## POST /topups/{id}/cancel
+
+<Badge variant="primary">POST</Badge> `/api/v1/topups/{id}/cancel`
+
+Cancels a top-up that is still awaiting user confirmation. Cancellation only works while `status` is `TOPUP_AWAITING_USER_CONFIRMATION`; any other state returns `409 INVALID_STATE`. The AirTM pay-in is cancelled first when one exists, and the local status is set to `TOPUP_CANCELED` regardless of the AirTM result.
+
+### Request parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | path | Yes | Top-up ID (prefix `topup_`) |
+
+### Response schema
+
+Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id), with `status` set to `TOPUP_CANCELED`.
+
+### Response example
+
+```json
+{
+  "data": {
+    "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
+    "userId": "usr_abc123def456",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "TOPUP_CANCELED",
+    "airtmPayinId": "payin_2026-01-01x123",
+    "createdAt": "2026-09-24T10:00:00.000Z",
+    "updatedAt": "2026-09-24T10:10:00.000Z"
+  }
+}
+```
+
+### Error codes
+
+| HTTP | Code | Cause |
+| --- | --- | --- |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `INSUFFICIENT_SCOPE` | API key lacks `write` scope |
+| 404 | `TOPUP_NOT_FOUND` | Top-up does not exist or belongs to another user |
+| 409 | `INVALID_STATE` | Status is not `TOPUP_AWAITING_USER_CONFIRMATION` (`details` contains `currentStatus` and `allowedStatuses`) |
+| 429 | `RATE_LIMITED` | Rate limit exceeded |
+
+### Idempotency
+
+Supported (the global guard applies to all POST requests). Cancellation moves the top-up into the terminal `TOPUP_CANCELED` state, so a retry with the same `Idempotency-Key` replays the original response.
+
+### Examples
+
+<CommandLine>curl -X POST http://localhost:4000/api/v1/topups/topup_jKL3mN0PqR4sT5uV6wX7yZ/cancel -H "Authorization: Bearer ohk_live_your_api_key"</CommandLine>
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key',
+});
+
+const topup = await sdk.topups.cancel('topup_jKL3mN0PqR4sT5uV6wX7yZ');
+
+console.log(topup.status); // 'TOPUP_CANCELED'
+```
+
+---
+
+## GET /topups/{id}/callback
+
+<Badge variant="success">GET</Badge> <Badge variant="default">PUBLIC</Badge> `/api/v1/topups/{id}/callback`
+
+**Public endpoint** — no authentication or scope required (`@Public()` in `topups.controller.ts`). This is the URL AirTM redirects the buyer's browser to after they confirm or cancel a payment. The Orchestrator looks up the top-up, refreshes its status from AirTM when a pay-in ID exists, and issues an HTTP redirect (302) to either the success or cancel redirect URL configured in `AirtmConfig`.
+
+You never call this endpoint yourself; you pass the callback base URL to AirTM when the top-up is created (`confirmationBaseUrl` / `cancellationBaseUrl` in `TopUpsService.createTopUp`).
+
+### Query parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | path | Yes | Top-up ID (prefix `topup_`) |
+| `status` | string | query | No | Optional status echoed by AirTM (ignored; final status is re-read from AirTM) |
+| `code` | string | query | No | Optional code echoed by AirTM (ignored) |
+
+### Behavior
+
+| Condition | Result |
+| --- | --- |
+| Top-up not found | Redirect to the cancel redirect URL |
+| `status` is `TOPUP_SUCCEEDED` or `TOPUP_PROCESSING` | Redirect to the success redirect URL |
+| Any other status | Redirect to the cancel redirect URL |
+
+### Error codes
+
+None — the endpoint always redirects.
+
+### Idempotency
+
+Not applicable (redirect).
+
+### Examples
+
+```bash
+# Follow the redirect to see the final success/cancel URL
+curl -L "http://localhost:4000/api/v1/topups/topup_jKL3mN0PqR4sT5uV6wX7yZ/callback"
+```
+
+```typescript
+// No SDK method — this URL is where the marketplace sends the buyer
+// after the top-up is created (confirmationUri completes the loop).
+const redirectUri = `${ORCHESTRATOR_URL}/api/v1/topups/${topupId}/callback`;
+// Point the user's browser here after payment (handled by AirTM)
+```
+
+---
+
+## TopUpStatus reference
+
+Source: `packages/shared/src/enums/topup-status.enum.ts` in the Orchestrator.
+
+| Status | Description |
+| --- | --- |
+| `TOPUP_CREATED` | Record created locally; AirTM pay-in not yet created |
+| `TOPUP_AWAITING_USER_CONFIRMATION` | Pay-in created; waiting for the user to pay via `confirmationUri` |
+| `TOPUP_PROCESSING` | Payment received; processing |
+| `TOPUP_SUCCEEDED` | Completed; the user's balance has been credited |
+| `TOPUP_FAILED` | Failed; `failureReason` carries the reason |
+| `TOPUP_CANCELED` | Cancelled by the user (via `cancel`) or the system |
+
+Allowed transitions:
+
+```
+TOPUP_CREATED → TOPUP_AWAITING_USER_CONFIRMATION
+TOPUP_AWAITING_USER_CONFIRMATION → TOPUP_PROCESSING | TOPUP_CANCELED
+TOPUP_PROCESSING → TOPUP_SUCCEEDED | TOPUP_FAILED
+TOPUP_SUCCEEDED, TOPUP_FAILED, TOPUP_CANCELED  (terminal)
+```
+
+## Related documentation
+
+- [API Reference](/docs/api-reference/overview) — authentication, scopes, and the full endpoint table
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — `topup.created`, `topup.succeeded`, and related events
+- [Deposits Guide](/docs/guide/deposits) — crypto vs. AirTM deposit flows end to end
+- [Wallets Guide](/docs/guide/wallets) — how invisible Stellar wallets work
