@@ -1,6 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactElement } from "react";
 import { CodeBlock } from "./CodeBlock";
+import { CodeTabs, CodeTab } from "./CodeTabs";
 import { Callout } from "./Callout";
 import { CommandLine } from "./CommandLine";
 import { Badge } from "./Badge";
@@ -14,6 +15,10 @@ export const MDX_COMPONENTS: MDXComponents = {
 
   // Custom doc components (used directly in .mdx files)
   CodeBlock,
+  // Multi-language samples: accessible tablist (arrow keys + roving tabindex),
+  // per-panel copy, and a localStorage-persisted selection (Issue #1576)
+  CodeTabs,
+  CodeTab,
   Callout,
   CommandLine,
   Badge,
