@@ -113,15 +113,15 @@ await sdk.orders.release(order.id, 'Work completed');
 
 The SDK provides access to all Orchestrator resources:
 
-| Resource | Description |
-|----------|-------------|
-| `sdk.users` | Create and manage users |
-| `sdk.balance` | Check user balances |
-| `sdk.orders` | Create and manage orders, escrows, and resolutions |
-| `sdk.disputes` | Manage disputes |
-| `sdk.wallet` | Wallet operations (deposit addresses) |
-| `sdk.withdrawals` | Create withdrawals |
-| `sdk.topups` | Top-up operations (AirTM mode) |
+| Resource | Description | Reference |
+|----------|-------------|-----------|
+| `sdk.users` | Create and manage users | [Users Reference](/docs/sdk/users) |
+| `sdk.balance` | Check, reserve, release, and reconcile balances | [Balance Reference](/docs/sdk/balance) |
+| `sdk.orders` | Create and manage orders, escrows, and resolutions | [Orders Guide](/docs/guide/orders) |
+| `sdk.disputes` | Manage disputes | [Disputes Guide](/docs/guide/disputes) |
+| `sdk.wallet` | Wallet operations and deposit addresses | [Wallet Reference](/docs/sdk/wallet) |
+| `sdk.withdrawals` | Create withdrawals | [Withdrawals Guide](/docs/guide/withdrawals) |
+| `sdk.topups` | Top-up operations (AirTM mode) | [Top-ups Reference](/docs/sdk/topups) |
 
 ## Idempotency
 
@@ -197,7 +197,9 @@ async function processOrder(user: User): Promise<Order> {
 
 ## Next Steps
 
-- [SDK Resources](/docs/sdk/resources) - All available methods
-- [Error Handling](/docs/sdk/errors) - Complete error reference
+- [Users Reference](/docs/sdk/users) - User creation and AirTM linking (`sdk.users`)
+- [Balance Reference](/docs/sdk/balance) - 9 balance management methods (`sdk.balance`)
+- [Wallet Reference](/docs/sdk/wallet) - Stellar wallet and deposit addresses (`sdk.wallet`)
+- [Top-ups Reference](/docs/sdk/topups) - AirTM deposit workflows (`sdk.topups`)
 - [Quick Start Guide](/docs/guide/quick-start) - Full integration example
 - [API Reference](/docs/api-reference/overview) - REST API documentation
