@@ -1,276 +1,321 @@
 ---
 title: Configuration
-description: Complete reference for all environment variables and configuration options.
+description: Complete environment variable reference for the OFFER-HUB Orchestrator and the documentation site — verified from source code in both repositories.
 order: 3
 section: Getting Started
 ---
 
-OFFER-HUB Orchestrator is configured through environment variables in `.env`. This page documents every available option.
+This page documents every environment variable that is read by source code in either the **OFFER-HUB Orchestrator** (`github.com/OFFER-HUB/OFFER-HUB`) or the **documentation site** (`github.com/OFFER-HUB/offer-hub-monorepo`). Every entry is traced to the exact implementation file that reads it.
 
-## Quick Start
+<Callout type="note">
+  There are two separate repositories. The Orchestrator is the NestJS payments backend. The documentation site (this website) is a separate Next.js application. Their environment variables are independent and documented in separate sections below.
+</Callout>
 
-Copy the example file and fill in your values:
+---
+
+## OFFER-HUB Orchestrator
+
+The Orchestrator is a NestJS monorepo (`/tmp/OFFER-HUB`). Copy the example file before editing:
 
 <CommandLine>cp .env.example .env</CommandLine>
 
-## Required Variables
+### Required Variables
 
-These must be set for the application to start:
+These variables throw at startup or at first use if absent. The application will not function without them.
 
-```env
-# Server
-NODE_ENV=development
-PORT=4000
-
-# Database (PostgreSQL)
-DATABASE_URL=postgresql://user:password@host:5432/database
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Authentication
-OFFERHUB_MASTER_KEY=your-secure-master-key
-
-# Payment Provider
-PAYMENT_PROVIDER=crypto
-WALLET_ENCRYPTION_KEY=your-32-byte-hex-key  # Required for crypto mode
-
-# Trustless Work (Escrow)
-TRUSTLESS_API_KEY=your_trustless_api_key
-
-# Stellar
-STELLAR_NETWORK=testnet
-
-# Public URL
-PUBLIC_BASE_URL=http://localhost:4000
-```
-
-## Server Configuration
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `NODE_ENV` | Yes | `development` | Runtime environment: `development`, `staging`, `production` |
-| `PORT` | No | `4000` | HTTP server port |
-| `LOG_LEVEL` | No | `info` | Logging level: `debug`, `info`, `warn`, `error` |
-
-## Database (PostgreSQL)
-
-| Variable | Required | Example | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | `postgresql://user:pass@host:5432/db` | Prisma connection string |
-
-### Examples by Provider
-
-```env
-# Supabase (use direct connection, port 5432)
-DATABASE_URL=postgresql://postgres:password@db.xxxx.supabase.co:5432/postgres?sslmode=require
-
-# Railway
-DATABASE_URL=postgresql://postgres:password@containers-us-west-xxx.railway.app:5432/railway
-
-# Neon
-DATABASE_URL=postgresql://user:password@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
-
-# Local Docker
-DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
-```
+| Variable | Default | Effect | Source |
+|----------|---------|--------|--------|
+| `DATABASE_URL` | none | PostgreSQL connection string used by Prisma for runtime queries. Accepts a pooled URL (e.g. Supabase port 6543). | `packages/database/prisma/schema.prisma` |
+| `DIRECT_URL` | none | PostgreSQL direct connection string (no pooler, port 5432). Prisma uses this for migrations only. Must differ from `DATABASE_URL` when using PgBouncer. | `packages/database/prisma/schema.prisma` |
+| `TRUSTLESS_API_KEY` | none | Trustless Work API key. `TrustlessWorkConfig` calls `getRequiredEnv()` which throws `Error: Missing required environment variable: TRUSTLESS_API_KEY` on startup if absent. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `TRUSTLESS_WEBHOOK_SECRET` | none | HMAC secret for verifying Trustless Work webhook signatures. `getRequiredEnv()` throws on startup if absent. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `PLATFORM_USER_ID` | none | Internal user ID of the platform Stellar wallet used as `disputeResolver` and `platformAddress` in escrow contracts. `getRequiredEnv()` throws on startup if absent; `BootstrapValidatorService` also validates the user and wallet exist in the database. Set by running `npm run bootstrap`. | `apps/api/src/providers/trustless-work/trustless-work.config.ts`, `apps/api/src/modules/config/bootstrap-validator.service.ts` |
+| `WALLET_ENCRYPTION_KEY` | none | 64 hex characters (32 bytes). AES-256-GCM key for encrypting Stellar private keys at rest. Not checked at startup — throws `Error: WALLET_ENCRYPTION_KEY is not set` the first time `encrypt()` or `decrypt()` is called (i.e. when a wallet is created or used). | `apps/api/src/utils/crypto.ts` |
 
 <Callout type="warning">
-  When using Supabase, always use the **direct connection URL** (port 5432), not the pooler (port 6543). Prisma migrations require the direct connection.
+  **`DIRECT_URL` vs `DATABASE_URL`** — Prisma migrations require a direct connection. When using a connection pooler like Supabase's PgBouncer, set `DATABASE_URL` to the pooler URL (port 6543) and `DIRECT_URL` to the direct URL (port 5432). For Docker without a pooler, both can be the same value. Verified in `packages/database/prisma/schema.prisma`:
+
+  ```prisma
+  datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+  }
+  ```
 </Callout>
-
-## Redis
-
-| Variable | Required | Example | Description |
-|----------|----------|---------|-------------|
-| `REDIS_URL` | Yes | `redis://:pass@host:6379` | Redis connection string |
-
-### What Redis is Used For
-
-| Feature | Description |
-|---------|-------------|
-| BullMQ | Background job queues and processing |
-| Rate Limiting | API request throttling |
-| Idempotency | Duplicate request prevention |
-| Caching | Performance optimization |
-
-### Examples by Provider
-
-```env
-# Upstash
-REDIS_URL=redis://default:xxx@us1-xxx.upstash.io:6379
-
-# Railway
-REDIS_URL=redis://default:xxx@containers-us-west-xxx.railway.app:6379
-
-# Local Docker
-REDIS_URL=redis://localhost:6379
-```
-
-## Authentication
-
-| Variable | Required | Example | Description |
-|----------|----------|---------|-------------|
-| `OFFERHUB_MASTER_KEY` | Yes | `ohk_master_xxx` | Master key for creating API keys |
-
-### Generating a Secure Master Key
-
-```bash
-# Generate 32-byte random key
-openssl rand -base64 32
-
-# Or use Node.js
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-```
-
-## Payment Provider
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode: `crypto` or `airtm` |
-
-### Crypto-Native Mode (Default)
-
-When `PAYMENT_PROVIDER=crypto`:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `WALLET_ENCRYPTION_KEY` | Yes | 64 hex characters - AES-256-GCM key for encrypting Stellar private keys |
-
-#### Generating WALLET_ENCRYPTION_KEY
-
-<CommandLine>node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</CommandLine>
 
 <Callout type="danger">
-  This key protects all user wallet private keys. If lost, wallet access is permanently lost. Store securely and back up.
+  **Back up `WALLET_ENCRYPTION_KEY` immediately.** If this key is lost, all encrypted Stellar private keys become permanently unrecoverable. Store it in a secrets manager — never in version control.
 </Callout>
 
-### AirTM Mode (Optional)
+### Server
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `PORT` | No | `4000` | HTTP port the NestJS application listens on. | `apps/api/src/main.ts` |
+| `NODE_ENV` | No | none (reads as `undefined` if unset) | When set to `'test'`, `BootstrapValidatorService` and `BlockchainMonitorService` skip their initialization logic. When `'production'`, `GlobalExceptionFilter` omits stack traces from error responses. | `apps/api/src/modules/config/bootstrap-validator.service.ts`, `apps/api/src/common/filters/global-exception.filter.ts`, `apps/api/src/modules/wallet/blockchain-monitor.service.ts`, `apps/api/src/modules/queues/queue.service.ts` |
+
+### Database
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `DATABASE_URL` | **Yes** | none | Prisma connection URL. Used for all runtime queries. | `packages/database/prisma/schema.prisma` |
+| `DIRECT_URL` | **Yes** | none | Prisma direct connection URL. Used only for `prisma migrate`. | `packages/database/prisma/schema.prisma` |
+
+### Redis
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `REDIS_URL` | No | `redis://localhost:6379` | Redis connection URL. Used by `RedisService` (ioredis) and BullMQ (`AppModule`). Redis backs rate limiting, idempotency keys, and all background job queues. | `apps/api/src/app.module.ts`, `apps/api/src/modules/redis/redis.service.ts` |
+
+<Callout type="note">
+  Use `rediss://` (double-s) for TLS-encrypted Redis connections in production. The URL is passed directly to ioredis.
+</Callout>
+
+### Authentication
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `OFFERHUB_MASTER_KEY` | No | none | If set, requests that present this exact value as a Bearer token bypass API key lookup and receive `['read', 'write', 'support']` scopes. If absent, the master key path is disabled — only regular API keys work. | `apps/api/src/common/guards/api-key.guard.ts` |
+| `OFFERHUB_JWT_SECRET` | No | `'fallback-secret-for-dev'` | Secret used to sign and verify short-lived JWT tokens (`ohk_tok_…`). The fallback is intentionally weak. | `apps/api/src/modules/auth/auth.module.ts` |
+
+<Callout type="danger">
+  **`OFFERHUB_JWT_SECRET` must be set in production.** The fallback value `'fallback-secret-for-dev'` is a public default. Any attacker who knows it can forge short-lived tokens. Verified in `apps/api/src/modules/auth/auth.module.ts`:
+
+  ```typescript
+  JwtModule.register({
+    secret: process.env.OFFERHUB_JWT_SECRET || 'fallback-secret-for-dev',
+    signOptions: { expiresIn: '1h' },
+  })
+  ```
+</Callout>
+
+### Payment Provider
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `PAYMENT_PROVIDER` | No | `'crypto'` | Selects the payment provider. Only `'crypto'` is currently functional. Setting `'airtm'` throws `Error: AirTM PaymentProvider is not yet available in this version` at startup. | `apps/api/src/providers/payment/payment-provider.module.ts`, `apps/api/src/modules/queues/processors/reconciliation.processor.ts` |
 
 <Callout type="warning">
-  **Not Currently Functional** — AirTM integration is not available at this time. This section is for reference only. Use `PAYMENT_PROVIDER=crypto` (the default) for production deployments.
+  **`PAYMENT_PROVIDER=airtm` is not available.** The `PaymentProviderModule` unconditionally throws an error if `PAYMENT_PROVIDER` is set to `airtm`. This is a deliberate guard for an unfinished integration. Use the default `crypto` value. Verified in `apps/api/src/providers/payment/payment-provider.module.ts`.
 </Callout>
 
-When `PAYMENT_PROVIDER=airtm`:
+### Trustless Work (Escrow)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `AIRTM_ENV` | Yes | `sandbox` or `prod` |
-| `AIRTM_API_KEY` | Yes | AirTM API key |
-| `AIRTM_API_SECRET` | Yes | AirTM API secret |
-| `AIRTM_WEBHOOK_SECRET` | Recommended | HMAC secret for webhook verification |
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `TRUSTLESS_API_KEY` | **Yes** | none | Trustless Work API key. Throws at startup if absent. Format expected: `{id}.{secret}` — a warning is logged if the format is invalid. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `TRUSTLESS_WEBHOOK_SECRET` | **Yes** | none | HMAC secret for Trustless Work webhook verification. Throws at startup if absent. A warning is logged if the value does not start with `tw_whsec_`. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `TRUSTLESS_API_URL` | No | `'https://api.trustlesswork.com/v1'` | Base URL for Trustless Work API calls. The health endpoint uses `'https://dev.api.trustlesswork.com'` as its separate default when this variable is not set. | `apps/api/src/providers/trustless-work/trustless-work.config.ts`, `apps/api/src/modules/health/health.service.ts` |
+| `TRUSTLESS_TIMEOUT_MS` | No | `60000` | HTTP request timeout in milliseconds for Trustless Work API calls. Must be between `1000` and `120000` — validated at startup with a thrown error if out of range. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `PLATFORM_USER_ID` | **Yes** | none | Platform user ID for escrow operations. Throws at startup if absent. Must exist in the database with an active wallet. Set by `npm run bootstrap`. | `apps/api/src/providers/trustless-work/trustless-work.config.ts`, `apps/api/src/modules/config/bootstrap-validator.service.ts` |
 
-<Callout type="note">
-  AirTM requires Enterprise API access. Contact AirTM for credentials.
-</Callout>
+### Stellar Network
 
-## Trustless Work (Escrow)
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `STELLAR_NETWORK` | No | `'testnet'` | Stellar network. Must be exactly `'testnet'` or `'mainnet'` — throws `Error: STELLAR_NETWORK must be "testnet" or "mainnet"` for any other value. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `STELLAR_HORIZON_URL` | No | `'https://horizon-testnet.stellar.org'` (when `STELLAR_NETWORK=testnet`) or `'https://horizon.stellar.org'` (when `STELLAR_NETWORK=mainnet`) | Horizon server URL. Must start with `https://` — throws otherwise. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `STELLAR_USDC_ASSET_CODE` | No | `'USDC'` | USDC asset code on Stellar. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `STELLAR_USDC_ISSUER` | No | `'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'` (testnet Circle issuer) | USDC issuer address. Must be a valid 56-character Stellar public key starting with `G` — validated at startup. | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `TRUSTLESS_API_KEY` | Yes | Trustless Work API key |
-| `TRUSTLESS_WEBHOOK_SECRET` | Recommended | HMAC secret for webhook verification |
-| `TRUSTLESS_API_URL` | No | Override API base URL (auto-detected by default) |
-| `PLATFORM_USER_ID` | Yes | Platform user ID for escrow operations |
+### Stellar Network Reference
 
-Get credentials at [trustlesswork.com](https://trustlesswork.com).
-
-## Stellar Network
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `STELLAR_NETWORK` | No | `testnet` | Stellar network: `testnet` or `mainnet` |
-| `STELLAR_HORIZON_URL` | No | Auto | Horizon server URL |
-| `STELLAR_USDC_ASSET_CODE` | No | `USDC` | USDC asset code |
-| `STELLAR_USDC_ISSUER` | Yes | See below | USDC issuer address |
-
-### Network Details
-
-| Network | Horizon URL | USDC Issuer |
-|---------|-------------|-------------|
+| Network | `STELLAR_HORIZON_URL` default | `STELLAR_USDC_ISSUER` |
+|---------|------------------------------|----------------------|
 | `testnet` | `https://horizon-testnet.stellar.org` | `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5` |
-| `mainnet` | `https://horizon.stellar.org` | `GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN` |
+| `mainnet` | `https://horizon.stellar.org` | Must be set explicitly to the Circle mainnet issuer |
 
-<Callout type="note">
-  Use `testnet` for development and testing. Switch to `mainnet` for production.
+<Callout type="warning">
+  For mainnet deployments, `STELLAR_USDC_ISSUER` must be set to the correct Circle mainnet issuer address. The default value is the **testnet** issuer and will not work on mainnet.
 </Callout>
 
-## Public URL
+### Operations
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `PUBLIC_BASE_URL` | Yes | Your Orchestrator's public URL (for webhooks and callbacks) |
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `DISABLE_BLOCKCHAIN_MONITOR` | No | none | If set to the string `'true'`, `BlockchainMonitorService` skips initialization and does not open Horizon SSE streams. Use on secondary API instances in horizontal scaling to avoid duplicate deposit processing. | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
+| `RECONCILIATION_ENABLED` | No | none (job runs) | If set to the string `'false'`, the `CHECK_MISSED_DEPOSITS` reconciliation job is skipped. Other reconciliation jobs (`SYNC_TOPUPS`, `SYNC_WITHDRAWALS`, `SYNC_ESCROWS`) are not gated by this variable and run regardless. | `apps/api/src/modules/queues/processors/reconciliation.processor.ts` |
+| `PUBLIC_BASE_URL` | No | none | Not read by any application source file. Present in `.env.example` for reference and set by the e2e test setup. Intended for webhook callback URLs in future AirTM integration. | `/tmp/OFFER-HUB/.env.example`, `tests/e2e/global-setup.ts` |
 
-## Frontend Variables
+### AirTM Variables
 
-For the Next.js frontend, prefix with `NEXT_PUBLIC_`:
+<Callout type="warning">
+  **AirTM integration is not currently functional.** `PaymentProviderModule` throws an error if `PAYMENT_PROVIDER=airtm`. The `AirtmModule` and `AirtmConfig` are loaded unconditionally, which means `AIRTM_API_KEY` and `AIRTM_API_SECRET` are validated at startup regardless of `PAYMENT_PROVIDER`. If these are absent and AirTM is loaded, it throws. In practice: leave `PAYMENT_PROVIDER=crypto` (default) and these variables unset.
+</Callout>
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `AIRTM_ENV` | No | `'sandbox'` | AirTM environment. `'sandbox'` uses `sandbox-enterprise.airtm.io`; `'production'` uses `enterprise.airtm.io`. | `apps/api/src/providers/airtm/airtm.config.ts` |
+| `AIRTM_API_KEY` | Conditional | `''` | AirTM API key. Required when AirTM is enabled — throws `Missing required Airtm environment variables: AIRTM_API_KEY` if absent and AirTM module is active. | `apps/api/src/providers/airtm/airtm.config.ts` |
+| `AIRTM_API_SECRET` | Conditional | `''` | AirTM API secret. Same required behavior as `AIRTM_API_KEY`. | `apps/api/src/providers/airtm/airtm.config.ts` |
+| `AIRTM_WEBHOOK_SECRET` | No | `''` | HMAC secret for AirTM webhook verification. Optional — a warning is logged if absent but startup proceeds. If empty or a placeholder, `isWebhookVerificationEnabled` returns `false`. | `apps/api/src/providers/airtm/airtm.config.ts` |
+| `TOPUP_CALLBACK_BASE_URL` | No | `'http://localhost:3000/topups'` | Base URL for AirTM top-up callback webhooks. | `apps/api/src/providers/airtm/airtm.config.ts` |
+| `TOPUP_SUCCESS_REDIRECT_URL` | No | `'http://localhost:3001/topups/success'` | Redirect URL after successful AirTM top-up. | `apps/api/src/providers/airtm/airtm.config.ts` |
+| `TOPUP_CANCEL_REDIRECT_URL` | No | `'http://localhost:3001/topups/canceled'` | Redirect URL after cancelled AirTM top-up. | `apps/api/src/providers/airtm/airtm.config.ts` |
+
+### CLI Variables
+
+These variables are read only by the `@offerhub/cli` package. They are not used by the API server.
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `OFFERHUB_API_URL` | No | none | Orchestrator base URL for CLI commands. Used when no config file is present. | `packages/cli/src/utils/config.ts` |
+| `OFFERHUB_API_KEY` | No | none | API key for CLI authentication. Used when no config file is present. | `packages/cli/src/utils/config.ts` |
+
+### Complete Orchestrator `.env` Template
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-NEXT_PUBLIC_SITE_URL=https://offer-hub.tech
-```
-
-## Complete .env Template
-
-Copy this for a complete setup:
-
-```env
-# Server
+# ─── Server ──────────────────────────────────────────────────────────────────
 NODE_ENV=development
 PORT=4000
-LOG_LEVEL=debug
 
-# Database (PostgreSQL)
-DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
+# ─── Database (PostgreSQL) ────────────────────────────────────────────────────
+# Pooler URL (for runtime queries)
+DATABASE_URL=postgres://USER:PASSWORD@HOST:6543/postgres?pgbouncer=true
+# Direct URL (for migrations — must be port 5432, no pooler)
+DIRECT_URL=postgres://USER:PASSWORD@HOST:5432/postgres
 
-# Redis
+# ─── Redis ────────────────────────────────────────────────────────────────────
 REDIS_URL=redis://localhost:6379
 
-# Authentication
-OFFERHUB_MASTER_KEY=change-me-in-production
+# ─── Authentication ──────────────────────────────────────────────────────────
+# Generate with: openssl rand -base64 32
+OFFERHUB_MASTER_KEY=ohk_master_...
+# Generate with: openssl rand -base64 32
+OFFERHUB_JWT_SECRET=
 
-# Payment Provider
+# ─── Payment Provider ─────────────────────────────────────────────────────────
+# Only "crypto" is supported. "airtm" throws an error at startup.
 PAYMENT_PROVIDER=crypto
-WALLET_ENCRYPTION_KEY=  # Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
-# AirTM (only if PAYMENT_PROVIDER=airtm)
+# ─── Wallet Encryption ────────────────────────────────────────────────────────
+# Required for crypto mode (PAYMENT_PROVIDER=crypto)
+# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+WALLET_ENCRYPTION_KEY=
+
+# ─── Trustless Work ───────────────────────────────────────────────────────────
+# Get credentials from: https://dapp.trustlesswork.com
+TRUSTLESS_API_KEY=your_api_key_here
+TRUSTLESS_WEBHOOK_SECRET=tw_whsec_...
+# Default: https://api.trustlesswork.com/v1 (production) or https://dev.api.trustlesswork.com (dev)
+TRUSTLESS_API_URL=https://dev.api.trustlesswork.com
+# Default: 60000. Must be 1000–120000.
+TRUSTLESS_TIMEOUT_MS=60000
+
+# ─── Platform Identity ────────────────────────────────────────────────────────
+# Set by running: npm run bootstrap
+PLATFORM_USER_ID=
+
+# ─── Stellar ──────────────────────────────────────────────────────────────────
+STELLAR_NETWORK=testnet
+# Auto-detected from STELLAR_NETWORK if not set
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_USDC_ASSET_CODE=USDC
+# Testnet Circle issuer (default). Must be updated for mainnet.
+STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+
+# ─── Operations ───────────────────────────────────────────────────────────────
+# Set to "true" on secondary instances to disable Stellar SSE monitoring
+# DISABLE_BLOCKCHAIN_MONITOR=true
+# Set to "false" to skip the CHECK_MISSED_DEPOSITS reconciliation job
+# RECONCILIATION_ENABLED=false
+
+# ─── AirTM (not currently functional — leave commented out) ───────────────────
 # AIRTM_ENV=sandbox
 # AIRTM_API_KEY=
 # AIRTM_API_SECRET=
 # AIRTM_WEBHOOK_SECRET=
-
-# Trustless Work
-TRUSTLESS_API_KEY=
-TRUSTLESS_WEBHOOK_SECRET=
-
-# Platform Identity
-PLATFORM_USER_ID=
-
-# Stellar
-STELLAR_NETWORK=testnet
-STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
-
-# Public URL
-PUBLIC_BASE_URL=http://localhost:4000
+# TOPUP_CALLBACK_BASE_URL=http://localhost:3000/topups
+# TOPUP_SUCCESS_REDIRECT_URL=http://localhost:3001/topups/success
+# TOPUP_CANCEL_REDIRECT_URL=http://localhost:3001/topups/canceled
 ```
 
-## Security Best Practices
+---
 
-1. **Never commit `.env` files** - Add to `.gitignore`
-2. **Use different keys per environment** - Dev, staging, prod should have separate credentials
-3. **Rotate keys periodically** - Especially `OFFERHUB_MASTER_KEY`
-4. **Use TLS for Redis** - Use `rediss://` in production
-5. **Require SSL for database** - Use `?sslmode=require`
-6. **Store secrets in vault** - Use platform secrets (Railway, Render) or HashiCorp Vault
+## Production Readiness Checklist
 
-<Callout type="danger">
-  Never commit your `.env` file to version control. It is already listed in `.gitignore`.
+This checklist is derived from implemented guards and validators in the Orchestrator source code. Items not backed by implementation are not listed.
+
+| Item | What to verify | Source |
+|------|---------------|--------|
+| `OFFERHUB_JWT_SECRET` is set | Must not be the fallback `'fallback-secret-for-dev'` | `apps/api/src/modules/auth/auth.module.ts` |
+| `WALLET_ENCRYPTION_KEY` is set and backed up | 64 hex chars; losing it makes wallets unrecoverable | `apps/api/src/utils/crypto.ts` |
+| `STELLAR_NETWORK=mainnet` + correct `STELLAR_USDC_ISSUER` | Testnet issuer is the default; mainnet requires an explicit override | `apps/api/src/providers/trustless-work/trustless-work.config.ts` |
+| `DATABASE_URL` and `DIRECT_URL` both set | Direct URL must bypass any pooler for migrations to work | `packages/database/prisma/schema.prisma` |
+| `REDIS_URL` points to a production Redis instance | Rate limiting, idempotency, and queues all require Redis | `apps/api/src/app.module.ts`, `apps/api/src/modules/redis/redis.service.ts` |
+| Health endpoint reachable | `GET /api/v1/health` checks database, Redis, AirTM, and Trustless Work | `apps/api/src/modules/health/health.controller.ts`, `apps/api/src/modules/health/health.service.ts` |
+| Rate limiting active | `RateLimitGuard` is a global guard backed by Redis | `apps/api/src/common/guards/rate-limit.guard.ts` |
+| `RECONCILIATION_ENABLED` not set to `'false'` | The missed-deposit reconciliation job requires this to be unset or set to `'true'` | `apps/api/src/modules/queues/processors/reconciliation.processor.ts` |
+| Secondary instances: `DISABLE_BLOCKCHAIN_MONITOR=true` | Prevents duplicate deposit processing in horizontally-scaled deployments | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
+| `.env` not committed to version control | `.env` is in `.gitignore` | `/tmp/OFFER-HUB/.gitignore` |
+
+<Callout type="note">
+  Items not in this checklist — such as backup infrastructure, external log aggregation, and database snapshots — are not implemented in the Orchestrator source code. Consult your infrastructure provider's documentation for those.
 </Callout>
+
+---
+
+## Documentation Site Variables
+
+The documentation site (`github.com/OFFER-HUB/offer-hub-monorepo`) is a Next.js application. Its environment variables are independent of the Orchestrator.
+
+### Runtime Variables
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `NODE_ENV` | No | `development` | Controls CSP production headers and dev-only error details. | `config/security-headers.ts`, `next.config.ts`, `src/utils/logger.ts`, `src/app/error.tsx` |
+| `NEXT_PUBLIC_SITE_URL` | No (warns in production) | `'https://offer-hub.tech'` | CORS `Access-Control-Allow-Origin` header and canonical URL generation. In production, a warning is logged if absent. Falls back to the hardcoded constant in `src/constants/site.ts`. | `next.config.ts`, `src/lib/llms-txt.ts`, `src/components/docs/Breadcrumb.tsx`, `src/components/docs/PageActionsMenu.tsx` |
+| `NEXT_PUBLIC_SUPABASE_URL` | No | `''` (Supabase disabled) | Supabase project URL. If absent, empty, or a placeholder value, `isSupabaseConfigured` is `false` and all form API routes return HTTP 503. | `src/lib/supabase.ts`, `config/security-headers.ts` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No | `''` (Supabase disabled) | Supabase anonymous key. Same placeholder guard as `NEXT_PUBLIC_SUPABASE_URL`. | `src/lib/supabase.ts` |
+| `NEXT_PUBLIC_API_BASE_URL` | No | `'http://localhost:4000/api/v1'` | Base URL for the interactive API explorer widget. Also added to the CSP `connect-src` allowlist. | `src/components/api-explorer/EndpointPanel.tsx`, `config/security-headers.ts` |
+| `NEXT_PUBLIC_API_URL` | No | none | Added to the CSP `connect-src` allowlist only. Not read anywhere else. | `config/security-headers.ts` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | none | Cloudflare Turnstile site key. If absent, the waitlist form renders without CAPTCHA and submits without token verification. | `src/hooks/use-waitlist-form.ts` |
+
+<Callout type="note">
+  `NEXT_PUBLIC_*` variables are embedded into the browser bundle at build time. Never put secrets in them. `NEXT_PUBLIC_SUPABASE_ANON_KEY` is the Supabase **anonymous** (public) key — it is safe to expose client-side, with row-level security enforcing access control in the database.
+</Callout>
+
+### Supabase Availability
+
+`src/lib/supabase.ts` guards against placeholder values before instantiating the client:
+
+```typescript
+const looksLikePlaceholder =
+  !rawUrl ||
+  rawUrl.includes("your_") ||
+  rawUrl.includes("placeholder") ||
+  !isValidHttpUrl(rawUrl);
+```
+
+When Supabase is not configured, all of these API routes return HTTP 503:
+- `POST /api/waitlist`
+- `POST /api/contact`
+- `POST /api/privacy/delete`
+- `POST /api/privacy/export`
+
+### End-to-End Test Variables
+
+| Variable | Required | Default | Effect | Source |
+|----------|----------|---------|--------|--------|
+| `E2E_BASE_URL` | No | `http://127.0.0.1:3000` | Override base URL for Playwright end-to-end tests. No effect on the running application. | `playwright.config.ts` |
+| `CI` | No | none | When set, Playwright adjusts retry and worker settings for CI environments. | `playwright.config.ts` |
+
+### `.env.example` Entries Not Read by Source Code
+
+The following variables appear in `offer-hub-monorepo/.env.example` but are not read by any TypeScript or JavaScript source file in that repository.
+
+| Variable | Appears in | Reason it is present |
+|----------|-----------|---------------------|
+| `OFFERHUB_API_KEY` | `.env.example`, use-case code examples | Configures the **SDK** in integration examples — not used by the Next.js app itself |
+| `DATABASE_URL` | `.env.example` | Referenced in installation docs for the Orchestrator; not read by `src/` or `backend/` in this repo |
+| `DIRECT_URL` | `.env.example` | Referenced in installation docs; not read by any source file in this repo |
+
+---
 
 ## Next Steps
 
-- [Quick Start](/docs/guide/quick-start) - Create your first user and order
-- [API Reference](/docs/api-reference/overview) - Explore all endpoints
-- [Deployment](/docs/guide/self-hosting) - Deploy to production
+- [Installation](/docs/installation) — Set up the Orchestrator locally with Docker or the setup wizard
+- [Getting Started](/docs/getting-started) — Architecture overview and first integration steps
+- [API Reference](/docs/api-reference/overview) — Full REST API documentation
+- [Self-Hosting](/docs/guide/self-hosting) — Deploy to production infrastructure
