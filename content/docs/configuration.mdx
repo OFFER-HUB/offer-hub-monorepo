@@ -147,18 +147,21 @@ When `PAYMENT_PROVIDER=crypto`:
 
 ### AirTM Mode (Optional)
 
-<Callout type="warning">
-  **Not Currently Functional** — AirTM integration is not available at this time. This section is for reference only. Use `PAYMENT_PROVIDER=crypto` (the default) for production deployments.
+<Callout type="note">
+  AirTM is the fiat on/off-ramp provider. For the full setup — user linking, top-ups, withdrawals, callback redirects, and webhook verification — see the [AirTM Provider Guide](/docs/guide/airtm).
 </Callout>
 
 When `PAYMENT_PROVIDER=airtm`:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `AIRTM_ENV` | Yes | `sandbox` or `prod` |
+| `AIRTM_ENV` | No | `sandbox` (default) or `production` |
 | `AIRTM_API_KEY` | Yes | AirTM API key |
 | `AIRTM_API_SECRET` | Yes | AirTM API secret |
-| `AIRTM_WEBHOOK_SECRET` | Recommended | HMAC secret for webhook verification |
+| `AIRTM_WEBHOOK_SECRET` | Recommended | Svix HMAC secret for webhook verification |
+| `TOPUP_CALLBACK_BASE_URL` | No | Base URL for AirTM top-up confirmation callbacks (default `http://localhost:3000/topups`) |
+| `TOPUP_SUCCESS_REDIRECT_URL` | No | Redirect after a successful top-up (default `http://localhost:3001/topups/success`) |
+| `TOPUP_CANCEL_REDIRECT_URL` | No | Redirect after a canceled/failed top-up (default `http://localhost:3001/topups/canceled`) |
 
 <Callout type="note">
   AirTM requires Enterprise API access. Contact AirTM for credentials.
@@ -240,6 +243,9 @@ WALLET_ENCRYPTION_KEY=  # Generate with: node -e "console.log(require('crypto').
 # AIRTM_API_KEY=
 # AIRTM_API_SECRET=
 # AIRTM_WEBHOOK_SECRET=
+# TOPUP_CALLBACK_BASE_URL=http://localhost:3000/topups
+# TOPUP_SUCCESS_REDIRECT_URL=http://localhost:3001/topups/success
+# TOPUP_CANCEL_REDIRECT_URL=http://localhost:3001/topups/canceled
 
 # Trustless Work
 TRUSTLESS_API_KEY=
