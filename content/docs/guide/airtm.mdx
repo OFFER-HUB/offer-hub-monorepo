@@ -6,32 +6,46 @@ section: Guides
 ---
 
 <Callout type="note">
-  This is the public API guide for enabling AirTM as your payment provider. Every endpoint, DTO, status, and environment variable below is verified against the Orchestrator implementation in the [OFFER-HUB repository](https://github.com/OFFER-HUB/OFFER-HUB) (`apps/api/src/modules/topups`, `apps/api/src/modules/withdrawals`, `apps/api/src/modules/users`, `apps/api/src/modules/webhooks`, `apps/api/src/providers/airtm`).
+  This is the public API guide for the AirTM fiat provider. Every endpoint, DTO, status, and environment variable below is verified against the Orchestrator implementation in the [OFFER-HUB repository](https://github.com/OFFER-HUB/OFFER-HUB) (`apps/api/src/modules/topups`, `apps/api/src/modules/withdrawals`, `apps/api/src/modules/users`, `apps/api/src/modules/webhooks`, `apps/api/src/providers/airtm`).
 </Callout>
 
-AirTM is a global payment network that lets your users add fiat balance (top-ups) and withdraw to their own bank accounts, mobile money, or crypto wallets. When you set `PAYMENT_PROVIDER=airtm`, the Orchestrator routes deposits and withdrawals through AirTM instead of the default Stellar/crypto provider.
+<Callout type="warning">
+  AirTM is **not** selected through `PAYMENT_PROVIDER`. Setting `PAYMENT_PROVIDER=airtm` throws `AirTM PaymentProvider is not yet available in this version` at startup — `apps/api/src/providers/payment/payment-provider.module.ts` only wires up the crypto-native provider, and the `PaymentProvider` strategy covers the Stellar wallet path alone. Keep `PAYMENT_PROVIDER=crypto` (or leave it unset). The AirTM top-up, withdrawal and inbound webhook endpoints are enabled by the `AIRTM_*` credentials instead — see [Enabling AirTM](#enabling-airtm).
+</Callout>
 
-| Aspect | Crypto mode (default) | AirTM mode |
-|--------|----------------------|------------|
+AirTM is a global payment network that lets your users add fiat balance (top-ups) and withdraw to their own bank accounts, mobile money, or crypto wallets. With AirTM credentials configured, the Orchestrator exposes these fiat endpoints alongside the Stellar/crypto paths — both are mounted at the same time, and escrow mechanics are identical either way.
+
+| Aspect | Stellar/crypto rail | AirTM fiat rail |
+|--------|----------------------|---------------|
 | Funding | USDC via Stellar | Bank, mobile money, cards, local methods |
 | Payouts | Stellar address | `bank`, `crypto`, `airtm_balance` |
 | KYC | None | Users must complete KYC on AirTM |
 | Speed | ~5 seconds | 1-24 hours (top-ups), 1-48h (payouts) |
 
+## Enabling AirTM
+
+`AirtmModule` is registered unconditionally in `apps/api/src/app.module.ts` and imported by `UsersModule`, `TopUpsModule`, `WithdrawalsModule` and `WebhooksModule`. Nothing switches it on or off — the endpoints `POST /users/:id/airtm/link`, `POST /topups`, `POST /withdrawals` and `POST /webhooks/airtm` are always mounted, and they start returning real data once `AIRTM_API_KEY` and `AIRTM_API_SECRET` are set.
+
+Two consequences worth knowing before you configure anything:
+
+- `AirtmConfig` (`apps/api/src/providers/airtm/airtm.config.ts`) validates on instantiation and throws `Missing required Airtm environment variables: AIRTM_API_KEY, AIRTM_API_SECRET` when the credentials are absent. Because the module is always imported, the API will not boot in `crypto` mode either without those two values.
+- `GET /api/v1/config` reports `features.airtm` as `true` only when `AIRTM_API_KEY` is set (`apps/api/src/modules/config/config.controller.ts`), and `GET /api/v1/health` reports the AirTM dependency as `degraded` with `Not configured` when it is not (`apps/api/src/modules/health/health.service.ts`). Use both to verify a deployment.
+
 ## Prerequisites
 
-1. **Enterprise AirTM account** — the AirTM Enterprise environment (API base `enterprise.airtm.io`), with API access granted.
-2. **API credentials** — `AIRTM_API_KEY` and `AIRTM_API_SECRET` from the AirTM dashboard.
-3. **Webhook signing secret** — a Svix secret (`whsec_...`) used to verify inbound webhooks. Generate one with `openssl rand -base64 24`.
-4. **Public base URL** — the `TOPUP_CALLBACK_BASE_URL`, plus your app's `TOPUP_SUCCESS_REDIRECT_URL` and `TOPUP_CANCEL_REDIRECT_URL` (configured in your `.env`).
+1. **Orchestrator at a version that ships the AirTM modules** — no provider flag to set, but `PAYMENT_PROVIDER` must stay `crypto`.
+2. **Enterprise AirTM account** — the AirTM Enterprise environment (API base `enterprise.airtm.io`), with API access granted.
+3. **API credentials** — `AIRTM_API_KEY` and `AIRTM_API_SECRET` from the AirTM dashboard. Both are required for the API to start.
+4. **Webhook signing secret** — a Svix secret (`whsec_...`) used to verify inbound webhooks. Generate one with `openssl rand -base64 24`.
+5. **Public base URL** — the `TOPUP_CALLBACK_BASE_URL`, plus your app's `TOPUP_SUCCESS_REDIRECT_URL` and `TOPUP_CANCEL_REDIRECT_URL` (configured in your `.env`).
 
 ## Configuration
 
-Set the provider and AirTM variables in your Orchestrator environment:
+Set the AirTM variables in your Orchestrator environment. Leave `PAYMENT_PROVIDER` on `crypto` — it is unrelated to the endpoints below:
 
 ```env
-# Payment Provider
-PAYMENT_PROVIDER=airtm
+# Payment Provider — must stay crypto; `airtm` throws at startup
+PAYMENT_PROVIDER=crypto
 
 # AirTM
 AIRTM_ENV=sandbox                 # sandbox | production
@@ -47,10 +61,10 @@ TOPUP_CANCEL_REDIRECT_URL=http://localhost:3001/topups/canceled
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode: `crypto` or `airtm` |
+| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode for the `PaymentProvider` strategy. Only `crypto` is implemented; `airtm` throws at startup |
 | `AIRTM_ENV` | No | `sandbox` | `sandbox` or `production`. Anything other than `production` resolves to the sandbox API |
-| `AIRTM_API_KEY` | Yes | — | AirTM enterprise API key |
-| `AIRTM_API_SECRET` | Yes | — | AirTM API secret |
+| `AIRTM_API_KEY` | Yes | — | AirTM enterprise API key. Required for the API to boot, in any mode |
+| `AIRTM_API_SECRET` | Yes | — | AirTM API secret. Required for the API to boot, in any mode |
 | `AIRTM_WEBHOOK_SECRET` | Recommended | — | Svix HMAC secret; if missing, placeholders, or under 20 characters, webhook signature verification is disabled |
 | `TOPUP_CALLBACK_BASE_URL` | No | `http://localhost:3000/topups` | Base URL used to build the user-facing AirTM confirmation/cancellation callback URI |
 | `TOPUP_SUCCESS_REDIRECT_URL` | No | `http://localhost:3001/topups/success` | Where users are redirected after a successful/processing top-up |
@@ -366,6 +380,15 @@ Sample payload (illustrative):
 
 ## Troubleshooting
 
+### Startup Failures
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `AirTM PaymentProvider is not yet available in this version` at boot | `PAYMENT_PROVIDER=airtm` | Set `PAYMENT_PROVIDER=crypto` or unset it — AirTM is not selectable through this variable |
+| `Missing required Airtm environment variables: AIRTM_API_KEY, AIRTM_API_SECRET` at boot | `AirtmConfig` validates on instantiation and `AirtmModule` is always imported | Set both variables, even in crypto mode. Verify with `GET /api/v1/config` that `features.airtm` is `true` |
+| AirTM dependency `degraded` with `Not configured` on `GET /api/v1/health` | `AIRTM_API_KEY` is unset | Expected before configuration; disappears once the key is present |
+| Every AirTM call returns `401`/`403` from the provider | Credentials are not Enterprise keys | Confirm the keys come from the AirTM Enterprise dashboard and match the `AIRTM_ENV` you selected |
+
 ### Webhook Failures
 
 | Symptom | Likely cause | Fix |
@@ -405,6 +428,7 @@ These surface under `details.provider = "AIRTM"` with the original `method`, mas
 
 - [Deposits Guide](/docs/guide/deposits) — Crypto vs AirTM top-ups at a glance
 - [Withdrawals Guide](/docs/guide/withdrawals) — Crypto vs AirTM payout flows
-- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — SSE event stream and inbound receivers
+- [Inbound Webhooks](/docs/api-reference/webhooks) — AirTM and Trustless Work receivers, signature verification
+- [Events](/docs/api-reference/events) — SSE stream and the full domain event catalog
 - [Configuration](/docs/configuration) — All Orchestrator environment variables
 - [Data Model](/docs/guide/data-model) — `TopUp`, `Withdrawal`, and `WebhookEvent` schemas

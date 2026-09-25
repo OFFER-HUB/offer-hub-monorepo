@@ -127,7 +127,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode: `crypto` or `airtm` |
+| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode. Only `crypto` is implemented — `airtm` throws at startup (see [AirTM](#airtm-fiat-endpoints-optional) below) |
 
 ### Crypto-Native Mode (Default)
 
@@ -145,13 +145,17 @@ When `PAYMENT_PROVIDER=crypto`:
   This key protects all user wallet private keys. If lost, wallet access is permanently lost. Store securely and back up.
 </Callout>
 
-### AirTM Mode (Optional)
+### AirTM Fiat Endpoints (Optional)
 
-<Callout type="note">
-  AirTM is the fiat on/off-ramp provider. For the full setup — user linking, top-ups, withdrawals, callback redirects, and webhook verification — see the [AirTM Provider Guide](/docs/guide/airtm).
+<Callout type="warning">
+  `PAYMENT_PROVIDER=airtm` is **not** supported. `apps/api/src/providers/payment/payment-provider.module.ts` throws `AirTM PaymentProvider is not yet available in this version` during bootstrap, so the API will not start with that value. Leave `PAYMENT_PROVIDER=crypto` (or unset) — the `PaymentProvider` strategy covers the Stellar wallet path only.
 </Callout>
 
-When `PAYMENT_PROVIDER=airtm`:
+<Callout type="note">
+  The AirTM top-up, withdrawal and inbound webhook endpoints are a separate concern from `PAYMENT_PROVIDER`. `AirtmModule` is registered unconditionally in `apps/api/src/app.module.ts` and imported by `UsersModule`, `TopUpsModule`, `WithdrawalsModule` and `WebhooksModule`, so `POST /users/:id/airtm/link`, `POST /topups`, `POST /withdrawals` and `POST /webhooks/airtm` are always mounted. They are enabled by the `AIRTM_*` credentials below, not by the payment provider switch. For the full setup — user linking, top-ups, withdrawals, callback redirects, and webhook verification — see the [AirTM Provider Guide](/docs/guide/airtm).
+</Callout>
+
+To use the AirTM fiat endpoints:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -163,8 +167,12 @@ When `PAYMENT_PROVIDER=airtm`:
 | `TOPUP_SUCCESS_REDIRECT_URL` | No | Redirect after a successful top-up (default `http://localhost:3001/topups/success`) |
 | `TOPUP_CANCEL_REDIRECT_URL` | No | Redirect after a canceled/failed top-up (default `http://localhost:3001/topups/canceled`) |
 
+<Callout type="warning">
+  `AIRTM_API_KEY` and `AIRTM_API_SECRET` are required in **every** mode, including `crypto`. `AirtmConfig` validates on instantiation and throws `Missing required Airtm environment variables: ...`, and because `AirtmModule` is always imported the API will not boot without them.
+</Callout>
+
 <Callout type="note">
-  AirTM requires Enterprise API access. Contact AirTM for credentials.
+  AirTM requires Enterprise API access. Contact AirTM for credentials. Check that the instance reports AirTM as available with `GET /api/v1/config` — `features.airtm` is `true` only when `AIRTM_API_KEY` is set.
 </Callout>
 
 ## Trustless Work (Escrow)
@@ -238,7 +246,7 @@ OFFERHUB_MASTER_KEY=change-me-in-production
 PAYMENT_PROVIDER=crypto
 WALLET_ENCRYPTION_KEY=  # Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
-# AirTM (only if PAYMENT_PROVIDER=airtm)
+# AirTM fiat endpoints (independent of PAYMENT_PROVIDER, which must stay crypto)
 # AIRTM_ENV=sandbox
 # AIRTM_API_KEY=
 # AIRTM_API_SECRET=

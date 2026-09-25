@@ -105,7 +105,7 @@ flowchart LR
 
 ## AirTM Withdrawals
 
-When `PAYMENT_PROVIDER=airtm`, withdrawals go through AirTM's payment network.
+With AirTM credentials configured, withdrawals can go through AirTM's payment network. AirTM is not selected through `PAYMENT_PROVIDER` — that variable must stay `crypto`.
 
 For the complete server-side flow — user linking, destination types, the two-step commit, statuses, and webhook delivery — see the [AirTM Provider Guide](/docs/guide/airtm).
 
