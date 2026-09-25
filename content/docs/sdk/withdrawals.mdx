@@ -1,0 +1,210 @@
+---
+title: Withdrawals SDK Reference
+description: Method-by-method reference for sdk.withdrawals — crypto and AirTM payouts, two-step and one-step modes, and status tracking.
+order: 4
+section: SDK
+---
+
+`sdk.withdrawals` moves funds off the platform: to external Stellar wallets (crypto mode) or through AirTM payouts (bank accounts, mobile money). All methods are backed by the `withdrawals` module on the Orchestrator.
+
+## Request fields
+
+The API creates withdrawals through `POST /withdrawals` with this body (see `CreateWithdrawalDto` in the orchestrator repo):
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `userId` | `string` | Yes | Internal user ID — the Orchestrator is a server-to-server API, so the acting user is identified in the body (POST) or as a `?userId=` query param (GET) |
+| `amount` | `string` | Yes | Decimal string with exactly 2 decimals (`"50.00"`) |
+| `destinationType` | `'bank' \| 'crypto' \| 'airtm_balance'` | Yes | Payout destination family |
+| `destinationRef` | `string` | Yes | Destination reference (Stellar address, bank account ID, etc.) |
+| `currency` | `string` | No | Defaults to `"USD"` |
+| `commit` | `boolean` | No | `true` creates **and** commits in one step; default `false` |
+| `description` | `string` | No | Free-form description |
+
+<Callout type="note">
+  The SDK forwards the request object verbatim to `POST /withdrawals`, so the fields above are sent as-is. The TypeScript interface bundled in the SDK package may lag this API contract — follow the table here (from `CreateWithdrawalDto`) when constructing the request.
+</Callout>
+
+## Withdrawal lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> WITHDRAWAL_CREATED
+    WITHDRAWAL_CREATED --> WITHDRAWAL_COMMITTED: POST /withdrawals/{id}/commit
+    WITHDRAWAL_CREATED --> WITHDRAWAL_CANCELED
+    WITHDRAWAL_COMMITTED --> WITHDRAWAL_PENDING
+    WITHDRAWAL_PENDING --> WITHDRAWAL_PENDING_USER_ACTION
+    WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_PENDING
+    WITHDRAWAL_PENDING --> WITHDRAWAL_COMPLETED
+    WITHDRAWAL_PENDING --> WITHDRAWAL_FAILED
+    WITHDRAWAL_COMPLETED --> [*]
+    WITHDRAWAL_FAILED --> [*]
+    WITHDRAWAL_CANCELED --> [*]
+```
+
+Source: `packages/shared/src/enums/withdrawal-status.enum.ts` in the orchestrator repo.
+
+<Callout type="tip">
+  Crypto-destination withdrawals (`destinationType: 'crypto'`) are synchronous: the USDC is sent on Stellar immediately and the withdrawal is returned as `WITHDRAWAL_COMPLETED` in the create response.
+</Callout>
+
+## Create a withdrawal
+
+`sdk.withdrawals.create(data)` → `POST /withdrawals`
+
+Two-step mode (default): creates the withdrawal, reserves the amount from the user's available balance, and creates the payout in AirTM. Commit later with `sdk.withdrawals.commit()`.
+
+One-step mode (`commit: true`): creates and commits in a single call.
+
+```typescript
+// Two-step (default)
+const withdrawal = await sdk.withdrawals.create({
+  userId: 'usr_abc123',
+  amount: '50.00',
+  destinationType: 'airtm_balance',
+  destinationRef: 'bank_account_42',
+  description: 'Cash out earnings'
+});
+// withdrawal.status === 'WITHDRAWAL_CREATED'
+await sdk.withdrawals.commit(withdrawal.id);
+
+// One-step
+const instant = await sdk.withdrawals.create({
+  userId: 'usr_abc123',
+  amount: '50.00',
+  destinationType: 'crypto',
+  destinationRef: 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ',
+  commit: true
+});
+```
+
+Server-side flow for AirTM destinations:
+
+1. Verify the user exists and has a linked, eligible AirTM account
+2. Verify sufficient `available` balance and reserve the amount
+3. Create the withdrawal record in `WITHDRAWAL_CREATED`
+4. Create the payout in AirTM and map its status onto the withdrawal
+5. If the AirTM payout fails, the reservation is rolled back and the withdrawal is marked `WITHDRAWAL_FAILED`
+
+Possible errors:
+
+- `404` — user not found (`USER_NOT_FOUND`)
+- `422` — insufficient available balance (`INSUFFICIENT_FUNDS`), AirTM account not linked (`AIRTM_USER_NOT_LINKED`), or AirTM user not eligible (`AIRTM_USER_INVALID`)
+- `502` — payout provider failure (`PROVIDER_ERROR`)
+
+## List withdrawals
+
+`sdk.withdrawals.list(params?)` → `GET /withdrawals`
+
+Returns a cursor-paginated list of withdrawals for a user.
+
+| Param | Type | Notes |
+|-------|------|-------|
+| `limit` | `number` | Page size, default 20, capped at 100 |
+| `cursor` | `string` | `nextCursor` from the previous page |
+
+<Callout type="warning">
+  The REST endpoint identifies the acting user through a required `userId` query parameter. The current SDK `list()` implementation only forwards `limit` and `cursor` — if your integration needs per-user filtering through the SDK, pass the `userId` query parameter via a custom-header-free REST call, or extend the resource client in your integration layer.
+</Callout>
+
+```bash
+curl -X GET "http://localhost:4000/api/v1/withdrawals?userId=usr_abc123&limit=20" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Possible errors:
+
+- `401` / `403` — missing or insufficient API key scopes (`read` scope required)
+
+## Get a withdrawal
+
+`sdk.withdrawals.get(withdrawalId)` → `GET /withdrawals/{withdrawalId}`
+
+Returns a single withdrawal. The REST endpoint also takes the acting user as `?userId=` for authorization.
+
+```bash
+curl -X GET "http://localhost:4000/api/v1/withdrawals/wd_abc123?userId=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Possible errors:
+
+- `404` — withdrawal not found for this user (`WITHDRAWAL_NOT_FOUND`)
+
+## Commit a withdrawal
+
+`sdk.withdrawals.commit(withdrawalId)` → `POST /withdrawals/{withdrawalId}/commit`
+
+Commits a withdrawal created in two-step mode, sending it to AirTM for processing.
+
+Preconditions:
+
+- Withdrawal must be in `WITHDRAWAL_CREATED` status — this is the only committable state
+- The withdrawal must have an associated AirTM payout
+
+Possible errors:
+
+- `404` — withdrawal not found (`WITHDRAWAL_NOT_FOUND`)
+- `409` — withdrawal cannot be committed in its current status (`WITHDRAWAL_NOT_COMMITTABLE`)
+- `422` — withdrawal has no associated AirTM payout (`PROVIDER_ERROR`)
+
+## Refresh withdrawal status
+
+`sdk.withdrawals.refresh(withdrawalId)` → `POST /withdrawals/{withdrawalId}/refresh?userId=`
+
+Pulls the latest payout status from AirTM and updates the local record when the transition is valid. Use this when a webhook may have been missed.
+
+```bash
+curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/refresh?userId=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+The refresh is a no-op when the mapped AirTM status does not represent a valid transition from the current status (per the withdrawal state machine above). Withdrawals without an AirTM payout are returned unchanged.
+
+Possible errors:
+
+- `404` — withdrawal not found for this user (`WITHDRAWAL_NOT_FOUND`)
+
+## Error handling
+
+All methods throw typed SDK errors. The most relevant for withdrawals:
+
+| Error class | HTTP | When |
+|-------------|------|------|
+| `ValidationError` | 400 | `amount` not a 2-decimal string, missing `userId`/`destinationType`/`destinationRef` |
+| `NotFoundError` | 404 | User or withdrawal does not exist |
+| `InsufficientFundsError` | 422 | Available balance below the requested amount (`INSUFFICIENT_FUNDS`) |
+| `OfferHubError` | 502 | AirTM or payment provider failure (`PROVIDER_ERROR`) |
+
+```typescript
+import { InsufficientFundsError, NotFoundError } from '@offerhub/sdk';
+
+try {
+  await sdk.withdrawals.commit('wd_abc123');
+} catch (error) {
+  if (error instanceof NotFoundError) {
+    console.error('Withdrawal not found for this user');
+  } else if (error instanceof OfferHubError && error.code === 'WITHDRAWAL_NOT_COMMITTABLE') {
+    console.error('Withdrawal already committed or canceled');
+  }
+}
+```
+
+## Sources
+
+All behavior on this page was verified against the orchestrator repository (`OFFER-HUB/OFFER-HUB`), not inferred:
+
+- SDK client: `packages/sdk/src/resources/withdrawals.ts`
+- Controller: `apps/api/src/modules/withdrawals/withdrawals.controller.ts`
+- Service: `apps/api/src/modules/withdrawals/withdrawals.service.ts`
+- DTO: `apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts`
+- Status mapper: `apps/api/src/providers/airtm/mappers/payout-status.mapper.ts`
+- State machine: `packages/shared/src/enums/withdrawal-status.enum.ts`
+- Error codes: `packages/shared/src/constants/error-codes.ts`
+
+## Related pages
+
+- [Withdrawals Guide](/docs/guide/withdrawals) — withdrawal flows and provider modes
+- [Deposits Guide](/docs/guide/deposits) — the inbound side of fund movement
+- [Orders SDK Reference](/docs/sdk/orders) — `sdk.orders` method reference
+- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — `WITHDRAWAL_*` event delivery
