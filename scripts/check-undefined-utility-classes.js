@@ -60,9 +60,12 @@ function collectDefined() {
   }
 
   // Extended color names, valid as `shadow-{color}`.
-  const colorsMatch = twConfig.match(/colors:\s*{([\s\S]*?)\n\s*},\n\s*keyframes/);
+  // The regex is deliberately relaxed: the colors block may be followed by a
+  // comment line before `keyframes`, so we scan until the closing `},` of the
+  // colors object without requiring `keyframes` to immediately follow.
+  const colorsMatch = twConfig.match(/\bcolors:\s*\{([\s\S]*?)\n\s*\},/);
   if (colorsMatch) {
-    for (const m of colorsMatch[1].matchAll(/["']?([a-zA-Z0-9-]+)["']?\s*:/g)) {
+    for (const m of colorsMatch[1].matchAll(/["']([a-zA-Z0-9-]+)["']\s*:/g)) {
       BUILTIN_COLOR_NAMES.add(m[1]);
     }
   }
