@@ -15,7 +15,7 @@ This page documents every environment variable that is read by source code in ei
 
 ## OFFER-HUB Orchestrator
 
-The Orchestrator is a NestJS monorepo (`/tmp/OFFER-HUB`). Copy the example file before editing:
+The Orchestrator is a NestJS monorepo in the OFFER-HUB repository. Copy the example file before editing:
 
 <CommandLine>cp .env.example .env</CommandLine>
 
@@ -136,7 +136,7 @@ These variables throw at startup or at first use if absent. The application will
 |----------|----------|---------|--------|--------|
 | `DISABLE_BLOCKCHAIN_MONITOR` | No | none | If set to the string `'true'`, `BlockchainMonitorService` skips initialization and does not open Horizon SSE streams. Use on secondary API instances in horizontal scaling to avoid duplicate deposit processing. | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
 | `RECONCILIATION_ENABLED` | No | none (job runs) | If set to the string `'false'`, the `CHECK_MISSED_DEPOSITS` reconciliation job is skipped. Other reconciliation jobs (`SYNC_TOPUPS`, `SYNC_WITHDRAWALS`, `SYNC_ESCROWS`) are not gated by this variable and run regardless. | `apps/api/src/modules/queues/processors/reconciliation.processor.ts` |
-| `PUBLIC_BASE_URL` | No | none | Not read by any application source file. Present in `.env.example` for reference and set by the e2e test setup. Intended for webhook callback URLs in future AirTM integration. | `/tmp/OFFER-HUB/.env.example`, `tests/e2e/global-setup.ts` |
+| `PUBLIC_BASE_URL` | No | none | Not read by any application source file. Present in `.env.example` for reference and set by the e2e test setup. Intended for webhook callback URLs in future AirTM integration. | `.env.example`, `tests/e2e/global-setup.ts` |
 
 ### AirTM Variables
 
@@ -248,7 +248,7 @@ This checklist is derived from implemented guards and validators in the Orchestr
 | Rate limiting active | `RateLimitGuard` is a global guard backed by Redis | `apps/api/src/common/guards/rate-limit.guard.ts` |
 | `RECONCILIATION_ENABLED` not set to `'false'` | The missed-deposit reconciliation job requires this to be unset or set to `'true'` | `apps/api/src/modules/queues/processors/reconciliation.processor.ts` |
 | Secondary instances: `DISABLE_BLOCKCHAIN_MONITOR=true` | Prevents duplicate deposit processing in horizontally-scaled deployments | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
-| `.env` not committed to version control | `.env` is in `.gitignore` | `/tmp/OFFER-HUB/.gitignore` |
+| `.env` not committed to version control | `.env` is in `.gitignore` | `.gitignore` |
 
 <Callout type="note">
   Items not in this checklist — such as backup infrastructure, external log aggregation, and database snapshots — are not implemented in the Orchestrator source code. Consult your infrastructure provider's documentation for those.
