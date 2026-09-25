@@ -269,3 +269,39 @@ When migrating components to support dark mode, replace hardcoded colors with th
 <Callout type="note">
   Always test components in both light and dark modes after migration to ensure proper contrast and visibility.
 </Callout>
+
+---
+
+## DocDiagram
+
+Use `DocDiagram` to embed **static SVG diagrams** that ship as files (not Mermaid source). It swaps between light and dark variants on theme change, lazy-loads the image, and provides a click-to-zoom modal.
+
+For Mermaid-source diagrams, use `MermaidDiagram` instead.
+
+### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `lightSrc` | `string` | ✅ | Path to the light-mode SVG (e.g. `/diagrams/payment-flow-light.svg`) |
+| `darkSrc` | `string` | — | Path to the dark-mode SVG. Falls back to `lightSrc` if omitted. |
+| `alt` | `string` | ✅ | Accessible label applied to `role="img"` |
+| `caption` | `string` | — | Optional visible caption below the diagram |
+| `className` | `string` | — | Extra classes on the outer `<figure>` |
+
+### Usage
+
+```mdx
+<DocDiagram
+  lightSrc="/diagrams/payment-flow-light.svg"
+  darkSrc="/diagrams/payment-flow-dark.svg"
+  alt="Payment flow: buyer deposits, escrow created and funded, seller withdraws"
+  caption="Figure 1 — Payment flow overview"
+/>
+```
+
+### Rules
+
+- Always provide a descriptive `alt` that conveys the diagram's meaning, not just its title.
+- Place SVG assets in `public/diagrams/` following `kebab-case` naming with `-light` / `-dark` suffixes.
+- Do not add colored borders or `border-l-4`-style accent bars — the neumorphic frame is the only chrome.
+- If only one SVG exists, omit `darkSrc`; the component falls back gracefully.
