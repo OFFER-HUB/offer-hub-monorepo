@@ -164,6 +164,24 @@ export default function DocsPage() {
 
             <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "400ms" }}>
               <DocsSearchBar />
+              <div className="flex items-center justify-center gap-4 mt-6 flex-wrap">
+                <Link
+                  href="/openapi.json"
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-theme-primary bg-bg-base/80 shadow-neu-raised hover:shadow-neu-raised-sm active:shadow-neu-sunken transition-all duration-200"
+                >
+                  <Code size={13} />
+                  OpenAPI 3.0 Spec (JSON)
+                </Link>
+                <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
+                <Link
+                  href="/docs/api-reference/interactive"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-theme-primary bg-bg-base/80 shadow-neu-raised hover:shadow-neu-raised-sm active:shadow-neu-sunken transition-all duration-200"
+                >
+                  <Terminal size={13} />
+                  Interactive Explorer
+                </Link>
+              </div>
             </div>
           </div>
         </div>

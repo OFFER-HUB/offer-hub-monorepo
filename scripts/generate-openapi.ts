@@ -187,8 +187,24 @@ function generateOpenApiSpec(): OpenApiSpec {
   return openapi;
 }
 
+const isCheck = process.argv.includes('--check') || process.argv.includes('-c');
 const spec = generateOpenApiSpec();
 const outputPath = path.join(process.cwd(), 'public', 'openapi.json');
+const formatted = JSON.stringify(spec, null, 2) + '\n';
 
-fs.writeFileSync(outputPath, JSON.stringify(spec, null, 2));
-logger.log(`OpenAPI spec successfully generated at ${outputPath}`);
+if (isCheck) {
+  if (!fs.existsSync(outputPath)) {
+    logger.error(`OpenAPI spec file does not exist at ${outputPath}. Run 'npm run generate:openapi' to create it.`);
+    process.exit(1);
+  }
+  const current = fs.readFileSync(outputPath, 'utf8');
+  if (current.trim() !== formatted.trim()) {
+    logger.error('OpenAPI spec is out of date. Run `npm run generate:openapi` to regenerate.');
+    process.exit(1);
+  }
+  logger.log('OpenAPI spec is up to date.');
+} else {
+  fs.writeFileSync(outputPath, formatted);
+  logger.log(`OpenAPI spec successfully generated at ${outputPath}`);
+}
+

@@ -16,14 +16,91 @@
     }
   ],
   "paths": {
-    "/auth/register": {
+    "/auth/api-keys": {
       "post": {
-        "summary": "Register a new user",
-        "description": "Creates a new user account and returns a JWT token for immediate authentication.",
-        "operationId": "register-a-new-user",
+        "summary": "Create API Key",
+        "description": "Generate a new API key with custom scopes. Requires Master Key authentication.",
+        "operationId": "create-api-key",
         "tags": [
-          "Auth"
+          "Authentication & API Keys"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "API Key Created",
+                  "message": "Save this key immediately - it will never be displayed again",
+                  "data": {
+                    "id": "key_01HQ7ZX89ABC",
+                    "key": "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+                    "name": "Production Marketplace API Key",
+                    "scopes": [
+                      "read",
+                      "write"
+                    ],
+                    "createdAt": "2026-02-18T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": false,
+                  "code": 4003,
+                  "type": "error",
+                  "title": "Unauthorized",
+                  "message": "Master API key required to manage keys",
+                  "data": null
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "name": "Production Marketplace API Key",
+                "scopes": [
+                  "read",
+                  "write"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List API Keys",
+        "description": "Returns all active and revoked API keys with masked key secrets.",
+        "operationId": "list-api-keys",
+        "tags": [
+          "Authentication & API Keys"
+        ],
+        "security": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -33,278 +110,257 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
                   "ok": true,
-                  "message": "User registered successfully",
-                  "data": {
-                    "id": "usr_01ABC",
-                    "email": "user@example.com",
-                    "name": "John Doe",
-                    "token": "eyJhbGciOiJIUzI1NiIs..."
-                  }
+                  "code": 1000,
+                  "type": "success",
+                  "title": "API Keys Retrieved",
+                  "message": "Found 2 active keys",
+                  "data": [
+                    {
+                      "id": "key_01HQ7ZX89ABC",
+                      "name": "Production Marketplace API Key",
+                      "keyPrefix": "ohk_live_xxxx...",
+                      "scopes": [
+                        "read",
+                        "write"
+                      ],
+                      "createdAt": "2026-02-18T10:00:00.000Z",
+                      "revokedAt": null
+                    }
+                  ]
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
+          }
+        }
+      }
+    },
+    "/auth/api-keys/{id}": {
+      "delete": {
+        "summary": "Revoke API Key",
+        "description": "Immediately revokes the specified API key.",
+        "operationId": "revoke-api-key",
+        "tags": [
+          "Authentication & API Keys"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object"
                 },
                 "example": {
-                  "code": 422,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Validation failed",
-                  "data": null,
-                  "errors": [
-                    "Email is already registered",
-                    "Password must be at least 8 characters"
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Key Revoked",
+                  "message": "API key has been revoked and can no longer authenticate requests",
+                  "data": {
+                    "id": "key_01HQ7ZX89ABC",
+                    "revokedAt": "2026-02-18T10:30:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "API Key ID to revoke",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/auth/tokens": {
+      "post": {
+        "summary": "Create Short-Lived Token",
+        "description": "Generates a temporary client token (ohk_tok_...) for frontend use without exposing API keys.",
+        "operationId": "create-short-lived-token",
+        "tags": [
+          "Authentication & API Keys"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Token Issued",
+                  "message": "Frontend token created with 1-hour expiration",
+                  "data": {
+                    "token": "ohk_tok_xxxxxxxxxxxxxxxxxxxxxxxx",
+                    "userId": "usr_buyer123",
+                    "expiresAt": "2026-02-18T11:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "userId": "usr_buyer123",
+                "expiresIn": 3600
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get Caller Identity",
+        "description": "Retrieves details and scopes for the current Bearer token.",
+        "operationId": "get-caller-identity",
+        "tags": [
+          "Authentication & API Keys"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Identity Verified",
+                  "message": "Authenticated caller info",
+                  "data": {
+                    "keyId": "key_01HQ7ZX89ABC",
+                    "name": "Production Marketplace API Key",
+                    "scopes": [
+                      "read",
+                      "write"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Register User",
+        "description": "Registers a new user and automatically creates an encrypted server-side Stellar wallet keypair in crypto mode.",
+        "operationId": "register-user",
+        "tags": [
+          "Users & Identity"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "User Created",
+                  "message": "User registered with invisible Stellar wallet",
+                  "data": {
+                    "id": "usr_01HQ7XYZ89",
+                    "email": "freelancer@example.com",
+                    "type": "SELLER",
+                    "walletAddress": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH",
+                    "createdAt": "2026-02-18T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "email": "freelancer@example.com",
+                "type": "SELLER",
+                "metadata": {
+                  "username": "alex_dev",
+                  "tier": "pro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Users",
+        "description": "Retrieves a paginated list of marketplace users.",
+        "operationId": "list-users",
+        "tags": [
+          "Users & Identity"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Users Retrieved",
+                  "message": "Found 1 user",
+                  "data": [
+                    {
+                      "id": "usr_01HQ7XYZ89",
+                      "email": "freelancer@example.com",
+                      "type": "SELLER",
+                      "walletAddress": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH",
+                      "createdAt": "2026-02-18T10:00:00.000Z"
+                    }
                   ]
                 }
               }
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "email": "user@example.com",
-                "password": "securePassword123",
-                "name": "John Doe"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "summary": "Login and receive a JWT",
-        "description": "Authenticates a user with email and password, returns a JWT for subsequent requests.",
-        "operationId": "login-and-receive-a-jwt",
-        "tags": [
-          "Auth"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Login successful",
-                  "data": {
-                    "token": "eyJhbGciOiJIUzI1NiIs...",
-                    "user": {
-                      "id": "usr_01ABC",
-                      "email": "user@example.com",
-                      "name": "John Doe"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Invalid email or password",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "email": "user@example.com",
-                "password": "securePassword123"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/balances": {
-      "get": {
-        "summary": "Get user balances",
-        "description": "Returns the authenticated user's available and held balances across all currencies.",
-        "operationId": "get-user-balances",
-        "tags": [
-          "Balances"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Balances retrieved",
-                  "data": {
-                    "balances": [
-                      {
-                        "currency": "USD",
-                        "available": 1250,
-                        "held": 200
-                      },
-                      {
-                        "currency": "XLM",
-                        "available": 5000,
-                        "held": 0
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Missing or invalid authorization token",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/balances/transactions": {
-      "get": {
-        "summary": "Get paginated transaction history",
-        "description": "Returns paginated list of the user's transactions with optional filtering.",
-        "operationId": "get-paginated-transaction-history",
-        "tags": [
-          "Balances"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Transactions retrieved",
-                  "data": {
-                    "transactions": [
-                      {
-                        "id": "txn_01XYZ",
-                        "type": "credit",
-                        "amount": 100,
-                        "currency": "USD",
-                        "description": "Escrow release — Project Alpha",
-                        "created_at": "2026-01-15T10:30:00.000Z"
-                      },
-                      {
-                        "id": "txn_02XYZ",
-                        "type": "debit",
-                        "amount": 50,
-                        "currency": "USD",
-                        "description": "Withdrawal to bank",
-                        "created_at": "2026-01-14T14:20:00.000Z"
-                      }
-                    ],
-                    "pagination": {
-                      "page": 1,
-                      "limit": 20,
-                      "total": 47,
-                      "pages": 3
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Missing or invalid authorization token",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "page",
             "in": "query",
             "required": false,
-            "description": "Page number (default: 1)",
+            "description": "Page number",
             "schema": {
               "type": "number"
             }
@@ -313,36 +369,37 @@
             "name": "limit",
             "in": "query",
             "required": false,
-            "description": "Results per page (default: 20, max: 100)",
+            "description": "Page limit (max 100)",
             "schema": {
               "type": "number"
             }
           },
           {
-            "name": "currency",
+            "name": "type",
             "in": "query",
             "required": false,
-            "description": "Filter by currency",
+            "description": "User type filter",
             "schema": {
               "type": "string",
               "enum": [
-                "USD",
-                "XLM",
-                "USDC"
+                "BUYER",
+                "SELLER",
+                "BOTH"
               ]
             }
           }
         ]
       }
     },
-    "/wallets/connect": {
-      "post": {
-        "summary": "Connect a Stellar wallet",
-        "description": "Links a Stellar public key to the authenticated user's account for on-chain transactions.",
-        "operationId": "connect-a-stellar-wallet",
+    "/users/{id}": {
+      "get": {
+        "summary": "Get User by ID",
+        "description": "Returns profile details and wallet address for a user.",
+        "operationId": "get-user-by-id",
         "tags": [
-          "Wallets"
+          "Users & Identity"
         ],
+        "security": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -352,40 +409,79 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
                   "ok": true,
-                  "message": "Wallet connected successfully",
+                  "code": 1000,
+                  "type": "success",
+                  "title": "User Found",
+                  "message": "User profile loaded",
                   "data": {
-                    "wallet_id": "wal_01DEF",
-                    "public_key": "GBCG42WTVWPO4Q6N...",
-                    "connected_at": "2026-01-20T08:00:00.000Z"
+                    "id": "usr_01HQ7XYZ89",
+                    "email": "freelancer@example.com",
+                    "type": "SELLER",
+                    "walletAddress": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH",
+                    "airtmUserId": null,
+                    "createdAt": "2026-02-18T10:00:00.000Z"
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update User",
+        "description": "Updates user email or custom metadata attributes.",
+        "operationId": "update-user",
+        "tags": [
+          "Users & Identity"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object"
                 },
                 "example": {
-                  "code": 400,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Invalid Stellar public key format",
-                  "data": null
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "User Updated",
+                  "message": "User metadata successfully modified",
+                  "data": {
+                    "id": "usr_01HQ7XYZ89",
+                    "metadata": {
+                      "tier": "elite",
+                      "verified": true
+                    }
+                  }
                 }
               }
             }
           }
         },
-        "security": [
+        "parameters": [
           {
-            "bearerAuth": []
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -395,21 +491,25 @@
                 "type": "object"
               },
               "example": {
-                "public_key": "GBCG42WTVWPO4Q6N..."
+                "metadata": {
+                  "tier": "elite",
+                  "verified": true
+                }
               }
             }
           }
         }
       }
     },
-    "/projects": {
-      "get": {
-        "summary": "List projects",
-        "description": "Returns a paginated list of projects visible to the authenticated user.",
-        "operationId": "list-projects",
+    "/users/{id}/airtm-link": {
+      "post": {
+        "summary": "Link AirTM Account",
+        "description": "Links external AirTM user identity for fiat payins/payouts.",
+        "operationId": "link-airtm-account",
         "tags": [
-          "Projects"
+          "Users & Identity"
         ],
+        "security": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -419,71 +519,417 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
                   "ok": true,
-                  "message": "Projects retrieved",
+                  "code": 1000,
+                  "type": "success",
+                  "title": "AirTM Linked",
+                  "message": "AirTM account linked to user profile",
                   "data": {
-                    "projects": [
-                      {
-                        "id": "prj_01GHI",
-                        "title": "Project Alpha",
-                        "description": "A sample freelance project",
-                        "budget": 2500,
-                        "currency": "USD",
-                        "status": "open",
-                        "created_at": "2026-01-10T09:00:00.000Z"
-                      },
-                      {
-                        "id": "prj_02GHI",
-                        "title": "Project Beta",
-                        "description": "Another project",
-                        "budget": 1000,
-                        "currency": "USDC",
-                        "status": "in_progress",
-                        "created_at": "2026-01-12T11:00:00.000Z"
-                      }
-                    ],
-                    "pagination": {
-                      "page": 1,
-                      "limit": 20,
-                      "total": 12,
-                      "pages": 1
-                    }
+                    "userId": "usr_01HQ7XYZ89",
+                    "airtmUserId": "airtm_user_9921"
                   }
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized",
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "airtmUserId": "airtm_user_9921",
+                "airtmEmail": "user@airtm.com"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balance/{userId}": {
+      "get": {
+        "summary": "Get User Balance",
+        "description": "Retrieves user available balance and reserved funds locked in active orders.",
+        "operationId": "get-user-balance",
+        "tags": [
+          "Balance & Ledger"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object"
                 },
                 "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Missing or invalid authorization token",
-                  "data": null
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Balance Retrieved",
+                  "message": "Current balance state",
+                  "data": {
+                    "userId": "usr_buyer123",
+                    "available": "1250.00",
+                    "reserved": "200.00",
+                    "total": "1450.00",
+                    "currency": "USD",
+                    "updatedAt": "2026-02-18T10:00:00.000Z"
+                  }
                 }
               }
             }
           }
         },
-        "security": [
+        "parameters": [
           {
-            "bearerAuth": []
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/balance/{userId}/sync": {
+      "post": {
+        "summary": "Sync Balance from Chain",
+        "description": "Forces a real-time balance reconciliation against the Stellar USDC trustline.",
+        "operationId": "sync-balance-from-chain",
+        "tags": [
+          "Balance & Ledger"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Balance Synchronized",
+                  "message": "Balance synced with Stellar Horizon",
+                  "data": {
+                    "userId": "usr_buyer123",
+                    "available": "1250.00",
+                    "reserved": "200.00",
+                    "currency": "USD"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/balance/{userId}/reserve": {
+      "post": {
+        "summary": "Reserve Balance",
+        "description": "Moves funds from available to reserved balance for an upcoming order.",
+        "operationId": "reserve-balance",
+        "tags": [
+          "Balance & Ledger"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Funds Reserved",
+                  "message": "Reserved $80.00 for order ord_VxaM981",
+                  "data": {
+                    "available": "1170.00",
+                    "reserved": "280.00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "amount": "80.00",
+                "orderId": "ord_VxaM981"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balance/{userId}/release": {
+      "post": {
+        "summary": "Release Reserved Balance",
+        "description": "Unlocks reserved funds and returns them to available balance.",
+        "operationId": "release-reserved-balance",
+        "tags": [
+          "Balance & Ledger"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Funds Released",
+                  "message": "Returned $80.00 to available balance",
+                  "data": {
+                    "available": "1250.00",
+                    "reserved": "200.00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "amount": "80.00",
+                "orderId": "ord_VxaM981"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balance/{userId}/credit": {
+      "post": {
+        "summary": "Credit User Balance",
+        "description": "Admin or support balance credit adjustment with audit trail.",
+        "operationId": "credit-user-balance",
+        "tags": [
+          "Balance & Ledger"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Balance Credited",
+                  "message": "Credited $50.00 to user account",
+                  "data": {
+                    "userId": "usr_buyer123",
+                    "newAvailable": "1300.00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "amount": "50.00",
+                "currency": "USD",
+                "reason": "Support dispute adjustment"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Create Order",
+        "description": "Creates an order record in ORDER_CREATED state. Accepts Idempotency-Key header.",
+        "operationId": "create-order",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Order Created",
+                  "message": "Order created in ORDER_CREATED state",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "ORDER_CREATED",
+                    "buyerId": "usr_buyer123",
+                    "sellerId": "usr_seller456",
+                    "amount": "80.00",
+                    "currency": "USD",
+                    "title": "Logo Design Service",
+                    "createdAt": "2026-02-18T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "buyerId": "usr_buyer123",
+                "sellerId": "usr_seller456",
+                "amount": "80.00",
+                "currency": "USD",
+                "title": "Logo Design Service",
+                "description": "Custom SVG branding assets",
+                "clientOrderRef": "mkt_order_9981"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Orders",
+        "description": "Retrieves a paginated list of orders filtered by buyer, seller, or status.",
+        "operationId": "list-orders",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Orders Retrieved",
+                  "message": "Found 1 order",
+                  "data": [
+                    {
+                      "id": "ord_VxaM981HQ",
+                      "status": "IN_PROGRESS",
+                      "buyerId": "usr_buyer123",
+                      "sellerId": "usr_seller456",
+                      "amount": "80.00",
+                      "createdAt": "2026-02-18T10:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
         "parameters": [
           {
             "name": "page",
             "in": "query",
             "required": false,
-            "description": "Page number (default: 1)",
+            "description": "Page number",
             "schema": {
               "type": "number"
             }
@@ -492,20 +938,56 @@
             "name": "limit",
             "in": "query",
             "required": false,
-            "description": "Results per page (default: 20)",
+            "description": "Page size (default 20)",
             "schema": {
               "type": "number"
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ORDER_CREATED",
+                "FUNDS_RESERVED",
+                "IN_PROGRESS",
+                "CLOSED"
+              ]
+            }
+          },
+          {
+            "name": "buyerId",
+            "in": "query",
+            "required": false,
+            "description": "Filter by buyer ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sellerId",
+            "in": "query",
+            "required": false,
+            "description": "Filter by seller ID",
+            "schema": {
+              "type": "string"
+            }
           }
         ]
-      },
-      "post": {
-        "summary": "Create a project",
-        "description": "Creates a new project. Requires authentication.",
-        "operationId": "create-a-project",
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "summary": "Get Order Details",
+        "description": "Returns order status, escrow smart contract link, and milestone details.",
+        "operationId": "get-order-details",
         "tags": [
-          "Projects"
+          "Orders & Lifecycle"
         ],
+        "security": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -515,146 +997,1430 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
                   "ok": true,
-                  "message": "Project created successfully",
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Order Found",
+                  "message": "Order details loaded",
                   "data": {
-                    "id": "prj_03GHI",
-                    "title": "New Project",
-                    "description": "Project description here",
-                    "budget": 1500,
+                    "id": "ord_VxaM981HQ",
+                    "status": "IN_PROGRESS",
+                    "buyerId": "usr_buyer123",
+                    "sellerId": "usr_seller456",
+                    "amount": "80.00",
                     "currency": "USD",
-                    "status": "open",
-                    "created_at": "2026-02-01T12:00:00.000Z"
+                    "escrowId": "esc_01HQ7ZX",
+                    "createdAt": "2026-02-18T10:00:00.000Z"
                   }
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/orders/{id}/reserve": {
+      "post": {
+        "summary": "Reserve Order Funds",
+        "description": "Locks buyer available funds for the order, transitioning state to FUNDS_RESERVED.",
+        "operationId": "reserve-order-funds",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object"
                 },
                 "example": {
-                  "code": 422,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Validation failed",
-                  "data": null,
-                  "errors": [
-                    "Title is required",
-                    "Budget must be positive"
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Order Funds Reserved",
+                  "message": "Order state moved to FUNDS_RESERVED",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "FUNDS_RESERVED",
+                    "reservedAt": "2026-02-18T10:01:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/orders/{id}/cancel": {
+      "post": {
+        "summary": "Cancel Order",
+        "description": "Cancels order prior to escrow funding and releases any reserved buyer balance.",
+        "operationId": "cancel-order",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Order Canceled",
+                  "message": "Order closed and funds unlocked",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "CLOSED",
+                    "finalStatus": "CANCELED"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "canceledBy": "BUYER",
+                "reason": "Scope changed before project started"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/escrow": {
+      "post": {
+        "summary": "Deploy Order Escrow",
+        "description": "Deploys a Soroban smart contract via Trustless Work for this order.",
+        "operationId": "deploy-order-escrow",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrow Contract Deployed",
+                  "message": "Soroban smart contract deployed on Stellar testnet",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "ESCROW_CREATED",
+                    "escrow": {
+                      "id": "esc_01HQ7ZX",
+                      "trustlessContractId": "CBX249SDF890...",
+                      "status": "CREATED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/orders/{id}/escrow/fund": {
+      "post": {
+        "summary": "Fund Order Escrow",
+        "description": "Signs on-chain funding transaction with buyer invisible wallet. Moves order to IN_PROGRESS.",
+        "operationId": "fund-order-escrow",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrow Funded",
+                  "message": "USDC locked in smart contract; order moved to IN_PROGRESS",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "IN_PROGRESS",
+                    "escrow": {
+                      "id": "esc_01HQ7ZX",
+                      "status": "FUNDED",
+                      "fundedAt": "2026-02-18T10:05:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/orders/{id}/resolution/release": {
+      "post": {
+        "summary": "Release Escrow to Seller",
+        "description": "Executes 3 sequential Stellar transactions to approve milestones and release USDC to seller.",
+        "operationId": "release-escrow-to-seller",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrow Released",
+                  "message": "USDC paid to seller wallet; order CLOSED",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "CLOSED",
+                    "finalStatus": "RELEASED",
+                    "closedAt": "2026-02-18T11:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "requestedBy": "BUYER"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/resolution/refund": {
+      "post": {
+        "summary": "Refund Escrow to Buyer",
+        "description": "Executes 2 sequential Stellar transactions to return 100% of escrowed USDC to buyer wallet.",
+        "operationId": "refund-escrow-to-buyer",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrow Refunded",
+                  "message": "USDC refunded to buyer wallet; order CLOSED",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "CLOSED",
+                    "finalStatus": "REFUNDED"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "requestedBy": "BUYER",
+                "reason": "Seller failed to deliver by deadline"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/resolution/dispute": {
+      "post": {
+        "summary": "Open Order Dispute",
+        "description": "Freezes in-progress order and opens a formal dispute case for arbitration.",
+        "operationId": "open-order-dispute",
+        "tags": [
+          "Orders & Lifecycle"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Dispute Opened",
+                  "message": "Order frozen in DISPUTED state; dispute case created",
+                  "data": {
+                    "id": "ord_VxaM981HQ",
+                    "status": "DISPUTED",
+                    "dispute": {
+                      "id": "dsp_01HQ7ZX",
+                      "status": "OPEN",
+                      "reason": "QUALITY_ISSUE"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Order ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "openedBy": "BUYER",
+                "reason": "QUALITY_ISSUE",
+                "notes": "Work submitted does not match specifications"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/escrow": {
+      "post": {
+        "summary": "Create Escrow Contract",
+        "description": "Direct creation of a Soroban smart contract escrow.",
+        "operationId": "create-escrow-contract",
+        "tags": [
+          "Escrow Smart Contracts"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Escrow Contract Created",
+                  "message": "Soroban contract deployed",
+                  "data": {
+                    "id": "esc_01HQ7ZX",
+                    "orderId": "ord_VxaM981HQ",
+                    "status": "CREATED",
+                    "trustlessContractId": "CBX249SDF..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "orderId": "ord_VxaM981HQ",
+                "buyerId": "usr_buyer123",
+                "sellerId": "usr_seller456",
+                "amount": "80.00",
+                "currency": "USD"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Escrow Contracts",
+        "description": "Lists all deployed escrow contracts.",
+        "operationId": "list-escrow-contracts",
+        "tags": [
+          "Escrow Smart Contracts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrows Retrieved",
+                  "message": "Found 1 escrow",
+                  "data": [
+                    {
+                      "id": "esc_01HQ7ZX",
+                      "orderId": "ord_VxaM981HQ",
+                      "status": "FUNDED",
+                      "amount": "80.00",
+                      "trustlessContractId": "CBX249SDF..."
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/escrow/{id}": {
+      "get": {
+        "summary": "Get Escrow Details",
+        "description": "Retrieves complete on-chain escrow state, signer addresses, and contract configuration.",
+        "operationId": "get-escrow-details",
+        "tags": [
+          "Escrow Smart Contracts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrow Details",
+                  "message": "On-chain state loaded",
+                  "data": {
+                    "id": "esc_01HQ7ZX",
+                    "orderId": "ord_VxaM981HQ",
+                    "status": "FUNDED",
+                    "amount": "80.00",
+                    "buyerAddress": "GBXF...",
+                    "sellerAddress": "GSELLER...",
+                    "platformAddress": "GPLATFORM...",
+                    "trustlessContractId": "CBX249SDF...",
+                    "fundedAt": "2026-02-18T10:05:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Escrow ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/escrow/{id}/fund": {
+      "post": {
+        "summary": "Fund Escrow Contract",
+        "description": "Directly funds a deployed escrow contract on Stellar.",
+        "operationId": "fund-escrow-contract",
+        "tags": [
+          "Escrow Smart Contracts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Escrow Funded",
+                  "message": "Contract funded on Stellar",
+                  "data": {
+                    "id": "esc_01HQ7ZX",
+                    "status": "FUNDED"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Escrow ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/resolution/release": {
+      "post": {
+        "summary": "Execute Milestone Release",
+        "description": "Executes 3-tx on-chain milestone completion, approval, and release to seller.",
+        "operationId": "execute-milestone-release",
+        "tags": [
+          "Resolution & Settlement"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Release Completed",
+                  "message": "3 Stellar transactions submitted successfully",
+                  "data": {
+                    "success": true,
+                    "status": "RELEASED",
+                    "transactions": [
+                      "tx_change_milestone_status_hash_1",
+                      "tx_approve_milestone_hash_2",
+                      "tx_release_funds_hash_3"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "escrowId": "esc_01HQ7ZX",
+                "orderId": "ord_VxaM981HQ"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resolution/refund": {
+      "post": {
+        "summary": "Execute Full Refund",
+        "description": "Executes 2-tx on-chain dispute and 100% refund resolution to buyer.",
+        "operationId": "execute-full-refund",
+        "tags": [
+          "Resolution & Settlement"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Refund Completed",
+                  "message": "2 Stellar transactions executed; 100% refunded to buyer",
+                  "data": {
+                    "success": true,
+                    "status": "REFUNDED",
+                    "transactions": [
+                      "tx_dispute_escrow_hash_1",
+                      "tx_resolve_dispute_hash_2"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "escrowId": "esc_01HQ7ZX",
+                "reason": "Seller did not deliver"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resolution/resolve": {
+      "post": {
+        "summary": "Arbitrate Custom Split Resolution",
+        "description": "Executes platform dispute resolution with arbitrated split distribution.",
+        "operationId": "arbitrate-custom-split-resolution",
+        "tags": [
+          "Resolution & Settlement"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Dispute Arbitrated",
+                  "message": "Split settlement executed on-chain",
+                  "data": {
+                    "success": true,
+                    "decision": "SPLIT",
+                    "distributions": [
+                      {
+                        "address": "GSELLER...",
+                        "amount": "60.00"
+                      },
+                      {
+                        "address": "GBUYER...",
+                        "amount": "20.00"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "disputeId": "dsp_01HQ7ZX",
+                "decision": "SPLIT",
+                "releaseAmount": "60.00",
+                "refundAmount": "20.00",
+                "note": "75/25 partial delivery settlement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups": {
+      "post": {
+        "summary": "Create Fiat Top-Up",
+        "description": "Initiates AirTM payin request and returns confirmation URI for user redirection.",
+        "operationId": "create-fiat-top-up",
+        "tags": [
+          "Top-Ups (Fiat On-Ramp)"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Top-Up Initialized",
+                  "message": "Redirect user to confirmationUri to complete payment",
+                  "data": {
+                    "topupId": "tp_xyz789ABC",
+                    "status": "TOPUP_AWAITING_USER_CONFIRMATION",
+                    "amount": "100.00",
+                    "currency": "USD",
+                    "confirmationUri": "https://app.airtm.com/p/confirm/xxx"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "userId": "usr_buyer123",
+                "amount": "100.00",
+                "currency": "USD",
+                "redirectUrl": "https://marketplace.com/wallet/success"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups/{id}": {
+      "get": {
+        "summary": "Get Top-Up Status",
+        "description": "Retrieves top-up transaction status and external confirmation details.",
+        "operationId": "get-top-up-status",
+        "tags": [
+          "Top-Ups (Fiat On-Ramp)"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Top-Up Details",
+                  "message": "Top-up status loaded",
+                  "data": {
+                    "id": "tp_xyz789ABC",
+                    "status": "TOPUP_SUCCEEDED",
+                    "amount": "100.00",
+                    "userId": "usr_buyer123",
+                    "airtmPayinId": "airtm_payin_123",
+                    "createdAt": "2026-02-18T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Top-Up ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/withdrawals": {
+      "post": {
+        "summary": "Create Withdrawal",
+        "description": "In crypto mode, executes on-chain Stellar USDC payment synchronously and returns WITHDRAWAL_COMPLETED.",
+        "operationId": "create-withdrawal",
+        "tags": [
+          "Withdrawals (Off-Ramp)"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Withdrawal Completed",
+                  "message": "Stellar transaction confirmed on-chain",
+                  "data": {
+                    "withdrawalId": "wd_xyz789ABC",
+                    "status": "WITHDRAWAL_COMPLETED",
+                    "amount": "50.00",
+                    "destination": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH",
+                    "transactionHash": "tx_hash_stellar_sample_placeholder",
+                    "completedAt": "2026-02-18T17:37:12.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "userId": "usr_seller456",
+                "amount": "50.00",
+                "destinationType": "stellar",
+                "destination": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/withdrawals/{id}": {
+      "get": {
+        "summary": "Get Withdrawal Status",
+        "description": "Returns withdrawal transaction details and blockchain transaction hash.",
+        "operationId": "get-withdrawal-status",
+        "tags": [
+          "Withdrawals (Off-Ramp)"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Withdrawal Found",
+                  "message": "Withdrawal record loaded",
+                  "data": {
+                    "id": "wd_xyz789ABC",
+                    "status": "WITHDRAWAL_COMPLETED",
+                    "amount": "50.00",
+                    "destinationType": "stellar",
+                    "transactionHash": "tx_hash_stellar_sample_placeholder",
+                    "completedAt": "2026-02-18T17:37:12.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Withdrawal ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/withdrawals/{id}/commit": {
+      "post": {
+        "summary": "Commit AirTM Withdrawal",
+        "description": "Commits an AirTM payout request after marketplace review window.",
+        "operationId": "commit-airtm-withdrawal",
+        "tags": [
+          "Withdrawals (Off-Ramp)"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Withdrawal Committed",
+                  "message": "Balance debited and payout submitted to AirTM",
+                  "data": {
+                    "id": "wd_xyz789ABC",
+                    "status": "WITHDRAWAL_PROCESSING"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Withdrawal ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/disputes": {
+      "post": {
+        "summary": "Open Dispute",
+        "description": "Creates an arbitration dispute on an in-progress order.",
+        "operationId": "open-dispute",
+        "tags": [
+          "Disputes & Arbitration"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Dispute Opened",
+                  "message": "Dispute case registered in OPEN state",
+                  "data": {
+                    "id": "dsp_01HQ7ZX",
+                    "orderId": "ord_VxaM981HQ",
+                    "status": "OPEN",
+                    "reason": "QUALITY_ISSUE",
+                    "createdAt": "2026-02-18T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "orderId": "ord_VxaM981HQ",
+                "openedBy": "BUYER",
+                "reason": "QUALITY_ISSUE",
+                "notes": "Work does not match approved wireframe"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes/{id}": {
+      "get": {
+        "summary": "Get Dispute Details",
+        "description": "Retrieves dispute record, assigned support agent, and order context.",
+        "operationId": "get-dispute-details",
+        "tags": [
+          "Disputes & Arbitration"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Dispute Details",
+                  "message": "Dispute case loaded",
+                  "data": {
+                    "id": "dsp_01HQ7ZX",
+                    "status": "UNDER_REVIEW",
+                    "openedBy": "BUYER",
+                    "reason": "QUALITY_ISSUE",
+                    "assignedTo": "agent_support01",
+                    "createdAt": "2026-02-18T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Dispute ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/disputes/{id}/assign": {
+      "post": {
+        "summary": "Assign Dispute to Agent",
+        "description": "Assigns a dispute to a support agent, transitioning state to UNDER_REVIEW.",
+        "operationId": "assign-dispute-to-agent",
+        "tags": [
+          "Disputes & Arbitration"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Dispute Assigned",
+                  "message": "Dispute assigned to agent_support01",
+                  "data": {
+                    "id": "dsp_01HQ7ZX",
+                    "status": "UNDER_REVIEW",
+                    "assignedTo": "agent_support01"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Dispute ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "agentId": "agent_support01",
+                "notes": "Reviewing delivery timeline"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes/{id}/resolve": {
+      "post": {
+        "summary": "Resolve Dispute",
+        "description": "Executes arbitrated decision on-chain (FULL_RELEASE, FULL_REFUND, or SPLIT).",
+        "operationId": "resolve-dispute",
+        "tags": [
+          "Disputes & Arbitration"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Dispute Resolved",
+                  "message": "Arbitrated settlement executed on-chain",
+                  "data": {
+                    "id": "dsp_01HQ7ZX",
+                    "status": "RESOLVED",
+                    "decision": "SPLIT",
+                    "releaseAmount": "60.00",
+                    "refundAmount": "20.00",
+                    "resolvedAt": "2026-02-18T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Dispute ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "decision": "SPLIT",
+                "releaseAmount": "60.00",
+                "refundAmount": "20.00",
+                "note": "Arbitrated 75% release and 25% refund"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes/{id}/comments": {
+      "post": {
+        "summary": "Add Dispute Comment",
+        "description": "Adds a message or evidence link to a dispute discussion thread.",
+        "operationId": "add-dispute-comment",
+        "tags": [
+          "Disputes & Arbitration"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1001,
+                  "type": "success",
+                  "title": "Comment Added",
+                  "message": "Comment posted to dispute thread",
+                  "data": {
+                    "id": "cm_01HQ7ZX89",
+                    "disputeId": "dsp_01HQ7ZX",
+                    "authorId": "usr_buyer123",
+                    "message": "Attached evidence screenshot...",
+                    "createdAt": "2026-02-18T10:15:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Dispute ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "authorId": "usr_buyer123",
+                "authorRole": "BUYER",
+                "message": "Attached evidence screenshot showing initial delivery rejection."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "summary": "Real-Time Event Stream (SSE)",
+        "description": "Subscribes to live Server-Sent Events (SSE) stream. Supports reconnection via Last-Event-ID header.",
+        "operationId": "real-time-event-stream-sse-",
+        "tags": [
+          "Events & Streaming"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "SSE Stream",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "eventId": "evt_n_8yumeOFwqPnSbhvemqJ",
+                  "eventType": "order.escrow_funded",
+                  "occurredAt": "2026-02-18T17:37:12.000Z",
+                  "aggregateId": "ord_VxaM981HQ",
+                  "aggregateType": "Order",
+                  "payload": {
+                    "orderId": "ord_VxaM981HQ",
+                    "escrowId": "esc_01HQ7ZX",
+                    "fundedAt": "2026-02-18T17:37:12.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "types",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated event types (e.g. order.escrow_funded,balance.credited)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceTypes",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated resource types (e.g. Order,Balance)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/events/history": {
+      "get": {
+        "summary": "Query Historical Events",
+        "description": "Queries historical domain events stored in the PostgreSQL audit log.",
+        "operationId": "query-historical-events",
+        "tags": [
+          "Events & Streaming"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Events History",
+                  "message": "Found 1 event",
+                  "data": [
+                    {
+                      "eventId": "evt_n_8yumeOFwqPnSbhvemqJ",
+                      "eventType": "order.escrow_funded",
+                      "occurredAt": "2026-02-18T17:37:12.000Z"
+                    }
                   ]
                 }
               }
             }
           }
         },
-        "security": [
+        "parameters": [
           {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "title": "New Project",
-                "description": "Project description here",
-                "budget": 1500,
-                "currency": "USD"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/escrow/init": {
-      "post": {
-        "summary": "Initialise an escrow",
-        "description": "Creates a new escrow contract between buyer and seller. Funds are held until release.",
-        "operationId": "initialise-an-escrow",
-        "tags": [
-          "Escrow"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Escrow initialised",
-                  "data": {
-                    "escrow_id": "esc_01JKL",
-                    "project_id": "prj_01GHI",
-                    "buyer_id": "usr_01ABC",
-                    "seller_id": "usr_02ABC",
-                    "amount": 2500,
-                    "currency": "USD",
-                    "status": "funded",
-                    "created_at": "2026-02-01T14:00:00.000Z"
-                  }
-                }
-              }
+            "name": "types",
+            "in": "query",
+            "required": false,
+            "description": "Filter by event types",
+            "schema": {
+              "type": "string"
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 400,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Insufficient balance to fund escrow",
-                  "data": null
-                }
-              }
+          {
+            "name": "aggregateId",
+            "in": "query",
+            "required": false,
+            "description": "Filter by resource ID",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ]
+      }
+    },
+    "/wallet/deposit-address": {
+      "get": {
+        "summary": "Get Deposit Address",
+        "description": "Returns the permanent Stellar USDC deposit address for the caller.",
+        "operationId": "get-deposit-address",
+        "tags": [
+          "Invisible Wallets"
+        ],
         "security": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "project_id": "prj_01GHI",
-                "seller_id": "usr_02ABC",
-                "amount": 2500,
-                "currency": "USD"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/escrow/release": {
-      "post": {
-        "summary": "Release escrowed funds",
-        "description": "Releases held funds from an escrow to the seller upon project completion.",
-        "operationId": "release-escrowed-funds",
-        "tags": [
-          "Escrow"
-        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -664,60 +2430,220 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
                   "ok": true,
-                  "message": "Escrow released successfully",
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Deposit Address",
+                  "message": "Send USDC on Stellar network",
                   "data": {
-                    "escrow_id": "esc_01JKL",
-                    "status": "released",
-                    "released_amount": 2500,
-                    "released_at": "2026-02-10T16:00:00.000Z"
+                    "address": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH",
+                    "network": "stellar",
+                    "asset": "USDC",
+                    "memo": null,
+                    "instructions": "Send USDC (Stellar) to this address. Deposits credited automatically within 30s."
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
+          }
+        }
+      }
+    },
+    "/wallet/{userId}/deposit-address": {
+      "get": {
+        "summary": "Get User Deposit Address",
+        "description": "Returns the Stellar USDC deposit address for a specific user ID.",
+        "operationId": "get-user-deposit-address",
+        "tags": [
+          "Invisible Wallets"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object"
                 },
                 "example": {
-                  "code": 400,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Escrow is not in a releasable state",
-                  "data": null
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Only the buyer can release the escrow",
-                  "data": null
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Deposit Address",
+                  "message": "User deposit address loaded",
+                  "data": {
+                    "address": "GBXF4A7CKUVNLXYZ1234567890ABCDEFGH",
+                    "network": "stellar",
+                    "asset": "USDC"
+                  }
                 }
               }
             }
           }
         },
-        "security": [
+        "parameters": [
           {
-            "bearerAuth": []
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
           }
+        ]
+      }
+    },
+    "/audit": {
+      "get": {
+        "summary": "List Audit Logs",
+        "description": "Queries immutable audit logs of state transitions and sensitive mutations.",
+        "operationId": "list-audit-logs",
+        "tags": [
+          "Audit Logging"
         ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Audit Logs",
+                  "message": "Found 1 audit log",
+                  "data": [
+                    {
+                      "id": "aud_01HQ7ZX89",
+                      "action": "order.create",
+                      "actorId": "usr_buyer123",
+                      "resourceType": "Order",
+                      "resourceId": "ord_VxaM981HQ",
+                      "result": "SUCCESS",
+                      "createdAt": "2026-02-18T10:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "resourceType",
+            "in": "query",
+            "required": false,
+            "description": "Resource filter (e.g. Order)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/audit/{id}": {
+      "get": {
+        "summary": "Get Audit Log Details",
+        "description": "Retrieves complete audit record including redacted before/after state snapshots.",
+        "operationId": "get-audit-log-details",
+        "tags": [
+          "Audit Logging"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Audit Record",
+                  "message": "Full state transition snapshot",
+                  "data": {
+                    "id": "aud_01HQ7ZX89",
+                    "action": "order.create",
+                    "actorId": "usr_buyer123",
+                    "resourceType": "Order",
+                    "resourceId": "ord_VxaM981HQ",
+                    "beforeState": null,
+                    "afterState": {
+                      "id": "ord_VxaM981HQ",
+                      "status": "ORDER_CREATED",
+                      "amount": "80.00"
+                    },
+                    "correlationId": "req_01HQ7ZX89"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Audit Log ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/webhooks/airtm": {
+      "post": {
+        "summary": "AirTM Webhook Ingress",
+        "description": "Ingress endpoint for AirTM payin and payout events. Verified with HMAC signature header.",
+        "operationId": "airtm-webhook-ingress",
+        "tags": [
+          "Webhooks Ingress"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "received": true
+                }
+              }
+            }
+          }
+        },
         "requestBody": {
           "content": {
             "application/json": {
@@ -725,7 +2651,164 @@
                 "type": "object"
               },
               "example": {
-                "escrow_id": "esc_01JKL"
+                "event": "payin.succeeded",
+                "payinId": "airtm_payin_123",
+                "data": {
+                  "amount": "100.00",
+                  "userId": "usr_buyer123"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/trustless-work": {
+      "post": {
+        "summary": "Trustless Work Webhook Ingress",
+        "description": "Ingress endpoint for Trustless Work escrow contract lifecycle notifications.",
+        "operationId": "trustless-work-webhook-ingress",
+        "tags": [
+          "Webhooks Ingress"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "received": true
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "event": "escrow.funded",
+                "contractId": "CBX249SDF...",
+                "data": {
+                  "amount": "80.00"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Returns process health status, version, and component status.",
+        "operationId": "health-check",
+        "tags": [
+          "System & Health"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "status": "ok",
+                  "timestamp": "2026-02-18T10:00:00.000Z",
+                  "version": "1.0.0",
+                  "uptime": 12450.5,
+                  "database": "connected",
+                  "redis": "connected",
+                  "horizon": "connected"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/info": {
+      "get": {
+        "summary": "System Runtime Info",
+        "description": "Returns active payment provider, Stellar network mode, and runtime configuration.",
+        "operationId": "system-runtime-info",
+        "tags": [
+          "System & Health"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "environment": "production",
+                  "paymentProvider": "crypto",
+                  "stellarNetwork": "testnet",
+                  "version": "1.0.0",
+                  "blockchainMonitorActive": true,
+                  "maintenanceMode": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/maintenance": {
+      "post": {
+        "summary": "Toggle Maintenance Mode",
+        "description": "Enables or disables system maintenance mode. Requires Master Key.",
+        "operationId": "toggle-maintenance-mode",
+        "tags": [
+          "System & Health"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "ok": true,
+                  "code": 1000,
+                  "type": "success",
+                  "title": "Maintenance Mode Updated",
+                  "message": "Maintenance mode is now active",
+                  "data": {
+                    "maintenanceMode": true,
+                    "message": "Scheduled database maintenance in progress."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "enabled": true,
+                "message": "Scheduled database maintenance in progress."
               }
             }
           }

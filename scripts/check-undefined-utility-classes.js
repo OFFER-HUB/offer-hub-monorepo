@@ -43,7 +43,7 @@ function collectDefined() {
 
   // tailwind.config.ts: keys under `boxShadow` and `animation`.
   const twConfigPath = path.join(ROOT, "tailwind.config.ts");
-  const twConfig = fs.readFileSync(twConfigPath, "utf8");
+  const twConfig = fs.readFileSync(twConfigPath, "utf8").replace(/\r\n/g, "\n");
 
   const boxShadowMatch = twConfig.match(/boxShadow:\s*{([\s\S]*?)\n\s*},/);
   if (boxShadowMatch) {
