@@ -497,9 +497,9 @@ Wallet endpoints are scoped to a user: `/users/{userId}/wallet`. Full reference 
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | [Get wallet info](/docs/api-reference/wallet-topups#get-users-userid-wallet) |
-| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | [Get deposit address](/docs/api-reference/wallet-topups#get-users-userid-wallet-deposit) |
-| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | [Transaction history](/docs/api-reference/wallet-topups#get-users-userid-wallet-transactions) |
+| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | [Get wallet info](/docs/api-reference/wallet-topups#get-usersuseridwallet) |
+| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | [Get deposit address](/docs/api-reference/wallet-topups#get-usersuseridwalletdeposit) |
+| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | [Transaction history](/docs/api-reference/wallet-topups#get-usersuseridwallettransactions) |
 
 ### Top-ups
 
@@ -509,10 +509,10 @@ Full reference with request/response schemas in [Wallet & Top-ups](/docs/api-ref
 |----------|--------|-------------|
 | `/topups` | <Badge variant="primary">POST</Badge> | [Create top-up](/docs/api-reference/wallet-topups#post-topups) |
 | `/topups` | <Badge variant="success">GET</Badge> | [List top-ups](/docs/api-reference/wallet-topups#get-topups) |
-| `/topups/{id}` | <Badge variant="success">GET</Badge> | [Get top-up](/docs/api-reference/wallet-topups#get-topups-id) |
-| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | [Refresh status from Airtm](/docs/api-reference/wallet-topups#post-topups-id-refresh) |
-| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | [Cancel top-up](/docs/api-reference/wallet-topups#post-topups-id-cancel) |
-| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | [Airtm callback (public)](/docs/api-reference/wallet-topups#get-topups-id-callback) |
+| `/topups/{id}` | <Badge variant="success">GET</Badge> | [Get top-up](/docs/api-reference/wallet-topups#get-topupsid) |
+| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | [Refresh status from AirTM](/docs/api-reference/wallet-topups#post-topupsidrefresh) |
+| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | [Cancel top-up](/docs/api-reference/wallet-topups#post-topupsidcancel) |
+| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | [AirTM callback (public)](/docs/api-reference/wallet-topups#get-topupsidcallback) |
 
 ### Orders
 

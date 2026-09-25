@@ -1,7 +1,7 @@
 ---
 title: Wallet & Top-ups
-description: Per-endpoint reference for wallet info, crypto deposits, transaction history, and Airtm top-ups.
-order: 3
+description: Per-endpoint reference for wallet info, crypto deposits, transaction history, and AirTM top-ups.
+order: 5
 section: API Reference
 ---
 
@@ -19,15 +19,15 @@ This reference is generated from the real controllers and DTOs in the Orchestrat
 
 | Endpoint | Method | Scope | Description |
 | --- | --- | --- | --- |
-| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | `read` | [Get wallet info](#get-users-userid-wallet) |
-| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | `read` | [Get deposit address](#get-users-userid-wallet-deposit) |
-| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | `read` | [Transaction history](#get-users-userid-wallet-transactions) |
+| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | `read` | [Get wallet info](#get-usersuseridwallet) |
+| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | `read` | [Get deposit address](#get-usersuseridwalletdeposit) |
+| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | `read` | [Transaction history](#get-usersuseridwallettransactions) |
 | `/topups` | <Badge variant="primary">POST</Badge> | `write` | [Create top-up](#post-topups) |
 | `/topups` | <Badge variant="success">GET</Badge> | `read` | [List top-ups](#get-topups) |
-| `/topups/{id}` | <Badge variant="success">GET</Badge> | `read` | [Get top-up](#get-topups-id) |
-| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | `read` | [Refresh status from AirTM](#post-topups-id-refresh) |
-| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | `write` | [Cancel top-up](#post-topups-id-cancel) |
-| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | public | [AirTM callback redirect](#get-topups-id-callback) |
+| `/topups/{id}` | <Badge variant="success">GET</Badge> | `read` | [Get top-up](#get-topupsid) |
+| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | `read` | [Refresh status from AirTM](#post-topupsidrefresh) |
+| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | `write` | [Cancel top-up](#post-topupsidcancel) |
+| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | public | [AirTM callback redirect](#get-topupsidcallback) |
 
 All paths are relative to the global `/api/v1` prefix (for example, the full URL of `GET /users/{userId}/wallet` is `/api/v1/users/{userId}/wallet`).
 
@@ -39,7 +39,7 @@ Every endpoint except the callback is protected by `ApiKeyGuard` + `ScopeGuard` 
 Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-The required scope is enforced per endpoint via `@Scopes('read')` / `@Scopes('write')` (see `Scopes` in `apps/api/src/common/decorators/scopes.decorator.ts`). An API key with the master scope `*` satisfies any requirement.
+The required scope is enforced per endpoint via `@Scopes('read')` / `@Scopes('write')` (see `Scopes` in `apps/api/src/common/decorators/scopes.decorator.ts`). The bootstrap master key is accepted by `ApiKeyGuard` with `read` and `write` scopes, so it satisfies every endpoint in this reference.
 
 | Scope | Covers |
 | --- | --- |
@@ -49,14 +49,18 @@ The required scope is enforced per endpoint via `@Scopes('read')` / `@Scopes('wr
 
 ## Response envelope
 
-Success responses follow the `{ "data": ... }` envelope produced by the global response interceptor (`apps/api/src/common/interceptors/response.interceptor.ts`). Controller handlers that already return `{ data }` are passed through unchanged. Non-GET endpoints additionally include a `meta` object with `requestId` and `timestamp`.
+Wallet handlers already return `{ "data": ... }`, so the global response interceptor (`apps/api/src/common/interceptors/response.interceptor.ts`) passes them through unchanged. Top-up handlers return bare resources, and the list handler also returns pagination fields beside `data`; those responses are wrapped as `{ "data": ..., "meta": ... }`. The public callback bypasses the interceptor because it writes the redirect directly.
+
+`meta.requestId` appears only when the request supplies an `X-Request-ID` header. The interceptor adds `meta.timestamp` to every response it wraps.
 
 ```json
 {
-  "data": { "..." : "..." },
+  "data": { "...": "..." },
   "meta": { "requestId": "uuid", "timestamp": "2026-09-24T10:00:00.000Z" }
 }
 ```
+
+These examples reflect the live controller return values. List top-ups is a nested envelope: the outer `data` contains the list's own `data`, `hasMore`, and `nextCursor` fields.
 
 ### Error responses
 
@@ -96,7 +100,7 @@ All endpoints are behind the global `RateLimitGuard` (`apps/api/src/common/guard
 
 ---
 
-## GET /users/{userId}/wallet
+## GET /users/&#123;userId&#125;/wallet
 
 <Badge variant="success">GET</Badge> `/api/v1/users/{userId}/wallet`
 
@@ -148,8 +152,9 @@ The wallet object follows the `WalletResponseDto` in `apps/api/src/modules/walle
 | --- | --- | --- |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
-| 404 | — | No active primary wallet found for the user (`NotFoundException` from `getPrimaryWallet`) |
+| 404 | `ORDER_NOT_FOUND` | No active primary wallet; the generic exception filter maps the controller's plain `NotFoundException` to this existing code |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database, Horizon, or service failure |
 
 ### Idempotency
 
@@ -176,7 +181,7 @@ console.log(wallet.isPrimary);         // true
 
 ---
 
-## GET /users/{userId}/wallet/deposit
+## GET /users/&#123;userId&#125;/wallet/deposit
 
 <Badge variant="success">GET</Badge> `/api/v1/users/{userId}/wallet/deposit`
 
@@ -226,8 +231,9 @@ Follows the `DepositInfoDto` in `apps/api/src/modules/wallet/dto/wallet-response
 | --- | --- | --- |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
-| 404 | — | No active primary wallet found for the user |
+| 404 | `ORDER_NOT_FOUND` | No active primary wallet; the generic exception filter maps the controller's plain `NotFoundException` to this existing code |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database, Horizon, or service failure |
 
 ### Idempotency
 
@@ -253,7 +259,7 @@ console.log(`Network: ${deposit.network}`);
 
 ---
 
-## GET /users/{userId}/wallet/transactions
+## GET /users/&#123;userId&#125;/wallet/transactions
 
 <Badge variant="success">GET</Badge> `/api/v1/users/{userId}/wallet/transactions`
 
@@ -273,7 +279,7 @@ Returns recent USDC/XLM activity for the user's wallet, read from the Stellar Ho
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `[].id` | string | Yes | Horizon operation ID |
-| `[].type` | enum | Yes | `payment` \| `create_account` |
+| `[].type` | enum | Yes | DTO values: `payment` \| `create_account` \| `change_trust`; the current service filters responses to `payment` and `create_account` |
 | `[].from` | string | Yes | Sending account |
 | `[].to` | string | Yes | Receiving account |
 | `[].amount` | string | Yes | Transferred amount as a string |
@@ -308,8 +314,9 @@ Returns recent USDC/XLM activity for the user's wallet, read from the Stellar Ho
 | --- | --- | --- |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
-| 404 | — | No active primary wallet found for the user |
+| 404 | `ORDER_NOT_FOUND` | No active primary wallet; the generic exception filter maps the controller's plain `NotFoundException` to this existing code |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database, Horizon, or service failure |
 
 ### Idempotency
 
@@ -340,7 +347,7 @@ txs.forEach((tx) => {
 
 <Badge variant="primary">POST</Badge> `/api/v1/topups`
 
-Creates an AirTM pay-in for the authenticated user and returns a `confirmationUri` the user must open to complete the payment. The user is resolved from the request auth context (see `@CurrentUser('userId')` in `topups.controller.ts`), **not** from the request body.
+Creates an AirTM pay-in for the authenticated user and returns a `confirmationUri` the user must open to complete the payment. The endpoint returns HTTP `201 Created`. The user is resolved from the request auth context (see `@CurrentUser('userId')` in `topups.controller.ts`), **not** from the request body.
 
 ### Request body
 
@@ -388,6 +395,9 @@ Matching `CreateTopUpResponse` in `apps/api/src/modules/topups/topups.service.ts
     "confirmationUri": "https://app.airtm.com/payin/abc123...",
     "expiresAt": "2026-09-25T10:00:00.000Z",
     "createdAt": "2026-09-24T10:00:00.000Z"
+  },
+  "meta": {
+    "timestamp": "2026-09-24T10:00:00.000Z"
   }
 }
 ```
@@ -405,7 +415,10 @@ Matching `CreateTopUpResponse` in `apps/api/src/modules/topups/topups.service.ts
 | 409 | `IDEMPOTENCY_KEY_REUSED` | Same key used with a different body |
 | 409 | `IDEMPOTENCY_KEY_IN_PROGRESS` | Original request still processing |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database or service failure |
 | 502 | `PROVIDER_ERROR` | AirTM pay-in creation failed; the top-up is marked `TOPUP_FAILED` internally |
+| 502 | `PROVIDER_RATE_LIMITED` | AirTM rejected the request because its own rate limit was reached |
+| 504 | `PROVIDER_TIMEOUT` | AirTM timed out or returned a gateway timeout |
 
 ### Idempotency
 
@@ -417,7 +430,7 @@ Supported. Send an `Idempotency-Key: {uuid-v4}` header to safely retry; duplicat
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
-  -d '{"amount":"100.00","currency":"USD"}'</CommandLine>
+  -d '&lbrace;"amount":"100.00","currency":"USD"&rbrace;'</CommandLine>
 
 ```typescript
 import { OfferHubSDK } from '@offerhub/sdk';
@@ -453,33 +466,39 @@ Lists the authenticated user's top-ups, newest first. Uses cursor-based paginati
 
 ### Response schema
 
-`data` is an array of `TopUpResponse` objects (see [GET /topups/{id}](#get-topups-id)); `hasMore` and `nextCursor` support the next page.
+The controller returns a list object beside `data`, so the global interceptor wraps the whole object. The array contains `TopUpResponse` objects (see [GET /topups/{id}](#get-topupsid)); pagination fields support the next page.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `data` | array | Yes | `TopUpResponse` items, ordered by `createdAt` descending |
-| `hasMore` | boolean | Yes | Whether more results exist |
-| `nextCursor` | string | No | Last item ID to pass as `cursor` for the next page. Present only when `hasMore` is `true` |
+| `data.data` | array | Yes | `TopUpResponse` items, ordered by `createdAt` descending |
+| `data.hasMore` | boolean | Yes | Whether more results exist |
+| `data.nextCursor` | string | No | Last item ID to pass as `cursor` for the next page. Present only when `data.hasMore` is `true` |
+| `meta.timestamp` | string | Yes | Interceptor-generated ISO 8601 timestamp |
 
 ### Response example
 
 ```json
 {
-  "data": [
-    {
-      "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
-      "userId": "usr_abc123def456",
-      "amount": "100.00",
-      "currency": "USD",
-      "status": "TOPUP_SUCCEEDED",
-      "airtmPayinId": "payin_2026-01-01x123",
-      "confirmationUri": "https://app.airtm.com/payin/abc123...",
-      "createdAt": "2026-09-24T10:00:00.000Z",
-      "updatedAt": "2026-09-24T10:05:00.000Z"
-    }
-  ],
-  "hasMore": true,
-  "nextCursor": "topup_jKL3mN0PqR4sT5uV6wX7yZ"
+  "data": {
+    "data": [
+      {
+        "id": "topup_jKL3mN0PqR4sT5uV6wX7yZ",
+        "userId": "usr_abc123def456",
+        "amount": "100.00",
+        "currency": "USD",
+        "status": "TOPUP_SUCCEEDED",
+        "airtmPayinId": "payin_2026-01-01x123",
+        "confirmationUri": "https://app.airtm.com/payin/abc123...",
+        "createdAt": "2026-09-24T10:00:00.000Z",
+        "updatedAt": "2026-09-24T10:05:00.000Z"
+      }
+    ],
+    "hasMore": true,
+    "nextCursor": "topup_jKL3mN0PqR4sT5uV6wX7yZ"
+  },
+  "meta": {
+    "timestamp": "2026-09-24T10:05:00.000Z"
+  }
 }
 ```
 
@@ -490,6 +509,7 @@ Lists the authenticated user's top-ups, newest first. Uses cursor-based paginati
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database or service failure |
 
 ### Idempotency
 
@@ -516,7 +536,7 @@ page.data.forEach((topup) => {
 
 ---
 
-## GET /topups/{id}
+## GET /topups/&#123;id&#125;
 
 <Badge variant="success">GET</Badge> `/api/v1/topups/{id}`
 
@@ -559,6 +579,9 @@ Matching `TopUpResponse` in `apps/api/src/modules/topups/topups.service.ts`.
     "confirmationUri": "https://app.airtm.com/payin/abc123...",
     "createdAt": "2026-09-24T10:00:00.000Z",
     "updatedAt": "2026-09-24T10:03:00.000Z"
+  },
+  "meta": {
+    "timestamp": "2026-09-24T10:03:00.000Z"
   }
 }
 ```
@@ -571,6 +594,7 @@ Matching `TopUpResponse` in `apps/api/src/modules/topups/topups.service.ts`.
 | 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
 | 404 | `TOPUP_NOT_FOUND` | Top-up does not exist or belongs to another user |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database or service failure |
 
 ### Idempotency
 
@@ -596,7 +620,7 @@ console.log(topup.failureReason); // undefined when no failure
 
 ---
 
-## POST /topups/{id}/refresh
+## POST /topups/&#123;id&#125;/refresh
 
 <Badge variant="primary">POST</Badge> `/api/v1/topups/{id}/refresh`
 
@@ -610,7 +634,7 @@ Re-checks the top-up status with AirTM and returns the fresh state. Use this whe
 
 ### Response schema
 
-Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id).
+Same `TopUpResponse` shape as [GET /topups/{id}](#get-topupsid).
 
 ### Response example
 
@@ -625,6 +649,9 @@ Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id).
     "airtmPayinId": "payin_2026-01-01x123",
     "createdAt": "2026-09-24T10:00:00.000Z",
     "updatedAt": "2026-09-24T10:07:00.000Z"
+  },
+  "meta": {
+    "timestamp": "2026-09-24T10:07:00.000Z"
   }
 }
 ```
@@ -637,7 +664,10 @@ Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id).
 | 403 | `INSUFFICIENT_SCOPE` | API key lacks `read` scope |
 | 404 | `TOPUP_NOT_FOUND` | Top-up does not exist or belongs to another user |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
-| 502 | `PROVIDER_ERROR` | AirTM refresh call failed |
+| 500 | `INTERNAL_ERROR` | Unexpected database or service failure |
+| 502 | `PROVIDER_ERROR` | AirTM refresh call failed or returned another provider error |
+| 502 | `PROVIDER_RATE_LIMITED` | AirTM rejected the refresh because its own rate limit was reached |
+| 504 | `PROVIDER_TIMEOUT` | AirTM timed out or returned a gateway timeout |
 
 ### Idempotency
 
@@ -662,7 +692,7 @@ console.log(topup.status); // refreshed from AirTM
 
 ---
 
-## POST /topups/{id}/cancel
+## POST /topups/&#123;id&#125;/cancel
 
 <Badge variant="primary">POST</Badge> `/api/v1/topups/{id}/cancel`
 
@@ -676,7 +706,7 @@ Cancels a top-up that is still awaiting user confirmation. Cancellation only wor
 
 ### Response schema
 
-Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id), with `status` set to `TOPUP_CANCELED`.
+Same `TopUpResponse` shape as [GET /topups/{id}](#get-topupsid), with `status` set to `TOPUP_CANCELED`.
 
 ### Response example
 
@@ -691,6 +721,9 @@ Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id), with `status` 
     "airtmPayinId": "payin_2026-01-01x123",
     "createdAt": "2026-09-24T10:00:00.000Z",
     "updatedAt": "2026-09-24T10:10:00.000Z"
+  },
+  "meta": {
+    "timestamp": "2026-09-24T10:10:00.000Z"
   }
 }
 ```
@@ -704,6 +737,7 @@ Same `TopUpResponse` shape as [GET /topups/{id}](#get-topups-id), with `status` 
 | 404 | `TOPUP_NOT_FOUND` | Top-up does not exist or belongs to another user |
 | 409 | `INVALID_STATE` | Status is not `TOPUP_AWAITING_USER_CONFIRMATION` (`details` contains `currentStatus` and `allowedStatuses`) |
 | 429 | `RATE_LIMITED` | Rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected database or service failure |
 
 ### Idempotency
 
@@ -728,13 +762,13 @@ console.log(topup.status); // 'TOPUP_CANCELED'
 
 ---
 
-## GET /topups/{id}/callback
+## GET /topups/&#123;id&#125;/callback
 
 <Badge variant="success">GET</Badge> <Badge variant="default">PUBLIC</Badge> `/api/v1/topups/{id}/callback`
 
 **Public endpoint** — no authentication or scope required (`@Public()` in `topups.controller.ts`). This is the URL AirTM redirects the buyer's browser to after they confirm or cancel a payment. The Orchestrator looks up the top-up, refreshes its status from AirTM when a pay-in ID exists, and issues an HTTP redirect (302) to either the success or cancel redirect URL configured in `AirtmConfig`.
 
-You never call this endpoint yourself; you pass the callback base URL to AirTM when the top-up is created (`confirmationBaseUrl` / `cancellationBaseUrl` in `TopUpsService.createTopUp`).
+You never call this endpoint from your integration. Configure `TOPUP_CALLBACK_BASE_URL` to the public base ending in `/api/v1/topups`; `TopUpsService.createTopUp` appends `/{id}/callback` when it creates the AirTM pay-in.
 
 ### Query parameters
 
@@ -754,7 +788,7 @@ You never call this endpoint yourself; you pass the callback base URL to AirTM w
 
 ### Error codes
 
-None — the endpoint always redirects.
+No domain error codes are returned on the normal path; the endpoint always redirects. The global rate limiter can return `429 RATE_LIMITED`, and an unexpected database failure can return `500 INTERNAL_ERROR`.
 
 ### Idempotency
 
@@ -768,10 +802,9 @@ curl -L "http://localhost:4000/api/v1/topups/topup_jKL3mN0PqR4sT5uV6wX7yZ/callba
 ```
 
 ```typescript
-// No SDK method — this URL is where the marketplace sends the buyer
-// after the top-up is created (confirmationUri completes the loop).
-const redirectUri = `${ORCHESTRATOR_URL}/api/v1/topups/${topupId}/callback`;
-// Point the user's browser here after payment (handled by AirTM)
+// No SDK method. This is the public callback configured on the Orchestrator
+// and selected by AirTM after the buyer completes or cancels payment.
+const callbackBaseUrl = `${ORCHESTRATOR_URL}/api/v1/topups`;
 ```
 
 ---
@@ -801,6 +834,8 @@ TOPUP_SUCCEEDED, TOPUP_FAILED, TOPUP_CANCELED  (terminal)
 ## Related documentation
 
 - [API Reference](/docs/api-reference/overview) — authentication, scopes, and the full endpoint table
-- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — `topup.created`, `topup.succeeded`, and related events
+- [Events (SSE)](/docs/api-reference/events) — real-time `topup.created`, `topup.succeeded`, and related events
+- [Inbound Webhooks](/docs/api-reference/webhooks) — AirTM and Trustless Work receiver endpoints
+- [SDK: Wallets](/docs/sdk/wallet) and [SDK: Top-ups](/docs/sdk/topups) — typed client methods and examples
 - [Deposits Guide](/docs/guide/deposits) — crypto vs. AirTM deposit flows end to end
 - [Wallets Guide](/docs/guide/wallets) — how invisible Stellar wallets work
