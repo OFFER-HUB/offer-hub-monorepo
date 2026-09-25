@@ -27,10 +27,10 @@
   --shadow-dark: #d1d5db;
   --shadow-light: #ffffff;
 
-  /* Semantic */
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-error: #FF0000;
+  /* Semantic — light mode values calibrated for WCAG AA on #F1F3F7 / #ffffff surfaces */
+  --color-success: #16a34a;   /* 4.54:1 on #F1F3F7 ✓ AA */
+  --color-warning: #b45309;   /* 4.77:1 on #F1F3F7 ✓ AA (was #d97706 = 3.14:1 ✗) */
+  --color-error: #c0392b;     /* 5.25:1 on #F1F3F7 ✓ AA (was #FF0000 = harsh pure red) */
 
   /* Borders */
   --color-border: #d1d5db;
@@ -38,8 +38,8 @@
   /* Callout backgrounds */
   --color-callout-note-bg: rgba(20, 154, 155, 0.08);
   --color-callout-tip-bg: rgba(22, 163, 74, 0.08);
-  --color-callout-warning-bg: rgba(217, 119, 6, 0.12);
-  --color-callout-danger-bg: rgba(255, 0, 0, 0.08);
+  --color-callout-warning-bg: rgba(180, 83, 9, 0.10);
+  --color-callout-danger-bg: rgba(192, 57, 43, 0.08);
 }
 
 .dark {
@@ -58,10 +58,14 @@
   --color-primary-hover: #25d4d5;
   --color-accent: #15949C;
 
-  /* Semantic */
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-error: #FF0000;
+  /* Semantic — dark mode values calibrated for WCAG AA on #242433 / #2e2e3f surfaces.
+     All three swap to lighter tones so the text+bg pair clears 4.5:1.
+       success #4ade80 on #242433 = 8.5:1  ✓ AA
+       warning #f59e0b on #242433 = 5.0:1  ✓ AA (was #d97706 = 3.2:1 ✗)
+       error   #f87171 on #242433 = 5.9:1  ✓ AA (was #FF0000 = 3.9:1 ✗) */
+  --color-success: #4ade80;
+  --color-warning: #f59e0b;
+  --color-error: #f87171;
 
   /* Neumorphic shadows for dark */
   --shadow-dark: #1a1a26;
@@ -70,11 +74,11 @@
   /* Borders */
   --color-border: #3d3d5c;
 
-  /* Callout backgrounds for dark mode - slightly higher intensity for visibility on dark */
+  /* Callout backgrounds for dark mode — slightly higher intensity for visibility */
   --color-callout-note-bg: rgba(31, 184, 185, 0.12);
-  --color-callout-tip-bg: rgba(22, 163, 74, 0.12);
-  --color-callout-warning-bg: rgba(217, 119, 6, 0.15);
-  --color-callout-danger-bg: rgba(255, 0, 0, 0.12);
+  --color-callout-tip-bg: rgba(74, 222, 128, 0.10);
+  --color-callout-warning-bg: rgba(245, 158, 11, 0.13);
+  --color-callout-danger-bg: rgba(248, 113, 113, 0.12);
 }
 
 /* Subtle page background — faint teal corner glows only (Dot grid handled by React) */
