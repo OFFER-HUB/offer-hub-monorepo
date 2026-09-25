@@ -147,19 +147,6 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         )}>
           {label}
         </span>
-
-        {/* Subtle Indicator bar */}
-        {isActive && (
-          <motion.div
-            layoutId="sidebar-indicator"
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-theme-primary rounded-full"
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 35
-            }}
-          />
-        )}
       </Link>
     </li>
   );
