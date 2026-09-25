@@ -19,7 +19,10 @@ You need:
 
 ## Step 1: Create a User
 
-Register a buyer in the system:
+Register a buyer in the system. Pick your language below — the docs remember your choice on every page:
+
+<CodeTabs label="Create a user">
+  <CodeTab label="cURL" language="bash">
 
 ```bash
 curl -X POST http://localhost:4000/api/v1/users \
@@ -31,6 +34,27 @@ curl -X POST http://localhost:4000/api/v1/users \
     "type": "BUYER"
   }'
 ```
+
+  </CodeTab>
+  <CodeTab label="TypeScript" language="typescript">
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL,   // e.g. http://localhost:4000
+  apiKey: process.env.OFFERHUB_API_KEY,    // e.g. ohk_live_xxx
+});
+
+const user = await sdk.users.create({
+  externalUserId: 'your-user-123',
+  email: 'buyer@example.com',
+  type: 'BUYER',                          // or 'SELLER', 'BOTH'
+});
+```
+
+  </CodeTab>
+</CodeTabs>
 
 Response:
 

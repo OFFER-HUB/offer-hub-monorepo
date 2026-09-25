@@ -12,6 +12,12 @@ interface CodeBlockProps {
   children?: string;
   language?: string;
   className?: string;
+  /**
+   * Hide the header bar (language label + copy button). Used when an outer
+   * component — e.g. CodeTabs — provides its own toolbar so the panel does
+   * not render a second, redundant header.
+   */
+  isHeaderHidden?: boolean;
 }
 
 const LANGUAGE_ALIASES: Record<string, string> = {
@@ -27,7 +33,8 @@ export function CodeBlock({
   code: codeProp,
   children,
   language = "typescript",
-  className
+  className,
+  isHeaderHidden = false,
 }: CodeBlockProps) {
   const { resolvedTheme } = useTheme();
   const normalizedLang = LANGUAGE_ALIASES[language] || language;
@@ -99,8 +106,14 @@ export function CodeBlock({
         className
       )}
     >
-      {/* Header bar — sunken, clean edges (no border) */}
-      <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle">
+      {/* Header bar — sunken, clean edges (no border). Hidden when an outer
+          toolbar (e.g. CodeTabs) already owns the copy/language controls. */}
+      <div
+        className={cn(
+          "items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle",
+          isHeaderHidden ? "hidden" : "flex",
+        )}
+      >
         <div className="flex items-center gap-3.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-base shadow-neu-raised-sm transition-colors duration-300 group-hover:bg-theme-primary/10">
             <Code2 size={16} className="text-content-secondary group-hover:text-theme-primary" />

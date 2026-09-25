@@ -200,6 +200,56 @@ font-family: var(--font-inter), Roboto, Outfit, sans-serif;
 />
 ```
 
+### Code Tabs
+
+Show the same request in multiple languages with the internal `CodeTabs` /
+`CodeTab` pair (registered in `src/components/docs/mdx-components.tsx` and
+implemented in `src/components/docs/CodeTabs.tsx`):
+
+````mdx
+<CodeTabs label="Create a user">
+  <CodeTab label="cURL" language="bash">
+
+```bash
+curl -X POST http://localhost:4000/api/v1/users
+```
+
+  </CodeTab>
+  <CodeTab label="TypeScript" language="typescript">
+
+```typescript
+await sdk.users.create({ externalUserId: 'your-user-123' });
+```
+
+  </CodeTab>
+</CodeTabs>
+````
+
+Rules and behaviour:
+
+- **Keyboard accessibility** — WAI-ARIA `tablist` / `tab` / `tabpanel` roles with
+  roving `tabindex`. `ArrowLeft` / `ArrowRight` move between tabs, `Home` / `End`
+  jump to the first / last tab, and only the selected tab is in the tab order.
+  Panels are wired with `aria-controls` / `aria-labelledby`.
+- **Copy per panel** — the toolbar's **Copy** button always copies the code of
+  the *selected* panel (each panel renders a headerless `CodeBlock`, so there is
+  exactly one copy control and one header for the whole group).
+- **Selection is remembered** — the chosen tab label is persisted in
+  `localStorage` under `offer-hub-docs-code-tab` and re-applied on every docs
+  page. All `CodeTabs` instances on a page stay in sync (custom `storage` /
+  `offer-hub-code-tab-change` events), so a reader who picks *TypeScript* once
+  gets *TypeScript* preselected wherever a matching tab exists.
+- **Styling** — design tokens only (`bg-bg-elevated`, `bg-bg-sunken`,
+  `shadow-neu-raised`, `shadow-neu-sunken-subtle`, `shadow-neu-raised-sm`,
+  `text-content-*`). No hardcoded colors, no colored borders — light and dark
+  mode come from the token system automatically.
+
+<Callout type="note">
+  Tabs are matched by label, not index. Reuse the same labels across pages
+  (e.g. always `cURL`, `TypeScript`, `Python`) so the remembered choice
+  carries over.
+</Callout>
+
 ---
 
 ## Z-Index Scale
