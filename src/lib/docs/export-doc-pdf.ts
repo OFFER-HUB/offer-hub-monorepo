@@ -119,7 +119,6 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
       font-weight: 700;
     }
     [data-doc-pdf-root] blockquote {
-      border-left: 4px solid #149A9B;
       background: rgba(20, 154, 155, 0.07);
       border-radius: 8px;
       padding: 8px 12px;

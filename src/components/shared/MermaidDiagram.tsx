@@ -37,7 +37,7 @@ function themeVariables(isDark: boolean, zoom: boolean) {
     return {
       primaryColor: "#2e2e3f",
       primaryTextColor: "#f1f3f7",
-      primaryBorderColor: "#1fb8b9",
+      primaryBorderColor: "#3d3d5c",
       secondaryColor: "#242433",
       secondaryTextColor: "#b8bfd0",
       secondaryBorderColor: "#3d3d5c",
@@ -50,7 +50,7 @@ function themeVariables(isDark: boolean, zoom: boolean) {
       lineColor: "#6D758F",
       fontFamily: "Inter, sans-serif",
       fontSize,
-      nodeBorder: "#1fb8b9",
+      nodeBorder: "#3d3d5c",
       nodeTextColor: "#f1f3f7",
       clusterBkg: "#2e2e3f",
       clusterBorder: "#3d3d5c",
@@ -62,7 +62,7 @@ function themeVariables(isDark: boolean, zoom: boolean) {
   return {
     primaryColor: "#E8F7F7",
     primaryTextColor: "#19213D",
-    primaryBorderColor: "#149A9B",
+    primaryBorderColor: "#d1d5db",
     secondaryColor: "#F1F3F7",
     secondaryTextColor: "#19213D",
     secondaryBorderColor: "#6D758F",
@@ -75,10 +75,10 @@ function themeVariables(isDark: boolean, zoom: boolean) {
     lineColor: "#6D758F",
     fontFamily: "Inter, sans-serif",
     fontSize,
-    nodeBorder: "#149A9B",
+    nodeBorder: "#d1d5db",
     nodeTextColor: "#19213D",
     clusterBkg: "#F1F3F7",
-    clusterBorder: "#149A9B",
+    clusterBorder: "#d1d5db",
     edgeLabelBackground: "#ffffff",
     labelBackgroundColor: "#ffffff",
     titleColor: "#19213D",
@@ -208,9 +208,9 @@ export function MermaidDiagram({
         <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/50" />
-              <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/30" />
-              <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/20" />
+              <span className="w-2.5 h-2.5 rounded-full bg-content-secondary/40" />
+              <span className="w-2.5 h-2.5 rounded-full bg-content-secondary/25" />
+              <span className="w-2.5 h-2.5 rounded-full bg-content-secondary/15" />
             </div>
             <span className="text-[11px] font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
               Mermaid

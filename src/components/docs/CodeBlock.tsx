@@ -109,7 +109,6 @@ export function CodeBlock({
             <span className="text-[11px] font-black uppercase tracking-[0.18em] font-mono text-content-secondary/70">
               {language}
             </span>
-            <div className="h-0.5 w-4 bg-theme-primary/50 rounded-full mt-0.5" />
           </div>
         </div>
 

@@ -16,10 +16,9 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
     return (
       <h2
         id={id}
-        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 flex items-center gap-3 tracking-tight text-content-primary"
+        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 tracking-tight text-content-primary"
         {...props}
       >
-        <span className="w-1 h-6 rounded-full bg-theme-primary" />
         {children}
       </h2>
     );
@@ -43,13 +42,13 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   ),
 
   code: ({ children }) => (
-    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-theme-primary/10 text-theme-primary border border-theme-primary/10">
+    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-theme-primary/10 text-theme-primary">
       {children}
     </code>
   ),
 
   blockquote: ({ children }) => (
-    <blockquote className="my-6 border-l-4 border-theme-primary/40 pl-4 text-content-secondary italic">
+    <blockquote className="my-6 rounded-2xl p-5 bg-bg-sunken/60 shadow-neu-sunken-subtle text-content-secondary italic">
       {children}
     </blockquote>
   ),
