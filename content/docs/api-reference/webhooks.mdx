@@ -1,250 +1,160 @@
 ---
-title: Real-Time Events & Webhooks
-description: Real-time integration for OFFER-HUB — the SSE event stream (GET /api/v1/events) and the inbound provider webhook receivers.
-order: 2
+title: Inbound Webhooks
+description: Inbound provider webhook receivers for a self-hosted OFFER-HUB Orchestrator — AirTM (Svix-signed) and Trustless Work (HMAC-SHA256), with signature verification and deduplication behavior.
+order: 4
 section: API Reference
 ---
 
+The Orchestrator exposes **two inbound webhook receivers** that external providers call to notify it about events. These are endpoints **your Orchestrator receives** — you never register or call them as an integrator.
+
 <Callout type="warning">
-  OFFER-HUB does **not** provide an outbound webhook subscription API. There is **no** `POST /api/v1/webhooks` endpoint to register a URL, an event list, or a signing secret. The only real-time mechanism for integrators is the **SSE event stream** (`GET /api/v1/events`). The two `/webhooks` endpoints that exist are **inbound** receivers used by external providers (AirTM, Trustless Work) to notify your Orchestrator — you never call them as an integrator.
+  OFFER-HUB does **not** provide an outbound webhook subscription API. There is no `POST /api/v1/webhooks` endpoint for registering a URL, an event list, or a signing secret. The only real-time mechanism for integrators is the **SSE event stream** — see the [Events](/docs/api-reference/events) reference for subscriptions and the event catalog. The two `/webhooks` endpoints below are inbound receivers used by external providers.
 </Callout>
 
-## Real-Time Events via SSE
+## Common behavior
 
-The event stream is the supported way to receive real-time notifications about users, orders, escrows, balances, disputes, top-ups, and withdrawals.
+Both receivers live in `WebhooksController` (`apps/api/src/modules/webhooks/webhooks.controller.ts`). Because of the global `/api/v1` prefix (`apps/api/src/main.ts`), the full paths are `POST /api/v1/webhooks/airtm` and `POST /api/v1/webhooks/trustless-work`.
 
-<Badge variant="success">GET</Badge> `/api/v1/events`
+For both endpoints:
 
-### Authentication
+- **Signature verification runs first.** An invalid signature is rejected with `401` before any processing happens.
+- **Duplicate deliveries are acknowledged and skipped.** Every provider event is stored once in the `WebhookEvent` table, keyed by `(provider, providerEventId)`. A repeat of an already-processed event returns `200` with `duplicate: true` instead of being applied twice.
+- **Responses are always `200` after a valid signature**, even for business-logic failures (`processed: false`) — acknowledging avoids provider retry storms for states the Orchestrator already handles.
+- **Processing is asynchronous** and covered by the `AIRTM_WEBHOOK_SECRET` / `TRUSTLESS_WEBHOOK_SECRET` environment variables documented in the [Configuration guide](/docs/configuration).
 
-The endpoint requires a valid API key:
+## AirTM — `POST /api/v1/webhooks/airtm`
 
-- **Header:** `Authorization: Bearer ohk_live_...`
-- **Scope:** the API key needs the `events.read` scope (a master scope `*` key also works)
+Receives pay-in (`topup.*`) and pay-out (`withdrawal.*`) status updates from AirTM.
 
-### Connection Parameters
+### Signature verification
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `types` | `string[]` | Comma-separated event types to filter (e.g. `order.created,order.escrow_funded`) |
-| `resources` | `string[]` | Comma-separated aggregate types to filter (e.g. `Order,Escrow,Balance`) |
-| `since` | `string` | ISO timestamp cursor to replay events after (alternative to `Last-Event-ID`) |
+The Orchestrator verifies the request with the standard **Svix** headers and your `AIRTM_WEBHOOK_SECRET`:
 
-Events are scoped to the marketplace tied to your API key, so each marketplace only receives its own events.
+| Header | Purpose |
+| --- | --- |
+| `svix-id` | Unique message identifier |
+| `svix-timestamp` | Unix timestamp of the message |
+| `svix-signature` | HMAC-SHA256 signature over the raw body |
 
-### Reconnection & Replay
+Verification uses `svix.Webhook.verify(rawBody, headers)` (`apps/api/src/providers/airtm/services/airtm-webhook.service.ts`, configured in `apps/api/src/providers/airtm/airtm.config.ts`). If `AIRTM_WEBHOOK_SECRET` is not set, verification is **disabled and logged** as a warning — acceptable for local development, never for production.
 
-The service keeps the last **1000 events for 1 hour** in Redis. If your connection drops, reconnect and pass the standard `Last-Event-ID` header (the `id` of the last event you received) to replay everything you missed:
+### Payload
 
-```bash
-curl -N http://localhost:4000/api/v1/events \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Last-Event-ID: 2026-02-02T20:43:52.832Z"
-```
+AirTM sends the payload in the `AirtmWebhookPayload` shape (`apps/api/src/providers/airtm/types/airtm.types.ts`):
 
-A heartbeat (`ping`) message is sent every **30 seconds** to keep the connection alive.
-
-### Event Format
-
-Events use the standard SSE format. The `data` field is the full JSON domain event:
-
-```text
-id: 2026-02-02T20:43:52.832Z
-event: user.created
-data: {
-  "eventId": "evt_n_8yumeOFwqPnSbhvemqJ",
-  "occurredAt": "2026-02-02T20:43:52.832Z",
-  "eventType": "user.created",
-  "aggregateId": "usr_jF5tBLUBhuSqdkU4Ryct8B1Oj4va4RiV",
-  "aggregateType": "User",
-  "payload": {
-    "userId": "usr_jF5tBLUBhuSqdkU4Ryct8B1Oj4va4RiV",
-    "externalUserId": "test-viva-05",
-    "email": "viva5@test.com",
-    "status": "ACTIVE"
-  },
-  "metadata": {
-    "userId": "usr_jF5tBLUBhuSqdkU4Ryct8B1Oj4va4RiV"
+```json
+{
+  "eventId": "evt_8yumeOFwqPnSbhvemqJ",
+  "eventType": "payin.succeeded",
+  "occurredAt": "2026-02-20T14:30:00.000Z",
+  "data": {
+    "id": "payin_789",
+    "code": "PX-1001",
+    "amount": 50,
+    "currency": "USD",
+    "status": "SUCCEEDED",
+    "reasonCode": null,
+    "reasonDescription": null
   }
 }
 ```
 
 | Field | Description |
-|-------|-------------|
-| `eventId` | Unique event ID (`evt_...`) |
-| `occurredAt` | ISO 8601 timestamp |
-| `eventType` | Event type, e.g. `order.escrow_funded` |
-| `aggregateId` | Resource ID the event belongs to (`ord_...`, `usr_...`, etc.) |
-| `aggregateType` | Resource type (`Order`, `User`, `Balance`, …) |
-| `payload` | Event-specific data |
-| `metadata` | Correlation/user context |
+| --- | --- |
+| `eventId` | Unique event ID from AirTM. |
+| `eventType` | One of the `payin.*` or `payout.*` webhook event types below. |
+| `occurredAt` | ISO 8601 timestamp of the event. |
+| `data` | The affected pay-in/pay-out with the provider's internal `id`. AirTM `data.id` maps the event to your `topup`/`withdrawal`. |
 
-### Examples
+Accepted `eventType` values:
 
-Listen to all events:
+- **Pay-ins (top-ups):** `payin.created`, `payin.awaiting_user_confirmation`, `payin.processing`, `payin.succeeded`, `payin.failed`, `payin.canceled`
+- **Pay-outs (withdrawals):** `payout.created`, `payout.committed`, `payout.pending`, `payout.pending_user_action`, `payout.completed`, `payout.failed`, `payout.canceled`
 
-```bash
-curl -N http://localhost:4000/api/v1/events \
-  -H "Authorization: Bearer ohk_live_your_api_key"
+### Deduplication
+
+The Orchestrator looks up the `WebhookEvent` row with `(provider = AIRTM, providerEventId = eventId)`. A duplicate returns `200 { status: "ok", duplicate: true }` and is ignored. Beyond that, top-ups and withdrawals already in a terminal state are skipped (`isTerminalPayinStatus` / `isTerminalPayoutStatus`), and invalid state transitions are logged but not failed — the webhook data is treated as authoritative (`apps/api/src/providers/airtm/services/airtm-webhook.service.ts`).
+
+### Responses
+
+| Case | HTTP | Body |
+| --- | --- | --- |
+| Processed for the first time | `200` | `{ "status": "ok", "processed": true }` |
+| Duplicate delivery | `200` | `{ "status": "ok", "duplicate": true }` |
+| Valid signature, business failure (e.g. related top-up not found) | `200` | `{ "status": "ok", "processed": false }` |
+| Invalid or missing signature | `401` | Standard error envelope |
+
+## Trustless Work — `POST /api/v1/webhooks/trustless-work`
+
+Receives escrow lifecycle events from Trustless Work and flips the escrow/order state machines (re-emitting the corresponding domain events on the SSE stream).
+
+### Signature verification
+
+The Orchestrator verifies the `x-tw-signature` header — a **HMAC-SHA256** hex digest of the raw request body keyed with `TRUSTLESS_WEBHOOK_SECRET` (`apps/api/src/providers/trustless-work/services/webhook.service.ts`, configured in `apps/api/src/providers/trustless-work/trustless-work.config.ts`):
+
+```
+x-tw-signature: HMAC-SHA256(rawBody, TRUSTLESS_WEBHOOK_SECRET)
 ```
 
-Listen only to order events:
+The config requires the secret to start with `tw_whsec_`. A mismatched signature throws `401` with error code `WEBHOOK_SIGNATURE_INVALID`. Trustless Work requests sent **without** the header are logged and processed anyway — configure the secret and require the header in production.
 
-```bash
-curl -N "http://localhost:4000/api/v1/events?types=order.created,order.escrow_funded,order.released" \
-  -H "Authorization: Bearer ohk_live_your_api_key"
+### Payload
+
+Validated by `TrustlessWebhookDto` (`apps/api/src/providers/trustless-work/dto/webhook.dto.ts`):
+
+```json
+{
+  "type": "escrow.funded",
+  "event_id": "evt_trustless_123",
+  "data": {
+    "contract_id": "CTW4Q6N...",
+    "order_id": "ord_abc123",
+    "status": "FUNDED",
+    "amount": "500000000",
+    "currency": "USDC",
+    "buyer_address": "GBCG42WTVWPO4Q6N...",
+    "seller_address": "GBRTW2CXBA7ZQBCN...",
+    "transaction_hash": "abcdef0123...",
+    "milestone_ref": "M1",
+    "created_at": "2026-02-20T12:00:00.000Z",
+    "updated_at": "2026-02-20T12:05:00.000Z"
+  }
+}
 ```
 
-Listen only to escrow-related aggregates:
+`data.contract_id` is the Stellar escrow contract address; the Orchestrator matches it to the escrow it created through `trustlessContractId`. `amount` is expressed in stroops.
 
-```bash
-curl -N "http://localhost:4000/api/v1/events?resources=Escrow" \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
+Accepted `type` values drive the escrow lifecycle:
 
-### Using the SDK
+- `escrow.created` → stores the contract ID and moves the order to `ESCROW_FUNDING`
+- `escrow.funding_started` → updates the escrow status
+- `escrow.funded` → moves the order to `IN_PROGRESS` (with `transaction_hash` verification)
+- `escrow.milestone_completed` → records the milestone
+- `escrow.released` → confirms release and credits the seller
+- `escrow.refunded` → confirms refund and credits the buyer
+- `escrow.disputed` → marks the escrow as `DISPUTED`
 
-```typescript
-import { OfferHubSDK } from '@offerhub/sdk';
+On-chain events carrying a `transaction_hash` are verified against the Stellar network before the state change is applied (`verifyTransactionIfPresent`, `apps/api/src/providers/trustless-work/services/webhook.service.ts`).
 
-const sdk = new OfferHubSDK({
-  apiUrl: 'http://localhost:4000',
-  apiKey: 'ohk_live_your_api_key'
-});
+### Deduplication
 
-const events = sdk.events.subscribe();
+The Orchestrator looks up the `WebhookEvent` row with `(provider = TRUSTLESS_WORK, providerEventId = event_id)`. A duplicate returns `200 { status: "ok", processed: true }` without re-applying the state change.
 
-events.on('order.escrow_funded', (data) => {
-  console.log('Escrow funded:', data);
-});
+### Responses
 
-events.on('withdrawal.completed', (data) => {
-  console.log('Withdrawal completed:', data);
-});
-```
+| Case | HTTP | Body |
+| --- | --- | --- |
+| Processed for the first time | `200` | `{ "status": "ok", "processed": true }` |
+| Duplicate delivery | `200` | `{ "status": "ok", "processed": true }` |
+| Invalid signature | `401` | `WEBHOOK_SIGNATURE_INVALID` error envelope |
 
-### Using EventSource (browser)
+## Self-hosting
 
-```typescript
-const events = new EventSource(
-  'http://localhost:4000/api/v1/events',
-  { headers: { Authorization: 'Bearer ohk_live_...' } }
-);
-
-events.onmessage = (e) => {
-  const event = JSON.parse(e.data);
-  console.log(event.eventType, event.payload);
-};
-```
-
-## Event Catalog
-
-These are the event types you can subscribe to. Wildcard subscriptions are supported: `order.*`, `topup.*`, `withdrawal.*`, and `*`.
-
-### User Events
-
-| Event | Payload |
-|-------|---------|
-| `user.created` | `{ userId, externalUserId, type, status }` |
-| `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
-| `user.stellar_linked` | `{ userId, stellarAddress, linkedAt }` |
-
-### Wallet Events
-
-| Event | Payload |
-|-------|---------|
-| `wallet.created` | `{ userId, publicKey, provider, funded, trustlineReady }` |
-
-### Balance Events
-
-| Event | Payload |
-|-------|---------|
-| `balance.credited` | `{ userId, amount, source, newBalance, transactionHash? }` |
-| `balance.debited` | `{ userId, amount, destination, newBalance }` |
-| `balance.reserved` | `{ userId, amount, orderId, reservedBalance }` |
-| `balance.released` | `{ userId, amount, orderId, reason }` |
-
-### Top-Up Events
-
-| Event | Payload |
-|-------|---------|
-| `topup.created` | `{ userId, amount, currency }` |
-| `topup.confirmation_required` | `{ topupId, confirmationUri }` |
-| `topup.processing` | `{ topupId, airtmPayinId }` |
-| `topup.succeeded` | `{ topupId, userId, amount, newBalance }` |
-| `topup.failed` | `{ topupId, reason, errorCode }` |
-| `topup.canceled` | `{ topupId, canceledBy }` |
-
-### Order Events
-
-| Event | Payload |
-|-------|---------|
-| `order.created` | `{ orderId, buyerId, sellerId, amount, title }` |
-| `order.funds_reserved` | `{ orderId, amount, buyerId, reservedBalance }` |
-| `order.escrow_creating` | `{ orderId, escrowId }` |
-| `order.escrow_funding` | `{ orderId, escrowId, trustlessContractId }` |
-| `order.escrow_funded` | `{ orderId, escrowId, fundedAt }` |
-| `order.in_progress` | `{ orderId }` |
-| `order.release_requested` | `{ orderId, requestedBy }` |
-| `order.released` | `{ orderId, sellerId, amount, releasedAt }` |
-| `order.refund_requested` | `{ orderId, requestedBy }` |
-| `order.refunded` | `{ orderId, buyerId, amount, refundedAt }` |
-| `order.disputed` | `{ orderId, disputeId, openedBy, reason }` |
-| `order.closed` | `{ orderId, finalStatus, closedAt }` |
-| `order.canceled` | `{ orderId, canceledBy, reason }` |
-
-### Escrow Events
-
-| Event | Payload |
-|-------|---------|
-| `escrow.created` | `{ escrowId, orderId, amount }` |
-| `escrow.funding_started` | `{ escrowId, trustlessContractId }` |
-| `escrow.funded` | `{ escrowId, fundedAt, amount }` |
-| `escrow.milestone_completed` | `{ escrowId, milestoneRef, completedAt }` |
-| `escrow.released` | `{ escrowId, releasedAt, amount }` |
-| `escrow.refunded` | `{ escrowId, refundedAt, amount }` |
-
-### Dispute Events
-
-| Event | Payload |
-|-------|---------|
-| `dispute.opened` | `{ disputeId, orderId, openedBy, reason }` |
-| `dispute.under_review` | `{ disputeId, reviewedBy }` |
-| `dispute.resolved` | `{ disputeId, decision, resolvedBy, resolvedAt }` |
-
-### Withdrawal Events
-
-| Event | Payload |
-|-------|---------|
-| `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
-| `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, airtmPayoutId }` |
-| `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
-| `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
-| `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |
-| `withdrawal.canceled` | `{ withdrawalId, canceledBy, refundedToBalance }` |
-
-## Inbound Provider Webhooks (Self-Hosting)
-
-The Orchestrator exposes **two inbound webhook receivers** that external providers call to notify it about events. These are endpoints **your Orchestrator receives** — integrators never register or call them.
-
-<Callout type="note">
-  Because of the global `/api/v1` prefix, the full paths are `POST /api/v1/webhooks/airtm` and `POST /api/v1/webhooks/trustless-work`. Signature verification and deduplication are handled internally by the Orchestrator — no outbound configuration is needed.
-</Callout>
-
-### AirTM — `POST /api/v1/webhooks/airtm`
-
-Receives pay-in/pay-out events from AirTM. The Orchestrator verifies the request using the standard Svix headers (`svix-id`, `svix-timestamp`, `svix-signature`) and the `AIRTM_WEBHOOK_SECRET` environment variable, then processes the event (deduplicating repeats).
-
-### Trustless Work — `POST /api/v1/webhooks/trustless-work`
-
-Receives escrow lifecycle events from Trustless Work. The Orchestrator verifies the HMAC-SHA256 signature in the `x-tw-signature` header using the `TRUSTLESS_WEBHOOK_SECRET` environment variable, then updates the escrow and emits the corresponding domain events on the SSE stream.
-
-Both endpoints respond with `{ "status": "ok" }` and are covered by the `AIRTM_WEBHOOK_SECRET` / `TRUSTLESS_WEBHOOK_SECRET` environment variables documented in the [Configuration guide](/docs/configuration).
+Both receivers run inside your Orchestrator instance — no outbound configuration or public exposure beyond the provider's configured callback URL is required. See the [Self-Hosting guide](/docs/guide/self-hosting) for deployment, and the [Configuration guide](/docs/configuration) for the `AIRTM_WEBHOOK_SECRET` and `TRUSTLESS_WEBHOOK_SECRET` environment variables.
 
 ## Next Steps
 
-- [Events in the SDK](/docs/sdk/quick-start) — TypeScript SDK setup
-- [Escrow Flows](/docs/guide/escrow-flows) — Lifecycle events in practice
-- [Deposits Guide](/docs/guide/deposits) — Detecting deposits in real time
-- [Withdrawals Guide](/docs/guide/withdrawals) — Tracking withdrawals as they complete
+- [Events (SSE)](/docs/api-reference/events) — real-time event stream, reconnection, and the event catalog emitted by these inbound flows
+- [Configuration](/docs/configuration) — webhook secrets and provider settings
+- [Self-Hosting](/docs/guide/self-hosting) — deploy the Orchestrator and receive webhooks
+- [Escrow Flows](/docs/guide/escrow-flows) — lifecycle events driven by Trustless Work webhooks

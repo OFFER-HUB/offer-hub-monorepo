@@ -51,7 +51,7 @@ When `PAYMENT_PROVIDER=crypto`, withdrawals send USDC to any Stellar address.
 curl -X POST http://localhost:4000/api/v1/withdrawals \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440010" \
   -d '{
     "userId": "usr_abc123",
     "amount": "50.00",
@@ -113,7 +113,7 @@ When `PAYMENT_PROVIDER=airtm`, withdrawals go through AirTM's payment network.
 curl -X POST http://localhost:4000/api/v1/withdrawals \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440011" \
   -d '{
     "userId": "usr_abc123",
     "amount": "50.00",
@@ -301,7 +301,7 @@ events.on('withdrawal.failed', (data) => {
 
 ## Real-Time Notifications (SSE)
 
-There is no outbound webhook API — withdrawal events are delivered over the [SSE event stream](/docs/api-reference/webhooks) at `GET /api/v1/events`:
+There is no outbound webhook API — withdrawal events are delivered over the [SSE event stream](/docs/api-reference/events) at `GET /api/v1/events`:
 
 ```bash
 curl -N "http://localhost:4000/api/v1/events?types=withdrawal.completed,withdrawal.failed" \
@@ -342,11 +342,9 @@ events.on('withdrawal.failed', (data) => {
 
 ## Rate Limiting
 
-Withdrawals have stricter rate limits to prevent abuse:
-
-| Endpoint | Limit |
-|----------|-------|
-| `POST /withdrawals` | 5 per minute per user |
+Withdrawals use the same global rate limit as every other API endpoint: 100
+requests per 60-second window, keyed by API key or client IP. There is no
+additional withdrawal-specific limit.
 
 If exceeded:
 
@@ -354,9 +352,11 @@ If exceeded:
 {
   "error": {
     "code": "RATE_LIMITED",
-    "message": "Too many withdrawal requests",
+    "message": "Too many requests",
     "details": {
-      "retry_after": 60
+      "limit": 100,
+      "windowSeconds": 60,
+      "retryAfter": 60
     }
   }
 }

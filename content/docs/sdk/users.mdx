@@ -1,0 +1,190 @@
+---
+title: Users (sdk.users)
+description: Method-by-method TypeScript SDK reference for creating users and linking AirTM accounts with sdk.users.
+order: 2
+section: SDK
+---
+
+The `sdk.users` resource manages user identities in OFFER-HUB. In crypto mode, user creation automatically provisions a server-side custodial Stellar keypair with AES-256-GCM encrypted private keys. In AirTM mode, users can link their external AirTM accounts to enable fiat payins and payouts.
+
+<Callout type="note">
+  **Orchestrator Source References:**
+  - Controller: `apps/api/src/modules/users/users.controller.ts`
+  - DTOs: `CreateUserDto` (`apps/api/src/modules/users/dto/create-user.dto.ts`), `LinkAirtmDto` (`apps/api/src/modules/users/dto/link-airtm.dto.ts`)
+  - Service: `apps/api/src/modules/users/users.service.ts`
+  - Database Model: `User` in `packages/db/prisma/schema.prisma`
+</Callout>
+
+---
+
+## Resource Overview
+
+| Method | HTTP Route | Description |
+|---|---|---|
+| [`sdk.users.create()`](#create) | `POST /api/v1/users` | Registers a new user and provisions custodial Stellar wallet |
+| [`sdk.users.linkAirtm()`](#linkairtm) | `POST /api/v1/users/:id/airtm/link` | Links an external AirTM user ID to the OFFER-HUB user account |
+
+---
+
+## Methods
+
+### `create`
+
+Creates a new user record in OFFER-HUB. When running with `PAYMENT_PROVIDER=crypto` (default), the Orchestrator automatically generates a Stellar Ed25519 keypair, encrypts the private key with the master encryption key (`WALLET_ENCRYPTION_KEY`), and initializes the user's USDC trustline.
+
+#### Signature
+
+```typescript
+async create(params: CreateUserParams): Promise<User>
+```
+
+#### Parameters
+
+`params: CreateUserParams`
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `externalUserId` | `string` | **Yes** | Unique identifier from your marketplace database (mapped to `externalUserId` in Orchestrator DTO / `external_user_id` column) |
+| `email` | `string` | **Yes** | User email address for notifications and account correlation |
+| `type` | `'BUYER' \| 'SELLER' \| 'BOTH'` | **Yes** | Platform role for the user |
+| `metadata` | `Record<string, unknown>` | No | Optional arbitrary key-value metadata stored alongside the user |
+
+#### Return Type
+
+```typescript
+interface User {
+  id: string; // e.g. "usr_01HXYZ7890ABCDEF"
+  externalUserId: string; // e.g. "marketplace_user_123"
+  email: string;
+  type: 'BUYER' | 'SELLER' | 'BOTH';
+  status: 'ACTIVE' | 'SUSPENDED' | 'PENDING';
+  airtmUserId?: string | null;
+  createdAt: string; // ISO-8601 string
+  updatedAt: string; // ISO-8601 string
+}
+```
+
+#### Errors
+
+| Error Class | HTTP Status | Code | Cause |
+|---|---|---|---|
+| `ValidationError` | `400` | `VALIDATION_ERROR` | Missing `externalUserId`, invalid `email` format, or invalid `type` |
+| `ConflictError` | `409` | `USER_ALREADY_EXISTS` | A user with the same `externalUserId` or `email` already exists |
+| `OfferHubError` | `500` | `WALLET_CREATION_FAILED` | Internal cryptographic failure generating or encrypting the Stellar keypair |
+
+#### Example
+
+```typescript
+import { OfferHubSDK, ValidationError, ConflictError } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL!,
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+async function registerMarketplaceUser() {
+  try {
+    const user = await sdk.users.create({
+      externalUserId: 'usr_mkt_8912',
+      email: 'buyer@example.com',
+      type: 'BUYER',
+      metadata: {
+        registeredFrom: 'web-onboarding',
+        tier: 'premium',
+      },
+    });
+
+    console.log('Created OFFER-HUB user:', user.id);
+    console.log('Status:', user.status);
+    return user;
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      console.error('Invalid user payload:', error.details);
+    } else if (error instanceof ConflictError) {
+      console.error('User already registered:', error.message);
+    } else {
+      console.error('Failed to create user:', error);
+    }
+  }
+}
+```
+
+---
+
+### `linkAirtm`
+
+Links a verified AirTM user identifier to an existing OFFER-HUB user account. Required before initiating AirTM top-ups or withdrawals when `PAYMENT_PROVIDER=airtm`.
+
+#### Signature
+
+```typescript
+async linkAirtm(userId: string, params: LinkAirtmParams): Promise<User>
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `userId` | `string` | **Yes** | Target OFFER-HUB user ID (e.g., `'usr_01HXYZ789'`) |
+| `params.airtmUserId` | `string` | **Yes** | External AirTM user identifier obtained via AirTM OAuth / verification flow |
+
+#### Return Type
+
+```typescript
+interface User {
+  id: string;
+  externalUserId: string;
+  email: string;
+  type: 'BUYER' | 'SELLER' | 'BOTH';
+  status: 'ACTIVE' | 'SUSPENDED' | 'PENDING';
+  airtmUserId: string; // Verified AirTM ID
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+#### Errors
+
+| Error Class | HTTP Status | Code | Cause |
+|---|---|---|---|
+| `NotFoundError` | `404` | `USER_NOT_FOUND` | No user found matching the provided `userId` |
+| `ValidationError` | `400` | `VALIDATION_ERROR` | Missing or malformed `airtmUserId` |
+| `ConflictError` | `409` | `AIRTM_USER_ALREADY_LINKED` | The specified `airtmUserId` is already linked to another OFFER-HUB user |
+| `OfferHubError` | `500` | `INTERNAL_ERROR` | Server-side database update failure |
+
+#### Example
+
+```typescript
+import { OfferHubSDK, NotFoundError } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL!,
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+async function linkAirtmAccount(userId: string, airtmUserId: string) {
+  try {
+    const updatedUser = await sdk.users.linkAirtm(userId, {
+      airtmUserId,
+    });
+
+    console.log(`User ${updatedUser.id} linked with AirTM ID: ${updatedUser.airtmUserId}`);
+    return updatedUser;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      console.error(`User ${userId} does not exist`);
+    } else {
+      console.error('Failed to link AirTM account:', error);
+    }
+  }
+}
+```
+
+---
+
+## Related Resources
+
+- [Balance Reference (`sdk.balance`)](/docs/sdk/balance) — Query and manage user funds
+- [Wallet Reference (`sdk.wallet`)](/docs/sdk/wallet) — Stellar addresses and transaction history
+- [Top-ups Reference (`sdk.topups`)](/docs/sdk/topups) — AirTM deposit workflows
+- [SDK Quick Start](/docs/sdk/quick-start) — SDK setup and configuration

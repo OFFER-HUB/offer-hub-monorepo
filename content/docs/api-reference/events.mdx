@@ -1,21 +1,27 @@
 ---
 title: Events
-description: Server-Sent Events (SSE) reference and complete domain event catalog for OFFER-HUB.
-order: 2
+description: Server-Sent Events (SSE) reference for OFFER-HUB — subscribe, filter, reconnect and replay, plus the complete domain event catalog with a payload example for every event type.
+order: 3
 section: API Reference
 ---
 
 OFFER-HUB delivers real-time domain events over Server-Sent Events (SSE). Connect your marketplace backend once and react to changes such as a credited balance, funded escrow, or resolved dispute without polling.
 
 <Callout type="note">
-  This is an outbound stream from the Orchestrator. OFFER-HUB does not send outbound webhooks to your application.
+  This is an outbound stream from the Orchestrator. OFFER-HUB does **not** send outbound webhooks to your application. The only inbound webhook endpoints that exist (`POST /api/v1/webhooks/airtm` and `POST /api/v1/webhooks/trustless-work`) are receivers used by external providers to notify your Orchestrator — see the [Inbound Webhooks](/docs/api-reference/webhooks) reference.
 </Callout>
 
 ## Subscribe to the event stream
 
 <Badge variant="success">GET</Badge> `/api/v1/events`
 
-The endpoint requires an API key accepted by the API key guard. Send the key in the `Authorization` header and request the SSE media type:
+Authenticate with a valid API key in the `Authorization` header:
+
+```
+Authorization: Bearer ohk_live_...
+```
+
+The route is protected by `ApiKeyGuard` only — no additional scope is required. `EventsController.streamEvents` in the Orchestrator (`apps/api/src/modules/events/events.controller.ts`) does not apply `ScopeGuard`, so any valid API key (or the master key) can connect.
 
 ```bash
 curl -N \
@@ -24,7 +30,11 @@ curl -N \
   "http://localhost:4000/api/v1/events"
 ```
 
-`-N` keeps curl from buffering the stream. The server also sends a `ping` event every 30 seconds to keep an idle connection alive.
+`-N` keeps curl from buffering the stream.
+
+### Marketplace isolation
+
+Events are scoped to the marketplace bound to your API key. The controller reads `apiKey.marketplaceId` and `SseService.getEventStream` drops every event whose `metadata.marketplaceId` does not match (`apps/api/src/modules/events/sse.service.ts`). Each marketplace only ever receives its own events — even with a replay request.
 
 ### Filter the stream
 
@@ -43,26 +53,26 @@ curl -N \
 | `since` | ISO 8601 timestamp | Replays buffered events after the timestamp when no `Last-Event-ID` header is supplied. |
 
 <Callout type="warning">
-  SSE filters use exact matches. `types=order.*` and `types=*` are not public SSE subscription patterns; use individual event types such as `order.created` and `order.closed`.
+  SSE filters use exact matches (`filters.types.includes(event.eventType)` against the values you send). `types=order.*` and `types=*` are not valid on the public stream — use individual event types such as `order.created` and `order.closed`. Wildcard patterns (`order.*`, `*`) exist only on the internal event bus.
 </Callout>
 
 ## Event envelope
 
-Every event is a `DomainEvent`. `payload` varies by `eventType`; the remaining fields use the same shape for every event.
+Every event is a `DomainEvent`. `payload` varies by `eventType`; the remaining fields use the same shape for every event (`apps/api/src/modules/events/types/domain-event.ts`).
 
 ```typescript
 interface DomainEvent<T = unknown> {
-  eventId: string;
-  eventType: string;
-  occurredAt: string;
-  aggregateId: string;
-  aggregateType: string;
-  payload: T;
+  eventId: string;           // "evt_..." — unique, for dedup
+  eventType: string;         // "order.escrow_funded" — from the catalog below
+  occurredAt: string;        // ISO 8601 timestamp
+  aggregateId: string;       // ID of the resource that produced the event
+  aggregateType: string;     // "Order", "TopUp", "Withdrawal", ...
+  payload: T;                // Event-specific data (see catalog below)
   metadata: {
-    correlationId?: string;
-    causationId?: string;
-    userId?: string;
-    marketplaceId?: string;
+    correlationId?: string;  // Request ID that triggered the event
+    causationId?: string;    // ID of the event that caused this one
+    userId?: string;         // User who triggered the action
+    marketplaceId?: string;  // Used for marketplace isolation
     [key: string]: unknown;
   };
 }
@@ -78,17 +88,28 @@ interface DomainEvent<T = unknown> {
 | `payload` | object | Data specific to the event type. |
 | `metadata` | object | Correlation, causation, user, marketplace, and any additional context. |
 
-On the wire, each SSE message uses the event’s timestamp as its SSE `id`, its `eventType` as the SSE event name, and the complete envelope as JSON data:
+On the wire, each SSE message uses the event's timestamp as its SSE `id`, its `eventType` as the SSE event name, and the complete envelope as JSON `data` (`apps/api/src/modules/events/events.controller.ts`):
 
 ```text
 id: 2026-02-18T17:37:12.000Z
 event: order.escrow_funded
-data: {"eventId":"evt_abc123","eventType":"order.escrow_funded","occurredAt":"2026-02-18T17:37:12.000Z","aggregateId":"ord_abc123","aggregateType":"Order","payload":{"orderId":"ord_abc123","escrowId":"esc_abc123","fundedAt":"2026-02-18T17:37:12.000Z"},"metadata":{}}
+data: {"eventId":"evt_abc123","eventType":"order.escrow_funded","occurredAt":"2026-02-18T17:37:12.000Z","aggregateId":"ord_abc123","aggregateType":"Order","payload":{"orderId":"ord_abc123","escrowId":"esc_abc123","trustlessContractId":"CTW...","amount":"100.00","fundedAt":"2026-02-18T17:37:12.000Z"},"metadata":{}}
 ```
+
+### Heartbeat
+
+The server sends a `ping` event every **30 seconds** (`interval(30000)` in `EventsController`) to keep an idle connection alive:
+
+```text
+event: ping
+data: {"ping":true,"timestamp":"2026-02-18T17:37:42.000Z"}
+```
+
+The ping has no `eventId` — ignore it rather than treating it as a domain event.
 
 ### Reconnect and replay
 
-The service buffers the latest 1,000 events in Redis for one hour. To replay events after a disconnect, send the previous SSE `id` in `Last-Event-ID`; this header takes precedence over `since`.
+Missed events are replayed from a Redis sorted set (`events:log`) scored by `occurredAt`, **capped at the last 1,000 events** (`SseService.MAX_EVENTS`, `apps/api/src/modules/events/sse.service.ts`). To resume after a disconnect, send the `id` of the last event you received in the standard `Last-Event-ID` header. This header takes precedence over the `since` query parameter:
 
 ```bash
 curl -N \
@@ -97,32 +118,116 @@ curl -N \
   "http://localhost:4000/api/v1/events"
 ```
 
+Replay is **exclusive** of the cursor timestamp (`SseService.getMissedEvents` opens the scan at `(<timestamp>`), so the event you already processed is not re-sent. While history is being replayed, live events are buffered at the connection and de-duplicated against the history by `eventId`, closing the gap between `Last-Event-ID` and reconnection (`ReplaySubject(100)` in `EventsController`).
+
 Treat the stream as at-least-once delivery: persist processed `eventId` values and ignore a duplicate before performing side effects.
+
+## Reconnection example
+
+A resilient subscriber reconnects on error, passes the last `eventId` back as `Last-Event-ID`, and ignores duplicates:
+
+```typescript
+import { EventSource } from 'eventsource';
+
+class EventSubscriber {
+  private url = 'http://localhost:4000/api/v1/events';
+  private lastEventId?: string;
+  private processed = new Set<string>(); // persist this in production
+
+  connect() {
+    const headers = { Authorization: 'Bearer ohk_live_...' };
+    if (this.lastEventId) {
+      (headers as Record<string, string>)['Last-Event-ID'] = this.lastEventId;
+    }
+
+    const es = new EventSource(this.url, { headers });
+
+    es.onmessage = (message) => {
+      if (message.lastEventId) this.lastEventId = message.lastEventId;
+      const event = JSON.parse(message.data);
+      if (this.processed.has(event.eventId)) return; // already handled
+      this.processed.add(event.eventId);
+      this.handle(event);
+    };
+
+    es.onerror = () => {
+      // EventSource auto-reconnects; the next connection replays from lastEventId
+    };
+  }
+}
+```
+
+### Using the SDK
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+const events = sdk.events.subscribe();
+
+events.on('order.escrow_funded', (data) => {
+  console.log('Escrow funded:', data);
+});
+
+events.on('withdrawal.completed', (data) => {
+  console.log('Withdrawal completed:', data);
+});
+```
+
+### Using EventSource in the browser
+
+The native browser `EventSource` cannot set an `Authorization` header, so connect through your backend or another credential-safe proxy:
+
+```typescript
+const events = new EventSource('/api/v1/events'); // proxied by your backend
+
+events.addEventListener('order.escrow_funded', (message) => {
+  const event = JSON.parse(message.data);
+  console.log(event.eventType, event.payload);
+});
+```
 
 ## Event catalog
 
-The catalog below is derived from `apps/api/src/modules/events/event-catalog.ts` in the Orchestrator repository. Payload properties are the contract documented alongside each catalog entry.
+The catalog below is derived from the Orchestrator's `apps/api/src/modules/events/event-catalog.ts` (event names) and `apps/api/src/modules/events/types/*-events.ts` (payload contracts). There are currently **no `wallet.*` events** in the catalog — wallet activity that changes available funds is represented by the balance events below. Optional fields are suffixed with `?`.
 
 ### User events
 
 | Event | Payload |
 | --- | --- |
-| `user.created` | `{ userId, externalUserId, type }` |
+| `user.created` | `{ userId, externalUserId, email?, type, status }` |
 | `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
-| `user.stellar_linked` | `{ userId, stellarAddress }` |
+| `user.stellar_linked` | `{ userId, stellarAddress, linkedAt }` |
 
-### Wallet events
-
-There are currently no `wallet.*` entries in the Orchestrator event catalog. Wallet activity that changes available funds is represented by the balance events below.
+```json
+{
+  "user.created": { "userId": "usr_abc123", "externalUserId": "buyer-001", "email": "buyer@example.com", "type": "BUYER", "status": "ACTIVE" },
+  "user.airtm_linked": { "userId": "usr_abc123", "airtmUserId": "atm_456", "linkedAt": "2026-02-18T17:37:12.000Z" },
+  "user.stellar_linked": { "userId": "usr_abc123", "stellarAddress": "GBCG42WTVWPO4Q6N...", "linkedAt": "2026-02-18T17:37:12.000Z" }
+}
+```
 
 ### Balance events
 
 | Event | Payload |
 | --- | --- |
-| `balance.credited` | `{ userId, amount, source, newBalance }` |
-| `balance.debited` | `{ userId, amount, destination, newBalance }` |
-| `balance.reserved` | `{ userId, amount, orderId, reservedBalance }` |
-| `balance.released` | `{ userId, amount, orderId, availableBalance }` |
+| `balance.credited` | `{ userId, amount, currency, source, sourceId?, previousAvailableBalance, newAvailableBalance }` |
+| `balance.debited` | `{ userId, amount, currency, destination, destinationId?, previousAvailableBalance, newAvailableBalance }` |
+| `balance.reserved` | `{ userId, amount, currency, orderId, previousReservedBalance, newReservedBalance, previousAvailableBalance, newAvailableBalance }` |
+| `balance.released` | `{ userId, amount, currency, orderId, reason, previousReservedBalance, newReservedBalance, previousAvailableBalance, newAvailableBalance }` |
+
+```json
+{
+  "balance.credited": { "userId": "usr_abc123", "amount": "250.00", "currency": "USDC", "source": "release", "sourceId": "ord_abc123", "previousAvailableBalance": "1000.00", "newAvailableBalance": "1250.00" },
+  "balance.debited": { "userId": "usr_abc123", "amount": "100.00", "currency": "USDC", "destination": "withdrawal", "destinationId": "wd_abc123", "previousAvailableBalance": "1250.00", "newAvailableBalance": "1150.00" },
+  "balance.reserved": { "userId": "usr_abc123", "amount": "200.00", "currency": "USDC", "orderId": "ord_abc123", "previousReservedBalance": "0.00", "newReservedBalance": "200.00", "previousAvailableBalance": "1150.00", "newAvailableBalance": "950.00" },
+  "balance.released": { "userId": "usr_abc123", "amount": "200.00", "currency": "USDC", "orderId": "ord_abc123", "reason": "escrow_funded", "previousReservedBalance": "200.00", "newReservedBalance": "0.00", "previousAvailableBalance": "950.00", "newAvailableBalance": "1150.00" }
+}
+```
 
 ### Top-up events
 
@@ -131,79 +236,122 @@ There are currently no `wallet.*` entries in the Orchestrator event catalog. Wal
 | `topup.created` | `{ userId, amount, currency }` |
 | `topup.confirmation_required` | `{ topupId, confirmationUri }` |
 | `topup.processing` | `{ topupId, airtmPayinId }` |
-| `topup.succeeded` | `{ topupId, userId, amount, newBalance }` |
-| `topup.failed` | `{ topupId, reason, errorCode }` |
-| `topup.canceled` | `{ topupId, canceledBy }` |
+| `topup.succeeded` | `{ topupId, userId, amount, currency, newAvailableBalance, airtmPayinId? }` |
+| `topup.failed` | `{ topupId, userId, amount, reason, errorCode?, airtmPayinId? }` |
+| `topup.canceled` | `{ topupId, userId, amount, canceledBy, reason? }` |
+
+```json
+{
+  "topup.created": { "userId": "usr_abc123", "amount": "50.00", "currency": "USDC" },
+  "topup.confirmation_required": { "topupId": "topup_abc123", "confirmationUri": "https://airtm.example/confirm/abc123" },
+  "topup.processing": { "topupId": "topup_abc123", "airtmPayinId": "payin_789" },
+  "topup.succeeded": { "topupId": "topup_abc123", "userId": "usr_abc123", "amount": "50.00", "currency": "USDC", "newAvailableBalance": "1200.00", "airtmPayinId": "payin_789" },
+  "topup.failed": { "topupId": "topup_abc123", "userId": "usr_abc123", "amount": "50.00", "reason": "Payment rejected by AirTM", "errorCode": "PAYIN_REJECTED" },
+  "topup.canceled": { "topupId": "topup_abc123", "userId": "usr_abc123", "amount": "50.00", "canceledBy": "user", "reason": "user_requested" }
+}
+```
 
 ### Order events
 
 | Event | Payload |
 | --- | --- |
-| `order.created` | `{ orderId, buyerId, sellerId, amount, title }` |
-| `order.funds_reserved` | `{ orderId, amount, buyerId, reservedBalance }` |
-| `order.escrow_creating` | `{ orderId, escrowId }` |
-| `order.escrow_funding` | `{ orderId, escrowId, trustlessContractId }` |
-| `order.escrow_funded` | `{ orderId, escrowId, fundedAt }` |
-| `order.in_progress` | `{ orderId }` |
-| `order.release_requested` | `{ orderId, requestedBy }` |
-| `order.released` | `{ orderId, sellerId, amount, releasedAt }` |
-| `order.refund_requested` | `{ orderId, requestedBy }` |
-| `order.refunded` | `{ orderId, buyerId, amount, refundedAt }` |
-| `order.disputed` | `{ orderId, disputeId, openedBy, reason }` |
+| `order.created` | `{ orderId, buyerId, sellerId, amount, currency, title, description?, clientOrderRef? }` |
+| `order.funds_reserved` | `{ orderId, buyerId, amount, currency, reservedBalance, availableBalance }` |
+| `order.escrow_creating` | `{ orderId, escrowId, amount }` |
+| `order.escrow_funding` | `{ orderId, escrowId, trustlessContractId, amount }` |
+| `order.escrow_funded` | `{ orderId, escrowId, trustlessContractId, amount, fundedAt }` |
+| `order.in_progress` | `{ orderId, escrowId }` |
+| `order.release_requested` | `{ orderId, requestedBy, requestedAt }` |
+| `order.released` | `{ orderId, sellerId, amount, currency, releasedAt, newSellerBalance }` |
+| `order.refund_requested` | `{ orderId, requestedBy, requestedAt }` |
+| `order.refunded` | `{ orderId, buyerId, amount, currency, refundedAt, newBuyerBalance }` |
+| `order.disputed` | `{ orderId, disputeId, openedBy, reason, openedAt }` |
 | `order.closed` | `{ orderId, finalStatus, closedAt }` |
-| `order.canceled` | `{ orderId, canceledBy, reason }` |
+| `order.canceled` | `{ orderId, buyerId, canceledBy, reason?, canceledAt, fundsReleased }` |
+
+```json
+{
+  "order.created": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "sellerId": "usr_xyz789", "amount": "500.00", "currency": "USDC", "title": "Design landing page", "description": "3 pages, responsive", "clientOrderRef": "REQ-1001" },
+  "order.funds_reserved": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "amount": "500.00", "currency": "USDC", "reservedBalance": "500.00", "availableBalance": "700.00" },
+  "order.escrow_creating": { "orderId": "ord_abc123", "escrowId": "esc_abc123", "amount": "500.00" },
+  "order.escrow_funding": { "orderId": "ord_abc123", "escrowId": "esc_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00" },
+  "order.escrow_funded": { "orderId": "ord_abc123", "escrowId": "esc_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00", "fundedAt": "2026-02-18T17:37:12.000Z" },
+  "order.in_progress": { "orderId": "ord_abc123", "escrowId": "esc_abc123" },
+  "order.release_requested": { "orderId": "ord_abc123", "requestedBy": "usr_xyz789", "requestedAt": "2026-02-19T10:00:00.000Z" },
+  "order.released": { "orderId": "ord_abc123", "sellerId": "usr_xyz789", "amount": "500.00", "currency": "USDC", "releasedAt": "2026-02-19T12:00:00.000Z", "newSellerBalance": "1500.00" },
+  "order.refund_requested": { "orderId": "ord_abc123", "requestedBy": "usr_abc123", "requestedAt": "2026-02-19T10:00:00.000Z" },
+  "order.refunded": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "amount": "500.00", "currency": "USDC", "refundedAt": "2026-02-19T12:00:00.000Z", "newBuyerBalance": "1200.00" },
+  "order.disputed": { "orderId": "ord_abc123", "disputeId": "disp_abc123", "openedBy": "BUYER", "reason": "Deliverable not provided", "openedAt": "2026-02-19T10:00:00.000Z" },
+  "order.closed": { "orderId": "ord_abc123", "finalStatus": "CLOSED", "closedAt": "2026-02-19T12:05:00.000Z" },
+  "order.canceled": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "canceledBy": "usr_abc123", "reason": "Changed mind", "canceledAt": "2026-02-18T18:00:00.000Z", "fundsReleased": true }
+}
+```
 
 ### Escrow events
 
 | Event | Payload |
 | --- | --- |
-| `escrow.created` | `{ escrowId, orderId, amount }` |
-| `escrow.funding_started` | `{ escrowId, trustlessContractId }` |
-| `escrow.funded` | `{ escrowId, fundedAt, amount }` |
-| `escrow.milestone_completed` | `{ escrowId, milestoneRef, completedAt }` |
-| `escrow.released` | `{ escrowId, releasedAt, amount }` |
-| `escrow.refunded` | `{ escrowId, refundedAt, amount }` |
+| `escrow.created` | `{ escrowId, orderId, amount, currency }` |
+| `escrow.funding_started` | `{ escrowId, orderId, trustlessContractId, amount }` |
+| `escrow.funded` | `{ escrowId, orderId, trustlessContractId, amount, fundedAt }` |
+| `escrow.milestone_completed` | `{ escrowId, orderId, milestoneRef, milestoneTitle, amount, completedAt }` |
+| `escrow.released` | `{ escrowId, orderId, sellerId, amount, releasedAt }` |
+| `escrow.refunded` | `{ escrowId, orderId, buyerId, amount, refundedAt }` |
+
+```json
+{
+  "escrow.created": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "amount": "500.00", "currency": "USDC" },
+  "escrow.funding_started": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00" },
+  "escrow.funded": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00", "fundedAt": "2026-02-18T17:37:12.000Z" },
+  "escrow.milestone_completed": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "milestoneRef": "M1", "milestoneTitle": "Wireframes", "amount": "200.00", "completedAt": "2026-02-19T09:00:00.000Z" },
+  "escrow.released": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "sellerId": "usr_xyz789", "amount": "500.00", "releasedAt": "2026-02-19T12:00:00.000Z" },
+  "escrow.refunded": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "buyerId": "usr_abc123", "amount": "500.00", "refundedAt": "2026-02-19T12:00:00.000Z" }
+}
+```
 
 ### Dispute events
 
 | Event | Payload |
 | --- | --- |
-| `dispute.opened` | `{ disputeId, orderId, openedBy, reason }` |
-| `dispute.under_review` | `{ disputeId, reviewedBy }` |
-| `dispute.resolved` | `{ disputeId, decision, resolvedBy, resolvedAt }` |
+| `dispute.opened` | `{ disputeId, orderId, openedBy, reason, evidence?, openedAt }` |
+| `dispute.under_review` | `{ disputeId, orderId, reviewedBy?, reviewStartedAt }` |
+| `dispute.resolved` | `{ disputeId, orderId, decision, decisionNote?, resolvedBy, resolvedAt, buyerAmount?, sellerAmount? }` |
+
+```json
+{
+  "dispute.opened": { "disputeId": "disp_abc123", "orderId": "ord_abc123", "openedBy": "BUYER", "reason": "Deliverable not provided", "evidence": ["https://cdn.example.com/evidence/1.png"], "openedAt": "2026-02-19T10:00:00.000Z" },
+  "dispute.under_review": { "disputeId": "disp_abc123", "orderId": "ord_abc123", "reviewedBy": "usr_support01", "reviewStartedAt": "2026-02-19T11:00:00.000Z" },
+  "dispute.resolved": { "disputeId": "disp_abc123", "orderId": "ord_abc123", "decision": "SPLIT", "decisionNote": "50/50 split", "resolvedBy": "usr_support01", "resolvedAt": "2026-02-19T14:00:00.000Z", "buyerAmount": "250.00", "sellerAmount": "250.00" }
+}
+```
 
 ### Withdrawal events
 
 | Event | Payload |
 | --- | --- |
-| `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
-| `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, airtmPayoutId }` |
-| `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
-| `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
-| `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |
-| `withdrawal.canceled` | `{ withdrawalId, canceledBy, refundedToBalance }` |
+| `withdrawal.created` | `{ withdrawalId, userId, amount, currency, destinationType, destinationRef }` |
+| `withdrawal.committed` | `{ withdrawalId, userId, amount, currency, committedBalance, availableBalance }` |
+| `withdrawal.pending` | `{ withdrawalId, userId, airtmPayoutId, amount }` |
+| `withdrawal.pending_user_action` | `{ withdrawalId, userId, actionRequired, actionUrl? }` |
+| `withdrawal.completed` | `{ withdrawalId, userId, amount, currency, completedAt, airtmPayoutId? }` |
+| `withdrawal.failed` | `{ withdrawalId, userId, amount, reason, errorCode?, airtmPayoutId? }` |
+| `withdrawal.canceled` | `{ withdrawalId, userId, amount, canceledBy, reason?, refundedToBalance, newAvailableBalance? }` |
 
-## Wildcard subscriptions
-
-Wildcard patterns are available to code running inside the Orchestrator through `EventBusService`. A trailing `.*` matches all events in that domain, and `*` matches every event.
-
-```typescript
-eventBus.subscribe('order.*', (event) => {
-  // Handles order.created, order.funds_reserved, and every other order event.
-  processOrderEvent(event);
-});
-
-eventBus.subscribe('*', (event) => {
-  recordEvent(event);
-});
+```json
+{
+  "withdrawal.created": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "currency": "USDC", "destinationType": "crypto", "destinationRef": "GBCG42WTVWPO4Q6N..." },
+  "withdrawal.committed": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "currency": "USDC", "committedBalance": "80.00", "availableBalance": "620.00" },
+  "withdrawal.pending": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "airtmPayoutId": "payout_789", "amount": "80.00" },
+  "withdrawal.pending_user_action": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "actionRequired": "confirm_payout", "actionUrl": "https://airtm.example/confirm/789" },
+  "withdrawal.completed": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "currency": "USDC", "completedAt": "2026-02-19T15:00:00.000Z", "airtmPayoutId": "payout_789" },
+  "withdrawal.failed": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "reason": "Insufficient AirTM balance", "errorCode": "PAYOUT_FAILED" },
+  "withdrawal.canceled": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "canceledBy": "user", "reason": "user_requested", "refundedToBalance": true, "newAvailableBalance": "700.00" }
+}
 ```
-
-These patterns are for internal event-bus listeners. External integrations subscribe through `GET /api/v1/events` and should use exact `types` values as shown above.
 
 ## Handle named SSE events
 
-SSE messages are emitted with the catalog value as their event name. Register a listener for that name and parse the envelope from `event.data`:
+SSE messages are emitted with the catalog value as their event name (`type`). Register a listener for that name and parse the envelope from `event.data`:
 
 ```typescript
 eventSource.addEventListener('order.escrow_funded', (message) => {
@@ -212,10 +360,10 @@ eventSource.addEventListener('order.escrow_funded', (message) => {
 });
 ```
 
-For authenticated browser integrations, connect through your backend or another credential-safe proxy: the native browser `EventSource` API cannot set an `Authorization` header.
-
 ## Related documentation
 
 - [API Reference](/docs/api-reference/overview) — REST endpoints and authentication
+- [Inbound Webhooks](/docs/api-reference/webhooks) — AirTM and Trustless Work receivers
 - [Orders Guide](/docs/guide/orders) — Order lifecycle and order-event examples
 - [Deposits Guide](/docs/guide/deposits) — Balance credit events for deposits
+- [SDK Quick Start](/docs/sdk/quick-start) — TypeScript SDK setup

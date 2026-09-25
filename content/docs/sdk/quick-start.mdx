@@ -113,15 +113,15 @@ await sdk.orders.release(order.id, 'Work completed');
 
 The SDK provides access to all Orchestrator resources:
 
-| Resource | Description |
-|----------|-------------|
-| `sdk.users` | Create and manage users |
-| `sdk.balance` | Check user balances |
-| `sdk.orders` | Create and manage orders, escrows, and resolutions |
-| `sdk.disputes` | Manage disputes |
-| `sdk.wallet` | Wallet operations (deposit addresses) |
-| `sdk.withdrawals` | Create withdrawals |
-| `sdk.topups` | Top-up operations (AirTM mode) |
+| Resource | Description | Reference |
+|----------|-------------|-----------|
+| `sdk.users` | Create and manage users | [Users Reference](/docs/sdk/users) |
+| `sdk.balance` | Check, reserve, release, and reconcile balances | [Balance Reference](/docs/sdk/balance) |
+| `sdk.orders` | Create and manage orders, escrows, and resolutions | [Orders Guide](/docs/guide/orders) |
+| `sdk.disputes` | Manage disputes | [Disputes Guide](/docs/guide/disputes) |
+| `sdk.wallet` | Wallet operations and deposit addresses | [Wallet Reference](/docs/sdk/wallet) |
+| `sdk.withdrawals` | Create withdrawals | [Withdrawals Guide](/docs/guide/withdrawals) |
+| `sdk.topups` | Top-up operations (AirTM mode) | [Top-ups Reference](/docs/sdk/topups) |
 
 ## Idempotency
 
@@ -129,18 +129,24 @@ For safe retries, use idempotency keys:
 
 ```typescript
 // Create SDK instance with idempotency key
-const idempotentSdk = sdk.withIdempotencyKey('unique-operation-key');
+const idempotentSdk = sdk.withIdempotencyKey(
+  '550e8400-e29b-41d4-a716-446655440000'
+);
 
 // This request can be safely retried
 const order = await idempotentSdk.orders.create({
-  buyerId: 'usr_buyer',
-  sellerId: 'usr_seller',
+  buyer_id: 'usr_buyer',
+  seller_id: 'usr_seller',
   amount: '100.00',
   title: 'Service'
 });
 ```
 
 If you retry with the same idempotency key, you get the same response without creating a duplicate.
+The key must be a UUID v4. It is optional, applies to `POST`, `PUT`, and
+`PATCH` requests, and is scoped to the API key and request body. A replayed
+response includes `Idempotency-Replay: true`; a different body with the same
+key returns `409 IDEMPOTENCY_KEY_REUSED`.
 
 ## Error Handling
 
@@ -197,8 +203,9 @@ async function processOrder(user: User): Promise<Order> {
 
 ## Next Steps
 
-- [Orders SDK Reference](/docs/sdk/orders) - `sdk.orders` method-by-method reference
-- [Disputes SDK Reference](/docs/sdk/disputes) - `sdk.disputes` method-by-method reference
-- [Withdrawals SDK Reference](/docs/sdk/withdrawals) - `sdk.withdrawals` method-by-method reference
+- [Users Reference](/docs/sdk/users) - User creation and AirTM linking (`sdk.users`)
+- [Balance Reference](/docs/sdk/balance) - 9 balance management methods (`sdk.balance`)
+- [Wallet Reference](/docs/sdk/wallet) - Stellar wallet and deposit addresses (`sdk.wallet`)
+- [Top-ups Reference](/docs/sdk/topups) - AirTM deposit workflows (`sdk.topups`)
 - [Quick Start Guide](/docs/guide/quick-start) - Full integration example
 - [API Reference](/docs/api-reference/overview) - REST API documentation

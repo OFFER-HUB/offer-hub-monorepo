@@ -848,7 +848,9 @@ async function safeCreateOrder(buyerId: string, sellerId: string, amount: string
 
 ```typescript
 // Attach a stable, deterministic key to each state-changing operation
-const idempotentSdk = sdk.withIdempotencyKey(`fund-${orderId}-v1`);
+const idempotentSdk = sdk.withIdempotencyKey(
+  '550e8400-e29b-41d4-a716-446655440005'
+);
 
 // Safe to retry — same key returns the cached result
  await idempotentSdk.orders.fundEscrow(orderId);

@@ -82,10 +82,10 @@ The buyer places an order. Funds move from `available` to `reserved` in the inte
 
 ```
 const order = await client.orders.create({
-  buyerId: "usr_123",
-  sellerId: "usr_456",
+  buyer_id: "usr_123",
+  seller_id: "usr_456",
   amount: "75.00",
-  idempotencyKey: "order_abc_001",
+  idempotency_key: "550e8400-e29b-41d4-a716-446655440004",
 })
 ```
 
@@ -181,7 +181,7 @@ const response = await fetch("/api/orders", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "Idempotency-Key": "order_abc_001",
+    "Idempotency-Key": "550e8400-e29b-41d4-a716-446655440004",
   },
   body: JSON.stringify(orderPayload),
 })

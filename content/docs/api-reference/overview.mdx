@@ -44,17 +44,16 @@ Response:
 
 ```json
 {
-  "data": {
-    "id": "key_abc123",
-    "key": "ohk_live_xxxxxxxxxxxx",
-    "name": "My Marketplace",
-    "scopes": ["read", "write"]
-  }
+  "id": "key_abc123",
+  "api_key": "ohk_live_xxxxxxxxxxxx",
+  "name": "My Marketplace",
+  "scopes": ["read", "write"],
+  "created_at": "2026-01-12T10:00:00.000Z"
 }
 ```
 
 <Callout type="danger">
-  Save the `key` value immediately - it's only shown once!
+  Save the `api_key` value immediately - it's only shown once!
 </Callout>
 
 ### API Key Scopes
@@ -72,8 +71,8 @@ Response:
 | Header | Required | Description |
 |--------|----------|-------------|
 | `Authorization` | Yes | `Bearer {api_key}` |
-| `Content-Type` | Yes (POST/PUT) | `application/json` |
-| `Idempotency-Key` | Conditional | UUID for state-changing POSTs |
+| `Content-Type` | Yes (POST/PUT/PATCH) | `application/json` |
+| `Idempotency-Key` | Optional | UUID v4 for POST, PUT, and PATCH requests |
 | `X-Request-ID` | No | UUID for correlation/debugging |
 
 ### Response Headers
@@ -271,7 +270,7 @@ Returns a deposit address for the user to fund their account.
 
 ## Real-Time Events
 
-The Orchestrator receives inbound webhooks from external providers (Airtm, Trustless Work) to process payment and escrow lifecycle events. See the [Webhooks documentation](/docs/api-reference/webhooks) for full payload structures, signature verification, and retry logic.
+Subscribers consume real-time domain events over the [SSE event stream](/docs/api-reference/events) at `GET /api/v1/events`. Separately, the Orchestrator receives inbound webhooks from external providers (Airtm, Trustless Work) to process payment and escrow lifecycle events — see the [Inbound Webhooks](/docs/api-reference/webhooks) reference for signature verification and deduplication behavior.
 
 ---
 
@@ -357,7 +356,14 @@ GET /orders?status=IN_PROGRESS&buyer_id=usr_abc&created_after=2026-01-01
 
 ## Idempotency
 
-All state-changing POSTs accept `Idempotency-Key` to prevent duplicate operations:
+`Idempotency-Key` is optional and is processed on `POST`, `PUT`, and `PATCH`
+requests. When supplied, it must be a UUID v4 and is scoped to the API key and
+request body. The guard and response lifecycle are implemented in the
+[orchestrator `IdempotencyGuard`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/idempotency.guard.ts)
+and
+[`IdempotencyInterceptor`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/interceptors/idempotency.interceptor.ts).
+
+Use a real UUID v4 for every request key:
 
 ```http
 POST /orders
@@ -369,41 +375,68 @@ Content-Type: application/json
 
 ### Behavior
 
-1. **First request**: Processed normally
-2. **Repeated request** (same key): Returns original response
-3. **Different body + same key**: Returns `409 IDEMPOTENCY_KEY_REUSED`
+1. **Invalid key**: Returns `400 VALIDATION_ERROR`; the key must be a UUID v4.
+2. **First request**: Processed normally and stored for replay.
+3. **Repeated request with the same key and body**: Returns the original response
+   and sets `Idempotency-Replay: true`.
+4. **Different body with the same key**: Returns `409 IDEMPOTENCY_KEY_REUSED`.
+5. **Original request still processing**: Returns `409
+   IDEMPOTENCY_KEY_IN_PROGRESS`.
 
-### Idempotency Windows
+Example for a reused key:
 
-| Resource | Window |
-|----------|--------|
-| Top-ups | 24 hours |
-| Withdrawals | 24 hours |
-| Orders | 7 days |
-| Escrow ops | 7 days |
-| Disputes | Forever |
+```json
+{
+  "error": {
+    "code": "IDEMPOTENCY_KEY_REUSED",
+    "message": "This idempotency key was used with a different request body"
+  }
+}
+```
+
+Example while the original request is still running:
+
+```json
+{
+  "error": {
+    "code": "IDEMPOTENCY_KEY_IN_PROGRESS",
+    "message": "A request with this key is still being processed"
+  }
+}
+```
+
+Keys are retained for 24 hours. Reuse after that period is treated as a new
+request.
 
 ## Rate Limiting
 
-| Endpoint | Limit |
-|----------|-------|
-| General | 100 req/min per API key |
-| POST /topups | 10 req/min per user |
-| POST /withdrawals | 5 req/min per user |
-| GET /events | 1 SSE connection per user |
+The API applies one global limit of 100 requests per 60-second window. The
+counter is keyed by API key when authenticated, or by client IP when no API key
+is available. There are no additional per-endpoint limits documented here.
+The headers and error payload are implemented in the orchestrator
+[`RateLimitGuard`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/rate-limit.guard.ts).
+
+Every response includes:
+
+| Header | Meaning |
+|--------|---------|
+| `X-RateLimit-Limit` | Maximum requests in the current window (`100`) |
+| `X-RateLimit-Remaining` | Requests remaining in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window expires |
 
 ### Response When Exceeded
 
 ```http
 HTTP/1.1 429 Too Many Requests
-Retry-After: 60
 
 {
   "error": {
     "code": "RATE_LIMITED",
     "message": "Too many requests",
     "details": {
-      "retry_after": 60
+      "limit": 100,
+      "windowSeconds": 60,
+      "retryAfter": 60
     }
   }
 }
@@ -558,6 +591,7 @@ The API uses path versioning:
 
 ## Next Steps
 
-- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) - SSE event stream and event catalog
+- [Events (SSE)](/docs/api-reference/events) - Real-time event stream and event catalog
+- [Inbound Webhooks](/docs/api-reference/webhooks) - AirTM and Trustless Work receivers
 - [Quick Start](/docs/guide/quick-start) - Your first API call
 - [SDK Guide](/docs/sdk/quick-start) - Use the TypeScript SDK
