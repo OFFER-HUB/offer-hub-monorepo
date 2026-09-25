@@ -14,7 +14,7 @@ export default function InteractiveExplorerPage() {
           >
             Interactive API Explorer
           </h1>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-theme-warning/10 text-theme-warning">
             Coming Soon
           </span>
         </div>
@@ -22,8 +22,8 @@ export default function InteractiveExplorerPage() {
           Browse endpoints, fill in parameters, and see mock request/response
           payloads — all without leaving the docs.
         </p>
-        <div className="mt-4 p-4 rounded-xl border border-amber-200 bg-amber-50">
-          <p className="text-sm text-amber-800">
+        <div className="mt-4 p-4 rounded-xl bg-theme-warning/10 shadow-neu-raised-sm">
+          <p className="text-sm text-content-primary">
             <strong>Preview Mode:</strong> This interactive explorer is currently under development.
             The endpoints shown below are for reference only. Full interactivity with live API testing
             is coming in a future release.

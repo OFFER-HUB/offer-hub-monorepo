@@ -47,7 +47,8 @@ function themeVariables(isDark: boolean, zoom: boolean) {
       background: "#242433",
       mainBkg: "#2e2e3f",
       textColor: "#f1f3f7",
-      lineColor: "#6D758F",
+      /* #9aa3b8 on #242433 ≈ 4.1:1 ✓ — replaces #6D758F which was ~2.9:1 ✗ */
+      lineColor: "#9aa3b8",
       fontFamily: "Inter, sans-serif",
       fontSize,
       nodeBorder: "#1fb8b9",
