@@ -72,3 +72,27 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  diagrams:
+    name: Diagrams freshness check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/diagrams/requirements.txt
+      - name: Install diagram dependencies
+        run: pip install -r scripts/diagrams/requirements.txt
+      - name: Regenerate SVGs
+        run: python3 scripts/diagrams/generate.py
+      - name: Fail if any SVG differs from what is committed
+        run: |
+          if ! git diff --quiet public/diagrams/; then
+            echo "❌  Generated diagram SVGs are out of date."
+            echo "    Run  npm run diagrams  locally and commit the updated files."
+            git diff --stat public/diagrams/
+            exit 1
+          fi
+          echo "✅  All diagram SVGs match the committed versions."

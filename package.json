@@ -19,7 +19,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "generate:openapi": "npx tsx scripts/generate-openapi.ts",
-    "docs:index": "npx tsx scripts/generate-docs-index.ts"
+    "docs:index": "npx tsx scripts/generate-docs-index.ts",
+    "diagrams": "pip3 install -r scripts/diagrams/requirements.txt -q && python3 scripts/diagrams/generate.py",
+    "diagrams:check": "python3 scripts/diagrams/generate.py --check"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
