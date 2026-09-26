@@ -19,6 +19,10 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run lint:classes
+      - name: Check Google Fonts connectivity
+        run: |
+          curl -sI --max-time 5 https://fonts.googleapis.com || echo "BLOCKED: fonts.googleapis.com unreachable"
+          curl -sI --max-time 5 https://fonts.gstatic.com || echo "BLOCKED: fonts.gstatic.com unreachable"
       - run: npm run build
       # Runs the suite and enforces the coverage thresholds in
       # vitest.config.ts - the job fails if coverage drops below them.
@@ -43,6 +47,10 @@ jobs:
       - run: npm ci
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
+      - name: Check Google Fonts connectivity
+        run: |
+          curl -sI --max-time 5 https://fonts.googleapis.com || echo "BLOCKED: fonts.googleapis.com unreachable"
+          curl -sI --max-time 5 https://fonts.gstatic.com || echo "BLOCKED: fonts.gstatic.com unreachable"
       - name: Build application
         run: npm run build
       - name: Run viewport regression harness

@@ -12,6 +12,50 @@ section: Internal
 
 This guide documents the OFFER-HUB design system, including colors, typography, and component styling for both light and dark modes.
 
+## API Schema Components
+
+Use `ParamTable` for request parameters and `ResponseSchema` for response fields. Both components use the theme tokens and keep wide tables inside a labelled, keyboard-focusable scroll region on small screens. Nested fields start expanded and can be collapsed; field metadata supports defaults, enums, nullable values, and deprecation notes.
+
+The example below is reviewed against the checked-in Orchestrator contract at `public/openapi.json`: the `/balances` operation (`get-user-balances`) and its response example. In the orchestrator source, keep the corresponding controller and DTO references alongside the contract when updating a schema page.
+
+<ParamTable
+  label="List transactions query parameters"
+  fields={[
+    { name: "page", type: "number", description: "Page number.", defaultValue: 1 },
+    { name: "limit", type: "number", description: "Results per page (maximum 100).", defaultValue: 20 },
+    { name: "currency", type: "string", description: "Filter by currency.", enum: ["USD", "XLM", "USDC"], nullable: true },
+  ]}
+/>
+
+<ResponseSchema
+  fields={[
+    { name: "code", type: "number", required: true, description: "HTTP-style response code." },
+    { name: "type", type: "string", required: true, description: "Response classification.", enum: ["success", "error"] },
+    { name: "ok", type: "boolean", required: true, description: "Whether the request succeeded." },
+    { name: "message", type: "string", required: true, description: "Human-readable result message." },
+    {
+      name: "data",
+      type: "object",
+      required: true,
+      description: "Payload returned by the balances controller.",
+      children: [
+        {
+          name: "balances",
+          type: "array",
+          required: true,
+          description: "Available and held balances grouped by currency.",
+          children: [
+            { name: "currency", type: "string", required: true, description: "Currency code." },
+            { name: "available", type: "number", required: true, description: "Spendable balance." },
+            { name: "held", type: "number", required: true, description: "Reserved balance." },
+          ],
+        },
+      ],
+    },
+  ]}
+  example={{ code: 200, type: "success", ok: true, message: "Balances retrieved", data: { balances: [{ currency: "USD", available: 1250, held: 200 }] } }}
+/>
+
 ## Color System
 
 OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically adapt when switching between light and dark modes.
