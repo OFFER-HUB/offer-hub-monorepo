@@ -144,7 +144,7 @@ These variables throw at startup or at first use if absent. The application will
 |----------|----------|---------|-------------|
 | `PAYMENT_PROVIDER` | No | `crypto` | Payment mode. Only `crypto` is implemented — `airtm` throws at startup (see [AirTM](#airtm-fiat-endpoints-optional) below) |
 <Callout type="warning">
-  **AirTM integration is not currently functional.** `PaymentProviderModule` throws an error if `PAYMENT_PROVIDER=airtm`. The `AirtmModule` and `AirtmConfig` are loaded unconditionally, which means `AIRTM_API_KEY` and `AIRTM_API_SECRET` are validated at startup regardless of `PAYMENT_PROVIDER`. If these are absent and AirTM is loaded, it throws. In practice: leave `PAYMENT_PROVIDER=crypto` (default) and these variables unset.
+  **AirTM integration is not currently functional.** `PaymentProviderModule` throws an error if `PAYMENT_PROVIDER=airtm`. The `AirtmModule` and `AirtmConfig` are loaded unconditionally, which means `AIRTM_API_KEY` and `AIRTM_API_SECRET` are validated at startup regardless of `PAYMENT_PROVIDER`. If these are absent and AirTM is loaded, it throws. In practice: leave `PAYMENT_PROVIDER=crypto` (default) and set `AIRTM_API_KEY` and `AIRTM_API_SECRET` — the API will not start without them.
 </Callout>
 
 | Variable | Required | Default | Effect | Source |
