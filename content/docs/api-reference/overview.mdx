@@ -57,6 +57,24 @@ Response:
 </Callout>
 
 ### API Key Scopes
+### Token Exchange Flow
+
+Every API key is exchanged for a short-lived bearer token before it can call scoped endpoints.
+
+\mermaid
+sequenceDiagram
+    accTitle: API key and token exchange
+    accDescr: A marketplace backend exchanges a long-lived API key for a short-lived bearer token, then uses that token to call the Orchestrator.
+    autonumber
+    participant App as Marketplace Backend
+    participant Auth as POST /auth/api-keys/{id}/token
+    participant API as Orchestrator API
+    App->>Auth: POST with master key + API key id
+    Auth-->>App: 200 { token, expires_at }
+    App->>API: GET /api/v1/orders (Bearer token)
+    API-->>App: 200 { data: [...] }
+\\n
+
 
 | Scope | Permissions |
 |-------|-------------|
