@@ -1,0 +1,336 @@
+---
+title: Orders SDK Reference
+description: Method-by-method reference for sdk.orders — the full order lifecycle from creation to escrow funding, milestones, release, and refund.
+order: 2
+section: SDK
+---
+
+`sdk.orders` manages the complete order lifecycle: creation, fund reservation, Stellar escrow creation and funding, milestone tracking, and financial resolution (release, refund, dispute). Every method maps 1:1 to a REST endpoint on the Orchestrator.
+
+<OrderStateMachineDiagram />
+
+## Order statuses
+
+Orders move through the states defined in the Orchestrator's `OrderStatus` enum:
+
+| Status | Meaning |
+|--------|---------|
+| `ORDER_CREATED` | Order created, no funds moved yet |
+| `FUNDS_RESERVED` | Buyer's available balance moved to reserved |
+| `ESCROW_CREATING` | Escrow contract being deployed on Stellar |
+| `ESCROW_FUNDING` | Escrow contract deployed, awaiting funding |
+| `ESCROW_FUNDED` | Escrow funded on-chain |
+| `IN_PROGRESS` | Work underway (set automatically after funding) |
+| `RELEASE_REQUESTED` | Release submitted to the escrow contract |
+| `RELEASED` | Funds released to the seller |
+| `REFUND_REQUESTED` | Refund submitted to the escrow contract |
+| `REFUNDED` | Funds returned to the buyer |
+| `DISPUTED` | A dispute is open on this order |
+| `CLOSED` | Terminal state after release or refund |
+
+<Callout type="note">
+  The TypeScript enum shipped inside the SDK package currently lists a small subset of these values. The Orchestrator API returns the values above — treat the list here as the source of truth. See `packages/shared/src/enums/order-status.enum.ts` in the orchestrator repo.
+</Callout>
+
+## Create an order
+
+`sdk.orders.create(data)` → `POST /orders`
+
+Creates a new order. No funds move at this point — the order starts in `ORDER_CREATED`.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `buyer_id` | `string` | Yes | Internal buyer user ID |
+| `seller_id` | `string` | Yes | Internal seller user ID |
+| `amount` | `string` | Yes | Decimal string with exactly 2 decimals (`"100.00"`) |
+| `title` | `string` | Yes | Human-readable order title |
+| `client_order_ref` | `string` | No | Your own reference for idempotent bookkeeping |
+| `currency` | `string` | No | Defaults to `"USD"` |
+| `description` | `string` | No | Free-form description |
+| `milestones` | `MilestoneInput[]` | No | Each `{ ref, description?, amount? }` |
+| `metadata` | `Record<string, any>` | No | Arbitrary JSON |
+
+```typescript
+const order = await sdk.orders.create({
+  buyer_id: 'usr_buyer123',
+  seller_id: 'usr_seller456',
+  amount: '100.00',
+  title: 'Website Development',
+  milestones: [
+    { ref: 'design', description: 'Design mockups', amount: '30.00' },
+    { ref: 'dev', description: 'Development', amount: '70.00' }
+  ]
+});
+```
+
+<Callout type="warning">
+  When milestones are provided, their amounts must sum exactly to the order amount. The Orchestrator rejects the request otherwise.
+</Callout>
+
+Possible errors:
+
+- `400` — buyer and seller are the same user (`INVALID_REQUEST`), amount format invalid (`INVALID_AMOUNT`), or milestone amounts do not sum to the order amount
+- `404` — buyer or seller user ID does not exist (`ORDER_NOT_FOUND`)
+
+## List orders
+
+`sdk.orders.list(params?)` → `GET /orders`
+
+Returns a cursor-paginated list of orders.
+
+| Param | Type | Notes |
+|-------|------|-------|
+| `buyer_id` | `string` | Filter by buyer |
+| `seller_id` | `string` | Filter by seller |
+| `status` | `OrderStatus` | Filter by status |
+| `limit` | `number` | Page size, default 20, capped at 100 |
+| `cursor` | `string` | `nextCursor` from the previous page |
+
+```typescript
+const result = await sdk.orders.list({ status: 'ESCROW_FUNDED', limit: 20 });
+// result.data, result.hasMore, result.nextCursor
+```
+
+If both `buyer_id` and `seller_id` are provided, orders where the user appears in **either** role are returned.
+
+Possible errors:
+
+- `400` — `status` is not a valid `OrderStatus` value (the controller ignores unknown status values instead of filtering)
+
+## Get an order
+
+`sdk.orders.get(orderId)` → `GET /orders/{orderId}`
+
+Returns the order with its `escrow` and `milestones` relations included.
+
+```typescript
+const order = await sdk.orders.get('ord_abc123');
+console.log(order.status, order.escrow?.status);
+```
+
+Possible errors:
+
+- `404` — order not found (`ORDER_NOT_FOUND`)
+
+## Reserve funds
+
+`sdk.orders.reserve(orderId)` → `POST /orders/{orderId}/reserve`
+
+Moves the order amount from the buyer's `available` balance to `reserved`.
+
+Preconditions:
+
+- Order must be in `ORDER_CREATED`
+
+Possible errors:
+
+- `400` — order is in any other state (`INVALID_STATE`)
+- `402` — buyer has insufficient available balance (`INSUFFICIENT_FUNDS`)
+- `404` — order not found
+
+## Cancel an order
+
+`sdk.orders.cancel(orderId, data?)` → `POST /orders/{orderId}/cancel`
+
+Cancels the order and closes it. If funds were already reserved, they are returned to the buyer's available balance. Takes an optional `{ reason?: string }`.
+
+Preconditions:
+
+- Order must be in `ORDER_CREATED` or `FUNDS_RESERVED` (the only cancellable states)
+
+```typescript
+await sdk.orders.cancel('ord_abc123', { reason: 'Buyer changed mind' });
+```
+
+Possible errors:
+
+- `400` — order is in a non-cancellable state (`INVALID_STATE`)
+- `404` — order not found
+
+## Create escrow
+
+`sdk.orders.createEscrow(orderId)` → `POST /orders/{orderId}/escrow`
+
+Deploys the Stellar escrow contract via Trustless Work. The buyer signs the deployment transaction with their invisible wallet.
+
+Preconditions:
+
+- Order must be in `FUNDS_RESERVED`
+- Order must not already have an escrow
+- Both buyer and seller must have active payment accounts with the configured payment provider
+
+On success the order moves to `ESCROW_FUNDING` (or stays in `ESCROW_CREATING` if the contract ID is not yet available). On failure the order rolls back to `FUNDS_RESERVED`.
+
+Possible errors:
+
+- `400` — invalid state transition or missing payment accounts (`INVALID_STATE`)
+- `404` — order not found
+- `409` — escrow already exists (`ESCROW_ALREADY_EXISTS`)
+- `502` — Trustless Work provider failure (`PROVIDER_ERROR`)
+
+## Fund the escrow
+
+`sdk.orders.fundEscrow(orderId)` → `POST /orders/{orderId}/escrow/fund`
+
+Moves funds from the buyer's `reserved` balance into the on-chain escrow contract. Multi-milestone orders use a multi-release escrow type; single-amount orders use single-release.
+
+Preconditions:
+
+- Order must be in `ESCROW_FUNDING`
+- Escrow must exist and be in `CREATED` status
+
+On success the escrow becomes `FUNDED` and the order transitions straight to `IN_PROGRESS` (Trustless Work has no webhooks, so the transition is made immediately after the funding transaction is submitted). On failure the reserved funds are rolled back and the order returns to `FUNDS_RESERVED`.
+
+Possible errors:
+
+- `400` — escrow funding failed (`ESCROW_FUNDING_FAILED`), invalid state, or escrow in wrong status (`INVALID_STATE`)
+- `404` — order not found
+
+## List milestones
+
+`sdk.orders.getMilestones(orderId)` → `GET /orders/{orderId}/milestones`
+
+Returns the order's milestones ordered by creation time.
+
+```typescript
+const milestones = await sdk.orders.getMilestones('ord_abc123');
+// [{ id, orderId, milestoneRef, title, amount, status, ... }]
+```
+
+Possible errors:
+
+- `404` — order not found
+
+## Complete a milestone
+
+`sdk.orders.completeMilestone(orderId, milestoneRef)` → `POST /orders/{orderId}/milestones/{milestoneRef}/complete`
+
+Marks a single milestone as `COMPLETED`.
+
+Preconditions:
+
+- Order must be in `IN_PROGRESS`
+- The milestone `ref` must exist on the order
+- The milestone must not already be completed
+
+```typescript
+const milestone = await sdk.orders.completeMilestone('ord_abc123', 'design');
+console.log(milestone.status); // COMPLETED
+```
+
+Possible errors:
+
+- `400` — order not in `IN_PROGRESS` or milestone already completed (`INVALID_STATE`)
+- `404` — order or milestone not found (`ORDER_NOT_FOUND` / `MILESTONE_NOT_FOUND`)
+
+## Release funds to the seller
+
+`sdk.orders.release(orderId, reason?)` → `POST /orders/{orderId}/resolution/release`
+
+Requests release of escrowed funds to the seller. Implemented by the resolution module, not the orders module.
+
+Preconditions (all enforced server-side):
+
+- Order has an escrow
+- Order must be in `IN_PROGRESS`
+- No active dispute on the order
+- If the order has milestones, **all** of them must be `COMPLETED`
+- Escrow must be in `FUNDED` status
+
+Under the hood the Orchestrator marks the escrow milestone completed (signed by the seller), approves it (signed by the buyer), and releases the escrow (signed by the buyer), then credits the seller's balance and closes the order. The returned order is in `CLOSED`.
+
+```typescript
+await sdk.orders.release('ord_abc123', 'Work completed');
+```
+
+Possible errors:
+
+- `400` — order in wrong state, missing escrow, incomplete milestones, or escrow not funded (`INVALID_STATE`)
+- `404` — order not found
+- `409` — active dispute blocks the release (`DISPUTE_ALREADY_OPEN`)
+
+## Refund the buyer
+
+`sdk.orders.refund(orderId, reason)` → `POST /orders/{orderId}/resolution/refund`
+
+Returns the escrowed funds to the buyer. The `reason` is **required**.
+
+Preconditions:
+
+- Order has an escrow
+- Order must be in `IN_PROGRESS`
+- No active dispute on the order
+- Escrow must be in `FUNDED` status
+
+The Orchestrator implements this against Trustless Work as a two-step dispute flow (dispute the escrow signed by the buyer, then resolve it with 100% to the buyer signed by the platform), then credits the buyer's balance and closes the order.
+
+```typescript
+await sdk.orders.refund('ord_abc123', 'Seller failed to deliver');
+```
+
+Possible errors:
+
+- `400` — order in wrong state, missing escrow, or escrow not funded (`INVALID_STATE`)
+- `404` — order not found
+- `409` — active dispute blocks the refund (`DISPUTE_ALREADY_OPEN`)
+
+## End-to-end example: order → escrow → release
+
+```typescript
+import { OfferHubSDK, InvalidTransitionError } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL!,
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+// 1. Create the order (starts in ORDER_CREATED)
+const order = await sdk.orders.create({
+  buyer_id: 'usr_buyer123',
+  seller_id: 'usr_seller456',
+  amount: '100.00',
+  title: 'Logo design',
+  milestones: [{ ref: 'design', amount: '100.00' }]
+});
+
+// 2. Reserve funds from the buyer's balance (FUNDS_RESERVED)
+await sdk.orders.reserve(order.id);
+
+// 3. Deploy the Stellar escrow contract (ESCROW_FUNDING)
+await sdk.orders.createEscrow(order.id);
+
+// 4. Fund the escrow — escrow FUNDED, order moves to IN_PROGRESS
+await sdk.orders.fundEscrow(order.id);
+
+// 5. Complete every milestone while IN_PROGRESS
+await sdk.orders.completeMilestone(order.id, 'design');
+
+// 6. Release funds to the seller; the returned order is CLOSED
+const settled = await sdk.orders.release(order.id, 'All milestones approved');
+console.log(settled.status); // CLOSED
+
+// Cancelling only works before escrow starts
+// await sdk.orders.cancel(order.id, { reason: 'changed mind' }); // must be ORDER_CREATED / FUNDS_RESERVED
+```
+
+<Callout type="tip">
+  Wrap state-changing calls in `try/catch` for `InvalidTransitionError` and `InsufficientFundsError` — both are normal business outcomes, not bugs. See [SDK Quick Start](/docs/sdk/quick-start) for the typed error classes.
+</Callout>
+
+## Sources
+
+All behavior on this page was verified against the orchestrator repository (`OFFER-HUB/OFFER-HUB`), not inferred:
+
+- SDK client: `packages/sdk/src/resources/orders.ts`
+- Controllers: `apps/api/src/modules/orders/orders.controller.ts`, `apps/api/src/modules/resolution/resolution.controller.ts`
+- Services: `apps/api/src/modules/orders/orders.service.ts`, `apps/api/src/modules/resolution/resolution.service.ts`
+- DTOs: `apps/api/src/modules/orders/dto/create-order.dto.ts`, `apps/api/src/modules/orders/dto/cancel-order.dto.ts`, `apps/api/src/modules/resolution/dto/request-release.dto.ts`, `apps/api/src/modules/resolution/dto/request-refund.dto.ts`
+- State machine and statuses: `packages/shared/src/enums/order-status.enum.ts`
+- Error codes: `packages/shared/src/constants/error-codes.ts`
+
+## Related pages
+
+- [Orders Guide](/docs/guide/orders) — lifecycle concepts and state machine narrative
+- [Escrow Flows](/docs/guide/escrow-flows) — escrow lifecycle deep dive
+- [Disputes SDK Reference](/docs/sdk/disputes) — `sdk.disputes` method reference
+- [API Reference](/docs/api-reference/overview) — raw REST endpoints
