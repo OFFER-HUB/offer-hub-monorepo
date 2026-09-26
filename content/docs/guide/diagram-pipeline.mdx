@@ -1,0 +1,241 @@
+---
+title: Diagram Pipeline
+description: Add and generate offline SVG diagrams using the Python + Graphviz pipeline. No client-side rendering, no layout shift.
+order: 12
+section: Internal
+---
+
+<Callout type="note">
+  This page is for OFFER-HUB contributors working on the documentation site. It documents the offline SVG diagram pipeline introduced in [ADR 0001](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/adr/0001-python-diagram-pipeline.md).
+</Callout>
+
+The diagram pipeline generates polished, design-system-themed SVG files at build time. Diagrams are committed to the repo and served as static assets — no JavaScript, no layout shift, no Mermaid runtime overhead for these offline diagrams.
+
+Existing `MermaidDiagram` components in `.mdx` files are **not affected**. The two approaches coexist: use the offline pipeline for architecture / flow diagrams you want to version-control as SVGs, and keep Mermaid for inline diagrams already in `.mdx` files.
+
+---
+
+## How it works
+
+```
+scripts/diagrams/
+├── helpers.py       # Design-system tokens, graph factory, save_svg()
+├── run.py           # Pipeline entry-point (npm run diagrams)
+├── requirements.txt # Pinned: graphviz==0.20.3
+└── payment-flow.py  # Sample: OFFER-HUB payment lifecycle
+```
+
+Running `npm run diagrams` imports every `*.py` file in `scripts/diagrams/` (except `helpers.py` and `run.py`), calls `save_svg()`, and writes the results to `public/diagrams/`. The generated SVGs embed a `<style>` block with CSS variables so they adapt automatically to the site's light and dark mode — no JavaScript required.
+
+The sample output:
+
+<img
+  src="/diagrams/payment-flow.svg"
+  alt="OFFER-HUB payment and escrow lifecycle diagram showing the flow from buyer top-up through Soroban escrow to freelancer payout"
+  className="w-full rounded-2xl shadow-neu-raised my-6"
+/>
+
+---
+
+## Prerequisites
+
+| Requirement | Version | Install |
+|-------------|---------|---------|
+| Python | ≥ 3.9 | [python.org](https://www.python.org) |
+| Graphviz C library | any | see below |
+| `graphviz` PyPI package | 0.20.3 | `pip install -r scripts/diagrams/requirements.txt` |
+
+Install the Graphviz C library for your OS:
+
+<CodeBlock language="bash">{`# macOS
+brew install graphviz
+
+# Ubuntu / Debian
+sudo apt-get install -y graphviz
+
+# Alpine (Docker / CI)
+apk add graphviz ttf-freefont`}</CodeBlock>
+
+Then install the Python package:
+
+<CommandLine>pip install -r scripts/diagrams/requirements.txt</CommandLine>
+
+---
+
+## Running the pipeline
+
+<CommandLine>npm run diagrams</CommandLine>
+
+This regenerates all SVGs in `public/diagrams/`. Run this whenever you add or modify a diagram source file, then commit both the `.py` source and the generated `.svg`.
+
+### CI staleness check
+
+<CommandLine>npm run diagrams:check</CommandLine>
+
+This command re-renders all diagrams into a temporary directory and compares them byte-for-byte against the committed SVGs. It exits with code `1` if any SVG is missing or out of date. The CI pipeline (`diagrams` job in `.github/workflows/ci.yml`) runs this on every push and PR.
+
+<Callout type="warning">
+  If the CI `Diagram SVG Staleness Check` job fails, run `npm run diagrams` locally and commit the updated SVGs.
+</Callout>
+
+---
+
+## Adding a new diagram
+
+### 1. Create a Python source file
+
+Create `scripts/diagrams/my-diagram.py` (use `kebab-case`):
+
+<CodeBlock language="python">{`"""
+my-diagram.py — Short description of what this diagram shows.
+
+Source: cite the controller / DTO / doc file this is based on.
+"""
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from helpers import color, make_graph, save_svg
+
+g = make_graph("my-diagram", label="My Diagram Title", rankdir="LR")
+
+# Add nodes
+g.node("A", "Step A\\n(detail)", fillcolor=color("bg_elevated"), color=color("primary"))
+g.node("B", "Step B\\n(detail)", fillcolor=color("bg_elevated"), color=color("accent"))
+g.node("C", "Step C\\n(done)",   fillcolor=color("bg_elevated"), color=color("success"))
+
+# Add edges
+g.edge("A", "B", label="triggers")
+g.edge("B", "C", label="completes")
+
+if __name__ == "__main__":
+    save_svg(g, "my-diagram")
+`}</CodeBlock>
+
+<Callout type="tip">
+  Pass `rankdir="TB"` for top-to-bottom layout (best for state machines) or `rankdir="LR"` for left-to-right (best for flows).
+</Callout>
+
+### 2. Use subgraphs (clusters) for logical groupings
+
+<CodeBlock language="python">{`with g.subgraph(name="cluster_orchestrator") as sub:
+    sub.attr(
+        label="Orchestrator",
+        style="filled,rounded",
+        fillcolor=color("bg_sunken"),
+        color=color("border"),
+    )
+    sub.node("Wallet", "Wallet\\nService")
+    sub.node("Order",  "Order\\nService")`}</CodeBlock>
+
+### 3. Generate the SVG
+
+<CommandLine>npm run diagrams</CommandLine>
+
+Check the output in `public/diagrams/my-diagram.svg`.
+
+### 4. Embed in an MDX page
+
+<CodeBlock language="mdx">{`<img
+  src="/diagrams/my-diagram.svg"
+  alt="Descriptive alt text for accessibility"
+  className="w-full rounded-2xl shadow-neu-raised my-6"
+/>`}</CodeBlock>
+
+### 5. Commit both files
+
+```bash
+git add scripts/diagrams/my-diagram.py public/diagrams/my-diagram.svg
+git commit -m "feat(diagrams): add my-diagram SVG"
+```
+
+<Callout type="note">
+  Always commit the generated SVG alongside the source. The CI staleness check will fail on PRs where the SVG is missing or stale.
+</Callout>
+
+---
+
+## Design rules
+
+The following rules apply to all diagrams in this pipeline:
+
+| Rule | Rationale |
+|------|-----------|
+| Use `color("token_name")` — never hardcode hex values | Tokens adapt to light/dark mode via injected CSS variables |
+| No coloured border lines (no `border-l-4` accent bars) | Consistent with the site's neumorphic design system |
+| No `width` / `height` attributes on SVG | `save_svg()` strips these so diagrams scale fluidly |
+| One `.py` file per diagram, one concern per file | Keeps the pipeline modular and reviewable |
+| Cite the source file / controller / doc the diagram depicts | Satisfies the "content reviewed against orchestrator repo" requirement |
+
+### Available colour tokens
+
+These correspond to the CSS variables defined in `src/app/globals.css`:
+
+| Token key | CSS variable | Usage |
+|-----------|-------------|-------|
+| `bg_base` | `--color-bg-base` | Background canvas |
+| `bg_elevated` | `--color-bg-elevated` | Node fill |
+| `bg_sunken` | `--color-bg-sunken` | Cluster / subgraph fill |
+| `text_primary` | `--color-text-primary` | Node / edge labels |
+| `text_secondary` | `--color-text-secondary` | Edge labels, captions |
+| `primary` | `--color-primary` | Primary node borders |
+| `accent` | `--color-accent` | Secondary node borders |
+| `success` | `--color-success` | "Done" / success states |
+| `warning` | `--color-warning` | Warning / dispute states |
+| `error` | `--color-error` | Error / refund states |
+| `border` | `--color-border` | Cluster borders |
+
+---
+
+## Sample diagram: payment lifecycle
+
+The `scripts/diagrams/payment-flow.py` file is the reference implementation. It depicts the full OFFER-HUB payment and escrow lifecycle, based on `docs/architecture/payment-flows.md` and `docs/guides/core-concepts.md`.
+
+Key structural choices in the sample:
+
+- Three `cluster_*` subgraphs: **Actors**, **Orchestrator**, **Stellar · Trustless Work**
+- Diamond node for the **Dispute** branch using `shape="diamond"` and `color=color("warning")`
+- Dashed edges (`style="dashed"`) for on-chain calls and dispute resolution paths
+- No hardcoded colours — every `fillcolor` and `color` attribute calls `color("token_name")`
+
+---
+
+## Troubleshooting
+
+### `FileNotFoundError: failed to execute 'dot'`
+
+The `graphviz` Python package is installed but the system `dot` binary is missing.
+
+<CodeBlock language="bash">{`# macOS
+brew install graphviz
+
+# Ubuntu / Debian
+sudo apt-get install -y graphviz
+
+# Alpine
+apk add graphviz ttf-freefont`}</CodeBlock>
+
+### `ModuleNotFoundError: No module named 'graphviz'`
+
+The Python package is not installed.
+
+<CommandLine>pip install -r scripts/diagrams/requirements.txt</CommandLine>
+
+### CI check fails: "out of date"
+
+Run the pipeline locally and commit the updated SVG:
+
+<CommandLine>npm run diagrams && git add public/diagrams/ && git commit -m "chore: regenerate diagrams"</CommandLine>
+
+### SVG looks wrong in dark mode
+
+Ensure the diagram source uses `color("token_name")` from `helpers.py` and does not hardcode any hex values. The injected `<style>` block overrides the fallback hex colours at render time using CSS variables.
+
+---
+
+## Next Steps
+
+- [ADR 0001 — Python Diagram Pipeline](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/adr/0001-python-diagram-pipeline.md) — Full rationale and tool comparison
+- [Internal Style Guide](/docs/guide/style-guide) — Colour tokens and Tailwind utilities
+- [Architecture Overview](/docs/guide/architecture) — System architecture reference
