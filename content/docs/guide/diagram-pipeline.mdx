@@ -72,10 +72,15 @@ This regenerates all SVGs in `public/diagrams/`. Run this whenever you add or mo
 
 <CommandLine>npm run diagrams:check</CommandLine>
 
-This command re-renders all diagrams into a temporary directory and compares them byte-for-byte against the committed SVGs. It exits with code `1` if any SVG is missing or out of date. The CI pipeline (`diagrams` job in `.github/workflows/ci.yml`) runs this on every push and PR.
+This command verifies two things:
+
+1. The Graphviz `dot` binary is installed (so the pipeline can actually run in CI).
+2. Every diagram source file in `scripts/diagrams/` has a corresponding committed SVG in `public/diagrams/`.
+
+It exits with code `1` if either condition fails. The CI pipeline (`diagrams` job in `.github/workflows/ci.yml`) runs this on every push and PR — after installing Graphviz.
 
 <Callout type="warning">
-  If the CI `Diagram SVG Staleness Check` job fails, run `npm run diagrams` locally and commit the updated SVGs.
+  If the CI `Diagram SVG Staleness Check` job fails because an SVG is missing, run `npm run diagrams` locally and commit the generated file.
 </Callout>
 
 ---
@@ -224,7 +229,7 @@ The Python package is not installed.
 
 ### CI check fails: "out of date"
 
-Run the pipeline locally and commit the updated SVG:
+An SVG is missing from `public/diagrams/`. Run the pipeline locally and commit the result:
 
 <CommandLine>npm run diagrams && git add public/diagrams/ && git commit -m "chore: regenerate diagrams"</CommandLine>
 

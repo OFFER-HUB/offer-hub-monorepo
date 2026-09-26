@@ -38,9 +38,14 @@ apk add graphviz ttf-freefont && pip install -r scripts/diagrams/requirements.tx
 # Generate (or regenerate) all SVGs into public/diagrams/
 npm run diagrams
 
-# CI staleness check — exits with code 1 if SVGs are out of date
+# CI staleness check — exits 1 if Graphviz not installed or any SVG is missing
 npm run diagrams:check
 ```
+
+The check verifies: (1) the `dot` binary is on PATH, and (2) every source
+file in `scripts/diagrams/` has a corresponding non-empty SVG committed in
+`public/diagrams/`. It does **not** byte-compare SVG content, so the check
+works reliably across different Graphviz versions.
 
 You can also run a single diagram directly:
 ```bash
