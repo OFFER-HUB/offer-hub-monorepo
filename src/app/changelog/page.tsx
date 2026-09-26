@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { buildPageMetadata } from "@/lib/seo";
+import { statusColors } from "@/lib/statusColors";
 import type { GitHubRelease } from "@/types/github";
 import { GITHUB_RELEASES_API_URL } from "@/constants/github";
 
@@ -86,20 +87,20 @@ function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): 
   if (release.draft) {
     return {
       badge: "Draft",
-      badgeColor: "bg-content-secondary/10 text-content-secondary",
+      badgeColor: statusColors.neutral.badge,
     };
   }
 
   if (release.prerelease) {
     return {
       badge: "Pre-release",
-      badgeColor: "bg-theme-warning/10 text-theme-warning",
+      badgeColor: statusColors.warning.badge,
     };
   }
 
   return {
     badge: "Release",
-    badgeColor: "bg-theme-success/10 text-theme-success",
+    badgeColor: statusColors.success.badge,
   };
 }
 
