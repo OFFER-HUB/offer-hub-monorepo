@@ -45,7 +45,7 @@ stateDiagram-v2
 ## Resource Overview
 ### Top-up Callback Sequence
 
-`mermaid
+```mermaid
 sequenceDiagram
     accTitle: AirTM top-up with inbound callback
     accDescr: User starts top-up, redirects to AirTM, completes payment, AirTM posts inbound webhook to Orchestrator, which credits balance and emits topup.succeeded over SSE.
@@ -64,7 +64,7 @@ sequenceDiagram
     Orchestrator->>Orchestrator: verify + credit balance
     Orchestrator-->>App: SSE topup.succeeded
 `
-
+```
 
 | Method | HTTP Route | Description |
 |---|---|---|
