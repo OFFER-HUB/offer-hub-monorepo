@@ -1,0 +1,7 @@
+# Python dependencies for the OFFER-HUB SVG diagram generation pipeline.
+# Pin exact versions so CI output is deterministic across machines.
+#
+# Install:  pip install -r scripts/diagrams/requirements.txt
+# Generate: npm run diagrams   (calls python3 scripts/diagrams/generate.py)
+
+drawsvg==2.4.0

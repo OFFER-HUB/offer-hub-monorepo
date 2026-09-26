@@ -65,6 +65,10 @@ For crawlers and assistants that don't speak MCP, the public docs site also serv
 - [Color Palette](./design/color-palette.md) - Chromatic blueprint and semantic colors
 - [Motion & Animation](./design/motion.md) - Animation standards and keyframes
 
+### Diagram Pipeline
+- [Diagram Pipeline Guide](./diagrams.md) - How to generate, update, and embed SVG diagrams offline
+- [ADR 0001 — Python SVG Pipeline](./adr/0001-python-svg-diagram-pipeline.md) - Tool-choice rationale
+
 ### Standards
 - [Naming Conventions](./standards/naming-conventions.md) - File, variable, and function naming rules
 - [API Contract](./standards/api-contract.md) - API response structure and error handling
@@ -103,6 +107,7 @@ The public-facing documentation is available in `/content/docs/` and rendered at
 - [Withdrawals](/content/docs/guide/withdrawals.mdx) - Withdrawing funds
 - [Self-Hosting](/content/docs/guide/self-hosting.mdx) - Docker deployment
 - [Multi-Currency](/content/docs/guide/multi-currency.mdx) - Currency support
+- [Diagram Pipeline](/content/docs/guide/diagrams.mdx) - Offline SVG diagram generation
 
 ### API Reference
 - [API Overview](/content/docs/api-reference/overview.mdx) - REST API basics

@@ -1,0 +1,198 @@
+---
+title: Diagram Pipeline
+description: How to generate, update, and embed architecture diagrams using the offline Python SVG pipeline.
+order: 10
+section: Guides
+---
+
+<Callout type="note">
+  This page covers the contributor-facing **pipeline** — how SVGs are generated
+  and kept in sync.  For the existing client-side Mermaid diagrams, see the
+  [`MermaidDiagram`](/docs/guide/architecture) component used inline in MDX files.
+</Callout>
+
+OFFER-HUB ships architectural diagrams as **pre-generated, committed SVG files**
+rather than rendering them client-side at runtime.  This gives faster page loads,
+pixel-consistent appearance across browsers, and Git-diffable artefacts that CI
+keeps in sync with their Python sources.
+
+> For the full design rationale see
+> [ADR 0001 — Python SVG Diagram Generation Pipeline](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/adr/0001-python-svg-diagram-pipeline.md).
+
+## Pipeline overview
+
+```
+scripts/diagrams/          ← Python source files
+  requirements.txt         ← pinned deps (drawsvg==2.4.0)
+  diagram_helper.py        ← shared palette + drawing helpers
+  system_architecture.py   ← one file per diagram
+  escrow_flow.py
+  generate.py              ← entry point
+
+public/diagrams/           ← generated SVG output (committed to Git)
+  system-architecture-light.svg
+  system-architecture-dark.svg
+  escrow-flow-light.svg
+  escrow-flow-dark.svg
+```
+
+Each diagram produces **two SVG files** — light and dark — by calling
+`draw_diagram(LIGHT)` and `draw_diagram(DARK)` with the shared `Palette`
+objects from `diagram_helper.py`.
+
+## Generating diagrams locally
+
+<CommandLine>npm run diagrams</CommandLine>
+
+This installs the Python dependencies and writes all SVGs to `public/diagrams/`.
+
+To check freshness without writing files (the same check CI runs):
+
+<CommandLine>npm run diagrams:check</CommandLine>
+
+## How to add a diagram
+
+### 1. Create the source file
+
+Add `scripts/diagrams/<kebab-case>.py`.  Use the following skeleton:
+
+```python
+"""
+my_diagram.py — generates public/diagrams/my-diagram-{light,dark}.svg
+Cite the source files this diagram documents.
+"""
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import drawsvg as draw
+from diagram_helper import (
+    DARK, LIGHT, Palette,
+    arrow, arrow_marker, label, make_drawing, neu_box, save_svg,
+)
+
+WIDTH, HEIGHT = 800, 400
+
+def draw_diagram(palette: Palette) -> draw.Drawing:
+    d = make_drawing(WIDTH, HEIGHT, palette, padding=24)
+    d.append(arrow_marker(palette))
+    # … build your diagram using palette tokens only …
+    return d
+
+if __name__ == "__main__":
+    for palette, suffix in [(LIGHT, "light"), (DARK, "dark")]:
+        dest = save_svg(draw_diagram(palette), "my-diagram", suffix)
+        print(f"  ✓  {dest.relative_to(Path.cwd())}")
+```
+
+### 2. Register it in generate.py
+
+```python
+# scripts/diagrams/generate.py  →  _register()
+from my_diagram import draw_diagram as my_diagram
+
+return [
+    ("system-architecture", sys_arch),
+    ("escrow-flow",         escrow_flow),
+    ("my-diagram",          my_diagram),   # ← add this
+]
+```
+
+### 3. Generate and commit the SVGs
+
+```bash
+npm run diagrams
+git add public/diagrams/
+git commit -m "feat(diagrams): add my-diagram SVGs"
+```
+
+<Callout type="warning">
+  CI fails if you push a changed source file without regenerating and committing
+  the updated SVGs.
+</Callout>
+
+### 4. Embed in MDX
+
+Use a plain `<img>` pair with a CSS-class theme switch, or the `StaticDiagram`
+helper (see [StaticDiagram component](#staticdiagram-component) below):
+
+```mdx
+<StaticDiagram
+  lightSrc="/diagrams/my-diagram-light.svg"
+  darkSrc="/diagrams/my-diagram-dark.svg"
+  alt="My diagram showing …"
+  caption="My Diagram"
+/>
+```
+
+## Design-token compliance
+
+All diagrams **must** use `Palette` fields — never hardcode hex values.
+The palette maps directly to the CSS custom-properties in `tailwind.config.ts`:
+
+| `Palette` field | CSS variable | Usage |
+|-----------------|-------------|-------|
+| `palette.bg_base` | `--color-bg-base` | Canvas background |
+| `palette.bg_elevated` | `--color-bg-elevated` | Box / card fill |
+| `palette.bg_sunken` | `--color-bg-sunken` | Inset section fill |
+| `palette.text_primary` | `--color-text-primary` | Main label text |
+| `palette.text_secondary` | `--color-text-secondary` | Secondary labels |
+| `palette.text_muted` | `--color-text-muted` | Captions / annotations |
+| `palette.primary` | `--color-primary` | Brand colour, arrows, titles |
+| `palette.border` | `--color-border` | Separator lines |
+| `palette.shadow_dark` | `--shadow-dark` | Neumorphic dark shadow |
+| `palette.shadow_light` | `--shadow-light` | Neumorphic light shadow |
+
+<Callout type="danger">
+  **No coloured borders.**  Do not apply a coloured `stroke` to box outlines.
+  The design system uses neumorphic shadows — not coloured borders — for
+  elevation.  See [`docs/design/neumorphism.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/design/neumorphism.md).
+</Callout>
+
+## Existing diagrams
+
+| Source file | Slug | Documents |
+|-------------|------|-----------|
+| `scripts/diagrams/system_architecture.py` | `system-architecture` | [`docs/architecture/overview.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/architecture/overview.md) · `backend/src/index.ts` |
+| `scripts/diagrams/escrow_flow.py` | `escrow-flow` | [Escrow Guide](/docs/guide/escrow) · `content/docs/guide/escrow.mdx` |
+
+## CI check
+
+The `diagrams` job in `.github/workflows/ci.yml`:
+
+1. Checks out the repo
+2. Installs Python 3.11 + `pip install -r scripts/diagrams/requirements.txt`
+3. Runs `python3 scripts/diagrams/generate.py`
+4. Fails with `git diff --stat public/diagrams/` if any SVG changed
+
+## Troubleshooting
+
+**`ModuleNotFoundError: No module named 'drawsvg'`**
+
+```bash
+pip3 install -r scripts/diagrams/requirements.txt
+```
+
+Or use `npm run diagrams`, which installs deps automatically.
+
+**CI fails — "Stale or missing diagram SVGs"**
+
+You changed a source file but did not regenerate the SVGs.
+
+```bash
+npm run diagrams && git add public/diagrams/ && git commit --amend --no-edit
+```
+
+**Arrow marker not visible**
+
+Use `arrow_marker(palette)` from `diagram_helper.py`.  The `drawsvg.Marker`
+constructor requires positional args `(minx, miny, maxx, maxy)` — the helper
+handles this correctly.
+
+## Related
+
+- [Architecture Overview](/docs/guide/architecture) — system diagram walkthrough
+- [Escrow Guide](/docs/guide/escrow) — escrow flow diagram walkthrough
+- [`docs/diagrams.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/diagrams.md) — engineering reference
+- [`docs/adr/0001-python-svg-diagram-pipeline.md`](https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/adr/0001-python-svg-diagram-pipeline.md) — design decision
