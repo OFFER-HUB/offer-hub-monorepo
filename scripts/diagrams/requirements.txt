@@ -1,0 +1,12 @@
+# Python diagram pipeline dependencies
+# Python >= 3.9 required
+#
+# System prerequisite (install once):
+#   macOS:  brew install graphviz
+#   Ubuntu: sudo apt-get install -y graphviz
+#   Alpine: apk add graphviz ttf-freefont
+#
+# Then install these packages:
+#   pip install -r scripts/diagrams/requirements.txt
+
+graphviz==0.20.3

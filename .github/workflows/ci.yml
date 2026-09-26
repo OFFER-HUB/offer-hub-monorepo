@@ -31,6 +31,24 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  diagrams:
+    name: Diagram SVG Staleness Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Graphviz system package
+        run: sudo apt-get install -y graphviz
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/diagrams/requirements.txt
+      - name: Install Python dependencies
+        run: pip install -r scripts/diagrams/requirements.txt
+      - name: Check SVGs are up to date
+        run: npm run diagrams:check
+
   e2e:
     name: Route-level a11y & keyboard-nav (Playwright)
     runs-on: ubuntu-latest

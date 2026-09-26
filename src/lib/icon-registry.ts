@@ -92,7 +92,7 @@ export function iconNameForDocsSlug(slug: string): IconName {
   if (s.includes("escrow") || s.includes("contract")) return "Shield";
   if (s.includes("sdk") || s.includes("tool")) return "Box";
   if (s.includes("config") || s.includes("setting")) return "Settings";
-  if (s.includes("flow") || s.includes("lifecycle")) return "Workflow";
+  if (s.includes("diagram") || s.includes("pipeline") || s.includes("flow") || s.includes("lifecycle")) return "Workflow";
   if (s.includes("helper") || s.includes("util")) return "Zap";
   if (s.includes("design") || s.includes("ui") || s.includes("view")) return "Layers";
   if (s.includes("network") || s.includes("stellar")) return "Compass";
