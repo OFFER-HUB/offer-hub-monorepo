@@ -22,6 +22,38 @@ Every order follows a strict state machine — the same canonical diagram used a
 </Callout>
 
 ## Creating an Order
+### Full Lifecycle Sequence
+
+`mermaid
+sequenceDiagram
+    accTitle: Order create, escrow fund, milestone, and release
+    accDescr: Buyer creates an order, reserves funds, platform deploys escrow, buyer funds it, seller completes milestones, buyer releases funds on-chain.
+    autonumber
+    participant Buyer
+    participant Orchestrator
+    participant TW as Trustless Work Contract
+    participant Stellar as Stellar Network
+    participant Seller
+    Buyer->>Orchestrator: POST /orders
+    Orchestrator-->>Buyer: 201 ORDER_CREATED
+    Buyer->>Orchestrator: POST /orders/{id}/reserve
+    Orchestrator-->>Buyer: 200 FUNDS_RESERVED
+    Buyer->>Orchestrator: POST /orders/{id}/escrow
+    Orchestrator->>Stellar: Deploy escrow contract
+    Orchestrator-->>Buyer: 200 ESCROW_CREATING
+    Buyer->>Orchestrator: POST /orders/{id}/escrow/fund
+    Orchestrator->>TW: transfer USDC
+    TW->>Stellar: submit
+    Orchestrator-->>Buyer: 200 IN_PROGRESS
+    Seller->>Orchestrator: POST /orders/{id}/milestones/design/complete
+    Orchestrator-->>Seller: 200 milestone COMPLETED
+    Buyer->>Orchestrator: POST /orders/{id}/resolution/release
+    Orchestrator->>TW: changeMilestoneStatus / approveMilestone / releaseFunds
+    TW->>Stellar: settle
+    Orchestrator->>Orchestrator: Credit seller balance
+    Orchestrator-->>Buyer: 200 CLOSED
+`
+
 
 ### Basic Order
 

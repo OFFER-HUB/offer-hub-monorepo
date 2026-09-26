@@ -55,6 +55,31 @@ REFUNDED  RELEASED
 | `CLOSED` | Order completed after resolution |
 
 ## Opening a Dispute
+### Dispute Resolution Sequence
+
+`mermaid
+sequenceDiagram
+    accTitle: Dispute open and resolve
+    accDescr: Buyer opens dispute, escrow frozen, platform reviews, resolves on-chain with release or refund.
+    autonumber
+    participant Buyer
+    participant Orchestrator
+    participant Support as Platform Support
+    participant TW as Trustless Work Contract
+    Buyer->>Orchestrator: POST /orders/{id}/resolution/dispute
+    Orchestrator->>TW: disputeEscrow (buyer signs)
+    Orchestrator-->>Buyer: 200 DISPUTED
+    Support->>Orchestrator: GET /disputes/{id}
+    alt FULL_RELEASE
+        Support->>Orchestrator: POST /disputes/{id}/resolve
+        Orchestrator->>TW: resolveDispute(100% seller)
+    else FULL_REFUND
+        Support->>Orchestrator: POST /disputes/{id}/resolve
+        Orchestrator->>TW: resolveDispute(100% buyer)
+    end
+    Orchestrator-->>Buyer: SSE order.released or order.refunded
+`
+
 
 Only the buyer can initiate a dispute on an `IN_PROGRESS` order:
 

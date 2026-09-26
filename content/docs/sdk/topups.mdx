@@ -43,6 +43,28 @@ stateDiagram-v2
 ---
 
 ## Resource Overview
+### Top-up Callback Sequence
+
+`mermaid
+sequenceDiagram
+    accTitle: AirTM top-up with inbound callback
+    accDescr: User starts top-up, redirects to AirTM, completes payment, AirTM posts inbound webhook to Orchestrator, which credits balance and emits topup.succeeded over SSE.
+    autonumber
+    participant App
+    participant Orchestrator
+    participant AirTM
+    participant User
+    App->>Orchestrator: POST /api/v1/topups
+    Orchestrator->>AirTM: create payin
+    AirTM-->>Orchestrator: confirmationUri
+    Orchestrator-->>App: 201 TOPUP_AWAITING_USER_CONFIRMATION
+    App->>User: redirect to confirmationUri
+    User->>AirTM: complete payment
+    AirTM-->>Orchestrator: POST /webhooks/airtm (Svix)
+    Orchestrator->>Orchestrator: verify + credit balance
+    Orchestrator-->>App: SSE topup.succeeded
+`
+
 
 | Method | HTTP Route | Description |
 |---|---|---|
