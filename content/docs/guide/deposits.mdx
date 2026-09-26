@@ -89,7 +89,9 @@ sequenceDiagram
 
 ## AirTM Deposits
 
-When `PAYMENT_PROVIDER=airtm`, users fund their accounts through AirTM's payment network.
+With AirTM credentials configured, users can fund their accounts through AirTM's payment network. AirTM is not selected through `PAYMENT_PROVIDER` — that variable must stay `crypto`.
+
+For the complete server-side flow — user linking, the create request, `confirmationUri`, statuses, and webhook delivery — see the [AirTM Provider Guide](/docs/guide/airtm).
 
 ### Step 1: Create Top-up Request
 

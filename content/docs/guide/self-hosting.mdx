@@ -1,7 +1,7 @@
 ---
 title: Self-Hosting
 description: Complete instructions for deploying OFFER-HUB Orchestrator on your own infrastructure using Docker.
-order: 24
+order: 25
 section: Guides
 ---
 
@@ -158,7 +158,7 @@ Create a `.env` file in the same directory as your `docker-compose.yml`.
 |----------|---------|-------------|
 | `PORT` | `4000` | HTTP server port |
 | `LOG_LEVEL` | `info` | Logging level: `debug`, `info`, `warn`, `error` |
-| `PAYMENT_PROVIDER` | `crypto` | Payment mode: `crypto` or `airtm` |
+| `PAYMENT_PROVIDER` | `crypto` | Payment mode for the `PaymentProvider` strategy. Only `crypto` is implemented — `airtm` throws at startup |
 | `STELLAR_NETWORK` | `testnet` | Stellar network: `testnet` or `mainnet` |
 | `STELLAR_USDC_ISSUER` | Testnet issuer | USDC asset issuer address |
 

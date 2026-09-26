@@ -1,0 +1,434 @@
+---
+title: AirTM Provider Guide
+description: How to enable the AirTM fiat provider in the OFFER-HUB Orchestrator — user linking, top-ups, withdrawals, callback redirects, and webhook verification.
+order: 20
+section: Guides
+---
+
+<Callout type="note">
+  This is the public API guide for the AirTM fiat provider. Every endpoint, DTO, status, and environment variable below is verified against the Orchestrator implementation in the [OFFER-HUB repository](https://github.com/OFFER-HUB/OFFER-HUB) (`apps/api/src/modules/topups`, `apps/api/src/modules/withdrawals`, `apps/api/src/modules/users`, `apps/api/src/modules/webhooks`, `apps/api/src/providers/airtm`).
+</Callout>
+
+<Callout type="warning">
+  AirTM is **not** selected through `PAYMENT_PROVIDER`. Setting `PAYMENT_PROVIDER=airtm` throws `AirTM PaymentProvider is not yet available in this version` at startup — `apps/api/src/providers/payment/payment-provider.module.ts` only wires up the crypto-native provider, and the `PaymentProvider` strategy covers the Stellar wallet path alone. Keep `PAYMENT_PROVIDER=crypto` (or leave it unset). The AirTM top-up, withdrawal and inbound webhook endpoints are enabled by the `AIRTM_*` credentials instead — see [Enabling AirTM](#enabling-airtm).
+</Callout>
+
+AirTM is a global payment network that lets your users add fiat balance (top-ups) and withdraw to their own bank accounts, mobile money, or crypto wallets. With AirTM credentials configured, the Orchestrator exposes these fiat endpoints alongside the Stellar/crypto paths — both are mounted at the same time, and escrow mechanics are identical either way.
+
+| Aspect | Stellar/crypto rail | AirTM fiat rail |
+|--------|----------------------|---------------|
+| Funding | USDC via Stellar | Bank, mobile money, cards, local methods |
+| Payouts | Stellar address | `bank`, `crypto`, `airtm_balance` |
+| KYC | None | Users must complete KYC on AirTM |
+| Speed | ~5 seconds | 1-24 hours (top-ups), 1-48h (payouts) |
+
+## Enabling AirTM
+
+`AirtmModule` is registered unconditionally in `apps/api/src/app.module.ts` and imported by `UsersModule`, `TopUpsModule`, `WithdrawalsModule` and `WebhooksModule`. Nothing switches it on or off — the endpoints `POST /users/:id/airtm/link`, `POST /topups`, `POST /withdrawals` and `POST /webhooks/airtm` are always mounted, and they start returning real data once `AIRTM_API_KEY` and `AIRTM_API_SECRET` are set.
+
+Two consequences worth knowing before you configure anything:
+
+- `AirtmConfig` (`apps/api/src/providers/airtm/airtm.config.ts`) validates on instantiation and throws `Missing required Airtm environment variables: AIRTM_API_KEY, AIRTM_API_SECRET` when the credentials are absent. Because the module is always imported, the API will not boot in `crypto` mode either without those two values.
+- `GET /api/v1/config` reports `features.airtm` as `true` only when `AIRTM_API_KEY` is set (`apps/api/src/modules/config/config.controller.ts`), and `GET /api/v1/health` reports the AirTM dependency as `degraded` with `Not configured` when it is not (`apps/api/src/modules/health/health.service.ts`). Use both to verify a deployment.
+
+## Prerequisites
+
+1. **Orchestrator at a version that ships the AirTM modules** — no provider flag to set, but `PAYMENT_PROVIDER` must stay `crypto`.
+2. **Enterprise AirTM account** — the AirTM Enterprise environment (API base `enterprise.airtm.io`), with API access granted.
+3. **API credentials** — `AIRTM_API_KEY` and `AIRTM_API_SECRET` from the AirTM dashboard. Both are required for the API to start.
+4. **Webhook signing secret** — a Svix secret (`whsec_...`) used to verify inbound webhooks. Generate one with `openssl rand -base64 24`.
+5. **Public base URL** — the `TOPUP_CALLBACK_BASE_URL`, plus your app's `TOPUP_SUCCESS_REDIRECT_URL` and `TOPUP_CANCEL_REDIRECT_URL` (configured in your `.env`).
+
+## Configuration
+
+Set the AirTM variables in your Orchestrator environment. Leave `PAYMENT_PROVIDER` on `crypto` — it is unrelated to the endpoints below:
+
+```env
+# Payment Provider — must stay crypto; `airtm` throws at startup
+PAYMENT_PROVIDER=crypto
+
+# AirTM
+AIRTM_ENV=sandbox                 # sandbox | production
+AIRTM_API_KEY=your-airtm-api-key
+AIRTM_API_SECRET=your-airtm-api-secret
+AIRTM_WEBHOOK_SECRET=whsec_...     # recommended; disables signature verification if unset
+
+# Top-up callback + redirect URLs
+TOPUP_CALLBACK_BASE_URL=http://localhost:3000/topups
+TOPUP_SUCCESS_REDIRECT_URL=http://localhost:3001/topups/success
+TOPUP_CANCEL_REDIRECT_URL=http://localhost:3001/topups/canceled
+```
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PAYMENT_PROVIDER` | No | `crypto` | Payment mode for the `PaymentProvider` strategy. Only `crypto` is implemented; `airtm` throws at startup |
+| `AIRTM_ENV` | No | `sandbox` | `sandbox` or `production`. Anything other than `production` resolves to the sandbox API |
+| `AIRTM_API_KEY` | Yes | — | AirTM enterprise API key. Required for the API to boot, in any mode |
+| `AIRTM_API_SECRET` | Yes | — | AirTM API secret. Required for the API to boot, in any mode |
+| `AIRTM_WEBHOOK_SECRET` | Recommended | — | Svix HMAC secret; if missing, placeholders, or under 20 characters, webhook signature verification is disabled |
+| `TOPUP_CALLBACK_BASE_URL` | No | `http://localhost:3000/topups` | Base URL used to build the user-facing AirTM confirmation/cancellation callback URI |
+| `TOPUP_SUCCESS_REDIRECT_URL` | No | `http://localhost:3001/topups/success` | Where users are redirected after a successful/processing top-up |
+| `TOPUP_CANCEL_REDIRECT_URL` | No | `http://localhost:3001/topups/canceled` | Where users are redirected after a canceled/failed top-up |
+
+<Callout type="danger">
+  If `AIRTM_ENV` is not set to the literal value `production`, the Orchestrator uses the **sandbox** API. A misspelled value is silently treated as sandbox.
+</Callout>
+
+### Environments and Base URLs
+
+| `AIRTM_ENV` | AirTM API base URL | Use |
+|-------------|--------------------|-----|
+| `sandbox` (default) | `https://sandbox-enterprise.airtm.io/api/v2` | Development and testing |
+| `production` | `https://enterprise.airtm.io/api/v2` | Live payments |
+
+The Orchestrator authenticates with AirTM using HTTP Basic Auth: `Authorization: Basic base64(AIRTM_API_KEY:AIRTM_API_SECRET)`.
+
+## Linking a User's AirTM Account
+
+Before a user can top up or withdraw, their internal OFFER-HUB user must be linked to an AirTM account. The Orchestrator verifies the user's email against AirTM (and checks that the account is active and KYC-verified), then stores the `airtmUserId` on the user record.
+
+<Badge variant="primary">POST</Badge> `/api/v1/users/:id/airtm/link` — requires `write` scope
+
+```bash
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/airtm/link \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com"
+  }'
+```
+
+Response — `200 OK`, the email must match the account registered in AirTM:
+
+```json
+{
+  "data": {
+    "userId": "usr_abc123",
+    "airtmUserId": "usr_airtm_123",
+    "airtmLinkedAt": "2026-02-25T12:00:00.000Z",
+    "eligible": true,
+    "email": "user@example.com"
+  }
+}
+```
+
+If the user is already linked, the same payload is returned with the existing linkage. Linking failures are surfaced as `400` or `422` with a failure reason:
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `USER_NOT_FOUND` | Email not registered in AirTM | Have the user create an AirTM account with that email |
+| `USER_INACTIVE` | AirTM account is inactive | Reactivate it on AirTM |
+| `USER_NOT_VERIFIED` | User has not completed KYC | Complete KYC on AirTM |
+| `AIRTM_USER_INVALID` | Generic eligibility failure | See details in the error payload |
+
+## Top-Ups (Pay-ins)
+
+Top-ups add fiat balance to a user's OFFER-HUB balance. The flow is asynchronous: you create a top-up, send the user to AirTM's hosted confirmation page, and the Orchestrator credits the balance when AirTM reports the payment as succeeded.
+
+### Create a Top-Up
+
+<Badge variant="primary">POST</Badge> `/api/v1/topups` — requires `write` scope, `201 Created`
+
+The acting user is taken from the authenticated API key — it is **not** passed in the body.
+
+```bash
+curl -X POST http://localhost:4000/api/v1/topups \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "100.00",
+    "currency": "USD",
+    "description": "Wallet funding"
+  }'
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `amount` | Yes | Decimal string with exactly 2 decimal places (e.g. `"100.00"`) |
+| `currency` | No | ISO 4217 code, defaults to `USD` |
+| `description` | No | Free-text description stored on the top-up |
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "top_xyz789",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "TOPUP_AWAITING_USER_CONFIRMATION",
+    "confirmationUri": "http://localhost:3000/topups/top_xyz789/callback?code=topup_abc123&status=confirmed",
+    "expiresAt": "2026-02-25T13:00:00.000Z",
+    "createdAt": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+Pre-flight checks fail with `422 Unprocessable Entity` when the user has no linked AirTM account (`AIRTM_USER_NOT_LINKED`) or is not eligible (`AIRTM_USER_INVALID`), and with `404` when the user does not exist.
+
+### Complete the Payment
+
+Redirect the user to `confirmationUri` (returned in the create response). On that page the user:
+
+1. Logs into AirTM (or creates an account with the linked email)
+2. Chooses a payment method (bank, mobile money, card, local method)
+3. Completes the payment
+
+The callback URI points at `GET /api/v1/topups/:id/callback` — a **public** endpoint (no auth) that refreshes the top-up status from AirTM and then redirects the browser:
+
+- Status `TOPUP_SUCCEEDED` or `TOPUP_PROCESSING` → redirect to `TOPUP_SUCCESS_REDIRECT_URL`
+- Anything else (including missing top-up) → redirect to `TOPUP_CANCEL_REDIRECT_URL`
+
+### Top-Up Status Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> TOPUP_CREATED
+    TOPUP_CREATED --> TOPUP_AWAITING_USER_CONFIRMATION: payin created
+    TOPUP_AWAITING_USER_CONFIRMATION --> TOPUP_PROCESSING: user confirms
+    TOPUP_AWAITING_USER_CONFIRMATION --> TOPUP_CANCELED: user cancels
+    TOPUP_PROCESSING --> TOPUP_SUCCEEDED: payment cleared
+    TOPUP_PROCESSING --> TOPUP_FAILED: payment failed
+    TOPUP_SUCCEEDED --> [*]
+    TOPUP_FAILED --> [*]
+    TOPUP_CANCELED --> [*]
+```
+
+| Status | Meaning |
+|--------|---------|
+| `TOPUP_CREATED` | Top-up record created locally |
+| `TOPUP_AWAITING_USER_CONFIRMATION` | Pay-in created in AirTM; user must complete payment |
+| `TOPUP_PROCESSING` | Payment in progress |
+| `TOPUP_SUCCEEDED` | Completed; **available balance is credited** |
+| `TOPUP_FAILED` | Payment failed |
+| `TOPUP_CANCELED` | Cancelled while awaiting confirmation |
+
+### Top-Up Endpoints
+
+| Endpoint | Scope | Description |
+|----------|-------|-------------|
+| <Badge variant="primary">POST</Badge> `/api/v1/topups` | write | Create a top-up, returns `confirmationUri` |
+| <Badge variant="default">GET</Badge> `/api/v1/topups` | read | List the acting user's top-ups (`limit`, `cursor`) |
+| <Badge variant="default">GET</Badge> `/api/v1/topups/:id` | read | Get one top-up |
+| <Badge variant="primary">POST</Badge> `/api/v1/topups/:id/refresh` | read | Re-sync status from AirTM (useful if a webhook was missed) |
+| <Badge variant="primary">POST</Badge> `/api/v1/topups/:id/cancel` | write | Cancel a top-up still in `TOPUP_AWAITING_USER_CONFIRMATION` |
+| <Badge variant="success">GET</Badge> `/api/v1/topups/:id/callback` | public | AirTM confirmation callback; redirects to success/cancel URL |
+
+The balance is credited either from the `payin.succeeded` webhook or from a `refresh`/`callback` that observes the transition to `TOPUP_SUCCEEDED`. The balance is never incremented by the create call.
+
+## Withdrawals (Payouts)
+
+Withdrawals move funds out of a user's OFFER-HUB balance to a destination AirTM supports. Withdrawals are created in **two steps** by default (create, then commit) — use `commit: true` for a trusted one-step flow.
+
+### Create a Withdrawal
+
+<Badge variant="primary">POST</Badge> `/api/v1/withdrawals` — requires `write` scope, `201 Created`
+
+Unlike top-ups, `userId` **is** passed in the body — this is a server-to-server API, and the acting user is explicit.
+
+```bash
+curl -X POST http://localhost:4000/api/v1/withdrawals \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "usr_abc123",
+    "amount": "50.00",
+    "currency": "USD",
+    "destinationType": "bank",
+    "destinationRef": "bank-acct-12345",
+    "commit": false
+  }'
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `userId` | Yes | Internal user ID performing the withdrawal |
+| `amount` | Yes | Decimal string with exactly 2 decimal places (e.g. `"50.00"`) |
+| `currency` | No | ISO 4217 code, defaults to `USD` |
+| `destinationType` | Yes | `bank`, `crypto`, or `airtm_balance` |
+| `destinationRef` | Yes | Destination reference (bank account ID, crypto address, AirTM identifier) |
+| `commit` | No | `false` (default): two-step flow; `true`: create and commit in one step |
+| `description` | No | Free-text description |
+
+For a non-`crypto` destination the Orchestrator reserves the funds immediately (available balance decreases, reserved increases), creates the AirTM payout, and stores `airtmPayoutId`. On confirmation the reserved amount is either sent out (`WITHDRAWAL_COMPLETED`) or refunded back to available (`WITHDRAWAL_FAILED` / `WITHDRAWAL_CANCELED`).
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "wth_abc456",
+    "amount": "50.00",
+    "currency": "USD",
+    "status": "WITHDRAWAL_CREATED",
+    "destinationType": "bank",
+    "committed": false,
+    "createdAt": "2026-02-25T12:00:00.000Z"
+  }
+}
+```
+
+With `destinationType: "crypto"` the withdrawal is executed synchronously over Stellar and completes immediately (`WITHDRAWAL_COMPLETED`), with no AirTM dependency. Creation fails with `422 INSUFFICIENT_FUNDS` when the available balance is too low, and with `422 AIRTM_USER_NOT_LINKED` / `AIRTM_USER_INVALID` when the user isn't set up on AirTM.
+
+### Commit a Withdrawal (Two-Step Flow)
+
+With `commit: false` (the default), the payout stays in `WITHDRAWAL_CREATED` until you commit it. Only a withdrawal in `WITHDRAWAL_CREATED` can be committed.
+
+<Badge variant="primary">POST</Badge> `/api/v1/withdrawals/:id/commit?userId=usr_abc123` — requires `write` scope
+
+```bash
+curl -X POST "http://localhost:4000/api/v1/withdrawals/wth_abc456/commit?userId=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+Committing from any other status returns `409 WITHDRAWAL_NOT_COMMITTABLE`.
+
+### Withdrawal Status Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> WITHDRAWAL_CREATED
+    WITHDRAWAL_CREATED --> WITHDRAWAL_CANCELED: canceled
+    WITHDRAWAL_CREATED --> WITHDRAWAL_COMMITTED: commit
+    WITHDRAWAL_COMMITTED --> WITHDRAWAL_PENDING
+    WITHDRAWAL_PENDING --> WITHDRAWAL_PENDING_USER_ACTION
+    WITHDRAWAL_PENDING --> WITHDRAWAL_COMPLETED: funds sent
+    WITHDRAWAL_PENDING --> WITHDRAWAL_FAILED
+    WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_PENDING
+    WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_FAILED
+    WITHDRAWAL_COMPLETED --> [*]
+    WITHDRAWAL_FAILED --> [*]
+    WITHDRAWAL_CANCELED --> [*]
+```
+
+| Status | Meaning |
+|--------|---------|
+| `WITHDRAWAL_CREATED` | Created locally, payout pending commit. Funds are **reserved** |
+| `WITHDRAWAL_COMMITTED` | Payout committed in AirTM |
+| `WITHDRAWAL_PENDING` | Being processed by AirTM |
+| `WITHDRAWAL_PENDING_USER_ACTION` | AirTM needs an action from the user (e.g. confirm destination) |
+| `WITHDRAWAL_COMPLETED` | Funds sent to the destination |
+| `WITHDRAWAL_FAILED` | Failed; **reserved amount refunded to available** |
+| `WITHDRAWAL_CANCELED` | Cancelled before commit; **reserved amount refunded to available** |
+
+### Withdrawal Endpoints
+
+| Endpoint | Scope | Description |
+|----------|-------|-------------|
+| <Badge variant="primary">POST</Badge> `/api/v1/withdrawals` | write | Create a withdrawal (`userId` in body) |
+| <Badge variant="default">GET</Badge> `/api/v1/withdrawals?userId=...` | read | List a user's withdrawals (`limit`, `cursor`) |
+| <Badge variant="default">GET</Badge> `/api/v1/withdrawals/:id?userId=...` | read | Get one withdrawal |
+| <Badge variant="primary">POST</Badge> `/api/v1/withdrawals/:id/commit?userId=...` | write | Commit a `WITHDRAWAL_CREATED` payout |
+| <Badge variant="primary">POST</Badge> `/api/v1/withdrawals/:id/refresh?userId=...` | read | Re-sync status from AirTM (useful if a webhook was missed) |
+
+## Webhook Verification
+
+AirTM notifies the Orchestrator of payment and payout lifecycle events by calling its **inbound** webhook receiver. You never call this endpoint — AirTM does. The Orchestrator verifies the signature, returns `200 OK` immediately, then processes the event asynchronously.
+
+<Badge variant="primary">POST</Badge> `/api/v1/webhooks/airtm` — `200 OK` always (even if processing fails, to prevent retries)
+
+The request must include the standard Svix headers and the **raw body** used to build the signature:
+
+| Header | Description |
+|--------|-------------|
+| `svix-id` | Unique event ID |
+| `svix-timestamp` | Unix timestamp of the event |
+| `svix-signature` | HMAC-SHA256 signature over the raw body |
+
+### Verification Flow
+
+1. The Orchestrator verifies the signature with the Svix `Webhook` class using `AIRTM_WEBHOOK_SECRET`. A mismatch throws a `401 WEBHOOK_SIGNATURE_INVALID`.
+2. It de-duplicates events via a unique `(provider, providerEventId)` constraint — repeats return `{ "status": "ok", "duplicate": true }` and are ignored.
+3. The event is recorded and processed:
+   - `payin.*` events update the matching top-up (by `airtmPayinId`) and credit the balance on `payin.succeeded`.
+   - `payout.*` events update the matching withdrawal (by `airtmPayoutId`) and refund the reserved balance on `payout.failed` / `payout.canceled`.
+4. The receiver responds `{ "status": "ok", "processed": true }`.
+
+Supported event types:
+
+| Top-ups | Withdrawals |
+|---------|-------------|
+| `payin.created` | `payout.created` |
+| `payin.awaiting_user_confirmation` | `payout.committed` |
+| `payin.processing` | `payout.pending` |
+| `payin.succeeded` | `payout.pending_user_action` |
+| `payin.failed` | `payout.completed` |
+| `payin.canceled` | `payout.failed` / `payout.canceled` |
+
+Sample payload (illustrative):
+
+```json
+{
+  "eventId": "evt_01J2Y...",
+  "eventType": "payin.succeeded",
+  "occurredAt": "2026-02-25T14:32:10.000Z",
+  "data": {
+    "id": "payin_abc123",
+    "code": "topup_xyz789",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "SUCCEEDED",
+    "reasonCode": null,
+    "reasonDescription": null
+  }
+}
+```
+
+<Callout type="warning">
+  `AIRTM_WEBHOOK_SECRET` must be a real Svix secret (at least 20 characters, not a placeholder). If it is missing or looks like a placeholder, verification is **disabled** and the receiver accepts events without checking signatures. That is fine for local development, but never ship a production deployment with it unset.
+</Callout>
+
+## Troubleshooting
+
+### Startup Failures
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `AirTM PaymentProvider is not yet available in this version` at boot | `PAYMENT_PROVIDER=airtm` | Set `PAYMENT_PROVIDER=crypto` or unset it — AirTM is not selectable through this variable |
+| `Missing required Airtm environment variables: AIRTM_API_KEY, AIRTM_API_SECRET` at boot | `AirtmConfig` validates on instantiation and `AirtmModule` is always imported | Set both variables, even in crypto mode. Verify with `GET /api/v1/config` that `features.airtm` is `true` |
+| AirTM dependency `degraded` with `Not configured` on `GET /api/v1/health` | `AIRTM_API_KEY` is unset | Expected before configuration; disappears once the key is present |
+| Every AirTM call returns `401`/`403` from the provider | Credentials are not Enterprise keys | Confirm the keys come from the AirTM Enterprise dashboard and match the `AIRTM_ENV` you selected |
+
+### Webhook Failures
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| `401 WEBHOOK_SIGNATURE_INVALID` | `AIRTM_WEBHOOK_SECRET` doesn't match the secret registered with AirTM | Re-register the secret in the AirTM dashboard and restart the Orchestrator |
+| `401 WEBHOOK_SIGNATURE_INVALID` + valid secret | Signature built from a non-raw body | Ensure the webhook delivery uses the exact raw body; don't modify or reformat the request before it reaches `/webhooks/airtm` |
+| Receiver accepts events but the startup log shows "verification skipped" | `AIRTM_WEBHOOK_SECRET` unset/short/placeholder | Set a real secret (e.g. `openssl rand -base64 24`) — see [Configuration](#configuration) |
+| Webhook returns `{ "processed": false }` | Top-up/withdrawal not found for the pay-in/payout ID | Verify the resource exists and that `airtmUserId` linkage is intact; check Orchestrator logs for `TopUp not found for payin` / `Withdrawal not found for payout` |
+| Webhook returns `{ "duplicate": true }` | AirTM retried the same event | Expected. Events are de-duplicated by `providerEventId`; no action needed |
+| Balance not credited after success | Webhook missed or processed before terminal state | Call `POST /api/v1/topups/:id/refresh` (or `POST /api/v1/withdrawals/:id/refresh`) to re-sync from AirTM |
+| `429` / `408` / `504` (or other `4xx`/`5xx`) from AirTM API during create | Provider returned an HTTP error | Check the `originalStatus` in the error details (see mapping below) |
+
+### AirTM Provider Error Mapping
+
+The Orchestrator maps AirTM HTTP failures to stable error codes and masks opaque IDs in paths:
+
+| AirTM status | Mapped error |
+|--------------|--------------|
+| `429` | `PROVIDER_RATE_LIMITED` |
+| `408` / `504` | `PROVIDER_TIMEOUT` |
+| Anything else | `PROVIDER_ERROR` |
+
+These surface under `details.provider = "AIRTM"` with the original `method`, masked `path`, and `originalStatus`.
+
+### Common API Errors
+
+| Error | HTTP | Cause | Solution |
+|-------|------|-------|----------|
+| `AIRTM_USER_NOT_LINKED` | 422 | User has no linked AirTM account | Call `POST /api/v1/users/:id/airtm/link` first |
+| `AIRTM_USER_INVALID` | 422 | User not active or KYC not verified | Fix the failure reason (`USER_NOT_FOUND` / `USER_INACTIVE` / `USER_NOT_VERIFIED`) |
+| `INSUFFICIENT_FUNDS` | 422 | Available balance below the withdrawal amount | Check `GET /api/v1/users/:id/balance` |
+| `INVALID_STATE` | 409 | Canceling a top-up not in `TOPUP_AWAITING_USER_CONFIRMATION` | Only cancel while awaiting confirmation |
+| `WITHDRAWAL_NOT_COMMITTABLE` | 409 | Committing a withdrawal not in `WITHDRAWAL_CREATED` | Only commit newly created withdrawals |
+| `USER_NOT_FOUND` / `TOPUP_NOT_FOUND` / `WITHDRAWAL_NOT_FOUND` | 404 | Resource doesn't exist or doesn't belong to the acting user | Verify IDs and the API key's user |
+
+## Next Steps
+
+- [Deposits Guide](/docs/guide/deposits) — Crypto vs AirTM top-ups at a glance
+- [Withdrawals Guide](/docs/guide/withdrawals) — Crypto vs AirTM payout flows
+- [Inbound Webhooks](/docs/api-reference/webhooks) — AirTM and Trustless Work receivers, signature verification
+- [Events](/docs/api-reference/events) — SSE stream and the full domain event catalog
+- [Configuration](/docs/configuration) — All Orchestrator environment variables
+- [Data Model](/docs/guide/data-model) — `TopUp`, `Withdrawal`, and `WebhookEvent` schemas
