@@ -34,6 +34,10 @@ flowchart TB
     B_Orch -.->|Isolated| B_DB[(PostgreSQL B)]
 ```
 
+Each marketplace owns an isolated Orchestrator and database.
+
+This deployment boundary is verified against the Orchestrator's `apps/api/src/main.ts` bootstrap and `packages/database/prisma/schema.prisma`; each installation supplies its own service configuration and database connection.
+
 ## Next Steps
 
 - [Quick Start](/docs/guide/quick-start)

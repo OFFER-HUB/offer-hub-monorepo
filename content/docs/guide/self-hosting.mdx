@@ -47,6 +47,10 @@ flowchart LR
     API --> Stellar
 ```
 
+The API runs alongside PostgreSQL and Redis, and connects to the Stellar network.
+
+The topology is verified against the Orchestrator root `docker-compose.yml`, `apps/api/src/main.ts`, and `apps/api/src/modules/webhooks/webhooks.controller.ts`: Compose provides PostgreSQL and Redis while the API hosts both REST endpoints and inbound webhook handling.
+
 ## Docker Setup
 
 ### Project Structure

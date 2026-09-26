@@ -58,6 +58,10 @@ flowchart TB
     Trustless[Trustless Work Soroban Contracts Non-custodial]
 ```
 
+Marketplace requests enter the Orchestrator, which coordinates ledger, escrow, events, and idempotency work.
+
+This view is verified against `apps/api/src/modules/orders/orders.controller.ts`, its `dto/create-order.dto.ts`, and `apps/api/src/modules/events/event-catalog.ts` in the Orchestrator repository; those files define the REST boundary, order input, and emitted domain events represented here.
+
 ### Key Components
 
 **Balance Ledger** — tracks `available` and `reserved` balances for every user. All operations are atomic to prevent double-spending.
