@@ -193,6 +193,8 @@ export function MermaidDiagram({
     }
     return (
       <div
+        role="img"
+        aria-label={caption ?? "Mermaid diagram"}
         className={cn(zoom ? "[&>svg]:w-full" : "[&>svg]:max-w-full", "[&>svg]:h-auto", className)}
         dangerouslySetInnerHTML={{ __html: svg }}
       />
@@ -212,7 +214,7 @@ export function MermaidDiagram({
               <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/30" />
               <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/20" />
             </div>
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
+            <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
               Mermaid
             </span>
           </div>
@@ -223,7 +225,7 @@ export function MermaidDiagram({
               onClick={handleCopy}
               aria-label={copied ? "Copied" : "Copy diagram source"}
               className={cn(
-                "relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-[10.5px] font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
+                "relative flex items-center gap-2.5 px-4 py-2 min-h-11 rounded-xl text-xs font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
                 copied
                   ? "text-white bg-theme-primary shadow-lg shadow-theme-primary/25"
                   : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",
@@ -243,6 +245,9 @@ export function MermaidDiagram({
 
         <div
           ref={containerRef}
+          tabIndex={0}
+          role="region"
+          aria-label="Mermaid diagram, scrollable horizontally"
           className="mermaid-diagram-canvas w-full overflow-x-auto overflow-y-hidden p-8 flex items-center justify-center min-h-[200px] bg-bg-elevated"
         >
           {isLoading || !svg ? (
@@ -252,6 +257,8 @@ export function MermaidDiagram({
             </div>
           ) : (
             <div
+              role="img"
+              aria-label={caption ?? "Mermaid diagram"}
               className="mermaid-svg-wrapper [&_svg]:max-w-full [&_svg]:h-auto [&_svg]:min-w-0"
               dangerouslySetInnerHTML={{ __html: svg }}
             />

@@ -1,0 +1,218 @@
+---
+title: SDK Errors
+description: Complete error hierarchy for @offerhub/sdk — the base OfferHubError class, every typed subclass, how each maps to an Orchestrator server error code, and the retry semantics that govern automatic backoff.
+order: 36
+section: SDK
+---
+
+Every failure raised by `@offerhub/sdk` extends the base `OfferHubError`. Catching a specific subclass lets you branch on business failures (`InsufficientFundsError`) versus infrastructure failures (`ProviderError`) versus developer mistakes (`ValidationError`).
+
+## Class hierarchy
+
+<MermaidDiagram chart={`
+classDiagram
+    direction TB
+    class Error
+    class OfferHubError {
+      +string message
+      +string code
+      +number statusCode
+      +unknown response
+    }
+    class AuthenticationError
+    class AuthorizationError
+    class NotFoundError
+    class ValidationError
+    class InsufficientFundsError
+    class InvalidTransitionError
+    class IdempotencyError
+    class ProviderError
+    class RateLimitError
+    class NetworkError
+
+    Error <|-- OfferHubError
+    OfferHubError <|-- AuthenticationError
+    OfferHubError <|-- AuthorizationError
+    OfferHubError <|-- NotFoundError
+    OfferHubError <|-- ValidationError
+    OfferHubError <|-- InsufficientFundsError
+    OfferHubError <|-- InvalidTransitionError
+    OfferHubError <|-- IdempotencyError
+    OfferHubError <|-- ProviderError
+    OfferHubError <|-- RateLimitError
+    OfferHubError <|-- NetworkError
+`} />
+
+## Base class: `OfferHubError`
+
+| Member | Type | Description |
+|---|---|---|
+| `message` | `string` | Human-readable description returned by the API. |
+| `code` | `string` | Machine code from the Orchestrator catalog (`VALIDATION_ERROR`, `INSUFFICIENT_FUNDS`, …). |
+| `statusCode` | `number` | HTTP status of the response, or `0` for network-level failures. |
+| `response` | `unknown` | Raw response body. |
+
+```typescript
+import { OfferHubError } from "@offerhub/sdk";
+
+try {
+  await sdk.orders.get("ord_missing");
+} catch (error) {
+  if (error instanceof OfferHubError) {
+    console.error(error.code, error.statusCode, error.message);
+  }
+}
+```
+
+## Error catalog
+
+Each SDK class maps to one Orchestrator HTTP status and a defined set of server codes. Codes come from `docs/api/errors.md` in the Orchestrator repo; the status mapping matches the JSON error envelope documented in `docs/ai-context.md`.
+
+| SDK class | HTTP | Server codes | When it fires | Retry? |
+|---|---|---|---|---|
+| `AuthenticationError` | `401` | `UNAUTHORIZED` | Missing or invalid API key. | No |
+| `AuthorizationError` | `403` | `INSUFFICIENT_SCOPE` | Valid key, but lacks the required scope for this route. | No |
+| `NotFoundError` | `404` | `USER_NOT_FOUND`, `ORDER_NOT_FOUND`, `ESCROW_NOT_FOUND`, `DISPUTE_NOT_FOUND` | The resource ID does not exist. | No |
+| `ValidationError` | `400` | `VALIDATION_ERROR` | Payload failed DTO validation. | No |
+| `InsufficientFundsError` | `422` | `INSUFFICIENT_FUNDS` | Balance cannot cover the reserve or debit. | No |
+| `InvalidTransitionError` | `409` | `INVALID_STATE` | State machine rejects the requested transition. | No |
+| `IdempotencyError` | `409` | `IDEMPOTENCY_KEY_REUSED` | Same `Idempotency-Key` replayed with a different body. | No |
+| `ProviderError` | `502` / `504` | `PROVIDER_ERROR`, `PROVIDER_TIMEOUT` | Upstream provider (Stellar, AirTM, Trustless Work) failed. | Yes |
+| `RateLimitError` | `429` | `RATE_LIMIT_EXCEEDED` | API key exceeded its bucket. | Yes |
+| `NetworkError` | — | — | No HTTP response was received (DNS, TCP, TLS, timeout). | Yes |
+
+<Callout type="note">
+  `NetworkError` has no HTTP status because the request never reached the Orchestrator. Check `error.cause` for the underlying socket error.
+</Callout>
+
+## Class-specific properties
+
+Most classes add nothing beyond the base. Two add useful context.
+
+### `ValidationError`
+
+```typescript
+if (error instanceof ValidationError) {
+  for (const fieldError of error.errors) {
+    console.error(fieldError.field, fieldError.message);
+  }
+}
+```
+
+| Member | Type | Description |
+|---|---|---|
+| `errors` | `Array<{ field: string; message: string }>` | Field-level validation failures. |
+
+### `InsufficientFundsError`
+
+```typescript
+if (error instanceof InsufficientFundsError) {
+  console.error(`Need ${error.required}, have ${error.available}`);
+}
+```
+
+| Member | Type | Description |
+|---|---|---|
+| `required` | `string` | Amount needed for the operation, e.g. `"100.00"`. |
+| `available` | `string` | Available balance at the time of the attempt. |
+
+## Handling pattern
+
+Branch from most specific to least specific, and end with the base class as a catch-all:
+
+```typescript
+import {
+  OfferHubSDK,
+  OfferHubError,
+  ValidationError,
+  NotFoundError,
+  InsufficientFundsError,
+  InvalidTransitionError,
+  IdempotencyError,
+  ProviderError,
+  RateLimitError,
+  NetworkError,
+} from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+try {
+  await sdk.orders.reserve("ord_123");
+} catch (error) {
+  if (error instanceof InsufficientFundsError) {
+    return { ok: false, reason: "TOPUP_REQUIRED" };
+  }
+  if (error instanceof NotFoundError) {
+    return { ok: false, reason: "ORDER_MISSING" };
+  }
+  if (error instanceof InvalidTransitionError) {
+    return { ok: false, reason: "WRONG_STATE" };
+  }
+  if (error instanceof ValidationError) {
+    return { ok: false, reason: "INVALID_INPUT", fields: error.errors };
+  }
+  if (error instanceof IdempotencyError) {
+    throw error;
+  }
+  if (error instanceof RateLimitError || error instanceof ProviderError || error instanceof NetworkError) {
+    return { ok: false, reason: "TRANSIENT" };
+  }
+  if (error instanceof OfferHubError) {
+    return { ok: false, reason: error.code };
+  }
+  throw error;
+}
+```
+
+## Retry semantics
+
+Automatic retries are handled inside the SDK and governed by `retryAttempts` (default `3`) on `OfferHubSDKConfig`. Retryable classes use exponential backoff; the exact schedule is an implementation detail but never exceeds `timeout` per attempt.
+
+| Class | Auto-retried | Why |
+|---|---|---|
+| `NetworkError` | Yes | The connection may succeed next time. |
+| `ProviderError` | Yes | Upstream provider is the flaky layer. |
+| `RateLimitError` | Yes | Backoff eventually clears the bucket. |
+| `AuthenticationError` | No | Wrong key, retrying cannot help. |
+| `AuthorizationError` | No | Wrong scope, retrying cannot help. |
+| `NotFoundError` | No | Resource does not exist. |
+| `ValidationError` | No | Payload is wrong. |
+| `InsufficientFundsError` | No | Business state. |
+| `InvalidTransitionError` | No | State machine rejected it. |
+| `IdempotencyError` | No | Developer mistake. |
+
+To disable retries entirely for a specific call, construct a client with `retryAttempts: 0`:
+
+```typescript
+const strict = new OfferHubSDK({
+  apiKey: process.env.OFFERHUB_API_KEY!,
+  retryAttempts: 0,
+});
+
+await strict.orders.reserve("ord_123");
+```
+
+## Error envelope
+
+Every SDK exception is a projection of the Orchestrator's JSON error envelope:
+
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_FUNDS",
+    "message": "Available balance 40.00 is less than required 100.00",
+    "details": { "required": "100.00", "available": "40.00" }
+  }
+}
+```
+
+The SDK lifts `code`, `message`, and `details` onto the thrown instance and classifies the exception by matching the HTTP status and code against the table above. See `docs/api/errors.md` in the Orchestrator repo for the full server-side catalog.
+
+## Related
+
+- [Configuration](/docs/sdk/configuration) — `OfferHubSDKConfig`, `withIdempotencyKey`, and retry policy.
+- [Quick Start](/docs/sdk/quick-start) — first request in five minutes.
+- [Events](/docs/api-reference/events) — SSE stream errors use the same envelope.
+- [Inbound Webhooks](/docs/api-reference/webhooks) — provider-side failures are separate from SDK exceptions.

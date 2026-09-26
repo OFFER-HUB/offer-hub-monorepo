@@ -140,7 +140,7 @@ export default function DocsPage() {
           />
 
           <div className="relative z-10 text-center px-4">
-            <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-6 animate-fadeIn text-theme-primary opacity-80">
+            <p className="text-xs font-black uppercase tracking-[0.4em] mb-6 animate-fadeIn text-theme-primary opacity-80">
               Documentation Center
             </p>
 
@@ -196,7 +196,7 @@ export default function DocsPage() {
                   <p className="text-[15px] leading-relaxed mb-8 font-medium text-content-secondary">
                     {section.description}
                   </p>
-                  <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-content-secondary/40">
+                  <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-content-secondary/40">
                     <span>{section.count}</span>
                     <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
                       Explore <ChevronRight size={14} />

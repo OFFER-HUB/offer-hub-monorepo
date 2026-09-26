@@ -48,7 +48,7 @@ export function DocsSidebar({ nav, className }: DocsSidebarProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="px-5 mb-3 text-[11px] font-extrabold uppercase tracking-widest text-content-primary">
+          <div className="px-5 mb-3 text-xs font-extrabold uppercase tracking-widest text-content-primary">
             Overview
           </div>
           <ul role="list" className="space-y-1.5">
@@ -81,7 +81,7 @@ export function DocsSidebar({ nav, className }: DocsSidebarProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 * (sectionIdx + 1), ease: "easeOut" }}
               >
-                <div className="px-5 mb-3 text-[11px] font-extrabold uppercase tracking-widest text-content-primary">
+                <div className="px-5 mb-3 text-xs font-extrabold uppercase tracking-widest text-content-primary">
                   {section.section}
                 </div>
                 <ul role="list" className="space-y-1.5">
@@ -111,7 +111,7 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         href={href}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "group relative flex items-center gap-3.5 text-sm py-2.5 px-5 rounded-2xl transition-[color,box-shadow] duration-300 font-medium overflow-hidden",
+          "group relative flex items-center gap-3.5 text-sm py-2.5 px-5 min-h-11 rounded-2xl transition-[color,box-shadow] duration-300 font-medium overflow-hidden",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
           isActive
             ? "text-theme-primary"

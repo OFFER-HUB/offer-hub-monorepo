@@ -76,11 +76,11 @@ export function CommandLine({
       <div
         className="flex items-center gap-2 px-4 py-2.5 border-b border-theme-border/20 bg-bg-sunken shadow-neu-sunken-subtle"
       >
-        <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
-        <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
-        <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-theme-error/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-theme-warning/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-theme-success/80" />
         {label && (
-          <span className="ml-2 text-[11px] font-bold uppercase tracking-widest text-content-secondary/60">
+          <span className="ml-2 text-xs font-bold uppercase tracking-widest text-content-secondary/60">
             {label}
           </span>
         )}
@@ -89,10 +89,10 @@ export function CommandLine({
           onClick={handleCopy}
           aria-label={copied ? "Command copied" : "Copy command"}
           className={cn(
-            "ml-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium",
+            "ml-auto inline-flex items-center gap-1.5 px-2 min-h-11 min-w-11 justify-center rounded-md text-xs font-medium",
             "transition-colors duration-200",
             copied
-              ? "text-green-500"
+              ? "text-theme-success"
               : "text-content-secondary hover:text-content-primary",
           )}
         >

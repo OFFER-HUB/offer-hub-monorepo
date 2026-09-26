@@ -1,0 +1,150 @@
+---
+title: SDK Configuration
+description: Complete reference for OfferHubSDKConfig, withIdempotencyKey, and withHeaders — the full client configuration surface of @offerhub/sdk, verified against the Orchestrator API error catalog and the SDK quick-start.
+order: 35
+section: SDK
+---
+
+The `OfferHubSDK` constructor accepts a single configuration object, `OfferHubSDKConfig`. Every property is optional except `apiKey`. Two fluent methods — `withIdempotencyKey` and `withHeaders` — return a derived client without mutating the original.
+
+## `OfferHubSDKConfig`
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `apiUrl` | `string` | `http://localhost:4000` | Base URL of the self-hosted Orchestrator instance. Include the protocol and host; the SDK appends `/api/v1`. |
+| `apiKey` | `string` | — | **Required.** Bearer token issued by the Orchestrator CLI (`ohk_live_…`). |
+| `timeout` | `number` | `30000` | Request timeout in milliseconds. Applies per attempt, not per retry chain. |
+| `retryAttempts` | `number` | `3` | Number of automatic retries for retryable failures. Uses exponential backoff. |
+| `headers` | `Record<string, string>` | `{}` | Additional headers merged into every request. |
+
+```typescript
+import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL,   // http://localhost:4000
+  apiKey: process.env.OFFERHUB_API_KEY,   // ohk_live_…
+  timeout: 30000,
+  retryAttempts: 3,
+  headers: { "X-Request-Id": crypto.randomUUID() },
+});
+```
+
+<Callout type="danger">
+  Never ship an API key to a browser bundle. The SDK is server-to-server only.
+</Callout>
+
+## `withIdempotencyKey(key)`
+
+Returns a **new SDK instance** bound to a specific `Idempotency-Key` header. The key must be a UUID v4 and is scoped to the API key plus the request body.
+
+```typescript
+const idempotent = sdk.withIdempotencyKey(
+  "550e8400-e29b-41d4-a716-446655440000"
+);
+
+const order = await idempotent.orders.create({
+  buyer_id: "usr_buyer",
+  seller_id: "usr_seller",
+  amount: "100.00",
+  title: "Service",
+});
+```
+
+Behavior on replay:
+
+- Same key + same body: cached response with header `Idempotency-Replay: true`.
+- Same key + different body: throws `IdempotencyError` (`409 IDEMPOTENCY_KEY_REUSED`).
+- Accepted on `POST`, `PUT`, and `PATCH` only.
+
+## `withHeaders(headers)`
+
+Returns a **new SDK instance** with the given headers merged into its config. Existing headers are preserved; new keys overwrite duplicates.
+
+```typescript
+const traced = sdk.withHeaders({
+  "X-Request-Id": "req_abc123",
+  "X-Tenant": "marketplace-eu",
+});
+
+console.log(sdk !== traced); // true — original is unchanged
+```
+
+Because both helpers return new instances, they compose cleanly:
+
+```typescript
+const client = sdk
+  .withHeaders({ "X-Request-Id": "req_abc123" })
+  .withIdempotencyKey("550e8400-e29b-41d4-a716-446655440000");
+
+await client.orders.reserve("ord_123");
+```
+
+## Retry semantics
+
+| Failure | Retried? | Reason |
+|---|---|---|
+| `ProviderError` (`PROVIDER_TIMEOUT`, `PROVIDER_ERROR`) | Yes | Upstream provider is the flaky layer. |
+| `RateLimitError` (`429 RATE_LIMIT_EXCEEDED`) | Yes | Backoff eventually clears the bucket. |
+| Network / socket errors | Yes | Connection may recover. |
+| `ValidationError` (`400`) | No | The body is wrong. |
+| `AuthenticationError` (`401`) | No | The key is wrong. |
+| `AuthorizationError` (`403`) | No | Scope is insufficient. |
+| `NotFoundError` (`404`) | No | The resource does not exist. |
+| `InsufficientFundsError` (`422 INSUFFICIENT_FUNDS`) | No | Business state. |
+| `InvalidTransitionError` (`409 INVALID_STATE`) | No | Wrong state for the operation. |
+| `IdempotencyError` (`409 IDEMPOTENCY_KEY_REUSED`) | No | The body changed. |
+
+## What the SDK does **not** cover
+
+| Surface | Why it is not in the SDK | Where to go |
+|---|---|---|
+| API key lifecycle | Master-key privilege. | `@offerhub/cli` or `POST /api/v1/auth/api-keys`. |
+| Audit logs | Read-only, ops-facing. | `GET /api/v1/audit` with a `support` scope key. |
+| Instance configuration | Deployment concern. | [Self-hosting guide](/docs/guide/self-hosting). |
+| Health checks | Belongs to your infra. | `GET /api/v1/health`. |
+| SSE event stream | Long-lived connection. | [Events reference](/docs/api-reference/events). |
+| Inbound provider webhooks | You receive them, not call them. | [Inbound Webhooks](/docs/api-reference/webhooks). |
+
+### Plain HTTP alternatives
+
+```typescript
+const API_URL = process.env.OFFERHUB_API_URL!;
+const API_KEY = process.env.OFFERHUB_API_KEY!;
+
+// 1. List API keys (admin)
+const keys = await fetch(`${API_URL}/api/v1/auth/api-keys`, {
+  headers: { Authorization: `Bearer ${API_KEY}` },
+}).then((r) => r.json());
+
+// 2. Instance health
+const health = await fetch(`${API_URL}/api/v1/health`).then((r) => r.json());
+
+// 3. Audit trail (support scope)
+const audit = await fetch(`${API_URL}/api/v1/audit?limit=50`, {
+  headers: { Authorization: `Bearer ${API_KEY}` },
+}).then((r) => r.json());
+```
+
+### SSE alternative
+
+```typescript
+const source = new EventSource(`${API_URL}/api/v1/events`);
+
+source.addEventListener("order.escrow_funded", (event) => {
+  const payload = JSON.parse(event.data);
+  console.log("Escrow funded:", payload);
+});
+
+source.onerror = () => source.close();
+```
+
+<Callout type="warning">
+  Browsers cannot attach an `Authorization` header to `EventSource`. For server-side use, prefer a `fetch` stream reader so the key never lands in a URL. See the [Events reference](/docs/api-reference/events).
+</Callout>
+
+## Related
+
+- [Quick Start](/docs/sdk/quick-start) — first request in five minutes.
+- [Error Handling](/docs/sdk/errors) — the full error class hierarchy.
+- [Users](/docs/sdk/users), [Balance](/docs/sdk/balance), [Wallet](/docs/sdk/wallet), [Top-ups](/docs/sdk/topups) — resource references.
+- [Events](/docs/api-reference/events) and [Inbound Webhooks](/docs/api-reference/webhooks) — API-reference surfaces outside the SDK.
