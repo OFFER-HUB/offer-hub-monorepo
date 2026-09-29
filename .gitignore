@@ -51,3 +51,6 @@ src/data/docs-index.json
 /test-results/
 /blob-report/
 /playwright/.cache/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

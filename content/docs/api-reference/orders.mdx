@@ -1,0 +1,1161 @@
+---
+title: Orders & Milestones Endpoints
+description: Per-endpoint reference for the OFFER-HUB order API — create, list, get, reserve, cancel, and milestone completion — with real DTO fields, valid state transitions, error codes, idempotency behavior, and cURL plus TypeScript SDK examples.
+order: 44
+section: API Reference
+---
+
+An OFFER-HUB order is the lifecycle root of a marketplace transaction: it records the buyer, the seller, the amount, and the work, and every money movement in the escrow flow is driven by its status. Five endpoints drive an order from creation up to the point where escrow takes over, and two more track delivery against the order's milestones.
+
+| Method | Path | Success status | Controller handler |
+| --- | --- | --- | --- |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders` | `201 Created` | `OrdersController.create` |
+| <Badge variant="success">GET</Badge> | `/api/v1/orders` | `200 OK` | `OrdersController.findAll` |
+| <Badge variant="success">GET</Badge> | `/api/v1/orders/{id}` | `200 OK` | `OrdersController.findOne` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{id}/reserve` | `201 Created` | `OrdersController.reserveFunds` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{id}/cancel` | `201 Created` | `OrdersController.cancel` |
+| <Badge variant="success">GET</Badge> | `/api/v1/orders/{id}/milestones` | `200 OK` | `OrdersController.getMilestones` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{id}/milestones/{milestoneRef}/complete` | `201 Created` | `OrdersController.completeMilestone` |
+
+All seven handlers live in `OrdersController` (`apps/api/src/modules/orders/orders.controller.ts`) and delegate to `OrdersService` (`apps/api/src/modules/orders/orders.service.ts`). With the global `/api/v1` prefix set in `apps/api/src/main.ts`, the paths above are the full routes.
+
+<Callout type="note">
+  The other four routes on the same controller are documented on their own pages, because they are the money-moving steps: `POST /api/v1/orders/{id}/escrow` and `POST /api/v1/orders/{id}/escrow/fund` in [Escrow Endpoints](/docs/api-reference/escrow), and `release` / `refund` / `dispute` under `/orders/{orderId}/resolution/*` in [Resolution Endpoints](/docs/api-reference/resolution). This page is the lifecycle **up to** funding and the milestone bookkeeping **inside** `IN_PROGRESS`. Field lists here were transcribed from the orchestrator behavior recorded in [Orders SDK Reference](/docs/sdk/orders) (`apps/api/src/modules/orders/dto/create-order.dto.ts`, `apps/api/src/modules/orders/dto/cancel-order.dto.ts`, `packages/sdk/src/resources/orders.ts`), the [Data Model](/docs/guide/data-model) Prisma tables, and the [API Reference overview](/docs/api-reference/overview).
+</Callout>
+
+## Common behavior
+
+### Authentication and scope
+
+`OrdersController` declares **no guards and no scopes** — there is no `@UseGuards(ApiKeyGuard, ScopeGuard)` and no `@Scopes(...)` on it (see the same finding for its escrow handlers in [Escrow Endpoints](/docs/api-reference/escrow#authentication-and-scope)). These routes are therefore **not authenticated and not scope-gated in the current Orchestrator**.
+
+| Aspect | Value on these routes | Source |
+| --- | --- | --- |
+| Authentication | None enforced (no `ApiKeyGuard`) | `apps/api/src/modules/orders/orders.controller.ts` |
+| Required scope | None (no `ScopeGuard` / `@Scopes`) | `apps/api/src/modules/orders/orders.controller.ts` |
+| Rate limiting | Yes — global `RateLimitGuard` via `APP_GUARD`, 100 requests per 60-second window | `apps/api/src/app.module.ts`, [Rate Limiting](/docs/api-reference/overview#rate-limiting) |
+| Correlation | `X-Request-ID` echoed in `meta.requestId` when sent | `CorrelationIdMiddleware`, `ResponseInterceptor` |
+| Request body | `create` (required), `cancel` (optional), `complete` (none) | `orders.controller.ts` |
+
+<Callout type="warning">
+  The examples below send `Authorization: Bearer …` anyway, because every other reference in these docs does, and because a future release may attach `ApiKeyGuard` to this controller. Today the header is ignored by these seven routes. The scope model that *does* exist (`read`, `write`, `support` — see [API Key Scopes](/docs/api-reference/overview#api-key-scopes)) is enforced on other modules, not here.
+</Callout>
+
+### Request validation
+
+The global `ValidationPipe` runs with `whitelist: true`, `forbidNonWhitelisted: true`, and `transform: true` (`apps/api/src/main.ts`), so on the two endpoints that bind a DTO:
+
+- Unknown body properties are **rejected** with `400 VALIDATION_ERROR`, not silently dropped.
+- A malformed `amount` (`"100"`, `"100.5"`, `100`, `"$100.00"`) fails the same way — amounts are decimal strings with exactly two places. See [Amounts and currencies](#amounts-and-currencies).
+
+`GET` routes bind no body, and `reserve` / `completeMilestone` bind no DTO either, so the pipe has nothing to reject there.
+
+### Success status codes
+
+None of the four `POST` handlers here (`create`, `reserve`, `cancel`, `completeMilestone`) declares `@HttpCode`, so NestJS applies its default **`201 Created`**; the three `GET` handlers return `200 OK`. That matches the escrow pair ([Escrow Endpoints](/docs/api-reference/escrow#success-status-codes)) and differs from the resolution endpoints, which set `200` explicitly except `dispute`.
+
+### Response envelope
+
+`ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps the handler's `{ success, data }` payload — `isAlreadyWrapped` only skips wrapping when a `meta` key is present or the payload has exactly one key — so a successful single-resource call looks like this on the wire:
+
+```json
+{
+  "data": { "success": true, "data": { "...": "order" } },
+  "meta": { "requestId": "req_1ab90c", "timestamp": "2026-02-25T12:00:00.404Z" }
+}
+```
+
+Errors use the single-level envelope from `GlobalExceptionFilter` (`apps/api/src/common/filters/global-exception.filter.ts`): `{ "error": { "code", "message", "details?" } }`.
+
+<Callout type="warning">
+  **`details` is not a fixed shape.** For validation failures the error catalog and this page use `details.fields` — an array of `{ field, message }` — while [Resolution Endpoints](/docs/api-reference/resolution#post-apiv1ordersorderidresolutionrefund) shows `details.validationErrors`, a flat array of message strings. Read both, and never assume `details` keys exist: `INSUFFICIENT_FUNDS` carries `{ available, requested }`, `INVALID_STATE` carries the current state, and several codes carry no `details` at all.
+</Callout>
+
+<Callout type="tip">
+  The TypeScript SDK's HTTP client returns the parsed JSON body typed as the resource, so with this envelope the order actually sits one level deeper. Every SDK example on this page unwraps it the same way the escrow and resolution examples do: `const order = (result as any).data?.data ?? result`.
+</Callout>
+
+### Idempotency
+
+<Callout type="danger">
+  **None of the seven endpoints on this page honors the `Idempotency-Key` header.** `IdempotencyGuard`, `IdempotencyInterceptor`, and `@IdempotencyTtl()` exist (`apps/api/src/common/guards/idempotency.guard.ts`, `apps/api/src/common/interceptors/idempotency.interceptor.ts`, `apps/api/src/common/decorators/idempotency-ttl.decorator.ts`) but are not attached to `OrdersController`, so a key sent to `/orders*` is ignored — including the `POST /orders` example in [Idempotency](/docs/api-reference/overview#idempotency) and the `sdk.withIdempotencyKey(...)` helper in the [Orders Guide](/docs/guide/orders#2-use-idempotency-keys), which therefore set a header nothing reads here.
+
+  Retries are made safe by the **state machine** instead: `POST /orders` has no replay protection at all (each retry creates a new `ord_` row — deduplicate with the unique `clientOrderRef`), while every state-changing sub-route rejects a replay with `400 INVALID_STATE` once the order has left its required state. See [Known behavior](#known-behavior) for the documents that still claim otherwise.
+</Callout>
+
+### Amounts and currencies
+
+| Rule | Detail |
+| --- | --- |
+| `amount` is a string | Decimal string with exactly two places (`"2500.00"`). Numbers, `"2500"`, `"2500.5"`, and anything with a currency symbol are rejected. |
+| `currency` defaults to `"USD"` | Omitting it on create stores `"USD"`; the value is copied onto the escrow row. |
+| Settlement is USDC | The escrow leg moves USDC on Stellar regardless of the label, and only USDC is supported for balances today — see [Multi-Currency](/docs/guide/multi-currency). `XLM` and other codes in the [overview](/docs/api-reference/overview) tables are roadmap items. |
+| Amount is stored as-is | `order.amount` is the source of truth for `reserve`, escrow creation, and funding; none of those endpoints accept an amount. |
+
+### Order and milestone state transitions
+
+<OrderStateMachineDiagram />
+
+| Endpoint | Order before | Order after |
+| --- | --- | --- |
+| `POST /orders` | — (new row) | `ORDER_CREATED` |
+| `POST /orders/{id}/reserve` | `ORDER_CREATED` | `FUNDS_RESERVED` |
+| `POST /orders/{id}/cancel` | `ORDER_CREATED` or `FUNDS_RESERVED` | `CLOSED` (`finalStatus: "CANCELED"`) |
+| `POST /orders/{id}/escrow` | `FUNDS_RESERVED` | `ESCROW_CREATING` → `ESCROW_FUNDING` |
+| `POST /orders/{id}/escrow/fund` | `ESCROW_FUNDING` | `IN_PROGRESS` (escrow `FUNDED`) |
+| `POST /orders/{id}/milestones/{ref}/complete` | `IN_PROGRESS` | `IN_PROGRESS` — milestone becomes `COMPLETED` |
+
+Transitions are enforced by `OrderStateMachine.assertTransition(from → to)` (`packages/shared/src/utils`), whose table lives with the enum in `packages/shared/src/enums/order-status.enum.ts`. Milestones do **not** advance the order machine: a milestone moves only its own `MilestoneStatus` (`OPEN` → `COMPLETED`), and release is a separate call that requires *every* milestone to be `COMPLETED` — see [Resolution Endpoints](/docs/api-reference/resolution#post-apiv1ordersorderidresolutionrelease).
+
+## POST /api/v1/orders
+
+Creates the order row and, optionally, its milestones. `OrdersService.createOrder` validates the DTO, resolves both parties, checks that the milestone amounts sum to the order amount, and writes the `orders` row in `ORDER_CREATED`. **No funds move and no contract is deployed by this call.**
+
+### Request body
+
+Validated against `CreateOrderDto` (`apps/api/src/modules/orders/dto/create-order.dto.ts`). Property names are camelCase, the same casing the response uses.
+
+<ParamTable
+  label="Create order request body"
+  fields={[
+    { name: "buyerId", type: "string", required: true, description: "Internal buyer user ID with the usr_ prefix. The buyer pays and signs the escrow transactions." },
+    { name: "sellerId", type: "string", required: true, description: "Internal seller user ID with the usr_ prefix. The seller receives released funds and signs milestone completion." },
+    { name: "amount", type: "string", required: true, description: "Decimal string with exactly two places, e.g. \"100.00\". Rejected as INVALID_AMOUNT when malformed." },
+    { name: "title", type: "string", required: true, description: "Human-readable order title. Also used as the escrow contract title." },
+    { name: "currency", type: "string", required: false, description: "Currency code. Defaults to \"USD\" when omitted.", defaultValue: "\"USD\"" },
+    { name: "description", type: "string", required: false, description: "Free-form scope text, nullable on the Order model." },
+    { name: "clientOrderRef", type: "string", required: false, description: "Your own order reference. The column is unique, so reuse is the practical way to make creation idempotent.", nullable: true },
+    { name: "metadata", type: "Record<string, any>", required: false, description: "Arbitrary JSON. metadata.platformFee overrides the default 5% platform fee at escrow time.", defaultValue: "null" },
+    {
+      name: "milestones",
+      type: "MilestoneInput[]",
+      required: false,
+      description: "Sub-deliverables created with the order. When present, the amounts must sum exactly to amount.",
+      children: [
+        { name: "ref", type: "string", required: true, description: "Marketplace milestone reference. Stored as milestoneRef and used in the /milestones/{milestoneRef}/complete path." },
+        { name: "title", type: "string", required: false, description: "Milestone title stored on the Milestone row. The SDK input type names this field description." },
+        { name: "amount", type: "string", required: false, description: "Decimal string with two places. Milestone amounts must sum to the order amount when milestones are sent." },
+      ],
+    },
+  ]}
+/>
+
+<Callout type="warning">
+  Field naming: the REST body is camelCase here, as in every response example (`buyerId`, `clientOrderRef`) and in the [Orders Guide](/docs/guide/orders#creating-an-order) cURL samples. The field tables in the [Orders SDK Reference](/docs/sdk/orders#create-an-order) are written in snake_case (`buyer_id`, `seller_id`, `client_order_ref`) and name the milestone field `description` rather than `title`. With `forbidNonWhitelisted: true` the wrong casing is not forgiven — it returns `400 VALIDATION_ERROR` — so confirm against `apps/api/src/modules/orders/dto/create-order.dto.ts` before you ship, and do not mix the two spellings in one body.
+</Callout>
+
+### Preconditions
+
+1. Both `buyerId` and `sellerId` resolve to existing users — otherwise `404 ORDER_NOT_FOUND`.
+2. `buyerId` and `sellerId` differ — sending the same user twice is `400 INVALID_REQUEST`.
+3. `amount` matches the decimal-string format — otherwise `400 INVALID_AMOUNT`.
+4. When `milestones` are present, their amounts sum **exactly** to `amount`; otherwise the request is rejected before anything is written.
+5. `clientOrderRef`, when sent, is not already used by another order (unique column).
+
+### Response
+
+<Badge variant="success">201</Badge> The created order in `ORDER_CREATED`, with `escrow: null` and its milestones as `OPEN`.
+
+<ResponseSchema
+  label="Create order response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The created order (OrderWithRelations)." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID with the ord_ prefix, generated server-side." },
+    { name: "data.data.clientOrderRef", type: "string", required: false, description: "Your reference, echoed back.", nullable: true },
+    { name: "data.data.buyerId", type: "string", required: true, description: "Buyer user ID." },
+    { name: "data.data.sellerId", type: "string", required: true, description: "Seller user ID." },
+    { name: "data.data.amount", type: "string", required: true, description: "Order amount as a decimal string with two places." },
+    { name: "data.data.currency", type: "string", required: true, description: "Currency code; USD when you omitted it." },
+    { name: "data.data.status", type: "string", required: true, description: "Always ORDER_CREATED — nothing has moved yet.", enum: ["ORDER_CREATED"] },
+    { name: "data.data.title", type: "string", required: true, description: "Order title." },
+    { name: "data.data.description", type: "string", required: false, description: "Order description.", nullable: true },
+    { name: "data.data.metadata", type: "object", required: false, description: "Free-form JSON, stored as sent.", nullable: true },
+    {
+      name: "data.data.escrow",
+      type: "object",
+      required: false,
+      description: "Null until POST /orders/{id}/escrow creates the row.",
+      nullable: true,
+      children: [
+        { name: "id", type: "string", required: true, description: "Escrow ID with the esc_ prefix." },
+        { name: "trustlessContractId", type: "string", required: false, description: "Deployed Stellar contract address; null when the deployment did not return one.", nullable: true },
+        { name: "status", type: "string", required: true, description: "Escrow lifecycle status.", enum: ["CREATING", "CREATED", "FUNDING", "FUNDED", "RELEASING", "RELEASED", "REFUNDING", "REFUNDED", "DISPUTED"] },
+        { name: "fundedAt", type: "string", required: false, description: "ISO 8601 funding timestamp.", nullable: true },
+      ],
+    },
+    {
+      name: "data.data.milestones",
+      type: "Milestone[]",
+      required: true,
+      description: "Milestones created with the order; every one starts as OPEN. Empty array when you sent none.",
+      children: [
+        { name: "id", type: "string", required: true, description: "Milestone ID (Prisma CUID)." },
+        { name: "milestoneRef", type: "string", required: true, description: "The ref you supplied; this is the path value for the complete endpoint." },
+        { name: "title", type: "string", required: true, description: "Milestone title." },
+        { name: "amount", type: "string", required: true, description: "Milestone amount as a decimal string." },
+        { name: "status", type: "string", required: true, description: "Milestone status.", enum: ["OPEN", "COMPLETED"] },
+      ],
+    },
+    { name: "data.data.createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
+    { name: "data.data.updatedAt", type: "string", required: true, description: "ISO 8601 update timestamp." },
+    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta.requestId", type: "string", required: false, description: "Your correlation ID, or undefined when you did not send one.", nullable: true },
+    { name: "meta.timestamp", type: "string", required: false, description: "Server timestamp of the response." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_xyz789",
+        clientOrderRef: "REQ-1001",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "5000.00",
+        currency: "USD",
+        status: "ORDER_CREATED",
+        title: "Mobile App Development",
+        description: "Design, build and ship a customer app",
+        metadata: { platformFee: "3.5" },
+        escrow: null,
+        milestones: [
+          { id: "mls_abc123", orderId: "ord_xyz789", milestoneRef: "design", title: "UI/UX Design", amount: "1000.00", status: "OPEN" },
+          { id: "mls_def456", orderId: "ord_xyz789", milestoneRef: "backend", title: "Backend Development", amount: "2000.00", status: "OPEN" },
+          { id: "mls_ghi789", orderId: "ord_xyz789", milestoneRef: "frontend", title: "Frontend Development", amount: "1500.00", status: "OPEN" },
+          { id: "mls_jkl012", orderId: "ord_xyz789", milestoneRef: "testing", title: "Testing & Launch", amount: "500.00", status: "OPEN" }
+        ],
+        createdAt: "2026-02-25T12:00:00.000Z",
+        updatedAt: "2026-02-25T12:00:00.000Z"
+      }
+    },
+    meta: { requestId: "req_1ab90c", timestamp: "2026-02-25T12:00:00.404Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | A required field is missing, a field has the wrong type or casing, or the body carries an unknown property. `details` lists the field messages. |
+| `400` | `INVALID_REQUEST` | `buyerId` and `sellerId` are the same user. |
+| `400` | `INVALID_AMOUNT` | `amount` is not a two-decimal string, or the milestone amounts do not sum to it. The error catalog calls the same failure `INVALID_AMOUNT_FORMAT` (`docs/guides/errors-troubleshooting.md`). |
+| `404` | `ORDER_NOT_FOUND` | The buyer or seller user ID does not exist — the orders module reports a missing party with the order code, not `USER_NOT_FOUND` (`apps/api/src/modules/orders/exceptions/orders.exceptions.ts`). |
+
+A duplicate `clientOrderRef` violates the unique column (`docs/guides/orders.md`), so treat that reference as your creation idempotency key rather than a retry mechanism.
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request body",
+    "details": {
+      "fields": [
+        { "field": "amount", "message": "Must be a string with 2 decimals (e.g., \"50.00\")" },
+        { "field": "buyerId", "message": "Required" }
+      ]
+    }
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Create order examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `# No money moves here: the order starts in ORDER_CREATED.
+# Milestone amounts must add up to the order amount.
+curl -X POST "http://localhost:4000/api/v1/orders" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -H "X-Request-ID: req_1ab90c" \\
+  -d '{
+    "buyerId": "usr_buyer123",
+    "sellerId": "usr_seller456",
+    "amount": "5000.00",
+    "currency": "USD",
+    "title": "Mobile App Development",
+    "description": "Design, build and ship a customer app",
+    "clientOrderRef": "REQ-1001",
+    "milestones": [
+      { "ref": "design",   "title": "UI/UX Design",        "amount": "1000.00" },
+      { "ref": "backend",  "title": "Backend Development",  "amount": "2000.00" },
+      { "ref": "frontend", "title": "Frontend Development", "amount": "1500.00" },
+      { "ref": "testing",  "title": "Testing & Launch",     "amount": "500.00" }
+    ]
+  }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// The SDK input type is documented with snake_case keys and a
+// description field on milestones — see the naming warning above.
+const result = await sdk.orders.create({
+  buyer_id: "usr_buyer123",
+  seller_id: "usr_seller456",
+  amount: "5000.00",
+  title: "Mobile App Development",
+  client_order_ref: "REQ-1001",
+  milestones: [
+    { ref: "design", description: "UI/UX Design", amount: "1000.00" },
+    { ref: "backend", description: "Backend Development", amount: "2000.00" },
+    { ref: "frontend", description: "Frontend Development", amount: "1500.00" },
+    { ref: "testing", description: "Testing & Launch", amount: "500.00" },
+  ],
+});
+
+const order = (result as any).data?.data ?? result;
+console.log(order.id, order.status); // "ord_xyz789" "ORDER_CREATED"
+
+// Next steps in the lifecycle:
+await sdk.orders.reserve(order.id);      // FUNDS_RESERVED
+await sdk.orders.createEscrow(order.id); // ESCROW_FUNDING
+await sdk.orders.fundEscrow(order.id);   // IN_PROGRESS`
+    },
+  ]}
+/>
+
+## GET /api/v1/orders
+
+Lists orders with cursor pagination and role/status filters. `OrdersService.getOrders` reads the query object, applies the filters, and returns one page plus a cursor.
+
+### Query parameters
+
+All filters are optional. Query keys are snake_case, as documented in [Filters](/docs/api-reference/overview#filters) and [Pagination](/docs/api-reference/overview#pagination).
+
+<ParamTable
+  label="List orders query parameters"
+  fields={[
+    { name: "buyer_id", type: "string", required: false, description: "Return orders where this user is the buyer." },
+    { name: "seller_id", type: "string", required: false, description: "Return orders where this user is the seller. Sending both buyer_id and seller_id returns orders where the user holds either role." },
+    { name: "status", type: "OrderStatus", required: false, description: "Filter by one status. An unknown value is ignored rather than filtered on.", enum: ["ORDER_CREATED", "FUNDS_RESERVED", "ESCROW_CREATING", "ESCROW_FUNDING", "ESCROW_FUNDED", "IN_PROGRESS", "RELEASE_REQUESTED", "RELEASED", "REFUND_REQUESTED", "REFUNDED", "DISPUTED", "CLOSED"] },
+    { name: "limit", type: "number", required: false, description: "Items per page. Values above 100 are capped at 100.", defaultValue: "20" },
+    { name: "cursor", type: "string", required: false, description: "The next_cursor from the previous page — an order ID, e.g. ord_xyz789. Omit for the first page." },
+    { name: "created_after", type: "string", required: false, description: "ISO 8601 lower bound on createdAt." },
+    { name: "created_before", type: "string", required: false, description: "ISO 8601 upper bound on createdAt." },
+  ]}
+/>
+
+<Callout type="note">
+  This list is **cursor-based**, not offset-based. There is no `page`, `pageSize`, `sort`, or `search` parameter on this endpoint — those appear only in the generic `docs/backend/api-design.md` template, not on any orders artifact. Page forward with `cursor` = the `next_cursor` you received.
+</Callout>
+
+### Response
+
+<Badge variant="success">200</Badge> One page of orders, newest cursor last.
+
+<ResponseSchema
+  label="List orders response"
+  fields={[
+    { name: "data", type: "Order[]", required: true, description: "The page of orders. Each item is the order resource; relations are not expanded for every row, so read a single order for its escrow and milestones." },
+    { name: "data[].id", type: "string", required: true, description: "Order ID with the ord_ prefix." },
+    { name: "data[].status", type: "string", required: true, description: "Current order status.", enum: ["ORDER_CREATED", "FUNDS_RESERVED", "ESCROW_CREATING", "ESCROW_FUNDING", "ESCROW_FUNDED", "IN_PROGRESS", "RELEASE_REQUESTED", "RELEASED", "REFUND_REQUESTED", "REFUNDED", "DISPUTED", "CLOSED"] },
+    { name: "data[].buyerId", type: "string", required: true, description: "Buyer user ID." },
+    { name: "data[].sellerId", type: "string", required: true, description: "Seller user ID." },
+    { name: "data[].amount", type: "string", required: true, description: "Order amount as a decimal string." },
+    { name: "data[].currency", type: "string", required: true, description: "Currency code." },
+    { name: "data[].title", type: "string", required: true, description: "Order title." },
+    { name: "data[].createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
+    {
+      name: "pagination",
+      type: "object",
+      required: true,
+      description: "Cursor pagination block for this page.",
+      children: [
+        { name: "has_more", type: "boolean", required: true, description: "True when another page exists. The SDK exposes this as hasMore." },
+        { name: "next_cursor", type: "string", required: false, description: "Pass as cursor on the next request. The SDK exposes this as nextCursor.", nullable: true },
+      ],
+    },
+  ]}
+  example={{
+    data: [
+      {
+        id: "ord_xyz789",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "5000.00",
+        currency: "USD",
+        status: "IN_PROGRESS",
+        title: "Mobile App Development",
+        createdAt: "2026-02-25T12:00:00.000Z"
+      },
+      {
+        id: "ord_abc123",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "2500.00",
+        currency: "USD",
+        status: "FUNDS_RESERVED",
+        title: "Landing page build",
+        createdAt: "2026-02-09T18:12:04.221Z"
+      }
+    ],
+    pagination: { has_more: true, next_cursor: "ord_abc123" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | `limit` is not a number, or `created_after` / `created_before` is not parseable as a date. |
+
+<Callout type="note">
+  An empty match is a `200` with `data: []`, not a `404`. The [SDK reference](/docs/sdk/orders#list-orders) lists `400` for a `status` outside the `OrderStatus` enum and then notes that the controller ignores an unknown status instead of filtering — treat a typo'd status as "filter not applied" and validate the value client-side.
+</Callout>
+
+### Examples
+
+<CodeTabs
+  label="List orders examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `# First page of in-progress orders for one buyer
+curl "http://localhost:4000/api/v1/orders?status=IN_PROGRESS&buyer_id=usr_buyer123&limit=20" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Next page — the cursor is the next_cursor from the previous response
+curl "http://localhost:4000/api/v1/orders?status=IN_PROGRESS&buyer_id=usr_buyer123&limit=20&cursor=ord_abc123" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+const page = await sdk.orders.list({ status: "IN_PROGRESS", limit: 20 });
+
+// The SDK result is already unwrapped for you: data, hasMore, nextCursor.
+for (const order of page.data) {
+  console.log(order.id, order.status, order.amount);
+}
+
+if (page.hasMore) {
+  const next = await sdk.orders.list({
+    status: "IN_PROGRESS",
+    limit: 20,
+    cursor: page.nextCursor,
+  });
+  console.log(next.data.length);
+}`
+    },
+  ]}
+/>
+
+## GET /api/v1/orders/:id
+
+Fetches one order. `OrdersService.getOrder` loads the order by ID and includes its `escrow` and `milestones` relations.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix, e.g. ord_xyz789. Read via @Param('id')." },
+  ]}
+/>
+
+### Response
+
+<Badge variant="success">200</Badge> The full order resource — the shape every other endpoint on this page returns.
+
+<ResponseSchema
+  label="Get order response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The order, with escrow and milestones included (OrderWithRelations)." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.clientOrderRef", type: "string", required: false, description: "Your reference, or null.", nullable: true },
+    { name: "data.data.amount", type: "string", required: true, description: "Order amount as a decimal string." },
+    { name: "data.data.currency", type: "string", required: true, description: "Currency code." },
+    { name: "data.data.status", type: "string", required: true, description: "Current order status.", enum: ["ORDER_CREATED", "FUNDS_RESERVED", "ESCROW_CREATING", "ESCROW_FUNDING", "ESCROW_FUNDED", "IN_PROGRESS", "RELEASE_REQUESTED", "RELEASED", "REFUND_REQUESTED", "REFUNDED", "DISPUTED", "CLOSED"] },
+    { name: "data.data.title", type: "string", required: true, description: "Order title." },
+    { name: "data.data.description", type: "string", required: false, description: "Order description.", nullable: true },
+    { name: "data.data.metadata", type: "object", required: false, description: "Free-form JSON as stored.", nullable: true },
+    { name: "data.data.escrow", type: "object", required: false, description: "The escrow row, or null before POST /orders/{id}/escrow.", nullable: true },
+    { name: "data.data.escrow.trustlessContractId", type: "string", required: false, description: "Stellar contract address of the escrow.", nullable: true },
+    { name: "data.data.escrow.status", type: "string", required: true, description: "Escrow lifecycle status; FUNDED once the money is on-chain.", enum: ["CREATING", "CREATED", "FUNDING", "FUNDED", "RELEASING", "RELEASED", "REFUNDING", "REFUNDED", "DISPUTED"] },
+    { name: "data.data.escrow.terms", type: "object", required: false, description: "e.g. { milestones_required: true }; null when the order has no milestones.", nullable: true },
+    { name: "data.data.escrow.fundedAt", type: "string", required: false, description: "ISO 8601 funding timestamp.", nullable: true },
+    { name: "data.data.milestones", type: "Milestone[]", required: true, description: "Milestones ordered by creation time; empty when the order has none." },
+    { name: "data.data.dispute", type: "object", required: false, description: "Not populated — see the note in Known behavior below.", nullable: true },
+    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_xyz789",
+        clientOrderRef: "REQ-1001",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "5000.00",
+        currency: "USD",
+        status: "IN_PROGRESS",
+        title: "Mobile App Development",
+        description: "Design, build and ship a customer app",
+        metadata: { platformFee: "3.5" },
+        escrow: {
+          id: "esc_01JKL",
+          orderId: "ord_xyz789",
+          trustlessContractId: "CCBSP2XK4T7Q…",
+          status: "FUNDED",
+          amount: "5000.00",
+          terms: { milestones_required: true },
+          fundedAt: "2026-02-25T12:07:41.512Z",
+          releasedAt: null,
+          refundedAt: null,
+          createdAt: "2026-02-25T12:05:02.117Z",
+          updatedAt: "2026-02-25T12:07:41.512Z"
+        },
+        milestones: [
+          { id: "mls_abc123", orderId: "ord_xyz789", milestoneRef: "design", title: "UI/UX Design", amount: "1000.00", status: "COMPLETED", createdAt: "2026-02-25T12:00:00.000Z" },
+          { id: "mls_def456", orderId: "ord_xyz789", milestoneRef: "backend", title: "Backend Development", amount: "2000.00", status: "OPEN", createdAt: "2026-02-25T12:00:00.000Z" }
+        ],
+        createdAt: "2026-02-25T12:00:00.000Z",
+        updatedAt: "2026-02-25T12:07:41.600Z"
+      }
+    },
+    meta: { requestId: "req_1ab91d", timestamp: "2026-02-25T12:09:12.331Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `404` | `ORDER_NOT_FOUND` | No order with that ID (`OrderNotFoundException`, `apps/api/src/modules/orders/exceptions/orders.exceptions.ts`). |
+
+```json
+{
+  "error": {
+    "code": "ORDER_NOT_FOUND",
+    "message": "Order ord_does_not_exist not found"
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Get order examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl "http://localhost:4000/api/v1/orders/ord_xyz789" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "X-Request-ID: req_1ab91d"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+const result = await sdk.orders.get("ord_xyz789");
+const order = (result as any).data?.data ?? result;
+
+console.log(order.status);                    // "IN_PROGRESS"
+console.log(order.escrow?.status);            // "FUNDED"
+console.log(order.milestones.map((m: any) => m.status)); // ["COMPLETED", "OPEN"]`
+    },
+  ]}
+/>
+
+## POST /api/v1/orders/:id/reserve
+
+Moves `order.amount` from the buyer's **available** balance to **reserved**, so the money cannot be spent on another order while the escrow is being set up. This is the mandatory step before escrow creation.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix." },
+  ]}
+/>
+
+<Callout type="tip">
+  Send **no body**. The amount is always read from `order.amount` and the currency from `order.currency` — exactly as for the escrow pair, which binds no `@Body()` at all (`orders.controller.ts`, [Escrow Endpoints](/docs/api-reference/escrow#authentication-and-scope)). The `{"amount": "80.00"}` body in the internal walkthrough `docs/guides/orders.md` and the two-argument `sdk.orders.reserve(orderId, { amount })` form in `docs/guides/errors-troubleshooting.md` are not the shape the [SDK reference](/docs/sdk/orders#reserve-funds) documents; do not rely on a body being read.
+</Callout>
+
+### Preconditions
+
+1. The order exists — otherwise `404 ORDER_NOT_FOUND`.
+2. Order status is `ORDER_CREATED` — otherwise `400 INVALID_STATE` (`InvalidOrderStateException`).
+3. The buyer has an active payment account and an available balance covering `order.amount` — otherwise the reservation fails and nothing moves.
+4. `OrderStateMachine.assertTransition(ORDER_CREATED → FUNDS_RESERVED)` passes.
+
+### What happens to the money
+
+| Step | Code | Effect |
+| --- | --- | --- |
+| 1 | `balanceService.reserve(buyer, { amount, currency, orderId, description })` | Buyer `available -= amount`, `reserved += amount`. |
+| 2 | `prisma.$transaction` | `order.status = FUNDS_RESERVED`, plus a `FUNDS_RESERVED` audit entry. |
+| 3 | `eventBus.emit(ORDER_FUNDS_RESERVED)` | `order.funds_reserved` and `balance.reserved` on the [SSE stream](/docs/api-reference/events). |
+
+### Response
+
+<Badge variant="success">201</Badge> The order, now `FUNDS_RESERVED`.
+
+<ResponseSchema
+  label="Reserve response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The order after the reservation." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.status", type: "string", required: true, description: "FUNDS_RESERVED after a successful reservation.", enum: ["ORDER_CREATED", "FUNDS_RESERVED"] },
+    { name: "data.data.amount", type: "string", required: true, description: "Amount moved from available to reserved, as a decimal string." },
+    { name: "data.data.currency", type: "string", required: true, description: "Currency the balance was reserved in." },
+    { name: "data.data.escrow", type: "object", required: false, description: "Still null — reserve does not create the escrow row.", nullable: true },
+    { name: "data.data.milestones", type: "Milestone[]", required: true, description: "Milestones, unchanged; reserve does not complete them." },
+    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_xyz789",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "5000.00",
+        currency: "USD",
+        status: "FUNDS_RESERVED",
+        title: "Mobile App Development",
+        escrow: null,
+        milestones: [
+          { id: "mls_abc123", orderId: "ord_xyz789", milestoneRef: "design", title: "UI/UX Design", amount: "1000.00", status: "OPEN" }
+        ],
+        createdAt: "2026-02-25T12:00:00.000Z",
+        updatedAt: "2026-02-25T12:03:18.204Z"
+      }
+    },
+    meta: { requestId: "req_1ab92e", timestamp: "2026-02-25T12:03:18.331Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `INVALID_STATE` | The order is not `ORDER_CREATED` — this is what a replayed reserve returns. |
+| `404` | `ORDER_NOT_FOUND` | Unknown order ID. |
+| `409` | `FUNDS_ALREADY_RESERVED` | The catalog's dedicated code for reserving twice (`docs/guides/errors-troubleshooting.md`). In practice the state machine usually rejects the retry with `INVALID_STATE` first — handle both. |
+| `422` | `INSUFFICIENT_FUNDS` | Buyer available balance is below `order.amount`; `details` reports `available` and `requested`. The [SDK reference](/docs/sdk/orders#reserve-funds) lists this as `402` and the [error catalog](/docs/api-reference/overview#error-codes) as `422` — branch on `error.code`, not the number. |
+
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_FUNDS",
+    "message": "Available balance is less than requested amount",
+    "details": { "available": "1200.00", "requested": "5000.00" }
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Reserve examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `# No request body: the amount comes from the order.
+curl -X POST "http://localhost:4000/api/v1/orders/ord_xyz789/reserve" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "X-Request-ID: req_1ab92e"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import {
+  OfferHubSDK,
+  InsufficientFundsError,
+  InvalidTransitionError,
+} from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+try {
+  const result = await sdk.orders.reserve("ord_xyz789");
+  const order = (result as any).data?.data ?? result;
+  console.log(order.status); // "FUNDS_RESERVED"
+} catch (error) {
+  if (error instanceof InsufficientFundsError) {
+    // Ask the buyer to top up — see /docs/guide/deposits
+  } else if (error instanceof InvalidTransitionError) {
+    // Already reserved (or later): treat the retry as a no-op
+  }
+  throw error;
+}`
+    },
+  ]}
+/>
+
+## POST /api/v1/orders/:id/cancel
+
+Cancels an order that has not reached escrow. The order goes straight to `CLOSED` with `finalStatus: "CANCELED"` — there is no `CANCELED` member in `OrderStatus`. If funds were reserved, they return to the buyer's available balance in the same transaction. This is an off-chain, instant operation: no Trustless Work call is made.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix." },
+  ]}
+/>
+
+### Request body
+
+Optional — `@Body() dto?: CancelOrderDto` (`apps/api/src/modules/orders/dto/cancel-order.dto.ts`).
+
+<ParamTable
+  label="Cancel request body"
+  fields={[
+    { name: "reason", type: "string", required: false, description: "Free text recorded on the audit entry and in the order.canceled event payload. Omit the body entirely when you have nothing to record." },
+  ]}
+/>
+
+<Callout type="warning">
+  The body shape is inconsistent across the internal walkthroughs: `docs/guides/orders.md` sends `{ "canceledBy": "BUYER", "reason": "..." }` and [Escrow Flows](/docs/guide/escrow-flows) sends `{ "requestedBy": "usr_seller456", "reason": "..." }`, while the [SDK reference](/docs/sdk/orders#cancel-an-order) documents only `{ reason?: string }`. `reason` is the field every version agrees on — send that, and treat `canceledBy` / `requestedBy` as unverified. Because the pipe runs with `forbidNonWhitelisted: true`, a field the DTO does not declare is a `400 VALIDATION_ERROR`, not a no-op.
+</Callout>
+
+### Preconditions
+
+1. The order exists — otherwise `404 ORDER_NOT_FOUND`.
+2. Order status is `ORDER_CREATED` **or** `FUNDS_RESERVED` — the only cancellable states. Once the order is at `ESCROW_CREATING` or later, cancellation is refused and you must use `refund` or `dispute` instead ([Resolution Endpoints](/docs/api-reference/resolution)).
+3. `OrderStateMachine.assertTransition(current → CLOSED)` passes.
+
+### Response
+
+<Badge variant="success">201</Badge> The order, now `CLOSED`.
+
+<ResponseSchema
+  label="Cancel response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The canceled order." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.status", type: "string", required: true, description: "CLOSED — the terminal state. There is no CANCELED status; the reason is carried in the audit entry and the order.canceled event.", enum: ["CLOSED"] },
+    { name: "data.data.finalStatus", type: "string", required: false, description: "Recorded as CANCELED by the cancel flow in the internal walkthrough (docs/guides/orders.md). Not a column on the Order model — read status plus the audit trail if you need to distinguish a cancel from a release.", enum: ["CANCELED"], nullable: true },
+    { name: "data.data.escrow", type: "object", required: false, description: "Null for a canceled order — an escrow row can only exist from ESCROW_CREATING onward, and those states are not cancellable.", nullable: true },
+    { name: "data.data.milestones", type: "Milestone[]", required: true, description: "Milestones, still OPEN. Cancelling does not complete or delete them." },
+    { name: "data.data.updatedAt", type: "string", required: true, description: "ISO 8601 timestamp of the cancellation." },
+    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_xyz789",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "5000.00",
+        currency: "USD",
+        status: "CLOSED",
+        title: "Mobile App Development",
+        escrow: null,
+        milestones: [
+          { id: "mls_abc123", orderId: "ord_xyz789", milestoneRef: "design", title: "UI/UX Design", amount: "1000.00", status: "OPEN" }
+        ],
+        createdAt: "2026-02-25T12:00:00.000Z",
+        updatedAt: "2026-02-25T12:04:55.882Z"
+      }
+    },
+    meta: { requestId: "req_1ab93f", timestamp: "2026-02-25T12:04:56.010Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | The body carries an unknown property or a non-string `reason`. |
+| `400` | `INVALID_STATE` | The order is past `FUNDS_RESERVED` — escrow already started. |
+| `404` | `ORDER_NOT_FOUND` | Unknown order ID. |
+
+```json
+{
+  "error": {
+    "code": "INVALID_STATE",
+    "message": "Cannot cancel order ord_xyz789 in state ESCROW_FUNDING"
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Cancel examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/orders/ord_xyz789/cancel" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -H "X-Request-ID: req_1ab93f" \\
+  -d '{
+    "reason": "Buyer changed mind before escrow"
+  }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// reason is optional: sdk.orders.cancel(orderId, data?)
+const result = await sdk.orders.cancel("ord_xyz789", {
+  reason: "Buyer changed mind before escrow",
+});
+
+const order = (result as any).data?.data ?? result;
+console.log(order.status); // "CLOSED"
+
+// Reserved funds are returned to the buyer automatically:
+const balance = await sdk.balance.get("usr_buyer123");
+console.log(balance.available, balance.reserved);`
+    },
+  ]}
+/>
+
+## GET /api/v1/orders/:id/milestones
+
+Lists the milestones of one order, ordered by creation time. Milestones belong to their parent order and share its escrow — they are not separate orders, and this route returns only that order's rows.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix." },
+  ]}
+/>
+
+<Callout type="note">
+  No query parameters are supported here — no filters, no pagination. The list is the order's own milestone rows, so it is bounded by what you sent on `POST /orders`.
+</Callout>
+
+### Response
+
+<Badge variant="success">200</Badge> The milestone array.
+
+<ResponseSchema
+  label="Milestones list response"
+  fields={[
+    {
+      name: "data",
+      type: "object",
+      required: true,
+      description: "Standard envelope added by ResponseInterceptor.",
+      children: [
+        { name: "success", type: "boolean", required: true, description: "Always true on a successful call." },
+        { name: "data", type: "Milestone[]", required: true, description: "Milestones ordered by creation time; an empty array when the order was created without any." },
+      ],
+    },
+    { name: "data.data[].id", type: "string", required: true, description: "Milestone ID (Prisma CUID). Use milestoneRef, not this, in the complete path." },
+    { name: "data.data[].orderId", type: "string", required: true, description: "Parent order ID." },
+    { name: "data.data[].milestoneRef", type: "string", required: true, description: "The marketplace reference supplied at creation — the {milestoneRef} path value." },
+    { name: "data.data[].title", type: "string", required: true, description: "Milestone title." },
+    { name: "data.data[].amount", type: "string", required: true, description: "Milestone amount as a decimal string." },
+    { name: "data.data[].status", type: "string", required: true, description: "Milestone status.", enum: ["OPEN", "COMPLETED"] },
+    { name: "data.data[].createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
+    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: [
+        { id: "mls_abc123", orderId: "ord_xyz789", milestoneRef: "design", title: "UI/UX Design", amount: "1000.00", status: "COMPLETED", createdAt: "2026-02-25T12:00:00.000Z" },
+        { id: "mls_def456", orderId: "ord_xyz789", milestoneRef: "backend", title: "Backend Development", amount: "2000.00", status: "OPEN", createdAt: "2026-02-25T12:00:00.000Z" },
+        { id: "mls_ghi789", orderId: "ord_xyz789", milestoneRef: "frontend", title: "Frontend Development", amount: "1500.00", status: "OPEN", createdAt: "2026-02-25T12:00:00.000Z" },
+        { id: "mls_jkl012", orderId: "ord_xyz789", milestoneRef: "testing", title: "Testing & Launch", amount: "500.00", status: "OPEN", createdAt: "2026-02-25T12:00:00.000Z" }
+      ]
+    },
+    meta: { requestId: "req_1ab940", timestamp: "2026-02-25T12:20:02.774Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `404` | `ORDER_NOT_FOUND` | Unknown order ID. The response is `404`, never an empty list for a missing order. |
+
+### Examples
+
+<CodeTabs
+  label="Milestones list examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl "http://localhost:4000/api/v1/orders/ord_xyz789/milestones" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+const result = await sdk.orders.getMilestones("ord_xyz789");
+const milestones = (result as any).data?.data ?? result;
+
+const open = milestones.filter((m: any) => m.status === "OPEN");
+console.log(milestones.length, open.length); // 4 3
+
+// Release is only allowed once every milestone is COMPLETED:
+console.log(open.length === 0);`
+    },
+  ]}
+/>
+
+## POST /api/v1/orders/:id/milestones/:milestoneRef/complete
+
+Marks one milestone `COMPLETED`. This is a bookkeeping write on the order's milestone row — it moves no money and makes no on-chain call. The on-chain milestone signature happens later, inside `resolution/release`, which refuses to run while any milestone is still `OPEN`.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix." },
+    { name: "milestoneRef", type: "string", required: true, description: "The ref supplied when the order was created, matched against Milestone.milestoneRef. Path segments are read with @Param('milestoneRef'); the overview table shows the same slot as {ref}. Use the milestoneRef value — it is the field name on the resource." },
+  ]}
+/>
+
+<Callout type="tip">
+  This endpoint has **no request body**, and the route binds no DTO — see the [Orders Guide](/docs/guide/orders#complete-a-milestone). Send no `Content-Type: application/json` with an empty object: with `forbidNonWhitelisted: true` an unexpected `{}` is not the risk, but any property you invent is a `400 VALIDATION_ERROR`.
+</Callout>
+
+### Preconditions
+
+1. The order exists — otherwise `404 ORDER_NOT_FOUND`.
+2. Order status is `IN_PROGRESS` — otherwise `400 INVALID_STATE`. Before funding the order is not in the work window; after release, refund, or dispute it never is again.
+3. A milestone with that `milestoneRef` exists **on this order** — otherwise `404 MILESTONE_NOT_FOUND`.
+4. The milestone is not already `COMPLETED` — otherwise `400 INVALID_STATE`, which is what makes a retry harmless.
+
+### Response
+
+<Badge variant="success">201</Badge> The completed milestone.
+
+<ResponseSchema
+  label="Milestone completion response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    {
+      name: "data.data",
+      type: "object",
+      required: true,
+      description: "The updated milestone.",
+      children: [
+        { name: "id", type: "string", required: true, description: "Milestone ID (Prisma CUID)." },
+        { name: "orderId", type: "string", required: true, description: "Parent order ID." },
+        { name: "milestoneRef", type: "string", required: true, description: "The reference you passed in the path." },
+        { name: "title", type: "string", required: true, description: "Milestone title." },
+        { name: "amount", type: "string", required: true, description: "Milestone amount as a decimal string." },
+        { name: "status", type: "string", required: true, description: "COMPLETED after this call.", enum: ["COMPLETED"] },
+        { name: "createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
+      ],
+    },
+    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "mls_abc123",
+        orderId: "ord_xyz789",
+        milestoneRef: "design",
+        title: "UI/UX Design",
+        amount: "1000.00",
+        status: "COMPLETED",
+        createdAt: "2026-02-25T12:00:00.000Z"
+      }
+    },
+    meta: { requestId: "req_1ab951", timestamp: "2026-02-25T12:22:44.117Z" }
+  }}
+/>
+
+<Callout type="note">
+  Completing the last milestone does **not** settle the order. Once every milestone reads `COMPLETED`, call `POST /api/v1/orders/{orderId}/resolution/release` to move the money — see [Resolution Endpoints](/docs/api-reference/resolution#post-apiv1ordersorderidresolutionrelease).
+</Callout>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `INVALID_STATE` | Order is not `IN_PROGRESS`, or the milestone is already `COMPLETED`. Raised by `InvalidOrderStateException` as a `BadRequestException`; the shared `ERROR_HTTP_STATUS` catalog maps `INVALID_STATE` to `409`, so branch on `error.code`. |
+| `404` | `ORDER_NOT_FOUND` | Unknown order ID. |
+| `404` | `MILESTONE_NOT_FOUND` | No milestone with that `milestoneRef` on the order — a wrong or renamed ref. |
+
+```json
+{
+  "error": {
+    "code": "MILESTONE_NOT_FOUND",
+    "message": "Milestone qa not found on order ord_xyz789"
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Milestone completion examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `# No request body. The order must be IN_PROGRESS.
+curl -X POST "http://localhost:4000/api/v1/orders/ord_xyz789/milestones/design/complete" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "X-Request-ID: req_1ab951"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK, InvalidTransitionError } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// sdk.orders.completeMilestone(orderId, milestoneRef)
+const result = await sdk.orders.completeMilestone("ord_xyz789", "design");
+const milestone = (result as any).data?.data ?? result;
+console.log(milestone.milestoneRef, milestone.status); // "design" "COMPLETED"
+
+// Complete the rest, then release — release rejects while any is OPEN.
+try {
+  for (const ref of ["backend", "frontend", "testing"]) {
+    await sdk.orders.completeMilestone("ord_xyz789", ref);
+  }
+} catch (error) {
+  if (error instanceof InvalidTransitionError) {
+    console.warn("already completed or order not IN_PROGRESS", ref);
+  } else {
+    throw error;
+  }
+}`
+    },
+  ]}
+/>
+
+## Events emitted by this group
+
+Every endpoint above publishes domain events to the [SSE stream](/docs/api-reference/events). Filtering is by exact event name, repeated per type (`?types=order.created&types=order.closed&resources=Order`) — `types=order.*` is only valid on the internal event bus, not on the public stream.
+
+| Endpoint | Event | Payload |
+| --- | --- | --- |
+| `POST /orders` | `order.created` | `{ orderId, buyerId, sellerId, amount, currency, title, description?, clientOrderRef? }` |
+| `POST /orders/{id}/reserve` | `order.funds_reserved` | `{ orderId, buyerId, amount, currency, reservedBalance, availableBalance }` |
+| `POST /orders/{id}/reserve` | `balance.reserved` | Before/after available and reserved balances for the buyer. |
+| `POST /orders/{id}/cancel` | `order.canceled` | `{ orderId, buyerId, canceledBy, reason?, canceledAt, fundsReleased }` |
+| `POST /orders/{id}/cancel` | `order.closed` | `{ orderId, finalStatus, closedAt }` |
+| `POST /orders/{id}/milestones/{ref}/complete` | `escrow.milestone_completed` | `{ escrowId, orderId, milestoneRef, milestoneTitle, amount, completedAt }` |
+
+<Callout type="warning">
+  The milestone event is namespaced under `escrow.*`, not `order.*` — an `order.milestone_completed` event does not exist. Listing only the order event names on your `types` filter will never show milestone completions; add `escrow.milestone_completed` explicitly.
+</Callout>
+
+## Error codes for this group
+
+Every code below is defined once in `packages/shared/src/constants/error-codes.ts` and rendered by `GlobalExceptionFilter`.
+
+| Code | HTTP | Endpoints | Meaning |
+| --- | --- | --- | --- |
+| `VALIDATION_ERROR` | `400` | `POST /orders`, `cancel` | DTO validation failed; `details` lists the field messages. |
+| `INVALID_REQUEST` | `400` | `POST /orders` | Buyer and seller are the same user. |
+| `INVALID_AMOUNT` | `400` | `POST /orders` | Amount format invalid, or milestone amounts do not sum to the order amount. |
+| `INVALID_STATE` | `400` | `reserve`, `cancel`, `milestones/{ref}/complete` | The order (or milestone) is not in the state this step requires. |
+| `ORDER_NOT_FOUND` | `404` | all seven | Unknown `orderId`, or an unknown buyer/seller ID on create. |
+| `MILESTONE_NOT_FOUND` | `404` | `milestones/{ref}/complete` | No milestone with that `milestoneRef` on the order. |
+| `INSUFFICIENT_FUNDS` | `422` | `reserve` | Buyer's available balance is below the order amount. |
+| `FUNDS_ALREADY_RESERVED` | `409` | `reserve` | The catalog's dedicated code for a second reserve; the state machine often answers `INVALID_STATE` first, so handle both. |
+| `RATE_LIMITED` | `429` | all seven | Over the global 100 requests / 60 s window. |
+| `INTERNAL_ERROR` | `500` | all seven | Database or provider failure outside the validated flow. |
+
+## Known behavior
+
+<Callout type="danger">
+  **Idempotency is documented three ways.** The guards and interceptors are genuinely not attached to `OrdersController` — the same finding the [Escrow](/docs/api-reference/escrow#idempotency) and [Resolution](/docs/api-reference/resolution#idempotency) pages record for the other handlers on those controllers — yet `docs/guides/orders.md` states that "all state-changing order endpoints accept an `Idempotency-Key`", and [Escrow Flows](/docs/guide/escrow-flows) advises always sending one when funding. Plan for the header being ignored: deduplicate creation with `clientOrderRef` and treat `400 INVALID_STATE` as "already done".
+</Callout>
+
+<Callout type="warning">
+  **`order.dispute` is never populated on read.** `OrdersService.getOrder` includes only `escrow` and `milestones`, so the `dispute` relation on the response is `undefined` even when a dispute exists. Read disputes through `GET /api/v1/disputes/{id}` instead of the order payload — this is also why the "no active dispute" precondition on release and refund never fires from that field ([Resolution Endpoints](/docs/api-reference/resolution#known-behavior)).
+</Callout>
+
+<Callout type="warning">
+  **`INVALID_STATE` arrives as HTTP `400`, not `422` or `409`.** `InvalidOrderStateException` extends `BadRequestException`, while the shared catalog's `ERROR_HTTP_STATUS` table maps the code to `409` and `docs/guides/orders.md` documents `409 INVALID_STATE` for every rejected transition. Likewise `INSUFFICIENT_FUNDS` is `402` in the SDK reference and `422` in the overview catalog. Trust the status you receive and branch on `error.code`.
+</Callout>
+
+<Callout type="note">
+  **Cancel and the milestone reference naming.** Cancellation has no `CANCELED` status — the order becomes `CLOSED`, with `finalStatus: "CANCELED"` recorded by the internal walkthrough only. And the path slot for a milestone is written `{ref}` in the [endpoint table](/docs/api-reference/overview#orders) and `{milestoneRef}` in the SDK reference; the field on the resource is `milestoneRef`, so that is the value you substitute.
+</Callout>
+
+## Related
+
+- [Escrow Endpoints](/docs/api-reference/escrow) — the next two steps: `POST /orders/{id}/escrow` and `POST /orders/{id}/escrow/fund`, with contract roles and signer identity
+- [Resolution Endpoints](/docs/api-reference/resolution) — `release`, `refund`, and `dispute`, the three ways a funded order settles; release requires every milestone `COMPLETED`
+- [API Reference overview](/docs/api-reference/overview) — base URL, headers, error envelope, idempotency, pagination, and the full endpoint catalog
+- [Orders SDK Reference](/docs/sdk/orders) — `sdk.orders` method-by-method reference, one row per endpoint on this page
+- [Orders Guide](/docs/guide/orders) — lifecycle narrative with cURL and SDK samples
+- [Data Model](/docs/guide/data-model) — `Order`, `Escrow`, and `Milestone` columns and the enum tables
+- [Events (SSE)](/docs/api-reference/events) — payload shapes for the events listed above
+- [Escrow Flows](/docs/guide/escrow-flows) and [Deposits](/docs/guide/deposits) — money movement behind `reserve`, and how a buyer funds the balance it debits

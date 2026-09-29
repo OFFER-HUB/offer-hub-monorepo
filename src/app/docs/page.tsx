@@ -40,7 +40,7 @@ const docSections = [
     title: "API Reference",
     description: "Complete REST API documentation with authentication, endpoints, and real-time events.",
     link: "/docs/api-reference/overview",
-    count: "3 articles",
+    count: "7 articles",
     highlight: false,
     externalLink: { href: "/openapi.json", label: "View OpenAPI Spec" },
   },

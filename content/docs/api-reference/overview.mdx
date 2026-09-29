@@ -154,6 +154,7 @@ The summaries on this page cover the API surface at a glance. The endpoint group
 
 | Page | Endpoints | Source in the Orchestrator repo |
 | --- | --- | --- |
+| [Orders & Milestones Endpoints](/docs/api-reference/orders) | `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/reserve`, `POST /orders/{id}/cancel`, `GET /orders/{id}/milestones`, `POST /orders/{id}/milestones/{milestoneRef}/complete` | `apps/api/src/modules/orders/orders.controller.ts` |
 | [Escrow Endpoints](/docs/api-reference/escrow) | `POST /orders/{id}/escrow`, `POST /orders/{id}/escrow/fund` | `apps/api/src/modules/orders/orders.controller.ts` |
 | [Resolution Endpoints](/docs/api-reference/resolution) | `POST /orders/{orderId}/resolution/release`, `/refund`, `/dispute` | `apps/api/src/modules/resolution/resolution.controller.ts` |
 | [Inbound Webhooks](/docs/api-reference/webhooks) | `POST /webhooks/airtm`, `POST /webhooks/trustless-work` | `apps/api/src/modules/webhooks/webhooks.controller.ts` |
@@ -529,6 +530,8 @@ Wallet endpoints are scoped to a user: `/users/{userId}/wallet`.
 | `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | Airtm callback (public) |
 
 ### Orders
+
+The order lifecycle up to funding, plus milestone bookkeeping, is documented endpoint by endpoint in [Orders & Milestones Endpoints](/docs/api-reference/orders) — real DTO fields, preconditions, error codes, and cURL plus SDK examples for each route.
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
