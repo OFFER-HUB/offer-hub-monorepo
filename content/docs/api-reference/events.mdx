@@ -192,6 +192,25 @@ events.addEventListener('order.escrow_funded', (message) => {
 ```
 
 ## Event catalog
+### Replay Sequence
+
+```mermaid
+sequenceDiagram
+    accTitle: SSE subscription with Last-Event-ID replay
+    accDescr: Client subscribes to SSE, disconnects, reconnects with Last-Event-ID, Orchestrator replays buffered events exclusively after cursor while buffering live events and deduping by eventId.
+    autonumber
+    participant Client
+    participant SSE as GET /api/v1/events
+    Client->>SSE: connect (Bearer key)
+    SSE-->>Client: order.escrow_funded (id: 17:37:12)
+    SSE-->>Client: order.in_progress (id: 17:37:18)
+    Client--xSSE: connection drops
+    Client->>SSE: reconnect Last-Event-ID: 17:37:18
+    SSE->>SSE: scan events:log > cursor
+    SSE-->>Client: replay order.released
+    SSE-->>Client: buffered live events (deduped)
+`
+```
 
 The catalog below is derived from the Orchestrator's `apps/api/src/modules/events/event-catalog.ts` (event names) and `apps/api/src/modules/events/types/*-events.ts` (payload contracts). There are currently **no `wallet.*` events** in the catalog — wallet activity that changes available funds is represented by the balance events below. Optional fields are suffixed with `?`.
 
