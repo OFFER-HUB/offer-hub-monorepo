@@ -6,8 +6,6 @@ import { Callout } from "./Callout";
 import { CommandLine } from "./CommandLine";
 import { Badge } from "./Badge";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
-import { OrderStateMachineDiagram } from "./OrderStateMachineDiagram";
-import { EscrowStateMachineDiagram } from "./EscrowStateMachineDiagram";
 import { ParamTable } from "./ParamTable";
 import { ResponseSchema } from "./ResponseSchema";
 import { BASE_MDX_COMPONENTS } from "@/components/mdx/base-mdx-components";
@@ -22,8 +20,6 @@ export const MDX_COMPONENTS: MDXComponents = {
   CommandLine,
   Badge,
   MermaidDiagram,
-  OrderStateMachineDiagram,
-  EscrowStateMachineDiagram,
   ParamTable,
   ResponseSchema,
 

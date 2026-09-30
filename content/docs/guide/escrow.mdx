@@ -37,9 +37,33 @@ OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on th
 
 ### State Machine
 
-The escrow contract follows the internal **Escrow state machine** below — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly. The order around it follows the [Order lifecycle](/docs/guide/orders).
+The escrow contract follows the internal **Escrow state machine** below, generated from `ESCROW_TRANSITIONS` in `packages/shared/src/enums/escrow-status.enum.ts` in the orchestrator repository. The order around it follows the [Order lifecycle](/docs/guide/orders).
 
-<EscrowStateMachineDiagram />
+<MermaidDiagram
+  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
 
 ### State Descriptions
 
@@ -134,12 +158,17 @@ Releasing funds requires three separate Stellar transactions signed by different
   The seller signs first to mark the milestone as completed, then the buyer signs twice — once to approve and once to trigger the actual fund transfer. All signing happens server-side via the parties' invisible wallets.
 </Callout>
 
-```mermaid
+Source: `apps/api/src/modules/resolution/resolution.service.ts` (`requestRelease`) passes `order.sellerId` to `changeMilestoneStatus`, then `order.buyerId` to `approveMilestone` and `releaseEscrow`; `apps/api/src/providers/trustless-work/clients/escrow.client.ts` maps those to the `change-milestone-status`, `approve-milestone` and `release-funds` contract functions, each requiring the matching role (`serviceProvider`, `approver`, `releaseSigner`) defined in `apps/api/src/providers/trustless-work/types/trustless-work.types.ts`.
+
+<MermaidDiagram
+  caption="Release: three sequential contract calls, each signed by the role the contract expects"
+  chart={`
 flowchart LR
-    A["Seller signs\nchangeMilestoneStatus\n(serviceProvider)"] --> B["Buyer signs\napproveMilestone\n(approver)"]
-    B --> C["Buyer signs\nreleaseFunds\n(releaseSigner)"]
-    C --> D[USDC sent to seller]
-```
+    A["Seller signs<br/>changeMilestoneStatus<br/>(serviceProvider)"] --> B["Buyer signs<br/>approveMilestone<br/>(approver)"]
+    B --> C["Buyer signs<br/>releaseFunds<br/>(releaseSigner)"]
+    C --> D["USDC sent to seller<br/>Order: RELEASE_REQUESTED → RELEASED → CLOSED"]
+`}
+/>
 
 ### Release Response
 
@@ -160,7 +189,7 @@ flowchart LR
 
 ## Refunding (Dispute Flow)
 
-If there's a problem, the buyer can request a refund through the dispute process:
+A refund is requested by the buyer — directly, or after either party opens a dispute (`openedBy` accepts `BUYER` or `SELLER`, per `DisputeOpenedBy` in `packages/shared/src/enums/dispute-status.enum.ts`).
 
 ### Step 1: Open Dispute
 
@@ -195,12 +224,14 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
 | 1 | `disputeEscrow` | **Buyer** | `approver` (disputer) |
 | 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
 
+Source: `apps/api/src/modules/resolution/resolution.service.ts` (`requestRefund`) — the first XDR is signed with the buyer's wallet, the second with the platform wallet configured by `PLATFORM_USER_ID`; the contract functions `dispute-escrow` and `resolve-dispute` live in `apps/api/src/providers/trustless-work/clients/escrow.client.ts`. Opening a dispute itself (`POST /orders/{id}/resolution/dispute`) writes the `DISPUTED` status only — `disputeEscrow` is submitted as part of the refund.
+
 <Callout type="warning">
   Disputes require platform intervention. The smart contract won't transfer funds until the platform signs the `resolveDispute` transaction as `disputeResolver`.
 </Callout>
 
 <Callout type="danger">
-  **Role separation is enforced on-chain.** The `disputeResolver` must be a different party from the disputer. Because the buyer opens the dispute (step 1), only the platform wallet — never the buyer or seller — can sign the resolution (step 2). This prevents either party from unilaterally reclaiming funds.
+  **Role separation is enforced on-chain.** The `disputeResolver` must be a different party from the disputer. Because the buyer signs step 1, only the platform wallet — never the buyer or seller — can sign the resolution (step 2). This prevents either party from unilaterally reclaiming funds.
 </Callout>
 
 ## Using the SDK

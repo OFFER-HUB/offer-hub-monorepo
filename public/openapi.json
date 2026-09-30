@@ -24,6 +24,11 @@
         "tags": [
           "Auth"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -69,11 +74,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -97,6 +97,11 @@
         "operationId": "login-and-receive-a-jwt",
         "tags": [
           "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -141,11 +146,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -168,6 +168,11 @@
         "operationId": "get-user-balances",
         "tags": [
           "Balances"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -217,12 +222,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/balances/transactions": {
@@ -232,6 +232,11 @@
         "operationId": "get-paginated-transaction-history",
         "tags": [
           "Balances"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -294,11 +299,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "page",
@@ -343,6 +343,11 @@
         "tags": [
           "Wallets"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -383,11 +388,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -409,6 +409,11 @@
         "operationId": "list-projects",
         "tags": [
           "Projects"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -473,11 +478,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "page",
@@ -505,6 +505,11 @@
         "operationId": "create-a-project",
         "tags": [
           "Projects"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -554,11 +559,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -584,6 +584,7 @@
         "tags": [
           "Escrow"
         ],
+        "security": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -629,7 +630,6 @@
             }
           }
         },
-        "security": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -654,6 +654,11 @@
         "operationId": "release-escrowed-funds",
         "tags": [
           "Escrow"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "responses": {
           "200": {
@@ -713,11 +718,6 @@
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {

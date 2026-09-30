@@ -187,8 +187,30 @@ function generateOpenApiSpec(): OpenApiSpec {
   return openapi;
 }
 
-const spec = generateOpenApiSpec();
 const outputPath = path.join(process.cwd(), 'public', 'openapi.json');
+const generated = JSON.stringify(generateOpenApiSpec(), null, 2);
 
-fs.writeFileSync(outputPath, JSON.stringify(spec, null, 2));
-logger.log(`OpenAPI spec successfully generated at ${outputPath}`);
+if (process.argv.includes('--check')) {
+  // Staleness guard (used by `npm run validate:openapi` in CI): fail if the
+  // committed spec no longer matches its source (src/data/api-schema.ts).
+  // Normalize CRLF so Windows checkouts don't report false drift.
+  let committed: string | null = null;
+  try {
+    committed = fs.readFileSync(outputPath, 'utf8').replace(/\r\n/g, '\n');
+  } catch {
+    committed = null;
+  }
+
+  if (committed !== generated.replace(/\r\n/g, '\n')) {
+    console.error(
+      'OpenAPI staleness check failed: public/openapi.json is out of date. ' +
+        'Run "npm run generate:openapi" and commit the regenerated file.'
+    );
+    process.exit(1);
+  }
+
+  console.log('OpenAPI spec is up to date.');
+} else {
+  fs.writeFileSync(outputPath, generated);
+  logger.log(`OpenAPI spec successfully generated at ${outputPath}`);
+}

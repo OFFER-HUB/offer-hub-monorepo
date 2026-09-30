@@ -156,9 +156,9 @@ export function MermaidDiagram({
         <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/50" />
-              <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/30" />
-              <span className="w-2.5 h-2.5 rounded-full bg-theme-primary/20" />
+              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/40" />
+              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/25" />
+              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/15" />
             </div>
             <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
               Mermaid

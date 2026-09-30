@@ -19,6 +19,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "generate:openapi": "npx tsx scripts/generate-openapi.ts",
+    "validate:openapi": "npx tsx scripts/generate-openapi.ts --check",
     "docs:index": "npx tsx scripts/generate-docs-index.ts"
   },
   "dependencies": {

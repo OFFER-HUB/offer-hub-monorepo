@@ -31,6 +31,21 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  openapi:
+    name: OpenAPI Spec Staleness Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      # Same guard pattern as the diagram pipeline: fails CI when the
+      # committed public/openapi.json drifts from src/data/api-schema.ts,
+      # so the spec served from /docs can never silently go stale.
+      - run: npm run validate:openapi
+
   e2e:
     name: Route-level a11y & keyboard-nav (Playwright)
     runs-on: ubuntu-latest

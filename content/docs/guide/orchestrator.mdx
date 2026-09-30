@@ -29,8 +29,7 @@ Your marketplace communicates with the Orchestrator via REST API. The Orchestrat
 
 ## API and background jobs
 
-The API in `apps/api` serves the REST API and processes BullMQ background jobs in the same service.
-The separate `apps/worker` package is deprecated; do not deploy it as a second required process.
+The API in `apps/api` serves the REST API and processes BullMQ background jobs in the same service. See [Background Jobs and Reconciliation](/docs/guide/background-jobs) for queue names, schedules, retries, and failed-job recovery.
 
 ## Architecture Overview
 
@@ -121,11 +120,46 @@ The seller requests a withdrawal. The Orchestrator signs a Stellar payment trans
 
 ## State Machines
 
-The Orchestrator runs two distinct state machines: an **Order state machine** that tracks the order lifecycle, and an internal **Escrow state machine** that tracks the on-chain escrow contract. Invalid transitions are rejected with a `409 Conflict` error. Both diagrams below match `docs/architecture/state-machines.md` in the orchestrator repository exactly.
+The Orchestrator runs two distinct state machines: an **Order state machine** that tracks the order lifecycle, and an internal **Escrow state machine** that tracks the on-chain escrow contract. Invalid transitions are rejected with a `409 Conflict` error (`OrderStateMachine.assertTransition` in `packages/shared/src/utils/state-machine.ts`). Both diagrams below are generated from `ORDER_TRANSITIONS` and `ESCROW_TRANSITIONS` in `packages/shared/src/enums`.
 
 ### Order State Machine
 
-<OrderStateMachineDiagram />
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
+
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
 
 | State | Description |
 |-------|-------------|
@@ -146,7 +180,31 @@ The Orchestrator runs two distinct state machines: an **Order state machine** th
 
 The escrow contract moves through its own lifecycle inside the Orchestrator while the order machine advances in parallel.
 
-<EscrowStateMachineDiagram />
+<MermaidDiagram
+  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
 
 | State | Description |
 |-------|-------------|
@@ -233,5 +291,5 @@ AIRTM_WEBHOOK_SECRET=your-webhook-secret
 ```
 
 <Callout type="warning">
-  AirTM requires users to complete KYC on their platform. Crypto mode has no KYC requirement.
+  AirTM requires users to complete KYC on their platform. Crypto mode has no KYC requirement. For complete architecture and deployment details on the default crypto rail, see the [Crypto-Native (Stellar) Provider Guide](/docs/guide/crypto-native).
 </Callout>

@@ -132,6 +132,8 @@ These variables throw at startup or at first use if absent. The application will
 
 ### Operations
 
+For the complete queue, retry, reconciliation, and blockchain-monitor runbook, see [Background Jobs and Reconciliation](/docs/guide/background-jobs).
+
 | Variable | Required | Default | Effect | Source |
 |----------|----------|---------|--------|--------|
 | `DISABLE_BLOCKCHAIN_MONITOR` | No | none | If set to the string `'true'`, `BlockchainMonitorService` skips initialization and does not open Horizon SSE streams. Use on secondary API instances in horizontal scaling to avoid duplicate deposit processing. | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
@@ -168,6 +170,9 @@ These variables are read only by the `@offerhub/cli` package. They are not used 
 
 ### Complete Orchestrator `.env` Template
 
+<Callout type="danger">
+  **Back up `WALLET_ENCRYPTION_KEY` immediately.** If this key is lost, all encrypted Stellar private keys become permanently unrecoverable. Store it in a secrets manager — never in version control. See the [Crypto-Native (Stellar) Provider Guide](/docs/guide/crypto-native) for complete architecture, Horizon monitoring, and production migration steps.
+</Callout>
 ```env
 # ─── Server ──────────────────────────────────────────────────────────────────
 NODE_ENV=development

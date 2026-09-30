@@ -13,11 +13,74 @@ This guide walks through every escrow flow in OFFER-HUB: from creating and fundi
 
 ## State Machines
 
-Escrow and order lifecycles are governed by two canonical state machines (matching `docs/architecture/state-machines.md` in the orchestrator repository exactly). The **Order state machine** tracks the order lifecycle, while the internal **Escrow state machine** tracks the smart contract itself. The flows below map onto these two machines.
+Escrow and order lifecycles are governed by two canonical state machines, generated from the transition tables in the orchestrator's `packages/shared/src/enums/order-status.enum.ts` (`ORDER_TRANSITIONS`) and `packages/shared/src/enums/escrow-status.enum.ts` (`ESCROW_TRANSITIONS`). The **Order state machine** tracks the order lifecycle, while the internal **Escrow state machine** tracks the smart contract itself. The flows below map onto these two machines.
 
-<OrderStateMachineDiagram />
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
 
-<EscrowStateMachineDiagram />
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
+
+<MermaidDiagram
+  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
+
+<Callout type="note">
+  `CANCELLABLE_ORDER_STATES` (`order-status.enum.ts`) lists only `ORDER_CREATED` and `FUNDS_RESERVED`, so the two `→ CLOSED` cancel edges above are the only states from which `POST /orders/{id}/cancel` succeeds.
+</Callout>
 
 ---
 
@@ -31,12 +94,16 @@ An escrow contract is created after an order is placed and the buyer's funds are
 2. **Call the escrow creation endpoint** — Deploys a Trustless Work contract on Stellar (`ESCROW_CREATING`)
 3. **Wait for confirmation** — Contract becomes `CREATED`; the order advances to `ESCROW_FUNDING`
 
-```mermaid
+<MermaidDiagram
+  caption="Create escrow — Order lane (ORDER_TRANSITIONS) with the contract it drives"
+  chart={`
 flowchart LR
-    A[ORDER_CREATED] --> B[FUNDS_RESERVED]
-    B --> C[ESCROW_CREATING]
-    C --> D[CREATED]
-```
+    A["ORDER_CREATED"] --> B["FUNDS_RESERVED"]
+    B --> C["ESCROW_CREATING"]
+    C --> D["ESCROW_FUNDING"]
+    C -. creates .- E["Escrow: CREATING → CREATED"]
+`}
+/>
 
 ### REST
 
@@ -95,11 +162,23 @@ Once the contract is deployed, the buyer's reserved USDC is transferred on-chain
 3. **Stellar confirms** — Transaction lands on-chain (5–10 seconds)
 4. **Status updates** — Order advances to `IN_PROGRESS`
 
-```mermaid
+<MermaidDiagram
+  caption="Funding — Escrow lane (ESCROW_TRANSITIONS) and the Order lane it advances"
+  chart={`
 flowchart LR
-    A[CREATED] --> B[FUNDING]
-    B --> C[FUNDED]
-```
+    subgraph ESCROW["Escrow contract lane"]
+        direction LR
+        A["CREATED"] --> B["FUNDING"]
+        B --> C["FUNDED"]
+    end
+    subgraph ORDER["Order lane"]
+        direction LR
+        D["ESCROW_FUNDING"] --> E["ESCROW_FUNDED"]
+        E --> F["IN_PROGRESS"]
+    end
+    C -. confirms .- E
+`}
+/>
 
 ### REST
 
@@ -138,11 +217,18 @@ Funds can be released in two ways depending on how the order is configured.
 
 The buyer approves release after a deadline or after delivery confirmation within a time window.
 
-```mermaid
+<MermaidDiagram
+  caption="Time-based release — the Order lane moves to RELEASE_REQUESTED first, then the three signed calls run"
+  chart={`
 flowchart LR
-    A[Work Delivered] --> B[Buyer Approves or timer expires]
-    B --> C[Funds Released]
-```
+    A["IN_PROGRESS"] --> B["RELEASE_REQUESTED<br/>assertTransition runs before any contract call"]
+    B --> C["RELEASED<br/>TW confirms release-funds"]
+    C --> D["CLOSED"]
+    B -.-> E["1. seller signs changeMilestoneStatus (serviceProvider)"]
+    B -.-> F["2. buyer signs approveMilestone (approver)"]
+    B -.-> G["3. buyer signs releaseFunds (releaseSigner)"]
+`}
+/>
 
 1. Seller marks work as complete
 2. Buyer has a review window (e.g., 72 hours)
@@ -152,14 +238,19 @@ flowchart LR
 
 For larger projects, create one order with multiple milestones. The milestones are tracked within the same order and share its escrow. Complete each milestone as work is delivered, then use the order resolution flow to release, refund, or dispute the order.
 
-```mermaid
+<MermaidDiagram
+  caption="Milestones live inside one order — the order and escrow states never change per milestone"
+  chart={`
 flowchart LR
-    subgraph O["One order"]
-      A1[Escrow funded] --> B1[Milestone delivered]
-      B1 --> C1[Milestone completed]
-      C1 --> D1[Next milestone]
+    subgraph O["One order — status stays ESCROW_FUNDED / IN_PROGRESS"]
+      direction LR
+      A1["Escrow FUNDED"] --> B1["Milestone 0 delivered<br/>changeMilestoneStatus(index 0)"]
+      B1 --> C1["Milestone 0 completed"]
+      C1 --> D1["Milestone 1 delivered<br/>changeMilestoneStatus(index 1)"]
+      D1 --> E1["Order resolution releases the shared escrow"]
     end
-```
+`}
+/>
 
 <Callout type="tip">
     Milestones do not have separate order lifecycles or escrow contracts. Use `GET /orders/{id}/milestones` to list them and `POST /orders/{id}/milestones/{ref}/complete` to mark one complete within the parent order.
@@ -179,12 +270,17 @@ When the buyer approves the delivered work, funds are released to the seller in 
 | 2 | `approveMilestone` | **Buyer** | `approver` |
 | 3 | `releaseFunds` | **Buyer** | `releaseSigner` |
 
-```mermaid
+<MermaidDiagram
+  caption="Release: three sequential contract calls, each signed by the role the contract expects"
+  chart={`
 flowchart LR
-    A["Seller signs\nchangeMilestoneStatus\n(serviceProvider)"] --> B["Buyer signs\napproveMilestone\n(approver)"]
-    B --> C["Buyer signs\nreleaseFunds\n(releaseSigner)"]
-    C --> D[USDC sent to seller]
-```
+    A["Seller signs<br/>changeMilestoneStatus<br/>(serviceProvider)"] --> B["Buyer signs<br/>approveMilestone<br/>(approver)"]
+    B --> C["Buyer signs<br/>releaseFunds<br/>(releaseSigner)"]
+    C --> D["USDC sent to seller<br/>Order: RELEASE_REQUESTED → RELEASED → CLOSED"]
+`}
+/>
+
+Source: `apps/api/src/modules/resolution/resolution.service.ts` (`requestRelease`) signs with `order.sellerId` then `order.buyerId`; `apps/api/src/providers/trustless-work/clients/escrow.client.ts` maps those calls to the `change-milestone-status`, `approve-milestone` and `release-funds` contract functions.
 
 ### REST
 
@@ -227,19 +323,23 @@ await sdk.orders.release('ord_xyz789', 'Buyer approved release');
 
 ## Raising a Dispute
 
-If the buyer believes the work was not delivered as agreed, they can open a dispute while the order is `IN_PROGRESS`.
+Either party can raise a dispute while the order is `IN_PROGRESS` — `openedBy` accepts `BUYER` or `SELLER` (`packages/shared/src/enums/dispute-status.enum.ts`, `DisputeOpenedBy`).
 
 ### Steps
 
-1. **Buyer opens dispute** — Provides a reason
+1. **Buyer or seller opens dispute** — Provides a reason
 2. **Status changes** — Order moves to `DISPUTED` (funds stay locked in the contract)
 3. **Funds remain locked** — Neither party can access the escrow
 4. **Platform reviews** — Manual or automated resolution begins
 
-```mermaid
+<MermaidDiagram
+  caption="Opening a dispute is off-chain only — no Stellar transaction is submitted yet"
+  chart={`
 flowchart LR
-    A[IN_PROGRESS] --> B[DISPUTED]: Open dispute
-```
+    A["IN_PROGRESS"] -->|"openDispute — BUYER or SELLER"| B["DISPUTED<br/>order status written by resolution.service.ts<br/>escrow record marked DISPUTED"]
+    B --> C["No contract call yet — funds stay locked"]
+`}
+/>
 
 ### REST
 
@@ -340,35 +440,44 @@ await sdk.disputes.resolve('dsp_abc123', {
   Only the platform (using the master API key) can resolve disputes. This requires a co-signature from the Trustless Work smart contract arbiter.
 </Callout>
 
+Signer source for this page: `apps/api/src/modules/resolution/resolution.service.ts` (`requestRelease`, `requestRefund`) and `apps/api/src/providers/trustless-work/clients/escrow.client.ts`; the contract role fields (`approver`, `serviceProvider`, `releaseSigner`, `disputeResolver`, `receiver`, `platformAddress`) are declared in `apps/api/src/providers/trustless-work/types/trustless-work.types.ts`.
+
 ---
 
 ## Refund Flow
 
 A refund can result from dispute resolution or, in some configurations, from a direct cancellation before work begins.
 
-### Refund via Dispute
+### Refund Requests
 
-```mermaid
+<MermaidDiagram
+  caption="Refund lane — the same two signed calls run whether the refund was requested directly or resolved from a dispute"
+  chart={`
 flowchart LR
-    A[DISPUTED] --> B[Platform resolves refund]
-    B --> C[REFUNDED]
-    C --> D[Buyer balance credited]
-```
+    A["IN_PROGRESS"] -->|"requestRefund"| B["REFUND_REQUESTED"]
+    Z["DISPUTED"] -->|"resolve as FULL_REFUND"| B
+    B --> C["REFUNDED"]
+    C --> D["CLOSED"]
+    C -.-> E["Buyer balance credited"]
+`}
+/>
 
 Two on-chain transactions are required:
 
 | Step | Contract call | Signer | Role in contract |
 |------|---------------|--------|------------------|
-| 1 | `disputeEscrow` | **Buyer** | `approver` (disputer) |
+| 1 | `disputeEscrow` | **Buyer** | `approver` (the disputer) |
 | 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
+
+Source: `resolution.service.ts` (`requestRefund`) signs step 1 with the buyer's wallet and step 2 with the platform wallet (`disputeResolver`); the contract functions are `dispute-escrow` and `resolve-dispute` in `apps/api/src/providers/trustless-work/clients/escrow.client.ts`. Resolving an open dispute with `FULL_REFUND` ends in the same `REFUNDED` state.
 
 <Callout type="danger">
   **Role separation is enforced by the smart contract.** The `disputeResolver` must be a different party from the disputer. Because the buyer signs step 1, the platform wallet is the only valid signer for step 2. Neither the buyer nor the seller can unilaterally resolve a dispute to reclaim funds.
 </Callout>
 
-### Refund via Cancellation
+### Cancellation Before Funding
 
-If the order is cancelled before funding (e.g., the seller cannot fulfill), the off-chain reservation is released with no blockchain transaction:
+Cancellation is only accepted in `CANCELLABLE_ORDER_STATES` — `ORDER_CREATED` and `FUNDS_RESERVED`. The off-chain reservation is released with no blockchain transaction:
 
 ```bash
 curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/cancel \

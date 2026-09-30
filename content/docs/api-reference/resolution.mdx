@@ -1,7 +1,7 @@
 ---
 title: Resolution Endpoints
 description: Per-endpoint reference for the OFFER-HUB order resolution API — release, refund, and dispute — with real DTO fields, Trustless Work signer roles, valid state transitions, error codes, and cURL plus TypeScript SDK examples.
-order: 44
+order: 46
 section: API Reference
 ---
 
@@ -85,11 +85,70 @@ Each contract is deployed with three Stellar roles (`apps/api/src/providers/trus
 
 Release, refund, and dispute all start from `IN_PROGRESS` on an order whose escrow is `FUNDED`, and each one ends at `CLOSED`:
 
-<OrderStateMachineDiagram />
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
 
-The escrow record follows its own machine — `FUNDED` becomes `RELEASED`, `REFUNDED`, or `DISPUTED` (`packages/shared/src/enums/escrow-status.enum.ts`):
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
 
-<EscrowStateMachineDiagram />
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
+
+The escrow record follows its own machine — from `FUNDED` it may move to `RELEASING`, `REFUNDING`, or `DISPUTED`, and only `RELEASED` / `REFUNDED` are terminal (`packages/shared/src/enums/escrow-status.enum.ts`):
+
+<MermaidDiagram
+  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
 
 | Endpoint | Order before | Order after | Escrow after |
 | --- | --- | --- | --- |
