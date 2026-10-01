@@ -5,6 +5,7 @@ import { CodeTabs } from "./CodeTabs";
 import { Callout } from "./Callout";
 import { CommandLine } from "./CommandLine";
 import { Badge } from "./Badge";
+import { DocDiagram } from "./DocDiagram";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
 import { ParamTable } from "./ParamTable";
 import { ResponseSchema } from "./ResponseSchema";
@@ -19,6 +20,7 @@ export const MDX_COMPONENTS: MDXComponents = {
   Callout,
   CommandLine,
   Badge,
+  DocDiagram,
   MermaidDiagram,
   ParamTable,
   ResponseSchema,
