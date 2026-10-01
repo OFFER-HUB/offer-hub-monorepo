@@ -1,0 +1,226 @@
+---
+title: Users Endpoints
+description: Per-endpoint reference for the OFFER-HUB Users API - create a user with an automatic balance and link a user's Airtm account - with real DTO fields, enums, response shapes, error codes, idempotency behavior, and cURL plus TypeScript SDK examples.
+order: 52
+section: API Reference
+---
+
+A user is a buyer, a seller, or both on your marketplace. Creating one also creates their balance record, and a wallet when the payment provider needs one. Two routes live in `UsersController` (`apps/api/src/modules/users/users.controller.ts`) and delegate to `UsersService` (`apps/api/src/modules/users/users.service.ts`). With the global `/api/v1` prefix from `apps/api/src/main.ts`, the paths below are the full routes.
+
+| Method | Path | Scope | Success status | Controller handler |
+| --- | --- | --- | --- | --- |
+| <Badge variant="primary">POST</Badge> | `/api/v1/users` | `write` | `201 Created` | `UsersController.createUser` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/users/{id}/airtm/link` | `write` | `200 OK` | `UsersController.linkAirtm` |
+
+Balance routes such as `GET /users/{userId}/balance` are covered in the [API Reference overview](/docs/api-reference/overview) and [Balance SDK reference](/docs/sdk/balance).
+
+## Common behavior
+
+### Authentication and scope
+
+`UsersController` is decorated with `@UseGuards(ApiKeyGuard, ScopeGuard)` and both handlers declare `@Scopes('write')`. A key without the `write` scope gets `403 INSUFFICIENT_SCOPE`. Send `Authorization: Bearer <api key or short-lived token>`; see [Auth Endpoints](/docs/api-reference/auth).
+
+### Request validation
+
+Both request bodies bind a DTO (`apps/api/src/modules/users/dto/create-user.dto.ts`, `link-airtm.dto.ts`). The global `ValidationPipe` runs with `whitelist`, `forbidNonWhitelisted` and `transform` enabled (`apps/api/src/main.ts`), so unknown properties are rejected with `400 VALIDATION_ERROR` rather than ignored.
+
+### Response envelope
+
+Both handlers return `{ data: ... }`, which `ResponseInterceptor` leaves untouched because it is a single-key payload with `data`. The response is therefore `{ "data": { ... } }` with **no `meta` object**. Errors use `{ "error": { "code", "message", "details?" } }`; see [Error Codes](/docs/api-reference/errors).
+
+### Idempotency and rate limiting
+
+The global idempotency guard and interceptor apply to both `POST` routes, so an optional `Idempotency-Key` header (UUID v4, scoped to your key, replayed for 24 hours by default) is honored on both. `POST /users` is also naturally idempotent on `externalUserId` (see below). The global rate limit is 100 requests per 60 seconds per key.
+
+## POST /api/v1/users
+
+Creates a user and their balance in one transaction. If a user with the same `externalUserId` already exists, the existing user is returned instead of an error.
+
+<ParamTable
+  label="Create user request body"
+  fields={[
+    { name: "externalUserId", type: "string", required: true, description: "Your marketplace's own ID for this user. Must not be empty. It is the lookup key for idempotent creation, and it is unique across the whole platform, not per marketplace." },
+    { name: "email", type: "string", required: false, description: "Valid email address. Needed later for Airtm linking." },
+    { name: "type", type: "UserType", required: false, description: "The user's role on your marketplace.", enum: ["BUYER", "SELLER", "BOTH"], defaultValue: "\"BOTH\"" }
+  ]}
+/>
+
+What the service does, in order (`UsersService.createUser`):
+
+1. Looks up `externalUserId`; if found, returns that user without changes.
+2. Otherwise generates an ID with the `usr_` prefix and, in one database transaction, creates the user with status `ACTIVE` and a balance of `0.00` available and `0.00` reserved in `USD`.
+3. Emits a `USER_CREATED` event.
+4. Initializes the payment capability for the configured provider (crypto creates a wallet; Airtm does nothing). A failure here is logged and does **not** fail the request, so the user exists even if wallet setup must be retried.
+
+<Callout type="note">
+  The controller comment says an existing user returns `200 OK`, but the handler declares no `@HttpCode`, so NestJS applies its default and **both** cases return `201 Created`. To tell them apart, compare `createdAt` or check for your own record first.
+</Callout>
+
+<ResponseSchema
+  label="Create user response (201 Created)"
+  fields={[
+    { name: "data.id", type: "string", required: true, description: "User ID with the usr_ prefix. Use it as buyerId / sellerId on orders." },
+    { name: "data.externalUserId", type: "string", required: true, description: "The ID you sent." },
+    { name: "data.email", type: "string", required: false, description: "The email you sent, if any.", nullable: true },
+    { name: "data.type", type: "string", required: true, description: "BUYER, SELLER or BOTH.", enum: ["BUYER", "SELLER", "BOTH"] },
+    { name: "data.status", type: "string", required: true, description: "ACTIVE for newly created users." },
+    { name: "data.balance.available", type: "string", required: true, description: "Spendable balance as a two-place decimal string." },
+    { name: "data.balance.reserved", type: "string", required: true, description: "Amount held against open orders." },
+    { name: "data.balance.currency", type: "string", required: true, description: "USD." },
+    { name: "data.airtmLinked", type: "boolean", required: true, description: "True once an Airtm account is linked." },
+    { name: "data.airtmUserId", type: "string", required: false, description: "Linked Airtm user ID.", nullable: true },
+    { name: "data.airtmLinkedAt", type: "string", required: false, description: "ISO 8601 time of linking.", nullable: true },
+    { name: "data.createdAt", type: "string", required: true, description: "ISO 8601 creation time." },
+    { name: "data.updatedAt", type: "string", required: true, description: "ISO 8601 last update time." }
+  ]}
+  example={{
+    data: {
+      id: "usr_V1StGXR8Z5jdHi6B3mEv0",
+      externalUserId: "user_123",
+      email: "buyer@example.com",
+      type: "BUYER",
+      status: "ACTIVE",
+      balance: { available: "0.00", reserved: "0.00", currency: "USD" },
+      airtmLinked: false,
+      airtmUserId: null,
+      airtmLinkedAt: null,
+      createdAt: "2026-09-30T10:00:00.000Z",
+      updatedAt: "2026-09-30T10:00:00.000Z"
+    }
+  }}
+/>
+
+| Status | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | `externalUserId` missing or empty, `email` not a valid address, `type` not one of the enum values, or an unknown property |
+| `401` | `UNAUTHORIZED` | Missing, malformed or unknown credential |
+| `403` | `INSUFFICIENT_SCOPE` | The caller does not have the `write` scope |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+<CodeTabs
+  label="Create user examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/users" \\
+  -H "Authorization: Bearer $OFFERHUB_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "externalUserId": "user_123",
+    "email": "buyer@example.com",
+    "type": "BUYER"
+  }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "http://localhost:4000",
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+// Safe to retry: the same externalUserId returns the existing user.
+const user = await sdk.users.create({
+  externalUserId: "user_123",
+  email: "buyer@example.com",
+  type: "BUYER",
+});
+
+console.log(user.id, user.balance.available);`
+    }
+  ]}
+/>
+
+## POST /api/v1/users/{id}/airtm/link
+
+Verifies a user's email against Airtm and stores the link. If the user is already linked, the stored link is returned and Airtm is not called again.
+
+<ParamTable
+  label="Link Airtm request"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Path parameter: the internal user ID (usr_ prefix), not externalUserId." },
+    { name: "email", type: "string", required: true, description: "Body field. Must be a valid email and must match the email registered in Airtm." }
+  ]}
+/>
+
+<ResponseSchema
+  label="Link Airtm response (200 OK)"
+  fields={[
+    { name: "data.userId", type: "string", required: true, description: "The internal user ID." },
+    { name: "data.airtmUserId", type: "string", required: true, description: "The user's Airtm ID." },
+    { name: "data.airtmLinkedAt", type: "string", required: true, description: "ISO 8601 time the link was stored." },
+    { name: "data.eligible", type: "boolean", required: true, description: "Always true on success." },
+    { name: "data.email", type: "string", required: true, description: "The email from the request body." }
+  ]}
+  example={{
+    data: {
+      userId: "usr_V1StGXR8Z5jdHi6B3mEv0",
+      airtmUserId: "airtm_8f3a2c",
+      airtmLinkedAt: "2026-09-30T10:05:00.000Z",
+      eligible: true,
+      email: "buyer@example.com"
+    }
+  }}
+/>
+
+On a first successful link the service also emits a `USER_AIRTM_LINKED` event. The already-linked shortcut returns success without re-verifying the email, so the `email` in that response is whatever you just sent.
+
+| Status | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | `email` missing or not a valid address, or an unknown property |
+| `400` | `USER_NOT_FOUND` | Airtm has no account for that email (message: `Email not registered in Airtm`) |
+| `400` | `USER_INACTIVE` | The Airtm account is inactive |
+| `400` | `USER_NOT_VERIFIED` | The Airtm account has not completed KYC |
+| `400` | `AIRTM_USER_INVALID` | Airtm verification failed for another reason |
+| `401` | `UNAUTHORIZED` | Missing, malformed or unknown credential |
+| `403` | `INSUFFICIENT_SCOPE` | The caller does not have the `write` scope |
+| `404` | `USER_NOT_FOUND` | No user with that internal ID on your platform |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+<Callout type="warning">
+  `USER_NOT_FOUND` appears twice with different meanings. With HTTP `404` it means **your** `usr_` ID does not exist. With HTTP `400` it means **Airtm** has no account for the email. Branch on the status together with the code.
+</Callout>
+
+<CodeTabs
+  label="Link Airtm examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/users/usr_V1StGXR8Z5jdHi6B3mEv0/airtm/link" \\
+  -H "Authorization: Bearer $OFFERHUB_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "email": "buyer@example.com" }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "http://localhost:4000",
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+const link = await sdk.users.linkAirtm("usr_V1StGXR8Z5jdHi6B3mEv0", {
+  email: "buyer@example.com",
+});
+
+console.log(link.airtmUserId, link.airtmLinkedAt);`
+    }
+  ]}
+/>
+
+## Related documentation
+
+- [Auth Endpoints](/docs/api-reference/auth) - keys, tokens and scopes
+- [Orders & Milestones Endpoints](/docs/api-reference/orders) - use the returned user IDs as buyer and seller
+- [Users SDK reference](/docs/sdk/users) - the `users.create` and `users.linkAirtm` methods
+- [Error Codes](/docs/api-reference/errors) - the full error catalog

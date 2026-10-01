@@ -220,6 +220,9 @@ The summaries on this page cover the API surface at a glance. The endpoint group
 | [Resolution Endpoints](/docs/api-reference/resolution) | `POST /orders/{orderId}/resolution/release`, `/refund`, `/dispute` | `apps/api/src/modules/resolution/resolution.controller.ts` |
 | [Inbound Webhooks](/docs/api-reference/webhooks) | `POST /webhooks/airtm`, `POST /webhooks/trustless-work` | `apps/api/src/modules/webhooks/webhooks.controller.ts` |
 | [Events (SSE)](/docs/api-reference/events) | `GET /events` plus the event catalog | `apps/api/src/modules/events/events.controller.ts` |
+| [Auth Endpoints](/docs/api-reference/auth) | `POST /auth/api-keys`, `GET /auth/api-keys`, `POST /auth/api-keys/{id}/token`, `GET /auth/me` | `apps/api/src/modules/auth/auth.controller.ts` |
+| [Users Endpoints](/docs/api-reference/users) | `POST /users`, `POST /users/{id}/airtm/link` | `apps/api/src/modules/users/users.controller.ts` |
+| [Config and Health Endpoints](/docs/api-reference/config-and-health) | `GET /config`, `GET /health`, `GET /health/detailed` | `apps/api/src/modules/config/config.controller.ts`, `apps/api/src/modules/health/health.controller.ts` |
 | [Error Codes](/docs/api-reference/errors) | 40+ error codes, envelope format, and correlation IDs | `packages/shared/src/constants/error-codes.ts` |
 
 ## Escrows
