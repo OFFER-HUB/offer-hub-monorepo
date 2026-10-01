@@ -83,6 +83,9 @@ export function useScrollSpy({
 }: UseScrollSpyOptions): string {
   const [activeId, setActiveId] = useState<string>(initialId);
 
+  const idsKey = ids.join(",");
+  const thresholdKey = JSON.stringify(threshold);
+
   useEffect(() => {
     // Whenever the observer is torn down and re-created (new ids, or a
     // resetKey change), snap back to initialId immediately rather than
@@ -150,9 +153,9 @@ export function useScrollSpy({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    ids.join(","),
+    idsKey,
     rootMargin,
-    JSON.stringify(threshold),
+    thresholdKey,
     stickyLastOnBottom,
     bottomOffsetPx,
     bottomCheckDebounceMs,

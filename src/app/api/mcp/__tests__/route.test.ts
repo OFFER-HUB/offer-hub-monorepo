@@ -2,7 +2,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST, DELETE } from "../route";
-import * as docsLoader from "../../../../../mcp/src/docs-loader";
 
 vi.mock("../../../../../mcp/src/docs-loader", () => ({
   loadDocumentation: vi.fn().mockResolvedValue(undefined),

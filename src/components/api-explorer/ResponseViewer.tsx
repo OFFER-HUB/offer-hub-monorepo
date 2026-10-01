@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { MockResponse } from "@/data/api-schema";
+import type { MockResponse } from "@/lib/openapi-parser";
 
 interface ResponseViewerProps {
   responses: MockResponse[];
@@ -22,13 +22,10 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
   }
 
   return (
-    <div className="rounded-2xl shadow-neu-sunken overflow-hidden" style={{ background: "#0f172a" }}>
+    <div className="rounded-2xl shadow-neu-sunken overflow-hidden bg-bg-sunken">
       {/* Tab bar */}
-      <div
-        className="flex items-center justify-between px-4 py-2 border-b"
-        style={{ borderColor: "rgba(255,255,255,0.08)" }}
-      >
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between px-4 py-2 border-b-0 bg-bg-base shadow-neu-sunken-subtle">
+        <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0">
           {responses.map((res, i) => {
             const isActive = i === activeTab;
             const isSuccess = res.status >= 200 && res.status < 300;
@@ -37,16 +34,10 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
                 key={res.status}
                 onClick={() => setActiveTab(i)}
                 className={cn(
-                  "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors duration-200"
+                  "px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors duration-200",
+                  isActive ? "bg-bg-sunken shadow-neu-sunken" : "bg-transparent hover:bg-bg-sunken/50",
+                  isActive && isSuccess ? "text-theme-success" : isActive ? "text-theme-error" : "text-content-secondary"
                 )}
-                style={{
-                  color: isActive
-                    ? isSuccess
-                      ? "#4ade80"
-                      : "#f87171"
-                    : "rgba(255,255,255,0.4)",
-                  background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
-                }}
               >
                 {res.status} {res.label}
               </button>
@@ -58,9 +49,9 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
           onClick={handleCopy}
           aria-label="Copy response"
           className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium",
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium shrink-0",
             "transition-colors duration-200",
-            copied ? "text-green-400" : "text-white/40 hover:text-white/80"
+            copied ? "text-theme-success" : "text-content-secondary hover:text-content-primary"
           )}
         >
           {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
@@ -69,8 +60,8 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
       </div>
 
       {/* JSON body */}
-      <pre className="overflow-x-auto p-4 text-sm leading-relaxed m-0">
-        <code style={{ color: "#a5f3fc", fontFamily: "ui-monospace, monospace" }}>
+      <pre className="overflow-x-auto p-4 text-sm leading-relaxed m-0 text-content-primary">
+        <code className="font-mono text-[13px]">
           {current.body}
         </code>
       </pre>

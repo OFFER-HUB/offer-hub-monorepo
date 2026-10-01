@@ -2,351 +2,31 @@
   "openapi": "3.0.0",
   "info": {
     "title": "OFFER-HUB API",
-    "version": "1.0.0",
-    "description": "Auto-generated OpenAPI specification for OFFER-HUB",
-    "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
-    }
+    "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://api.offer-hub.com",
-      "description": "Production Server"
+      "url": "https://api.offer-hub.com"
     }
   ],
   "paths": {
-    "/auth/register": {
-      "post": {
-        "summary": "Register a new user",
-        "description": "Creates a new user account and returns a JWT token for immediate authentication.",
-        "operationId": "register-a-new-user",
-        "tags": [
-          "Auth"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "User registered successfully",
-                  "data": {
-                    "id": "usr_01ABC",
-                    "email": "user@example.com",
-                    "name": "John Doe",
-                    "token": "eyJhbGciOiJIUzI1NiIs..."
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 422,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Validation failed",
-                  "data": null,
-                  "errors": [
-                    "Email is already registered",
-                    "Password must be at least 8 characters"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "email": "user@example.com",
-                "password": "securePassword123",
-                "name": "John Doe"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "summary": "Login and receive a JWT",
-        "description": "Authenticates a user with email and password, returns a JWT for subsequent requests.",
-        "operationId": "login-and-receive-a-jwt",
-        "tags": [
-          "Auth"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Login successful",
-                  "data": {
-                    "token": "eyJhbGciOiJIUzI1NiIs...",
-                    "user": {
-                      "id": "usr_01ABC",
-                      "email": "user@example.com",
-                      "name": "John Doe"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Invalid email or password",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "email": "user@example.com",
-                "password": "securePassword123"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/balances": {
+    "/audit/logs": {
       "get": {
-        "summary": "Get user balances",
-        "description": "Returns the authenticated user's available and held balances across all currencies.",
-        "operationId": "get-user-balances",
-        "tags": [
-          "Balances"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Balances retrieved",
-                  "data": {
-                    "balances": [
-                      {
-                        "currency": "USD",
-                        "available": 1250,
-                        "held": 200
-                      },
-                      {
-                        "currency": "XLM",
-                        "available": 5000,
-                        "held": 0
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Missing or invalid authorization token",
-                  "data": null
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/balances/transactions": {
-      "get": {
-        "summary": "Get paginated transaction history",
-        "description": "Returns paginated list of the user's transactions with optional filtering.",
-        "operationId": "get-paginated-transaction-history",
-        "tags": [
-          "Balances"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Transactions retrieved",
-                  "data": {
-                    "transactions": [
-                      {
-                        "id": "txn_01XYZ",
-                        "type": "credit",
-                        "amount": 100,
-                        "currency": "USD",
-                        "description": "Escrow release — Project Alpha",
-                        "created_at": "2026-01-15T10:30:00.000Z"
-                      },
-                      {
-                        "id": "txn_02XYZ",
-                        "type": "debit",
-                        "amount": 50,
-                        "currency": "USD",
-                        "description": "Withdrawal to bank",
-                        "created_at": "2026-01-14T14:20:00.000Z"
-                      }
-                    ],
-                    "pagination": {
-                      "page": 1,
-                      "limit": 20,
-                      "total": 47,
-                      "pages": 3
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Missing or invalid authorization token",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
+        "summary": "Support API for audit trail. Requires support scope.",
+        "description": "/\n@Controller('audit/logs')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('support')\nexport class AuditController {\nconstructor(@Inject(AuditService) private readonly auditService: AuditService) {}\n/**\nGET /audit/logs – list audit entries with filters and cursor pagination.\nOrdered by occurredAt descending (newest first).",
+        "operationId": "getLogs",
         "parameters": [
           {
-            "name": "page",
+            "name": "query",
             "in": "query",
             "required": false,
-            "description": "Page number (default: 1)",
             "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "description": "Results per page (default: 20, max: 100)",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "currency",
-            "in": "query",
-            "required": false,
-            "description": "Filter by currency",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "USD",
-                "XLM",
-                "USDC"
-              ]
+              "type": "string"
             }
           }
-        ]
-      }
-    },
-    "/wallets/connect": {
-      "post": {
-        "summary": "Connect a Stellar wallet",
-        "description": "Links a Stellar public key to the authenticated user's account for on-chain transactions.",
-        "operationId": "connect-a-stellar-wallet",
-        "tags": [
-          "Wallets"
         ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
+        "tags": [
+          "audit/logs"
         ],
         "responses": {
           "200": {
@@ -357,63 +37,21 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Wallet connected successfully",
-                  "data": {
-                    "wallet_id": "wal_01DEF",
-                    "public_key": "GBCG42WTVWPO4Q6N...",
-                    "connected_at": "2026-01-20T08:00:00.000Z"
-                  }
+                  "success": true
                 }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 400,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Invalid Stellar public key format",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "public_key": "GBCG42WTVWPO4Q6N..."
               }
             }
           }
         }
       }
     },
-    "/projects": {
-      "get": {
-        "summary": "List projects",
-        "description": "Returns a paginated list of projects visible to the authenticated user.",
-        "operationId": "list-projects",
+    "/auth/api-keys": {
+      "post": {
+        "summary": "Creates a new API key.",
+        "description": "Requires 'support' scope.",
+        "operationId": "UseGuards",
         "tags": [
-          "Projects"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
+          "auth"
         ],
         "responses": {
           "200": {
@@ -424,92 +62,37 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Projects retrieved",
-                  "data": {
-                    "projects": [
-                      {
-                        "id": "prj_01GHI",
-                        "title": "Project Alpha",
-                        "description": "A sample freelance project",
-                        "budget": 2500,
-                        "currency": "USD",
-                        "status": "open",
-                        "created_at": "2026-01-10T09:00:00.000Z"
-                      },
-                      {
-                        "id": "prj_02GHI",
-                        "title": "Project Beta",
-                        "description": "Another project",
-                        "budget": 1000,
-                        "currency": "USDC",
-                        "status": "in_progress",
-                        "created_at": "2026-01-12T11:00:00.000Z"
-                      }
-                    ],
-                    "pagination": {
-                      "page": 1,
-                      "limit": 20,
-                      "total": 12,
-                      "pages": 1
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Missing or invalid authorization token",
-                  "data": null
+                  "success": true
                 }
               }
             }
           }
-        },
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "description": "Page number (default: 1)",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "description": "Results per page (default: 20)",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ]
+        }
       },
-      "post": {
-        "summary": "Create a project",
-        "description": "Creates a new project. Requires authentication.",
-        "operationId": "create-a-project",
-        "tags": [
-          "Projects"
-        ],
-        "security": [
+      "get": {
+        "summary": "Creates a new API key.",
+        "description": "Requires 'support' scope.\n/\n@Post('api-keys')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('support')\nasync createApiKey(\n@Body('name') name: string,\n@Body('scopes') scopes: string[],\n) {\nreturn this.authService.createApiKey(name, scopes);\n}\n/**\nLists all API keys (masked - values never returned).\nRequires 'support' scope.",
+        "operationId": "UseGuards",
+        "parameters": [
           {
-            "bearerAuth": []
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
+        ],
+        "tags": [
+          "auth"
         ],
         "responses": {
           "200": {
@@ -520,71 +103,32 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Project created successfully",
-                  "data": {
-                    "id": "prj_03GHI",
-                    "title": "New Project",
-                    "description": "Project description here",
-                    "budget": 1500,
-                    "currency": "USD",
-                    "status": "open",
-                    "created_at": "2026-02-01T12:00:00.000Z"
-                  }
+                  "success": true
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 422,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Validation failed",
-                  "data": null,
-                  "errors": [
-                    "Title is required",
-                    "Budget must be positive"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "title": "New Project",
-                "description": "Project description here",
-                "budget": 1500,
-                "currency": "USD"
               }
             }
           }
         }
       }
     },
-    "/escrow/init": {
+    "/auth/api-keys/{id}/token": {
       "post": {
-        "summary": "Initialise an escrow",
-        "description": "Creates a new escrow contract between buyer and seller. Funds are held until release.",
-        "operationId": "initialise-an-escrow",
-        "tags": [
-          "Escrow"
+        "summary": "Creates a new API key.",
+        "description": "Requires 'support' scope.\n/\n@Post('api-keys')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('support')\nasync createApiKey(\n@Body('name') name: string,\n@Body('scopes') scopes: string[],\n) {\nreturn this.authService.createApiKey(name, scopes);\n}\n/**\nLists all API keys (masked - values never returned).\nRequires 'support' scope.\n/\n@Get('api-keys')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('support')\nasync listApiKeys(\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n) {\nreturn this.authService.listApiKeys({\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGenerates a short-lived token from an API key.\nRequires 'write' scope.",
+        "operationId": "UseGuards",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "security": [],
+        "tags": [
+          "auth"
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -594,71 +138,21 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Escrow initialised",
-                  "data": {
-                    "escrow_id": "esc_01JKL",
-                    "project_id": "prj_01GHI",
-                    "buyer_id": "usr_01ABC",
-                    "seller_id": "usr_02ABC",
-                    "amount": 2500,
-                    "currency": "USD",
-                    "status": "funded",
-                    "created_at": "2026-02-01T14:00:00.000Z"
-                  }
+                  "success": true
                 }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 400,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Insufficient balance to fund escrow",
-                  "data": null
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              },
-              "example": {
-                "project_id": "prj_01GHI",
-                "seller_id": "usr_02ABC",
-                "amount": 2500,
-                "currency": "USD"
               }
             }
           }
         }
       }
     },
-    "/escrow/release": {
-      "post": {
-        "summary": "Release escrowed funds",
-        "description": "Releases held funds from an escrow to the seller upon project completion.",
-        "operationId": "release-escrowed-funds",
+    "/auth/me": {
+      "get": {
+        "summary": "Creates a new API key.",
+        "description": "Requires 'support' scope.\n/\n@Post('api-keys')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('support')\nasync createApiKey(\n@Body('name') name: string,\n@Body('scopes') scopes: string[],\n) {\nreturn this.authService.createApiKey(name, scopes);\n}\n/**\nLists all API keys (masked - values never returned).\nRequires 'support' scope.\n/\n@Get('api-keys')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('support')\nasync listApiKeys(\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n) {\nreturn this.authService.listApiKeys({\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGenerates a short-lived token from an API key.\nRequires 'write' scope.\n/\n@Post('api-keys/:id/token')\n@UseGuards(ApiKeyGuard, ScopeGuard)\n@Scopes('write')\nasync generateToken(@Param('id') id: string) {\nconst token = await this.authService.generateShortLivedToken(id);\nreturn { token };\n}\n/**\nReturns the current authenticated context.\nAny valid API key can access this endpoint.",
+        "operationId": "UseGuards",
         "tags": [
-          "Escrow"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
+          "auth"
         ],
         "responses": {
           "200": {
@@ -669,55 +163,64 @@
                   "type": "object"
                 },
                 "example": {
-                  "code": 200,
-                  "type": "success",
-                  "ok": true,
-                  "message": "Escrow released successfully",
-                  "data": {
-                    "escrow_id": "esc_01JKL",
-                    "status": "released",
-                    "released_amount": 2500,
-                    "released_at": "2026-02-10T16:00:00.000Z"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 400,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Escrow is not in a releasable state",
-                  "data": null
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "code": 401,
-                  "type": "error",
-                  "ok": false,
-                  "message": "Only the buyer can release the escrow",
-                  "data": null
+                  "success": true
                 }
               }
             }
           }
-        },
+        }
+      }
+    },
+    "/users/{userId}/balance": {
+      "get": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/credit": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -725,7 +228,1852 @@
                 "type": "object"
               },
               "example": {
-                "escrow_id": "esc_01JKL"
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/debit": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/reserve": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.\n/\n@Post('debit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync debitAvailable(\n@Param('userId') userId: string,\n@Body() dto: DebitAvailableDto,\n) {\nreturn this.balanceService.debitAvailable(userId, dto);\n}\n/**\nReserve funds (move from available to reserved).",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/release": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.\n/\n@Post('debit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync debitAvailable(\n@Param('userId') userId: string,\n@Body() dto: DebitAvailableDto,\n) {\nreturn this.balanceService.debitAvailable(userId, dto);\n}\n/**\nReserve funds (move from available to reserved).\n/\n@Post('reserve')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync reserve(\n@Param('userId') userId: string,\n@Body() dto: ReserveDto,\n) {\nreturn this.balanceService.reserve(userId, dto);\n}\n/**\nRelease reserved funds to seller.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/cancel-reservation": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.\n/\n@Post('debit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync debitAvailable(\n@Param('userId') userId: string,\n@Body() dto: DebitAvailableDto,\n) {\nreturn this.balanceService.debitAvailable(userId, dto);\n}\n/**\nReserve funds (move from available to reserved).\n/\n@Post('reserve')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync reserve(\n@Param('userId') userId: string,\n@Body() dto: ReserveDto,\n) {\nreturn this.balanceService.reserve(userId, dto);\n}\n/**\nRelease reserved funds to seller.\n/\n@Post('release')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync release(\n@Param('userId') userId: string,\n@Body() dto: ReleaseDto,\n) {\nreturn this.balanceService.release(userId, dto);\n}\n/**\nCancel reservation (return reserved to available).",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/deduct-reserved": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.\n/\n@Post('debit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync debitAvailable(\n@Param('userId') userId: string,\n@Body() dto: DebitAvailableDto,\n) {\nreturn this.balanceService.debitAvailable(userId, dto);\n}\n/**\nReserve funds (move from available to reserved).\n/\n@Post('reserve')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync reserve(\n@Param('userId') userId: string,\n@Body() dto: ReserveDto,\n) {\nreturn this.balanceService.reserve(userId, dto);\n}\n/**\nRelease reserved funds to seller.\n/\n@Post('release')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync release(\n@Param('userId') userId: string,\n@Body() dto: ReleaseDto,\n) {\nreturn this.balanceService.release(userId, dto);\n}\n/**\nCancel reservation (return reserved to available).\n/\n@Post('cancel-reservation')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync cancelReservation(\n@Param('userId') userId: string,\n@Body() dto: CancelReservationDto,\n) {\nreturn this.balanceService.cancelReservation(userId, dto);\n}\n/**\nDeduct from reserved balance.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/sync": {
+      "post": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.\n/\n@Post('debit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync debitAvailable(\n@Param('userId') userId: string,\n@Body() dto: DebitAvailableDto,\n) {\nreturn this.balanceService.debitAvailable(userId, dto);\n}\n/**\nReserve funds (move from available to reserved).\n/\n@Post('reserve')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync reserve(\n@Param('userId') userId: string,\n@Body() dto: ReserveDto,\n) {\nreturn this.balanceService.reserve(userId, dto);\n}\n/**\nRelease reserved funds to seller.\n/\n@Post('release')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync release(\n@Param('userId') userId: string,\n@Body() dto: ReleaseDto,\n) {\nreturn this.balanceService.release(userId, dto);\n}\n/**\nCancel reservation (return reserved to available).\n/\n@Post('cancel-reservation')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync cancelReservation(\n@Param('userId') userId: string,\n@Body() dto: CancelReservationDto,\n) {\nreturn this.balanceService.cancelReservation(userId, dto);\n}\n/**\nDeduct from reserved balance.\n/\n@Post('deduct-reserved')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync deductReserved(\n@Param('userId') userId: string,\n@Body() dto: DeductReservedDto,\n) {\nreturn this.balanceService.deductReserved(userId, dto);\n}\n/**\nSync balance with provider.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/balance/verify": {
+      "get": {
+        "summary": "Balance Controller",
+        "description": "Provides HTTP endpoints for balance management operations:\n- GET /users/:userId/balance - Get user balance\n- POST /users/:userId/balance/credit - Credit available balance\n- POST /users/:userId/balance/debit - Debit available balance\n- POST /users/:userId/balance/reserve - Reserve funds\n- POST /users/:userId/balance/release - Release reserved funds to seller\n- POST /users/:userId/balance/cancel-reservation - Cancel reservation\n- POST /users/:userId/balance/deduct-reserved - Deduct from reserved\n- GET /users/:userId/balance/sync - Sync with provider\n- GET /users/:userId/balance/verify - Get balance with provider verification\n/\n@Controller('users/:userId/balance')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class BalanceController {\nconstructor(@Inject(BalanceService) private readonly balanceService: BalanceService) {}\n/**\nGet user balance.\n/\n@Get()\n@Scopes('read')\nasync getBalance(@Param('userId') userId: string) {\nreturn this.balanceService.getBalance(userId);\n}\n/**\nCredit funds to available balance.\n/\n@Post('credit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync creditAvailable(\n@Param('userId') userId: string,\n@Body() dto: CreditAvailableDto,\n) {\nreturn this.balanceService.creditAvailable(userId, dto);\n}\n/**\nDebit funds from available balance.\n/\n@Post('debit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync debitAvailable(\n@Param('userId') userId: string,\n@Body() dto: DebitAvailableDto,\n) {\nreturn this.balanceService.debitAvailable(userId, dto);\n}\n/**\nReserve funds (move from available to reserved).\n/\n@Post('reserve')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync reserve(\n@Param('userId') userId: string,\n@Body() dto: ReserveDto,\n) {\nreturn this.balanceService.reserve(userId, dto);\n}\n/**\nRelease reserved funds to seller.\n/\n@Post('release')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync release(\n@Param('userId') userId: string,\n@Body() dto: ReleaseDto,\n) {\nreturn this.balanceService.release(userId, dto);\n}\n/**\nCancel reservation (return reserved to available).\n/\n@Post('cancel-reservation')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync cancelReservation(\n@Param('userId') userId: string,\n@Body() dto: CancelReservationDto,\n) {\nreturn this.balanceService.cancelReservation(userId, dto);\n}\n/**\nDeduct from reserved balance.\n/\n@Post('deduct-reserved')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync deductReserved(\n@Param('userId') userId: string,\n@Body() dto: DeductReservedDto,\n) {\nreturn this.balanceService.deductReserved(userId, dto);\n}\n/**\nSync balance with provider.\n/\n@Post('sync')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync syncBalance(@Param('userId') userId: string) {\nreturn this.balanceService.syncBalanceFromProvider(userId);\n}\n/**\nGet balance with provider verification.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "users/:userId/balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config": {
+      "get": {
+        "summary": "Platform configuration response.",
+        "description": "/\ninterface PlatformConfig {\ncurrencies: string[];\nlimits: {\ntopup: { min: string; max: string };\nwithdrawal: { min: string; max: string };\norder: { min: string; max: string };\n};\nfeatures: {\nmilestones: boolean;\ndisputes: boolean;\nsse: boolean;\nairtm: boolean;\ntrustlessWork: boolean;\n};\nproviders: {\nfiat: string;\nescrow: string;\n};\nversion: string;\n}\n@Controller('config')\nexport class ConfigController {\n/**\nReturns platform configuration.\nThis is a public endpoint - no authentication required.",
+        "operationId": "Public",
+        "tags": [
+          "config"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes": {
+      "get": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nDisputes Controller\nHandles REST API endpoints for dispute management (CRUD operations).\n/\n@Controller('disputes')\nexport class DisputesController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nList disputes with optional filters.\nGET /disputes?orderId=ord_...&status=OPEN&openedBy=BUYER",
+        "operationId": "listDisputes",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "openedBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "disputes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes/{id}": {
+      "get": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nDisputes Controller\nHandles REST API endpoints for dispute management (CRUD operations).\n/\n@Controller('disputes')\nexport class DisputesController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nList disputes with optional filters.\nGET /disputes?orderId=ord_...&status=OPEN&openedBy=BUYER\n/\n@Get()\nasync listDisputes(\n@Query('orderId') orderId?: string,\n@Query('status') status?: string,\n@Query('openedBy') openedBy?: string,\n): Promise<ApiResponse<DisputeWithRelations[]>> {\nconst disputes = await this.resolutionService.listDisputes({ orderId, status, openedBy });\nreturn { success: true, data: disputes };\n}\n/**\nGet dispute by ID.\nGET /disputes/:id",
+        "operationId": "getDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "disputes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes/{id}/assign": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nDisputes Controller\nHandles REST API endpoints for dispute management (CRUD operations).\n/\n@Controller('disputes')\nexport class DisputesController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nList disputes with optional filters.\nGET /disputes?orderId=ord_...&status=OPEN&openedBy=BUYER\n/\n@Get()\nasync listDisputes(\n@Query('orderId') orderId?: string,\n@Query('status') status?: string,\n@Query('openedBy') openedBy?: string,\n): Promise<ApiResponse<DisputeWithRelations[]>> {\nconst disputes = await this.resolutionService.listDisputes({ orderId, status, openedBy });\nreturn { success: true, data: disputes };\n}\n/**\nGet dispute by ID.\nGET /disputes/:id\n/\n@Get(':id')\nasync getDispute(@Param('id') id: string): Promise<ApiResponse<DisputeWithRelations>> {\nconst dispute = await this.resolutionService.getDispute(id);\nreturn { success: true, data: dispute };\n}\n/**\nAssign dispute to support agent.\nPOST /disputes/:id/assign",
+        "operationId": "HttpCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "disputes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes/{id}/resolve": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nDisputes Controller\nHandles REST API endpoints for dispute management (CRUD operations).\n/\n@Controller('disputes')\nexport class DisputesController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nList disputes with optional filters.\nGET /disputes?orderId=ord_...&status=OPEN&openedBy=BUYER\n/\n@Get()\nasync listDisputes(\n@Query('orderId') orderId?: string,\n@Query('status') status?: string,\n@Query('openedBy') openedBy?: string,\n): Promise<ApiResponse<DisputeWithRelations[]>> {\nconst disputes = await this.resolutionService.listDisputes({ orderId, status, openedBy });\nreturn { success: true, data: disputes };\n}\n/**\nGet dispute by ID.\nGET /disputes/:id\n/\n@Get(':id')\nasync getDispute(@Param('id') id: string): Promise<ApiResponse<DisputeWithRelations>> {\nconst dispute = await this.resolutionService.getDispute(id);\nreturn { success: true, data: dispute };\n}\n/**\nAssign dispute to support agent.\nPOST /disputes/:id/assign\n/\n@Post(':id/assign')\n@HttpCode(HttpStatus.OK)\nasync assignDispute(\n@Param('id') id: string,\n@Body() dto: AssignDisputeDto,\n): Promise<ApiResponse<DisputeWithRelations>> {\nconst dispute = await this.resolutionService.assignDispute(id, dto);\nreturn { success: true, data: dispute };\n}\n/**\nResolve dispute with decision.\nPOST /disputes/:id/resolve",
+        "operationId": "HttpCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "disputes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "summary": "EventsController",
+        "description": "Provides the SSE (Server-Sent Events) endpoint for real-time domain event streaming.\nSupports filtering, heartbeat, and reconnection via Last-Event-ID.\n/\n@Controller('events')\nexport class EventsController {\nconstructor(\n@Inject(SseService) private readonly sseService: SseService\n) { }\n/**\nReal-time event stream endpoint.\nQuery Parameters:\n@param types - Filter by event type(s) (e.g. order.created)\n@param resources - Filter by resource type(s) (e.g. Order)\n@param since - Timestamp cursor for replaying missed events\nHeaders:\n- Last-Event-ID: Reconnection cursor (sent by browser automatic retry)",
+        "operationId": "Sse",
+        "parameters": [
+          {
+            "name": "types",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resources",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Basic health check - returns immediately.",
+        "description": "Use this for load balancer probes.",
+        "operationId": "Public",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/detailed": {
+      "get": {
+        "summary": "Basic health check - returns immediately.",
+        "description": "Use this for load balancer probes.\n/\n@Get()\n@Public()\ngetHealth() {\nreturn {\nstatus: 'healthy',\nversion: process.env.npm_package_version || '1.0.0',\ntimestamp: new Date().toISOString(),\n};\n}\n/**\nDetailed health check - checks all dependencies.\nUse this for monitoring and debugging.\nMay take up to 5 seconds per dependency.",
+        "operationId": "Public",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders",
+        "operationId": "HttpCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders",
+        "operationId": "listOrders",
+        "parameters": [
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "seller_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id",
+        "operationId": "getOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/reserve": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id\n/\n@Get(':id')\nasync getOrder(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.getOrder(id);\nreturn { success: true, data: order };\n}\n/**\nReserve funds for an order.\nPOST /orders/:id/reserve",
+        "operationId": "reserveFunds",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/cancel": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id\n/\n@Get(':id')\nasync getOrder(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.getOrder(id);\nreturn { success: true, data: order };\n}\n/**\nReserve funds for an order.\nPOST /orders/:id/reserve\n/\n@Post(':id/reserve')\nasync reserveFunds(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.reserveFunds(id);\nreturn { success: true, data: order };\n}\n/**\nCancel an order.\nPOST /orders/:id/cancel",
+        "operationId": "cancelOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/escrow": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id\n/\n@Get(':id')\nasync getOrder(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.getOrder(id);\nreturn { success: true, data: order };\n}\n/**\nReserve funds for an order.\nPOST /orders/:id/reserve\n/\n@Post(':id/reserve')\nasync reserveFunds(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.reserveFunds(id);\nreturn { success: true, data: order };\n}\n/**\nCancel an order.\nPOST /orders/:id/cancel\n/\n@Post(':id/cancel')\nasync cancelOrder(\n@Param('id') id: string,\n@Body() dto?: CancelOrderDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.cancelOrder(id, dto?.reason);\nreturn { success: true, data: order };\n}\n/**\nCreate escrow contract for an order.\nPOST /orders/:id/escrow",
+        "operationId": "createEscrow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/escrow/fund": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id\n/\n@Get(':id')\nasync getOrder(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.getOrder(id);\nreturn { success: true, data: order };\n}\n/**\nReserve funds for an order.\nPOST /orders/:id/reserve\n/\n@Post(':id/reserve')\nasync reserveFunds(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.reserveFunds(id);\nreturn { success: true, data: order };\n}\n/**\nCancel an order.\nPOST /orders/:id/cancel\n/\n@Post(':id/cancel')\nasync cancelOrder(\n@Param('id') id: string,\n@Body() dto?: CancelOrderDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.cancelOrder(id, dto?.reason);\nreturn { success: true, data: order };\n}\n/**\nCreate escrow contract for an order.\nPOST /orders/:id/escrow\n/\n@Post(':id/escrow')\nasync createEscrow(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createEscrow(id);\nreturn { success: true, data: order };\n}\n/**\nFund escrow contract.\nPOST /orders/:id/escrow/fund",
+        "operationId": "fundEscrow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/milestones": {
+      "get": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id\n/\n@Get(':id')\nasync getOrder(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.getOrder(id);\nreturn { success: true, data: order };\n}\n/**\nReserve funds for an order.\nPOST /orders/:id/reserve\n/\n@Post(':id/reserve')\nasync reserveFunds(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.reserveFunds(id);\nreturn { success: true, data: order };\n}\n/**\nCancel an order.\nPOST /orders/:id/cancel\n/\n@Post(':id/cancel')\nasync cancelOrder(\n@Param('id') id: string,\n@Body() dto?: CancelOrderDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.cancelOrder(id, dto?.reason);\nreturn { success: true, data: order };\n}\n/**\nCreate escrow contract for an order.\nPOST /orders/:id/escrow\n/\n@Post(':id/escrow')\nasync createEscrow(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createEscrow(id);\nreturn { success: true, data: order };\n}\n/**\nFund escrow contract.\nPOST /orders/:id/escrow/fund\n/\n@Post(':id/escrow/fund')\nasync fundEscrow(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.fundEscrow(id);\nreturn { success: true, data: order };\n}\n/**\nGet milestones for an order.\nGET /orders/:id/milestones",
+        "operationId": "getMilestones",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/milestones/{ref}/complete": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nOrders Controller\nHandles REST API endpoints for order lifecycle management.\n/\n@Controller('orders')\nexport class OrdersController {\nconstructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}\n/**\nCreate a new order.\nPOST /orders\n/\n@Post()\n@HttpCode(HttpStatus.CREATED)\nasync createOrder(@Body() dto: CreateOrderDto): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createOrder(dto);\nreturn { success: true, data: order };\n}\n/**\nList orders with pagination.\nGET /orders\n/\n@Get()\nasync listOrders(\n@Query('buyer_id') buyerId?: string,\n@Query('seller_id') sellerId?: string,\n@Query('status') status?: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ success: boolean; data: OrderWithRelations[]; hasMore: boolean; nextCursor?: string }> {\nconst orderStatus = status && Object.values(OrderStatus).includes(status as OrderStatus)\n? (status as OrderStatus)\n: undefined;\nconst result = await this.ordersService.listOrders({\nbuyerId,\nsellerId,\nstatus: orderStatus,\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\nreturn { success: true, ...result };\n}\n/**\nGet order by ID.\nGET /orders/:id\n/\n@Get(':id')\nasync getOrder(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.getOrder(id);\nreturn { success: true, data: order };\n}\n/**\nReserve funds for an order.\nPOST /orders/:id/reserve\n/\n@Post(':id/reserve')\nasync reserveFunds(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.reserveFunds(id);\nreturn { success: true, data: order };\n}\n/**\nCancel an order.\nPOST /orders/:id/cancel\n/\n@Post(':id/cancel')\nasync cancelOrder(\n@Param('id') id: string,\n@Body() dto?: CancelOrderDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.cancelOrder(id, dto?.reason);\nreturn { success: true, data: order };\n}\n/**\nCreate escrow contract for an order.\nPOST /orders/:id/escrow\n/\n@Post(':id/escrow')\nasync createEscrow(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.createEscrow(id);\nreturn { success: true, data: order };\n}\n/**\nFund escrow contract.\nPOST /orders/:id/escrow/fund\n/\n@Post(':id/escrow/fund')\nasync fundEscrow(@Param('id') id: string): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.ordersService.fundEscrow(id);\nreturn { success: true, data: order };\n}\n/**\nGet milestones for an order.\nGET /orders/:id/milestones\n/\n@Get(':id/milestones')\nasync getMilestones(@Param('id') id: string): Promise<ApiResponse<Milestone[]>> {\nconst milestones = await this.ordersService.getMilestones(id);\nreturn { success: true, data: milestones };\n}\n/**\nComplete a milestone.\nPOST /orders/:id/milestones/:ref/complete",
+        "operationId": "completeMilestone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{orderId}/resolution/release": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nResolution Controller\nHandles REST API endpoints for release and refund operations on orders.\n/\n@Controller('orders/:orderId/resolution')\nexport class ResolutionController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nRequest release of funds to seller.\nPOST /orders/:orderId/resolution/release",
+        "operationId": "HttpCode",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders/:orderId/resolution"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{orderId}/resolution/refund": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nResolution Controller\nHandles REST API endpoints for release and refund operations on orders.\n/\n@Controller('orders/:orderId/resolution')\nexport class ResolutionController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nRequest release of funds to seller.\nPOST /orders/:orderId/resolution/release\n/\n@Post('release')\n@HttpCode(HttpStatus.OK)\nasync requestRelease(\n@Param('orderId') orderId: string,\n@Body() dto?: RequestReleaseDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.resolutionService.requestRelease(orderId, dto?.reason);\nreturn { success: true, data: order };\n}\n/**\nRequest refund to buyer.\nPOST /orders/:orderId/resolution/refund",
+        "operationId": "HttpCode",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders/:orderId/resolution"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{orderId}/resolution/dispute": {
+      "post": {
+        "summary": "API response wrapper.",
+        "description": "/\ninterface ApiResponse<T> {\nsuccess: boolean;\ndata: T;\n}\n/**\nResolution Controller\nHandles REST API endpoints for release and refund operations on orders.\n/\n@Controller('orders/:orderId/resolution')\nexport class ResolutionController {\nconstructor(\n@Inject(ResolutionService) private readonly resolutionService: ResolutionService,\n) {}\n/**\nRequest release of funds to seller.\nPOST /orders/:orderId/resolution/release\n/\n@Post('release')\n@HttpCode(HttpStatus.OK)\nasync requestRelease(\n@Param('orderId') orderId: string,\n@Body() dto?: RequestReleaseDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.resolutionService.requestRelease(orderId, dto?.reason);\nreturn { success: true, data: order };\n}\n/**\nRequest refund to buyer.\nPOST /orders/:orderId/resolution/refund\n/\n@Post('refund')\n@HttpCode(HttpStatus.OK)\nasync requestRefund(\n@Param('orderId') orderId: string,\n@Body() dto: RequestRefundDto,\n): Promise<ApiResponse<OrderWithRelations>> {\nconst order = await this.resolutionService.requestRefund(orderId, dto.reason);\nreturn { success: true, data: order };\n}\n/**\nOpen a dispute for an order.\nPOST /orders/:orderId/resolution/dispute",
+        "operationId": "HttpCode",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders/:orderId/resolution"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups": {
+      "post": {
+        "summary": "Controller for top-up (payin) operations.",
+        "description": "Endpoints:\n- POST /topups - Create a new top-up\n- GET /topups - List user's top-ups\n- GET /topups/:id - Get a specific top-up\n- POST /topups/:id/refresh - Refresh top-up status from Airtm\n/\n@Controller('topups')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class TopUpsController {\nconstructor(\n@Inject(TopUpsService) private readonly topupsService: TopUpsService,\n@Inject(AirtmConfig) private readonly airtmConfig: AirtmConfig,\n) {}\n/**\nCreates a new top-up for the authenticated user.\nReturns a confirmation URI that the user must visit to complete payment.",
+        "operationId": "Scopes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "topups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Controller for top-up (payin) operations.",
+        "description": "Endpoints:\n- POST /topups - Create a new top-up\n- GET /topups - List user's top-ups\n- GET /topups/:id - Get a specific top-up\n- POST /topups/:id/refresh - Refresh top-up status from Airtm\n/\n@Controller('topups')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class TopUpsController {\nconstructor(\n@Inject(TopUpsService) private readonly topupsService: TopUpsService,\n@Inject(AirtmConfig) private readonly airtmConfig: AirtmConfig,\n) {}\n/**\nCreates a new top-up for the authenticated user.\nReturns a confirmation URI that the user must visit to complete payment.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createTopUp(\n@CurrentUser('userId') userId: string,\n@Body() dto: CreateTopUpDto,\n): Promise<CreateTopUpResponse> {\nreturn this.topupsService.createTopUp(userId, dto);\n}\n/**\nLists top-ups for the authenticated user.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "topups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups/{id}": {
+      "get": {
+        "summary": "Controller for top-up (payin) operations.",
+        "description": "Endpoints:\n- POST /topups - Create a new top-up\n- GET /topups - List user's top-ups\n- GET /topups/:id - Get a specific top-up\n- POST /topups/:id/refresh - Refresh top-up status from Airtm\n/\n@Controller('topups')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class TopUpsController {\nconstructor(\n@Inject(TopUpsService) private readonly topupsService: TopUpsService,\n@Inject(AirtmConfig) private readonly airtmConfig: AirtmConfig,\n) {}\n/**\nCreates a new top-up for the authenticated user.\nReturns a confirmation URI that the user must visit to complete payment.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createTopUp(\n@CurrentUser('userId') userId: string,\n@Body() dto: CreateTopUpDto,\n): Promise<CreateTopUpResponse> {\nreturn this.topupsService.createTopUp(userId, dto);\n}\n/**\nLists top-ups for the authenticated user.\n/\n@Get()\n@Scopes('read')\nasync listTopUps(\n@CurrentUser('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: TopUpResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.topupsService.listTopUps(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific top-up by ID.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "topups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups/{id}/refresh": {
+      "post": {
+        "summary": "Controller for top-up (payin) operations.",
+        "description": "Endpoints:\n- POST /topups - Create a new top-up\n- GET /topups - List user's top-ups\n- GET /topups/:id - Get a specific top-up\n- POST /topups/:id/refresh - Refresh top-up status from Airtm\n/\n@Controller('topups')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class TopUpsController {\nconstructor(\n@Inject(TopUpsService) private readonly topupsService: TopUpsService,\n@Inject(AirtmConfig) private readonly airtmConfig: AirtmConfig,\n) {}\n/**\nCreates a new top-up for the authenticated user.\nReturns a confirmation URI that the user must visit to complete payment.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createTopUp(\n@CurrentUser('userId') userId: string,\n@Body() dto: CreateTopUpDto,\n): Promise<CreateTopUpResponse> {\nreturn this.topupsService.createTopUp(userId, dto);\n}\n/**\nLists top-ups for the authenticated user.\n/\n@Get()\n@Scopes('read')\nasync listTopUps(\n@CurrentUser('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: TopUpResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.topupsService.listTopUps(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific top-up by ID.\n/\n@Get(':id')\n@Scopes('read')\nasync getTopUp(\n@CurrentUser('userId') userId: string,\n@Param('id') topupId: string,\n): Promise<TopUpResponse> {\nreturn this.topupsService.getTopUp(topupId, userId);\n}\n/**\nRefreshes top-up status from Airtm.\nUse when webhook may have been missed.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "topups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups/{id}/cancel": {
+      "post": {
+        "summary": "Controller for top-up (payin) operations.",
+        "description": "Endpoints:\n- POST /topups - Create a new top-up\n- GET /topups - List user's top-ups\n- GET /topups/:id - Get a specific top-up\n- POST /topups/:id/refresh - Refresh top-up status from Airtm\n/\n@Controller('topups')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class TopUpsController {\nconstructor(\n@Inject(TopUpsService) private readonly topupsService: TopUpsService,\n@Inject(AirtmConfig) private readonly airtmConfig: AirtmConfig,\n) {}\n/**\nCreates a new top-up for the authenticated user.\nReturns a confirmation URI that the user must visit to complete payment.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createTopUp(\n@CurrentUser('userId') userId: string,\n@Body() dto: CreateTopUpDto,\n): Promise<CreateTopUpResponse> {\nreturn this.topupsService.createTopUp(userId, dto);\n}\n/**\nLists top-ups for the authenticated user.\n/\n@Get()\n@Scopes('read')\nasync listTopUps(\n@CurrentUser('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: TopUpResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.topupsService.listTopUps(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific top-up by ID.\n/\n@Get(':id')\n@Scopes('read')\nasync getTopUp(\n@CurrentUser('userId') userId: string,\n@Param('id') topupId: string,\n): Promise<TopUpResponse> {\nreturn this.topupsService.getTopUp(topupId, userId);\n}\n/**\nRefreshes top-up status from Airtm.\nUse when webhook may have been missed.\n/\n@Post(':id/refresh')\n@Scopes('read')\n@HttpCode(HttpStatus.OK)\nasync refreshTopUp(\n@CurrentUser('userId') userId: string,\n@Param('id') topupId: string,\n): Promise<TopUpResponse> {\nreturn this.topupsService.refreshTopUp(topupId, userId);\n}\n/**\nCancels a top-up that is awaiting user confirmation.\nOnly works when status is TOPUP_AWAITING_USER_CONFIRMATION.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "topups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/topups/{id}/callback": {
+      "get": {
+        "summary": "Controller for top-up (payin) operations.",
+        "description": "Endpoints:\n- POST /topups - Create a new top-up\n- GET /topups - List user's top-ups\n- GET /topups/:id - Get a specific top-up\n- POST /topups/:id/refresh - Refresh top-up status from Airtm\n/\n@Controller('topups')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class TopUpsController {\nconstructor(\n@Inject(TopUpsService) private readonly topupsService: TopUpsService,\n@Inject(AirtmConfig) private readonly airtmConfig: AirtmConfig,\n) {}\n/**\nCreates a new top-up for the authenticated user.\nReturns a confirmation URI that the user must visit to complete payment.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createTopUp(\n@CurrentUser('userId') userId: string,\n@Body() dto: CreateTopUpDto,\n): Promise<CreateTopUpResponse> {\nreturn this.topupsService.createTopUp(userId, dto);\n}\n/**\nLists top-ups for the authenticated user.\n/\n@Get()\n@Scopes('read')\nasync listTopUps(\n@CurrentUser('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: TopUpResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.topupsService.listTopUps(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific top-up by ID.\n/\n@Get(':id')\n@Scopes('read')\nasync getTopUp(\n@CurrentUser('userId') userId: string,\n@Param('id') topupId: string,\n): Promise<TopUpResponse> {\nreturn this.topupsService.getTopUp(topupId, userId);\n}\n/**\nRefreshes top-up status from Airtm.\nUse when webhook may have been missed.\n/\n@Post(':id/refresh')\n@Scopes('read')\n@HttpCode(HttpStatus.OK)\nasync refreshTopUp(\n@CurrentUser('userId') userId: string,\n@Param('id') topupId: string,\n): Promise<TopUpResponse> {\nreturn this.topupsService.refreshTopUp(topupId, userId);\n}\n/**\nCancels a top-up that is awaiting user confirmation.\nOnly works when status is TOPUP_AWAITING_USER_CONFIRMATION.\n/\n@Post(':id/cancel')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync cancelTopUp(\n@CurrentUser('userId') userId: string,\n@Param('id') topupId: string,\n): Promise<TopUpResponse> {\nreturn this.topupsService.cancelTopUp(topupId, userId);\n}\n/**\nHandles Airtm callback redirects after user confirms or cancels payment.\nThis is a public endpoint (no authentication required).\nRedirects user to success or cancel URL based on top-up status.",
+        "operationId": "Public",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "topups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Users Controller",
+        "description": "Provides HTTP endpoints for user management:\n- POST /users - Create a new user (idempotent)\n- POST /users/:id/airtm/link - Link user's Airtm account\n/\n@Controller('users')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class UsersController {\nconstructor(@Inject(UsersService) private readonly usersService: UsersService) {}\n/**\nCreate a new user with balance.\nThis endpoint is idempotent - if a user with the same externalUserId exists,\nit returns the existing user (200 OK) instead of creating a new one.\n@returns 201 Created if new user is created, 200 OK if user already exists",
+        "operationId": "Scopes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/airtm/link": {
+      "post": {
+        "summary": "Users Controller",
+        "description": "Provides HTTP endpoints for user management:\n- POST /users - Create a new user (idempotent)\n- POST /users/:id/airtm/link - Link user's Airtm account\n/\n@Controller('users')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class UsersController {\nconstructor(@Inject(UsersService) private readonly usersService: UsersService) {}\n/**\nCreate a new user with balance.\nThis endpoint is idempotent - if a user with the same externalUserId exists,\nit returns the existing user (200 OK) instead of creating a new one.\n@returns 201 Created if new user is created, 200 OK if user already exists\n/\n@Post()\n@Scopes('write')\nasync createUser(@Body() dto: CreateUserDto) {\nconst user = await this.usersService.createUser(dto);\n// Return the user in a data wrapper\nreturn {\ndata: user,\n};\n}\n/**\nLink a user's Airtm account.\nVerifies the user's email against Airtm and stores the linkage.\nIf already linked, returns current link information.\n@returns 200 OK with link information",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/wallet": {
+      "get": {
+        "summary": "GET /users/:userId/wallet",
+        "description": "Returns wallet info: public key, type, balance",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "users/:userId/wallet"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/wallet/deposit": {
+      "get": {
+        "summary": "GET /users/:userId/wallet",
+        "description": "Returns wallet info: public key, type, balance\n/\n@Get()\n@Scopes('read')\nasync getWallet(@Param('userId') userId: string) {\nconst wallet = await this.walletService.getPrimaryWallet(userId);\nconst balance = await this.walletService.getBalance(userId);\nreturn {\ndata: {\npublicKey: wallet.publicKey,\ntype: wallet.type,\nprovider: wallet.provider,\nisActive: wallet.isActive,\nisPrimary: wallet.isPrimary,\nbalance: {\nusdc: balance.usdc,\nxlm: balance.xlm,\n},\ncreatedAt: wallet.createdAt.toISOString(),\n},\n};\n}\n/**\nGET /users/:userId/wallet/deposit\nReturns deposit instructions (Stellar address + asset info)",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "users/:userId/wallet"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/wallet/transactions": {
+      "get": {
+        "summary": "GET /users/:userId/wallet",
+        "description": "Returns wallet info: public key, type, balance\n/\n@Get()\n@Scopes('read')\nasync getWallet(@Param('userId') userId: string) {\nconst wallet = await this.walletService.getPrimaryWallet(userId);\nconst balance = await this.walletService.getBalance(userId);\nreturn {\ndata: {\npublicKey: wallet.publicKey,\ntype: wallet.type,\nprovider: wallet.provider,\nisActive: wallet.isActive,\nisPrimary: wallet.isPrimary,\nbalance: {\nusdc: balance.usdc,\nxlm: balance.xlm,\n},\ncreatedAt: wallet.createdAt.toISOString(),\n},\n};\n}\n/**\nGET /users/:userId/wallet/deposit\nReturns deposit instructions (Stellar address + asset info)\n/\n@Get('deposit')\n@Scopes('read')\nasync getDepositInfo(@Param('userId') userId: string) {\nconst publicKey = await this.walletService.getPublicKey(userId);\nreturn {\ndata: {\nprovider: 'crypto',\nmethod: 'stellar_address',\naddress: publicKey,\nasset: {\ncode: this.stellarConfig.stellarUsdcAssetCode,\nissuer: this.stellarConfig.stellarUsdcIssuer,\n},\nnetwork: this.stellarConfig.stellarNetwork,\ninstructions:\n'Send USDC to this Stellar address. Deposits are detected automatically within seconds.',\n},\n};\n}\n/**\nGET /users/:userId/wallet/transactions\nReturns transaction history from Stellar Horizon",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "users/:userId/wallet"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/airtm": {
+      "post": {
+        "summary": "Controller for receiving webhooks from external providers.",
+        "description": "Handles Airtm and Trustless Work webhook events.\n/\n@Controller('webhooks')\nexport class WebhooksController {\nprivate readonly logger = new Logger(WebhooksController.name);\nconstructor(\n@Inject(AirtmWebhookService) private readonly airtmWebhookService: AirtmWebhookService,\n@Inject(WebhookService) private readonly trustlessWebhookService: WebhookService,\n) {}\n/**\nReceives webhooks from Airtm.\nFlow:\n1. Verify signature using Svix headers\n2. Return 200 OK immediately (before processing)\n3. Process event asynchronously\n@see https://docs.airtm.io/webhooks",
+        "operationId": "HttpCode",
+        "tags": [
+          "webhooks"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/trustless-work": {
+      "post": {
+        "summary": "Controller for receiving webhooks from external providers.",
+        "description": "Handles Airtm and Trustless Work webhook events.\n/\n@Controller('webhooks')\nexport class WebhooksController {\nprivate readonly logger = new Logger(WebhooksController.name);\nconstructor(\n@Inject(AirtmWebhookService) private readonly airtmWebhookService: AirtmWebhookService,\n@Inject(WebhookService) private readonly trustlessWebhookService: WebhookService,\n) {}\n/**\nReceives webhooks from Airtm.\nFlow:\n1. Verify signature using Svix headers\n2. Return 200 OK immediately (before processing)\n3. Process event asynchronously\n@see https://docs.airtm.io/webhooks\n/\n@Post('airtm')\n@HttpCode(HttpStatus.OK)\nasync handleAirtmWebhook(\n@Req() req: RawBodyRequest<Request>,\n@Headers('svix-id') svixId: string,\n@Headers('svix-timestamp') svixTimestamp: string,\n@Headers('svix-signature') svixSignature: string,\n): Promise<{ status: string; processed?: boolean; duplicate?: boolean }> {\nthis.logger.log(`Received Airtm webhook: svix-id=${svixId}`);\n// Get raw body for signature verification\nconst rawBody = req.rawBody?.toString() || JSON.stringify(req.body);\n// Build Svix headers object\nconst svixHeaders: SvixWebhookHeaders = {\n'svix-id': svixId,\n'svix-timestamp': svixTimestamp,\n'svix-signature': svixSignature,\n};\n// 1. Verify signature (throws 401 if invalid)\nconst payload = this.airtmWebhookService.verifySignature(rawBody, svixHeaders);\n// 2. Process the event\nconst result = await this.airtmWebhookService.processEvent(payload);\nif (result.duplicate) {\nthis.logger.debug(`Duplicate webhook ignored: ${result.eventId}`);\nreturn { status: 'ok', duplicate: true };\n}\nif (!result.success) {\nthis.logger.warn(`Webhook processing failed: ${result.error}`);\n// Still return 200 to prevent retries for business logic errors\nreturn { status: 'ok', processed: false };\n}\nthis.logger.log(\n`Webhook processed: eventId=${result.eventId}, type=${result.eventType}, ` +\n`resource=${result.resourceId}, newStatus=${result.newStatus}`,\n);\nreturn { status: 'ok', processed: true };\n}\n/**\nReceives webhooks from Trustless Work.\nVerifies HMAC-SHA256 signature and processes escrow lifecycle events.\nEvents handled:\n- escrow.created → ESCROW_FUNDING\n- escrow.funding_started → updates escrow status\n- escrow.funded → IN_PROGRESS\n- escrow.released → confirms release, credits seller\n- escrow.refunded → confirms refund, credits buyer\n- escrow.disputed → marks escrow as DISPUTED\n@see https://docs.trustlesswork.com/trustless-work/api-reference",
+        "operationId": "HttpCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "webhooks"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/withdrawals": {
+      "post": {
+        "summary": "Controller for withdrawal (payout) operations.",
+        "description": "Endpoints:\n- POST /withdrawals - Create a new withdrawal\n- GET /withdrawals?userId= - List user's withdrawals\n- GET /withdrawals/:id?userId= - Get a specific withdrawal\n- POST /withdrawals/:id/commit?userId= - Commit a pending withdrawal\n- POST /withdrawals/:id/refresh?userId= - Refresh withdrawal status from Airtm\nNote: userId is passed in the request body (POST) or as a query param (GET).\nThe Orchestrator is a server-to-server API — userId identifies the acting user.\n/\n@Controller('withdrawals')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class WithdrawalsController {\nconstructor(@Inject(WithdrawalsService) private readonly withdrawalsService: WithdrawalsService) {}\n/**\nCreates a new withdrawal for a user.\nBy default creates in two-step mode (requires commit).\nSet commit=true for one-step withdrawal.",
+        "operationId": "Scopes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "exampleField": "value"
+              }
+            }
+          }
+        },
+        "tags": [
+          "withdrawals"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Controller for withdrawal (payout) operations.",
+        "description": "Endpoints:\n- POST /withdrawals - Create a new withdrawal\n- GET /withdrawals?userId= - List user's withdrawals\n- GET /withdrawals/:id?userId= - Get a specific withdrawal\n- POST /withdrawals/:id/commit?userId= - Commit a pending withdrawal\n- POST /withdrawals/:id/refresh?userId= - Refresh withdrawal status from Airtm\nNote: userId is passed in the request body (POST) or as a query param (GET).\nThe Orchestrator is a server-to-server API — userId identifies the acting user.\n/\n@Controller('withdrawals')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class WithdrawalsController {\nconstructor(@Inject(WithdrawalsService) private readonly withdrawalsService: WithdrawalsService) {}\n/**\nCreates a new withdrawal for a user.\nBy default creates in two-step mode (requires commit).\nSet commit=true for one-step withdrawal.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createWithdrawal(\n@Body() dto: CreateWithdrawalDto,\n): Promise<CreateWithdrawalResponse> {\nreturn this.withdrawalsService.createWithdrawal(dto.userId, dto);\n}\n/**\nLists withdrawals for a user.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "withdrawals"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/withdrawals/{id}": {
+      "get": {
+        "summary": "Controller for withdrawal (payout) operations.",
+        "description": "Endpoints:\n- POST /withdrawals - Create a new withdrawal\n- GET /withdrawals?userId= - List user's withdrawals\n- GET /withdrawals/:id?userId= - Get a specific withdrawal\n- POST /withdrawals/:id/commit?userId= - Commit a pending withdrawal\n- POST /withdrawals/:id/refresh?userId= - Refresh withdrawal status from Airtm\nNote: userId is passed in the request body (POST) or as a query param (GET).\nThe Orchestrator is a server-to-server API — userId identifies the acting user.\n/\n@Controller('withdrawals')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class WithdrawalsController {\nconstructor(@Inject(WithdrawalsService) private readonly withdrawalsService: WithdrawalsService) {}\n/**\nCreates a new withdrawal for a user.\nBy default creates in two-step mode (requires commit).\nSet commit=true for one-step withdrawal.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createWithdrawal(\n@Body() dto: CreateWithdrawalDto,\n): Promise<CreateWithdrawalResponse> {\nreturn this.withdrawalsService.createWithdrawal(dto.userId, dto);\n}\n/**\nLists withdrawals for a user.\n/\n@Get()\n@Scopes('read')\nasync listWithdrawals(\n@Query('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: WithdrawalResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.withdrawalsService.listWithdrawals(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific withdrawal by ID.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "withdrawals"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/withdrawals/{id}/commit": {
+      "post": {
+        "summary": "Controller for withdrawal (payout) operations.",
+        "description": "Endpoints:\n- POST /withdrawals - Create a new withdrawal\n- GET /withdrawals?userId= - List user's withdrawals\n- GET /withdrawals/:id?userId= - Get a specific withdrawal\n- POST /withdrawals/:id/commit?userId= - Commit a pending withdrawal\n- POST /withdrawals/:id/refresh?userId= - Refresh withdrawal status from Airtm\nNote: userId is passed in the request body (POST) or as a query param (GET).\nThe Orchestrator is a server-to-server API — userId identifies the acting user.\n/\n@Controller('withdrawals')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class WithdrawalsController {\nconstructor(@Inject(WithdrawalsService) private readonly withdrawalsService: WithdrawalsService) {}\n/**\nCreates a new withdrawal for a user.\nBy default creates in two-step mode (requires commit).\nSet commit=true for one-step withdrawal.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createWithdrawal(\n@Body() dto: CreateWithdrawalDto,\n): Promise<CreateWithdrawalResponse> {\nreturn this.withdrawalsService.createWithdrawal(dto.userId, dto);\n}\n/**\nLists withdrawals for a user.\n/\n@Get()\n@Scopes('read')\nasync listWithdrawals(\n@Query('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: WithdrawalResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.withdrawalsService.listWithdrawals(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific withdrawal by ID.\n/\n@Get(':id')\n@Scopes('read')\nasync getWithdrawal(\n@Query('userId') userId: string,\n@Param('id') withdrawalId: string,\n): Promise<WithdrawalResponse> {\nreturn this.withdrawalsService.getWithdrawal(withdrawalId, userId);\n}\n/**\nCommits a withdrawal that was created without auto-commit.\nOnly works for withdrawals in WITHDRAWAL_CREATED status.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "withdrawals"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/withdrawals/{id}/refresh": {
+      "post": {
+        "summary": "Controller for withdrawal (payout) operations.",
+        "description": "Endpoints:\n- POST /withdrawals - Create a new withdrawal\n- GET /withdrawals?userId= - List user's withdrawals\n- GET /withdrawals/:id?userId= - Get a specific withdrawal\n- POST /withdrawals/:id/commit?userId= - Commit a pending withdrawal\n- POST /withdrawals/:id/refresh?userId= - Refresh withdrawal status from Airtm\nNote: userId is passed in the request body (POST) or as a query param (GET).\nThe Orchestrator is a server-to-server API — userId identifies the acting user.\n/\n@Controller('withdrawals')\n@UseGuards(ApiKeyGuard, ScopeGuard)\nexport class WithdrawalsController {\nconstructor(@Inject(WithdrawalsService) private readonly withdrawalsService: WithdrawalsService) {}\n/**\nCreates a new withdrawal for a user.\nBy default creates in two-step mode (requires commit).\nSet commit=true for one-step withdrawal.\n/\n@Post()\n@Scopes('write')\n@HttpCode(HttpStatus.CREATED)\nasync createWithdrawal(\n@Body() dto: CreateWithdrawalDto,\n): Promise<CreateWithdrawalResponse> {\nreturn this.withdrawalsService.createWithdrawal(dto.userId, dto);\n}\n/**\nLists withdrawals for a user.\n/\n@Get()\n@Scopes('read')\nasync listWithdrawals(\n@Query('userId') userId: string,\n@Query('limit') limit?: string,\n@Query('cursor') cursor?: string,\n): Promise<{ data: WithdrawalResponse[]; hasMore: boolean; nextCursor?: string }> {\nreturn this.withdrawalsService.listWithdrawals(userId, {\nlimit: limit ? parseInt(limit, 10) : undefined,\ncursor,\n});\n}\n/**\nGets a specific withdrawal by ID.\n/\n@Get(':id')\n@Scopes('read')\nasync getWithdrawal(\n@Query('userId') userId: string,\n@Param('id') withdrawalId: string,\n): Promise<WithdrawalResponse> {\nreturn this.withdrawalsService.getWithdrawal(withdrawalId, userId);\n}\n/**\nCommits a withdrawal that was created without auto-commit.\nOnly works for withdrawals in WITHDRAWAL_CREATED status.\n/\n@Post(':id/commit')\n@Scopes('write')\n@HttpCode(HttpStatus.OK)\nasync commitWithdrawal(\n@Query('userId') userId: string,\n@Param('id') withdrawalId: string,\n): Promise<WithdrawalResponse> {\nreturn this.withdrawalsService.commitWithdrawal(withdrawalId, userId);\n}\n/**\nRefreshes withdrawal status from Airtm.\nUse when webhook may have been missed.",
+        "operationId": "Scopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "withdrawals"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true
+                }
               }
             }
           }
@@ -734,7 +2082,6 @@
     }
   },
   "components": {
-    "schemas": {},
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
@@ -742,6 +2089,5 @@
         "bearerFormat": "JWT"
       }
     }
-  },
-  "security": []
+  }
 }
