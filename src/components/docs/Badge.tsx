@@ -1,6 +1,15 @@
 import { cn } from "@/lib/cn";
+import { statusColors, type StatusSeverity } from "@/lib/statusColors";
 
-type BadgeVariant = "default" | "primary" | "success" | "warning" | "danger";
+export type BadgeVariant = "default" | "primary" | "success" | "warning" | "danger";
+
+const VARIANT_SEVERITY: Record<BadgeVariant, StatusSeverity> = {
+  default: "neutral",
+  primary: "primary",
+  success: "success",
+  warning: "warning",
+  danger: "error",
+};
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -8,23 +17,15 @@ interface BadgeProps {
   className?: string;
 }
 
-const STYLES: Record<BadgeVariant, string> = {
-  default: "bg-content-muted/10 text-content-secondary",
-  primary: "bg-theme-primary/10 text-theme-primary",
-  success: "bg-theme-success/10 text-theme-success",
-  warning: "bg-theme-warning/10 text-theme-warning",
-  danger: "bg-theme-error/10 text-theme-error",
-};
-
 export function Badge({ variant = "default", children, className }: BadgeProps) {
-  const variantClass = STYLES[variant];
+  const { badge } = statusColors[VARIANT_SEVERITY[variant]];
 
   return (
     <span
       className={cn(
         "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold shadow-neu-raised-sm",
-        variantClass,
-        className
+        badge,
+        className,
       )}
     >
       {children}

@@ -2,7 +2,17 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { ProgressBar, PROGRESS_BAR_ACCENT } from "@/components/ui/ProgressBar";
 
+/**
+ * Route-change progress indicator, mounted once in the root layout.
+ *
+ * On every internal navigation it plays the classic "NProgress-style" bar
+ * (0 → 30 → 50 → 70 → 85 → 100) and then disappears. It shares the exact same
+ * fixed, full-width gradient bar as `LoadingBar` (scroll progress) via the
+ * shared `ProgressBar` primitive, so the two previously-overlapping top
+ * progress bars now share one rendering instead of drifting apart.
+ */
 export function NavigationProgress() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -95,26 +105,26 @@ export function NavigationProgress() {
     return null;
   }
 
+  const ratio = progress / 100;
+
   return (
-    <div
-      className="fixed top-0 left-0 right-0 h-[3px] z-[9999] pointer-events-none"
-      style={{ opacity: isLoading ? 1 : 0, transition: "opacity 0.2s" }}
-    >
-      <div
-        className="h-full bg-gradient-to-r from-theme-primary to-[#22e0e2]"
+    <>
+      <ProgressBar
+        progress={ratio}
+        className="pointer-events-none"
         style={{
-          width: `${progress}%`,
-          transition: progress === 100 ? "width 0.1s ease-out" : "width 0.4s ease",
+          opacity: isLoading ? 1 : 0,
+          transition: `opacity 0.2s, transform ${progress === 100 ? "0.1s ease-out" : "0.4s ease"}`,
         }}
       />
       {/* Glow effect at the end */}
       <div
-        className="absolute top-0 right-0 h-full w-24 opacity-50"
+        className="fixed top-0 right-0 h-[3px] w-24 z-[9999] pointer-events-none opacity-50"
         style={{
-          background: "linear-gradient(to right, transparent, #22e0e2)",
+          background: `linear-gradient(to right, transparent, ${PROGRESS_BAR_ACCENT})`,
           transform: `translateX(${progress < 100 ? 0 : 100}%)`,
         }}
       />
-    </div>
+    </>
   );
 }

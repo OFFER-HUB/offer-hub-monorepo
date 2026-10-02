@@ -2,6 +2,7 @@ import type { RepoStats, ContributorData, IssueData, PullRequestData, CommunityD
 import type { Contributor, GitHubRepo, GitHubPullRequest, GitHubIssue, GitHubRelease } from "@/types/github";
 import { GITHUB_RELEASES_API_URL } from "@/constants/github";
 import { logger } from '@/utils/logger';
+import { statusColors } from "@/lib/statusColors";
 
 export interface ChangelogEntry {
   version: string;
@@ -207,20 +208,20 @@ function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): 
   if (release.draft) {
     return {
       badge: "Draft",
-      badgeColor: "bg-content-secondary/10 text-content-secondary",
+      badgeColor: statusColors.neutral.badge,
     };
   }
 
   if (release.prerelease) {
     return {
       badge: "Pre-release",
-      badgeColor: "bg-theme-warning/10 text-theme-warning",
+      badgeColor: statusColors.warning.badge,
     };
   }
 
   return {
     badge: "Release",
-    badgeColor: "bg-theme-success/10 text-theme-success",
+    badgeColor: statusColors.success.badge,
   };
 }
 

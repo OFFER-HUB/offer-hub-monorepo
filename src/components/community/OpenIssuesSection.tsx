@@ -4,11 +4,17 @@ import { useState, memo, useMemo } from "react";
 import { Tag, ArrowUpRight, ChevronDown } from "lucide-react";
 import { SectionHeading } from "@/components/community/SectionHeading";
 import { cn } from "@/lib/cn";
+import { statusColors, type StatusSeverity } from "@/lib/statusColors";
 import type { IssueData } from "@/types/community";
 
 interface OpenIssuesSectionProps {
   issues: IssueData[];
 }
+
+const PRIORITY_SEVERITY: Record<string, StatusSeverity> = {
+  High: "error",
+  Low: "success",
+};
 
 // Memoized issue card component
 const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
@@ -58,9 +64,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           <div className="px-3 py-1 rounded-lg bg-bg-base shadow-neu-sunken-subtle">
             <span className={cn(
               "text-[10px] font-black uppercase tracking-widest",
-              issue.priority === 'High' ? 'text-red-500' :
-                issue.priority === 'Low' ? 'text-emerald-500' :
-                  'text-theme-primary'
+              statusColors[PRIORITY_SEVERITY[issue.priority] ?? "primary"].text
             )}>
               {issue.priority}
             </span>
