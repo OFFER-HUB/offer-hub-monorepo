@@ -41,6 +41,12 @@ jobs:
           node-version: "20"
           cache: "npm"
       - run: npm ci
+      # Regenerates the spec from src/data/api-schema.ts and fails if the
+      # committed public/openapi.json is out of date, so the spec served
+      # from /docs can never silently drift from the source of truth.
+      - run: npm run generate:openapi
+      - name: Verify openapi.json is up to date
+        run: git diff --exit-code public/openapi.json
       # Same guard pattern as the diagram pipeline: fails CI when the
       # committed public/openapi.json drifts from src/data/api-schema.ts,
       # so the spec served from /docs can never silently go stale.

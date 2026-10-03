@@ -2,7 +2,7 @@
 // API Schema — endpoint definitions + mock data for the Interactive Explorer
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface Parameter {
   name: string;

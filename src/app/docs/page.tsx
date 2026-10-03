@@ -6,6 +6,7 @@ import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight, Lock, Rocket
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { OPENAPI_SPEC_URL } from "@/constants/openapi";
 
 const docSections = [
   {
@@ -42,7 +43,7 @@ const docSections = [
     link: "/docs/api-reference/overview",
     count: "7 articles",
     highlight: false,
-    externalLink: { href: "/openapi.json", label: "View OpenAPI Spec" },
+    externalLink: { href: OPENAPI_SPEC_URL, label: "View OpenAPI Spec" },
   },
   {
     icon: <Shield />,

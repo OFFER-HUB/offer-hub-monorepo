@@ -50,7 +50,7 @@ function generateOpenApiSpec(): OpenApiSpec {
     },
     servers: [
       {
-        url: "https://api.offer-hub.com",
+        url: "https://api.offer-hub.org",
         description: "Production Server"
       }
     ],
