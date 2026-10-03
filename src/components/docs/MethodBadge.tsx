@@ -1,26 +1,32 @@
-import { cn } from "@/lib/cn";
 import type { HttpMethod } from "@/data/api-schema";
+import { cn } from "@/lib/cn";
 
-const METHOD_STYLES: Record<HttpMethod, { color: string; background: string }> = {
+const METHOD_STYLES: Record<
+  HttpMethod,
+  {
+    background: string;
+    color: string;
+  }
+> = {
   GET: {
-    color: "var(--color-success)",
     background: "color-mix(in srgb, var(--color-success) 14%, transparent)",
+    color: "var(--color-success)",
   },
   POST: {
-    color: "var(--color-primary)",
     background: "color-mix(in srgb, var(--color-primary) 14%, transparent)",
+    color: "var(--color-primary)",
   },
   PUT: {
-    color: "var(--color-warning)",
     background: "color-mix(in srgb, var(--color-warning) 16%, transparent)",
+    color: "var(--color-warning)",
   },
   PATCH: {
-    color: "var(--color-primary)",
     background: "color-mix(in srgb, var(--color-primary) 18%, transparent)",
+    color: "var(--color-primary)",
   },
   DELETE: {
-    color: "var(--color-error)",
     background: "color-mix(in srgb, var(--color-error) 16%, transparent)",
+    color: "var(--color-error)",
   },
 };
 
@@ -39,7 +45,7 @@ export function MethodBadge({ method, className }: MethodBadgeProps) {
         "inline-flex items-center justify-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] font-mono leading-none shadow-neu-raised-sm",
         className
       )}
-      style={{ color: style.color, background: style.background }}
+      style={{ background: style.background, color: style.color }}
     >
       {method}
     </span>
