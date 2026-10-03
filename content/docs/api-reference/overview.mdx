@@ -533,6 +533,10 @@ Example while the original request is still running:
 Keys are retained for 24 hours. Reuse after that period is treated as a new
 request.
 
+<Callout type="note">
+  In the current orchestrator, idempotency entries are stored for 24 hours by default (`idempotency.service.ts`, `ttlHours = 24`) regardless of resource. The per-resource windows above are the intended targets — see [Disputes API · Idempotency](/docs/api-reference/disputes#idempotency) for the behavior actually enforced today.
+</Callout>
+
 ## Rate Limiting
 
 The API applies one global limit of 100 requests per 60-second window. The
