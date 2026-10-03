@@ -1,0 +1,4 @@
+# The pipeline renders by invoking the Graphviz `dot` binary through the
+# official Python binding, so this is the only PyPI dependency. `dot` itself
+# is provided by the runner image (and by `brew install graphviz` locally).
+graphviz==0.20.3

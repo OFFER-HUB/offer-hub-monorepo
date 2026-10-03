@@ -3,6 +3,8 @@
 import { Cpu } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { ARCHITECTURE_SCROLL_MARGIN_PX } from "@/lib/architecture-nav";
+import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
+import { architectureHeroDiagram } from "@/lib/diagrams/architecture-hero";
 
 const layers = [
   { label: "Client", sublabel: "Next.js 15 + SWK", color: "var(--color-primary)" },
@@ -21,6 +23,13 @@ export function ArchitectureHero() {
       paragraph="Complete system design for a non-custodial freelance marketplace on Stellar — from client-side Soroban signing to fiat settlement across 7 LATAM markets."
     >
       {/* Mini 3-layer diagram */}
+      <div className="mb-8 rounded-[2rem] bg-bg-elevated p-6 md:p-8 shadow-neu-raised">
+        <MermaidDiagram
+          chart={architectureHeroDiagram}
+          caption="Architecture overview: client, API, and Stellar layers"
+          className="w-full"
+        />
+      </div>
       <div className="rounded-[2rem] bg-bg-elevated p-8 md:p-10 shadow-neu-raised">
         <div className="flex flex-col items-center gap-0">
           {layers.map((layer, i) => (

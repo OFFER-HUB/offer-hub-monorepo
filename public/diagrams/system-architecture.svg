@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 469.00 527.00"
+     width="469.00"
+     height="527.00"
+     role="img"
+     aria-label="OfferHub system architecture: client and wallet layers, the NestJS API, the PostgreSQL/Redis data layer, Soroban contracts on Stellar and the BlindPay off-ramp.">
+  <!-- dg-source-sha256:8758d0ee209d63d86bb6a678bcd2ac4b5014d29a6a7da39849e2e1a9f5e038c1 -->
+  <defs>
+    <style>
+      --dg-bg: var(--color-background, #f1f3f7);
+      --dg-surface: var(--color-surface, #ffffff);
+      --dg-surface-alt: var(--color-surface-alt, #e2e8f0);
+      --dg-border: var(--color-border, #d1d5db);
+      --dg-text: var(--color-text, #19213d);
+      --dg-text-muted: var(--color-text-muted, #4b5563);
+      --dg-accent: var(--color-accent, #149a9b);
+      --dg-accent-contrast: var(--color-accent-contrast, #ffffff);
+      --dg-backend: var(--color-secondary, #002333);
+      --dg-backend-contrast: #ffffff;
+      --dg-shadow-dark: rgba(163, 177, 201, 0.6);
+      --dg-shadow-light: rgba(255, 255, 255, 0.9);
+      .dg-node polygon,
+      .dg-node rect,
+      .dg-node ellipse,
+      .dg-node path {
+        fill: var(--dg-surface);
+        stroke: var(--dg-border);
+        filter: drop-shadow(2px 2px 4px var(--dg-shadow-dark))
+          drop-shadow(-2px -2px 4px var(--dg-shadow-light));
+      }
+
+      .dg-node text {
+        fill: var(--dg-text);
+        font-family: var(--font-sans, Inter, ui-sans-serif, system-ui);
+        font-size: 13px;
+      }
+
+      .dg-accent polygon,
+      .dg-accent rect,
+      .dg-accent ellipse,
+      .dg-accent path {
+        fill: var(--dg-accent);
+        stroke: var(--dg-accent);
+      }
+
+      .dg-accent text {
+        fill: var(--dg-accent-contrast);
+      }
+
+      .dg-backend polygon,
+      .dg-backend rect,
+      .dg-backend ellipse,
+      .dg-backend path {
+        fill: var(--dg-backend);
+        stroke: var(--dg-backend);
+      }
+
+      .dg-backend text {
+        fill: var(--dg-backend-contrast);
+      }
+
+      .dg-edge path {
+        stroke: var(--dg-border);
+        stroke-width: 1.5;
+        fill: none;
+      }
+
+      .dg-edge polygon {
+        fill: var(--dg-border);
+        stroke: var(--dg-border);
+      }
+
+      .dg-edge text {
+        fill: var(--dg-text-muted);
+        font-family: var(--font-sans, Inter, ui-sans-serif, system-ui);
+        font-size: 11px;
+      }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="var(--dg-bg)"/>
+  <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 498.4)"><title>SystemArchitecture</title><g id="node1" class="node dg&#45;node dg&#45;accent"><title>Client</title><path fill="lightgrey" stroke="black" d="M314.19,-469.6C314.19,-469.6 142.23,-469.6 142.23,-469.6 136.23,-469.6 130.23,-463.6 130.23,-457.6 130.23,-457.6 130.23,-430.24 130.23,-430.24 130.23,-424.24 136.23,-418.24 142.23,-418.24 142.23,-418.24 314.19,-418.24 314.19,-418.24 320.19,-418.24 326.19,-424.24 326.19,-430.24 326.19,-430.24 326.19,-457.6 326.19,-457.6 326.19,-463.6 320.19,-469.6 314.19,-469.6"/><text xml:space="preserve" text-anchor="middle" x="228.21" y="-447.82" font-family="Inter" font-size="13.00">Client Layer</text><text xml:space="preserve" text-anchor="middle" x="228.21" y="-432.22" font-family="Inter" font-size="13.00">Next.js 15 · React 19 · Zustand</text></g><g id="node2" class="node dg&#45;node dg&#45;accent"><title>Wallet</title><path fill="lightgrey" stroke="black" d="M246.78,-365.04C246.78,-365.04 37.64,-365.04 37.64,-365.04 31.64,-365.04 25.64,-359.04 25.64,-353.04 25.64,-353.04 25.64,-325.68 25.64,-325.68 25.64,-319.68 31.64,-313.68 37.64,-313.68 37.64,-313.68 246.78,-313.68 246.78,-313.68 252.78,-313.68 258.78,-319.68 258.78,-325.68 258.78,-325.68 258.78,-353.04 258.78,-353.04 258.78,-359.04 252.78,-365.04 246.78,-365.04"/><text xml:space="preserve" text-anchor="middle" x="142.21" y="-343.26" font-family="Inter" font-size="13.00">Wallet Layer</text><text xml:space="preserve" text-anchor="middle" x="142.21" y="-327.66" font-family="Inter" font-size="13.00">Stellar Wallets Kit · Freighter · Lobstr</text></g><g id="edge2" class="edge dg&#45;edge"><title>Client&#45;&gt;Wallet</title><path fill="none" stroke="black" d="M207.17,-417.83C195.42,-403.82 180.69,-386.25 168.22,-371.38"/><polygon fill="black" stroke="black" points="170.38,-370.14 164,-366.35 166.62,-373.29 170.38,-370.14"/><text xml:space="preserve" text-anchor="middle" x="230.84" y="-388.34" font-family="Inter" font-size="11.00">client&#45;side signing</text></g><g id="node3" class="node dg&#45;node dg&#45;backend"><title>API</title><path fill="lightgrey" stroke="black" d="M368.87,-155.92C368.87,-155.92 105.55,-155.92 105.55,-155.92 99.55,-155.92 93.55,-149.92 93.55,-143.92 93.55,-143.92 93.55,-116.56 93.55,-116.56 93.55,-110.56 99.55,-104.56 105.55,-104.56 105.55,-104.56 368.87,-104.56 368.87,-104.56 374.87,-104.56 380.87,-110.56 380.87,-116.56 380.87,-116.56 380.87,-143.92 380.87,-143.92 380.87,-149.92 374.87,-155.92 368.87,-155.92"/><text xml:space="preserve" text-anchor="middle" x="237.21" y="-134.14" font-family="Inter" font-size="13.00">NestJS API</text><text xml:space="preserve" text-anchor="middle" x="237.21" y="-118.54" font-family="Inter" font-size="13.00">Auth · Orders · Escrow · Payments · Webhooks</text></g><g id="edge1" class="edge dg&#45;edge"><title>Client&#45;&gt;API</title><path fill="none" stroke="black" d="M264.98,-417.82C270.76,-412.1 275.9,-405.53 279.21,-398.24 281.63,-392.9 279.23,-390.91 279.21,-385.04 278.95,-292.05 310.27,-260.77 272.21,-175.92 270.25,-171.54 267.76,-167.21 265.03,-163.07"/><polygon fill="black" stroke="black" points="267.16,-161.84 261.12,-157.55 263.16,-164.67 267.16,-161.84"/><text xml:space="preserve" text-anchor="middle" x="323.97" y="-283.78" font-family="Inter" font-size="11.00">HTTPS / REST</text></g><g id="node5" class="node dg&#45;node"><title>Stellar</title><path fill="lightgrey" stroke="black" d="M250.42,-260.48C250.42,-260.48 12,-260.48 12,-260.48 6,-260.48 0,-254.48 0,-248.48 0,-248.48 0,-221.12 0,-221.12 0,-215.12 6,-209.12 12,-209.12 12,-209.12 250.42,-209.12 250.42,-209.12 256.42,-209.12 262.42,-215.12 262.42,-221.12 262.42,-221.12 262.42,-248.48 262.42,-248.48 262.42,-254.48 256.42,-260.48 250.42,-260.48"/><text xml:space="preserve" text-anchor="middle" x="131.21" y="-238.7" font-family="Inter" font-size="13.00">Stellar</text><text xml:space="preserve" text-anchor="middle" x="131.21" y="-223.1" font-family="Inter" font-size="13.00">Soroban Contracts · TrustlessWork · USDC</text></g><g id="edge7" class="edge dg&#45;edge"><title>Wallet&#45;&gt;Stellar</title><path fill="none" stroke="black" stroke-dasharray="5,2" d="M139.52,-313.27C138.08,-299.89 136.3,-283.25 134.75,-268.82"/><polygon fill="black" stroke="black" points="137.22,-268.83 134.03,-262.13 132.34,-269.36 137.22,-268.83"/><text xml:space="preserve" text-anchor="middle" x="170.38" y="-283.78" font-family="Inter" font-size="11.00">Sign &amp; Submit</text></g><g id="node4" class="node dg&#45;node"><title>Data</title><path fill="lightgrey" stroke="black" d="M220.87,-51.36C220.87,-51.36 53.55,-51.36 53.55,-51.36 47.55,-51.36 41.55,-45.36 41.55,-39.36 41.55,-39.36 41.55,-12 41.55,-12 41.55,-6 47.55,0 53.55,0 53.55,0 220.87,0 220.87,0 226.87,0 232.87,-6 232.87,-12 232.87,-12 232.87,-39.36 232.87,-39.36 232.87,-45.36 226.87,-51.36 220.87,-51.36"/><text xml:space="preserve" text-anchor="middle" x="137.21" y="-29.58" font-family="Inter" font-size="13.00">Data Layer</text><text xml:space="preserve" text-anchor="middle" x="137.21" y="-13.98" font-family="Inter" font-size="13.00">PostgreSQL · Redis · BullMQ</text></g><g id="edge3" class="edge dg&#45;edge"><title>API&#45;&gt;Data</title><path fill="none" stroke="black" d="M212.75,-104.15C198.96,-90.02 181.64,-72.25 167.07,-57.3"/><polygon fill="black" stroke="black" points="169.12,-55.9 162.48,-52.59 165.61,-59.32 169.12,-55.9"/><text xml:space="preserve" text-anchor="middle" x="222.38" y="-74.66" font-family="Inter" font-size="11.00">Prisma ORM</text></g><g id="edge4" class="edge dg&#45;edge"><title>API&#45;&gt;Stellar</title><path fill="none" stroke="black" d="M224.86,-156.34C218.73,-167.22 210.61,-179.61 201.21,-189.12 196,-194.39 190.06,-199.35 183.89,-203.9"/><polygon fill="black" stroke="black" points="182.67,-201.77 178.37,-207.81 185.5,-205.77 182.67,-201.77"/><text xml:space="preserve" text-anchor="middle" x="238.15" y="-179.22" font-family="Inter" font-size="11.00">Stellar RPC</text></g><g id="node6" class="node dg&#45;node dg&#45;accent"><title>Offramp</title><path fill="lightgrey" stroke="black" d="M399.1,-51.36C399.1,-51.36 277.32,-51.36 277.32,-51.36 271.32,-51.36 265.32,-45.36 265.32,-39.36 265.32,-39.36 265.32,-12 265.32,-12 265.32,-6 271.32,0 277.32,0 277.32,0 399.1,0 399.1,0 405.1,0 411.1,-6 411.1,-12 411.1,-12 411.1,-39.36 411.1,-39.36 411.1,-45.36 405.1,-51.36 399.1,-51.36"/><text xml:space="preserve" text-anchor="middle" x="338.21" y="-29.58" font-family="Inter" font-size="13.00">Off&#45;ramp</text><text xml:space="preserve" text-anchor="middle" x="338.21" y="-13.98" font-family="Inter" font-size="13.00">BlindPay (7 corridors)</text></g><g id="edge6" class="edge dg&#45;edge"><title>API&#45;&gt;Offramp</title><path fill="none" stroke="black" d="M261.92,-104.15C275.84,-90.02 293.33,-72.25 308.06,-57.3"/><polygon fill="black" stroke="black" points="309.53,-59.3 312.7,-52.59 306.04,-55.86 309.53,-59.3"/><text xml:space="preserve" text-anchor="middle" x="330.42" y="-74.66" font-family="Inter" font-size="11.00">API / Webhooks</text></g><g id="edge5" class="edge dg&#45;edge"><title>Stellar&#45;&gt;API</title><path fill="none" stroke="black" d="M87.29,-208.89C75.51,-199.03 68.16,-187.34 76.83,-175.92 81.55,-169.71 91.39,-164.14 103.99,-159.21"/><polygon fill="black" stroke="black" points="104.56,-161.61 110.29,-156.9 102.87,-157.01 104.56,-161.61"/><text xml:space="preserve" text-anchor="middle" x="135.02" y="-179.22" font-family="Inter" font-size="11.00">Webhook / on&#45;chain event</text></g></g>
+</svg>

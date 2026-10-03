@@ -46,6 +46,32 @@ jobs:
       # so the spec served from /docs can never silently go stale.
       - run: npm run validate:openapi
 
+  diagrams:
+    name: Diagram SVG Staleness Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # `helpers.py` renders through the Graphviz `dot` binary rather than
+      # vendoring a renderer, so make the dependency explicit instead of
+      # relying on whatever the runner image happens to ship.
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: scripts/diagrams/requirements.txt
+      - run: npm ci
+      - run: pip install -r scripts/diagrams/requirements.txt
+      # Regenerates SVGs from scripts/diagrams/ and fails when the committed
+      # public/diagrams/*.svg drift from their sources, mirroring the
+      # openapi staleness guard above.
+      - run: npm run diagrams:check
+
   e2e:
     name: Route-level a11y & keyboard-nav (Playwright)
     runs-on: ubuntu-latest

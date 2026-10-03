@@ -20,7 +20,9 @@
     "test:e2e:ui": "playwright test --ui",
     "generate:openapi": "npx tsx scripts/generate-openapi.ts",
     "validate:openapi": "npx tsx scripts/generate-openapi.ts --check",
-    "docs:index": "npx tsx scripts/generate-docs-index.ts"
+    "docs:index": "npx tsx scripts/generate-docs-index.ts",
+    "diagrams": "npx tsx scripts/diagrams/generate-diagrams.ts",
+    "diagrams:check": "npx tsx scripts/diagrams/generate-diagrams.ts --check"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
