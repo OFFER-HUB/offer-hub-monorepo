@@ -11,12 +11,7 @@ The `sdk.balance` resource provides methods to manage the dual ledger system of 
   **Orchestrator Source References:**
   - Controller: `apps/api/src/modules/balance/balance.controller.ts`
   - DTOs:
-    - `CreditBalanceDto` (`apps/api/src/modules/balance/dto/credit-balance.dto.ts`)
-    - `DebitBalanceDto` (`apps/api/src/modules/balance/dto/debit-balance.dto.ts`)
-    - `ReserveBalanceDto` (`apps/api/src/modules/balance/dto/reserve-balance.dto.ts`)
-    - `ReleaseBalanceDto` (`apps/api/src/modules/balance/dto/release-balance.dto.ts`)
-    - `CancelReservationDto` (`apps/api/src/modules/balance/dto/cancel-reservation.dto.ts`)
-    - `DeductReservedDto` (`apps/api/src/modules/balance/dto/deduct-reserved.dto.ts`)
+    - `CreditAvailableDto`, `DebitAvailableDto`, `ReserveDto`, `ReleaseDto`, `CancelReservationDto`, and `DeductReservedDto` (`apps/api/src/modules/balance/dto/balance-operation.dto.ts`)
   - Service: `apps/api/src/modules/balance/balance.service.ts`
   - Database Models: `Balance`, `BalanceTransaction`, `Reservation` in `packages/db/prisma/schema.prisma`
 </Callout>
@@ -56,14 +51,70 @@ stateDiagram-v2
 
 ```typescript
 interface Balance {
-  userId: string;
+  user_id: string;
   available: string; // Decimal string formatted, e.g. "100.00"
   reserved: string;  // Decimal string formatted, e.g. "25.00"
   total: string;     // Sum of available + reserved, e.g. "125.00"
   currency: string;  // Currency ISO code, e.g. "USD" or "USDC"
-  updatedAt: string; // ISO-8601 timestamp
+  updated_at: string; // ISO-8601 timestamp
 }
 ```
+
+Operations return `BalanceOperationResult`, not a bare `Balance`:
+
+```typescript
+interface BalanceOperationResult {
+  success: boolean;
+  balance: Balance;
+  operation: string;
+  amount: string;
+  previousBalance: { available: string; reserved: string };
+  newBalance: { available: string; reserved: string };
+  auditLogId: string;
+}
+```
+
+## HTTP quick reference
+
+All routes are protected by the `ApiKeyGuard` and `ScopeGuard`. Use `read` for `get` and `verify`, and `write` for the mutating operations. The controller and DTOs do not define an idempotency field for these balance operations.
+
+```bash
+# Read and verify
+curl http://localhost:4000/api/v1/users/usr_abc123/balance -H "Authorization: Bearer ohk_live_your_api_key"
+curl http://localhost:4000/api/v1/users/usr_abc123/balance/verify -H "Authorization: Bearer ohk_live_your_api_key"
+
+# credit/debit accept amount, currency?, description?, reference?
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/credit \
+  -H "Authorization: Bearer ohk_live_your_api_key" -H "Content-Type: application/json" \
+  -d '{"amount":"50.00","currency":"USD","reference":"topup_123","description":"Manual credit"}'
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/debit \
+  -H "Authorization: Bearer ohk_live_your_api_key" -H "Content-Type: application/json" \
+  -d '{"amount":"10.00","currency":"USD","reference":"fee_123"}'
+
+# reserve/cancel/deduct accept amount, currency?, description?, orderId
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/reserve \
+  -H "Authorization: Bearer ohk_live_your_api_key" -H "Content-Type: application/json" \
+  -d '{"amount":"100.00","orderId":"ord_123"}'
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/cancel-reservation \
+  -H "Authorization: Bearer ohk_live_your_api_key" -H "Content-Type: application/json" \
+  -d '{"amount":"100.00","orderId":"ord_123"}'
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/deduct-reserved \
+  -H "Authorization: Bearer ohk_live_your_api_key" -H "Content-Type: application/json" \
+  -d '{"amount":"100.00","orderId":"ord_123"}'
+
+# release additionally requires sellerId
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/release \
+  -H "Authorization: Bearer ohk_live_your_api_key" -H "Content-Type: application/json" \
+  -d '{"amount":"100.00","orderId":"ord_123","sellerId":"usr_seller"}'
+
+# Provider reconciliation
+curl -X POST http://localhost:4000/api/v1/users/usr_abc123/balance/sync \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+<Callout type="note">
+  The shapes above are what the API returns (`BalanceService` in the orchestrator). The SDK's TypeScript declarations in `packages/sdk/src/resources/balance.ts` currently type every method as `Promise<Balance>` with camelCase `userId`/`updatedAt`; at runtime the methods resolve to these response shapes.
+</Callout>
 
 ---
 
@@ -146,14 +197,14 @@ async credit(userId: string, params: CreditBalanceParams): Promise<Balance>
 #### Example
 
 ```typescript
-const updatedBalance = await sdk.balance.credit('usr_abc123', {
+const result = await sdk.balance.credit('usr_abc123', {
   amount: '50.00',
   currency: 'USD',
   reference: 'bonus_signup_2026',
   description: 'Welcome promotion bonus',
 });
 
-console.log('New available balance:', updatedBalance.available);
+console.log('New available balance:', result.balance.available);
 ```
 
 ---
@@ -196,12 +247,12 @@ async debit(userId: string, params: DebitBalanceParams): Promise<Balance>
 import { OfferHubSDK, InsufficientFundsError } from '@offerhub/sdk';
 
 try {
-  const updatedBalance = await sdk.balance.debit('usr_abc123', {
+  const result = await sdk.balance.debit('usr_abc123', {
     amount: '15.00',
     currency: 'USD',
     description: 'Monthly platform fee',
   });
-  console.log('Debited successfully. Remaining:', updatedBalance.available);
+  console.log('Debited successfully. Remaining:', result.balance.available);
 } catch (error) {
   if (error instanceof InsufficientFundsError) {
     console.error(`Debit failed: need ${error.required}, available ${error.available}`);
@@ -430,8 +481,8 @@ interface BalanceSyncResult {
 ```typescript
 const syncResult = await sdk.balance.sync('usr_abc123');
 
-if (syncResult.discrepancyDetected) {
-  console.warn(`Discrepancy reconciled. Adjusted by: ${syncResult.adjustment}`);
+if (syncResult.action !== 'none') {
+  console.warn(`Balance discrepancy: ${syncResult.discrepancy}`);
 } else {
   console.log('Balance in sync with provider.');
 }
@@ -482,8 +533,8 @@ interface BalanceVerification {
 ```typescript
 const verification = await sdk.balance.verify('usr_abc123');
 
-if (!verification.isValid) {
-  console.error(`Balance mismatch detected! Difference: ${verification.difference}`);
+if (!verification.providerVerified) {
+  console.error('Provider verification did not confirm the local balance.');
   // Trigger automated sync or alert admin
   await sdk.balance.sync('usr_abc123');
 } else {
