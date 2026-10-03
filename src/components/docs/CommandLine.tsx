@@ -55,14 +55,21 @@ export function CommandLine({
   children,
 }: CommandLineProps) {
   const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
 
   const raw = command ?? extractTextFromChildren(children);
   const trimmed = raw.trim();
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(trimmed);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(trimmed);
+      setCopied(true);
+      setCopyStatus("Command copied to clipboard.");
+      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopyStatus(""), 2500);
+    } catch {
+      setCopyStatus("Unable to copy command. Please select it and copy manually.");
+    }
   }
 
   return (
@@ -74,7 +81,7 @@ export function CommandLine({
     >
       {/* Terminal header bar */}
       <div
-        className="flex items-center gap-2 px-4 py-2.5 border-b border-theme-border/20 bg-bg-sunken shadow-neu-sunken-subtle"
+        className="flex items-center gap-2 px-4 py-2.5 bg-bg-sunken shadow-neu-sunken-subtle"
       >
         <span className="w-2.5 h-2.5 rounded-full bg-theme-error/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-theme-warning/80" />
@@ -103,6 +110,9 @@ export function CommandLine({
           )}
           {copied ? "Copied" : "Copy"}
         </button>
+        <span role="status" aria-live="polite" className="sr-only">
+          {copyStatus}
+        </span>
       </div>
 
       {/* Command row */}
@@ -111,7 +121,12 @@ export function CommandLine({
         <span className="text-sm text-theme-primary flex-shrink-0 font-mono font-bold">
           {promptSymbol}
         </span>
-        <div className="relative flex-1 overflow-x-auto">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Command, scrollable horizontally"
+          className="relative flex-1 overflow-x-auto"
+        >
           <code className="block whitespace-nowrap text-sm text-content-primary font-mono pr-2">
             {trimmed}
           </code>

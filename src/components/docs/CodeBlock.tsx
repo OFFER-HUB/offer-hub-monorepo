@@ -11,6 +11,10 @@ interface CodeBlockProps {
   code?: string;
   children?: string;
   language?: string;
+  title?: string;
+  filename?: string;
+  highlightLines?: string;
+  showLineNumbers?: boolean;
   className?: string;
   /**
    * Hide the header bar (language label + copy button). Used when an outer
@@ -29,10 +33,36 @@ const LANGUAGE_ALIASES: Record<string, string> = {
   config: "ini",
 };
 
+/** Parse Shiki-style line ranges such as "{1,3-5}" into line numbers. */
+function parseHighlightedLines(value?: string): Set<number> {
+  if (!value) return new Set();
+
+  return new Set(
+    value
+      .replace(/[{}]/g, "")
+      .split(",")
+      .flatMap((part) => {
+        const [start, end] = part.split("-").map(Number);
+        if (!Number.isInteger(start)) return [];
+        if (!Number.isInteger(end)) return [start];
+        const lines: number[] = [];
+        for (let line = Math.min(start, end); line <= Math.max(start, end); line += 1) {
+          lines.push(line);
+        }
+        return lines;
+      })
+      .filter((line) => line > 0)
+  );
+}
+
 export function CodeBlock({
   code: codeProp,
   children,
   language = "typescript",
+  title,
+  filename,
+  highlightLines,
+  showLineNumbers = false,
   className,
   isHeaderHidden = false,
 }: CodeBlockProps) {
@@ -40,11 +70,14 @@ export function CodeBlock({
   const normalizedLang = LANGUAGE_ALIASES[language] || language;
   const shikiTheme = resolvedTheme === "dark" ? "github-dark" : "github-light";
   const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
   const [highlightedCode, setHighlightedCode] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const rawCode = (codeProp || children || "").trim();
   const cacheKey = `${shikiTheme}:${normalizedLang}:${rawCode}`;
+  const highlightedLineNumbers = parseHighlightedLines(highlightLines);
+  const hasLinePresentation = showLineNumbers || highlightedLineNumbers.size > 0;
 
   useEffect(() => {
     // Return cached result immediately — no Shiki load needed
@@ -92,9 +125,12 @@ export function CodeBlock({
     try {
       await navigator.clipboard.writeText(rawCode);
       setCopied(true);
+      setCopyStatus("Code copied to clipboard.");
       setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopyStatus(""), 2500);
     } catch (err) {
       logger.error("Failed to copy!", err);
+      setCopyStatus("Unable to copy code. Please select it and copy manually.");
     }
   }
 
@@ -120,8 +156,13 @@ export function CodeBlock({
           </div>
           <div>
             <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-content-secondary/70">
-              {language}
+              {filename || title || language}
             </span>
+            {(filename || title) && (
+              <span className="block text-[10px] font-mono text-content-muted mt-0.5">
+                {language}
+              </span>
+            )}
           </div>
         </div>
 
@@ -141,6 +182,9 @@ export function CodeBlock({
             <span>{copied ? "Copied" : "Copy"}</span>
           </span>
         </button>
+        <span role="status" aria-live="polite" className="sr-only">
+          {copyStatus}
+        </span>
       </div>
 
       {/* Code Area */}
@@ -150,7 +194,33 @@ export function CodeBlock({
         aria-label={`${language} code sample, scrollable horizontally`}
         className="p-8 overflow-x-auto text-[14px] leading-[1.8] min-h-[5rem] text-content-primary scrollbar-thin scrollbar-track-transparent selection:bg-theme-primary/20 selection:text-content-primary"
       >
-        {highlightedCode ? (
+        {hasLinePresentation ? (
+          <pre className="text-content-secondary/70 font-mono font-medium">
+            <code>
+              {rawCode.split("\n").map((line, index) => {
+                const lineNumber = index + 1;
+                const highlighted = highlightedLineNumbers.has(lineNumber);
+                return (
+                  <span
+                    key={lineNumber}
+                    data-line={lineNumber}
+                    className={cn(
+                      "block min-w-max rounded-lg px-2 -mx-2",
+                      highlighted && "bg-theme-primary/10 shadow-neu-sunken-subtle"
+                    )}
+                  >
+                    {showLineNumbers && (
+                      <span aria-hidden="true" className="inline-block w-10 select-none pr-4 text-right text-content-muted">
+                        {lineNumber}
+                      </span>
+                    )}
+                    {line || " "}
+                  </span>
+                );
+              })}
+            </code>
+          </pre>
+        ) : highlightedCode ? (
           <div
             dangerouslySetInnerHTML={{ __html: highlightedCode }}
             className="shiki-container [&>pre]:!bg-transparent [&>pre]:!p-0 [&>pre]:!m-0 [&>pre]:!outline-none [&_.line-number]:text-content-muted"
@@ -173,6 +243,9 @@ export function CodeBlock({
         .shiki-container [data-line]::before {
           color: var(--color-text-muted);
           opacity: 0.85;
+        }
+        [data-line] {
+          scroll-margin-inline: 1rem;
         }
         .shiki-container [data-line]::before {
           margin-right: 1rem;
