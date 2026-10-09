@@ -55,6 +55,31 @@ REFUNDED  RELEASED
 | `CLOSED` | Order completed after resolution |
 
 ## Opening a Dispute
+### Dispute Resolution Sequence
+
+```mermaid
+sequenceDiagram
+    accTitle: Dispute open and resolve
+    accDescr: Buyer opens dispute, escrow frozen, platform reviews, resolves on-chain with release or refund.
+    autonumber
+    participant Buyer
+    participant Orchestrator
+    participant Support as Platform Support
+    participant TW as Trustless Work Contract
+    Buyer->>Orchestrator: POST /orders/&#123;id&#125;/resolution/dispute
+    Orchestrator->>TW: disputeEscrow (buyer signs)
+    Orchestrator-->>Buyer: 200 DISPUTED
+    Support->>Orchestrator: GET /disputes/&#123;id&#125;
+    alt FULL_RELEASE
+        Support->>Orchestrator: POST /disputes/&#123;id&#125;/resolve
+        Orchestrator->>TW: resolveDispute(100% seller)
+    else FULL_REFUND
+        Support->>Orchestrator: POST /disputes/&#123;id&#125;/resolve
+        Orchestrator->>TW: resolveDispute(100% buyer)
+    end
+    Orchestrator-->>Buyer: SSE order.released or order.refunded
+`
+```
 
 Only the buyer can initiate a dispute on an `IN_PROGRESS` order:
 
@@ -226,40 +251,42 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/comments \
 
 ## Listing Disputes
 
-Get all disputes with filtering:
+`GET /disputes` accepts three optional filters: `orderId`, `status` (`OPEN`, `UNDER_REVIEW`, `RESOLVED`) and `openedBy` (`BUYER`, `SELLER`). It is **not paginated**: it returns every match, newest first (`DisputesController.listDisputes`, `ResolutionService.listDisputes`).
 
 ```bash
 # All open disputes
-curl "http://localhost:4000/api/v1/disputes?status=open" \
+curl "http://localhost:4000/api/v1/disputes?status=OPEN" \
   -H "Authorization: Bearer ohk_live_your_api_key"
 
-# Disputes for a specific user
-curl "http://localhost:4000/api/v1/disputes?user_id=usr_buyer123" \
+# The dispute on one order
+curl "http://localhost:4000/api/v1/disputes?orderId=ord_xyz789" \
   -H "Authorization: Bearer ohk_live_your_api_key"
 
-# Disputes in date range
-curl "http://localhost:4000/api/v1/disputes?created_after=2026-02-01&created_before=2026-02-28" \
+# Disputes opened by buyers
+curl "http://localhost:4000/api/v1/disputes?openedBy=BUYER" \
   -H "Authorization: Bearer ohk_live_your_api_key"
 ```
 
 ### Response
 
+The controller returns `{ success, data }`, which the response interceptor wraps once more. See [Response Format](/docs/api-reference/overview#response-format).
+
 ```json
 {
-  "data": [
-    {
-      "id": "dsp_abc123",
-      "orderId": "ord_xyz789",
-      "openedBy": "usr_buyer123",
-      "reason": "Work not delivered",
-      "status": "open",
-      "openedAt": "2026-02-25T10:00:00.000Z"
-    }
-  ],
-  "pagination": {
-    "has_more": false,
-    "next_cursor": null
-  }
+  "data": {
+    "success": true,
+    "data": [
+      {
+        "id": "dsp_abc123",
+        "orderId": "ord_xyz789",
+        "openedBy": "BUYER",
+        "reason": "NOT_DELIVERED",
+        "status": "OPEN",
+        "createdAt": "2026-02-25T10:00:00.000Z"
+      }
+    ]
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-25T10:00:00.412Z" }
 }
 ```
 
@@ -375,16 +402,19 @@ The `order.disputed` event payload looks like this:
 
 ```json
 {
-  "id": "evt_abc123",
-  "type": "escrow.disputed",
-  "created_at": "2026-02-25T10:00:00.000Z",
-  "data": {
-    "escrow_id": "esc_xyz789",
-    "dispute_id": "dsp_abc123",
-    "opened_by": "BUYER",
+  "eventId": "evt_abc123",
+  "eventType": "order.disputed",
+  "occurredAt": "2026-02-25T10:00:00.000Z",
+  "aggregateId": "ord_xyz789",
+  "aggregateType": "Order",
+  "payload": {
+    "orderId": "ord_xyz789",
+    "disputeId": "dsp_abc123",
+    "openedBy": "BUYER",
     "reason": "NOT_DELIVERED",
-    "order_id": "ord_xyz789"
-  }
+    "openedAt": "2026-02-25T10:00:00.000Z"
+  },
+  "metadata": {}
 }
 ```
 

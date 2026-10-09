@@ -4,7 +4,9 @@ import { exportDocPdf } from "../export-doc-pdf";
 const saveMock = vi.fn().mockResolvedValue(undefined);
 const fromMock = vi.fn(() => ({ save: saveMock }));
 const setMock = vi.fn(() => ({ from: fromMock }));
-const html2pdfMock = vi.fn(() => ({ set: setMock }));
+const html2pdfMock = vi.fn<(...args: unknown[]) => { set: typeof setMock }>(() => ({
+  set: setMock,
+}));
 
 vi.mock("html2pdf.js", () => ({
   default: (...args: unknown[]) => html2pdfMock(...args),

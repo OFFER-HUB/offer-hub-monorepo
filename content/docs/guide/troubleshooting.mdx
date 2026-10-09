@@ -1,0 +1,333 @@
+---
+title: Troubleshooting & FAQ
+description: Symptom-cause-fix recipes for the most common OFFER-HUB API failures — auth, idempotency, state transitions, escrow, webhooks, SSE reconnects, and provider timeouts — plus how to use /health/detailed and X-Request-ID when contacting support.
+order: 30
+section: Guides
+---
+
+This guide maps the most common OFFER-HUB failures to their causes and fixes. Every scenario below was verified against the Orchestrator source in the [OFFER-HUB/OFFER-HUB](https://github.com/OFFER-HUB/OFFER-HUB) repository — each fix cites the guard, service, exception, or DTO file that produces the behavior, so nothing here is guessed.
+
+<Callout type="tip">
+  New here? Start with the [Quick Start](/docs/guide/quick-start) flow first — most errors below are state or sequencing issues that disappear once the happy path works.
+</Callout>
+
+## How to read an error
+
+Every failed request returns the standard error envelope, produced by the global exception filter ([`global-exception.filter.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/filters/global-exception.filter.ts)):
+
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_FUNDS",
+    "message": "Available balance 40.00 is less than required 100.00",
+    "details": { "required": "100.00", "available": "40.00" }
+  }
+}
+```
+
+Three things to do with every error:
+
+1. Read `error.code` — it is stable and machine-checkable; `error.message` is human-readable and may change.
+2. Read `error.details` — filters and guards attach context (current state, required scope, field errors) that usually names the exact fix.
+3. Capture the `X-Request-ID` **response header** — the correlation-ID middleware ([`correlation-id.middleware.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/middleware/correlation-id.middleware.ts)) echoes your `X-Request-ID` request header or generates a UUID, and you will need it for support (see [Reporting an issue](#reporting-an-issue-with-x-request-id)).
+
+The full code catalog lives in [`docs/api/errors.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/api/errors.md) in the Orchestrator repo, and maps to typed SDK exceptions in [SDK Errors](/docs/sdk/errors).
+
+## Quick triage
+
+| HTTP | Code | Usually means | First move |
+|---|---|---|---|
+| `400` | `VALIDATION_ERROR` | Payload or header failed validation | Check `error.details` for the offending field |
+| `401` | `UNAUTHORIZED` / `INVALID_API_KEY` | Missing or bad API key | Verify the `Authorization` header |
+| `403` | `INSUFFICIENT_SCOPE` | Key lacks the required scope | Re-create the key with the right scope |
+| `404` | `*_NOT_FOUND` | Resource ID does not exist | Check the ID; create the resource first |
+| `409` | `IDEMPOTENCY_KEY_*` | Key replayed with a different body, or still in flight | Retry with a fresh key or wait for the original |
+| `409` | `INVALID_STATE` | State machine rejected the transition | Fetch the order and retry in the right sequence |
+| `409` | `ESCROW_*` / `DISPUTE_ALREADY_OPEN` | Escrow/dispute precondition failed | Wait for the required state first |
+| `422` | `INSUFFICIENT_FUNDS` | Available balance too low | Top up before retrying |
+| `429` | `RATE_LIMITED` | Per-key bucket exceeded | Back off and retry |
+| `502` / `504` | `PROVIDER_*` | Stellar, AirTM, or Trustless Work failed | Query state before retrying — see T19/T20 |
+| `500` | `INTERNAL_ERROR` | Unhandled server error | Retry once, then report with `X-Request-ID` |
+
+## Scenarios
+
+### Authentication and authorization
+
+#### T1 — `401` with "Missing Authorization header"
+
+- **Symptom:** Every request fails immediately with `401 UNAUTHORIZED` and message `Missing Authorization header`.
+- **Cause:** The request has no `Authorization` header at all. The API-key guard ([`api-key.guard.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/api-key.guard.ts)) rejects it before any route logic runs.
+- **Fix:** Send `Authorization: Bearer ohk_live_...` on every request. If you use the SDK, check that `apiKey` is set in [Configuration](/docs/sdk/configuration) — an empty string produces exactly this.
+
+#### T2 — `401` with "Invalid API Key"
+
+- **Symptom:** `401` and message `Invalid API Key` (or `Invalid API Key format`).
+- **Cause:** The guard parsed the header but the key is malformed, unknown, or expired — the code is `INVALID_API_KEY`.
+- **Fix:** Re-copy the key from your Orchestrator (see [Getting Started](/docs/getting-started)); watch for trailing whitespace/newlines when pasting into env files. If the key was rotated, update `OFFERHUB_API_KEY` everywhere.
+
+#### T3 — `403` with "Insufficient scope"
+
+- **Symptom:** `403 INSUFFICIENT_SCOPE` on a route that works in your admin client but fails from your integration; `error.details` names the required scope.
+- **Cause:** The scope guard ([`scope.guard.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/scope.guard.ts)) compares your key's scopes against the `@Scopes()` metadata on the handler and throws `ForbiddenException('Insufficient scope')`.
+- **Fix:** Scopes are `read`, `write`, and `support`. Create a key with `write` for any mutating route (`POST`/`PUT`/`PATCH`/`DELETE`) and reserve `support` for dispute operations — see [API Overview — Authentication](/docs/api-reference/overview#authentication). Retrying cannot help; fix the key.
+
+### Request validation
+
+#### T4 — `400 VALIDATION_ERROR` with field details
+
+- **Symptom:** `400` and `error.details` lists fields like `amount` or `currency`.
+- **Cause:** The payload failed DTO validation (wrong type, missing field, bad decimal string). Codes in the catalog include `INVALID_AMOUNT_FORMAT` and `MISSING_REQUIRED_FIELD`.
+- **Fix:** Amounts are decimal **strings** (`"50.00"`, never `50`), and `currency` must be supported by your instance. Send exactly the fields the DTO declares — extra nesting (a double-wrapped `{"data": {...}}`) is the most common cause.
+
+#### T5 — `400` "Idempotency-Key must be a valid UUID v4"
+
+- **Symptom:** `400 VALIDATION_ERROR` mentioning the `Idempotency-Key` header.
+- **Cause:** The idempotency guard ([`idempotency.guard.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/idempotency.guard.ts)) validates the header with `isValidUuidV4` and rejects anything that is not a UUID v4 — including timestamps, order IDs, or `uuid v1` values.
+- **Fix:** Generate a fresh UUID v4 per logical operation (`crypto.randomUUID()` in Node, `uuid.uuid4()` in Python). The key only applies to `POST`/`PUT`/`PATCH`; omitting it means **no** idempotency protection at all (the guard passes the request through).
+
+### Idempotency
+
+#### T6 — `409 IDEMPOTENCY_KEY_REUSED`
+
+- **Symptom:** `409` with `This idempotency key was used with a different request body`.
+- **Cause:** `IdempotencyService.checkOrLock` ([`idempotency.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/idempotency/idempotency.service.ts)) hashes the request body; the stored hash for this key does not match. Keys are scoped to the API key, so two marketplaces can reuse a key safely.
+- **Fix:** A key identifies one **exact** request. If the operation changed, mint a new UUID. If you intended a replay, send the byte-identical body. See [API Overview — Idempotency](/docs/api-reference/overview#idempotency).
+
+#### T7 — `409 IDEMPOTENCY_KEY_IN_PROGRESS`
+
+- **Symptom:** `409` with `Original request still processing`.
+- **Cause:** A request with the same key is still executing; the Redis lock (`idempotency:lock:...`, 60-second TTL) has not been released.
+- **Fix:** Wait for the original request to finish and you will receive its stored response (T8). Do not retry with a new key — that would execute the operation twice. If the first request crashed, the lock expires after 60 seconds and the key can be reused.
+
+#### T8 — Same request returned an old response (replay)
+
+- **Symptom:** You re-sent a `POST` and got the original response — same body, same status — instead of an error or a second execution.
+- **Cause:** Same key **and** identical body hash after completion: the guard throws `IdempotencyReplayException` ([`idempotency-replay.exception.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/exceptions/idempotency-replay.exception.ts)), which replays the stored status and body verbatim. Records are retained for 24 hours.
+- **Fix:** This is correct behavior, not a bug — safe retries are the point. Use a new UUID when you actually want a second operation. The SDK adds keys automatically via `withIdempotencyKey` — see [SDK Configuration](/docs/sdk/configuration).
+
+### Orders and balances
+
+#### T9 — `404 USER_NOT_FOUND` / `ORDER_NOT_FOUND`
+
+- **Symptom:** `404` on a route that worked moments ago, often right after creating the resource.
+- **Cause:** The ID does not exist **in this marketplace/environment**. IDs from `localhost` do not exist on the deployed instance, and IDs created with one API key are invisible to a key from another marketplace.
+- **Fix:** Confirm the base URL and API key match the environment where the resource was created, and log the ID at creation time. See [Data Model](/docs/guide/data-model).
+
+#### T10 — `422 INSUFFICIENT_FUNDS`
+
+- **Symptom:** `422` with `details.required` and `details.available` when reserving or funding.
+- **Cause:** The buyer's **available** balance cannot cover the amount; reserved funds do not count. Catalog code `INSUFFICIENT_FUNDS`.
+- **Fix:** Check [balance](/docs/sdk/balance) first — the SDK surfaces this as `InsufficientFundsError` with `required`/`available` properties — then top up via the [Deposits guide](/docs/guide/deposits) before retrying.
+
+#### T11 — `409 INVALID_STATE` on a transition
+
+- **Symptom:** `409 INVALID_STATE`, e.g. `Cannot reserve funds order ord_123 in state FUNDS_RESERVED` or `Order ord_123 is in state ESCROW_FUNDING, but ESCROW_FUNDED is required for this operation`.
+- **Cause:** The state machine rejected the transition. `InvalidOrderStateException` ([`orders.exceptions.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/orders/exceptions/orders.exceptions.ts)) and `InvalidResolutionStateException` ([`resolution.exceptions.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/resolution/exceptions/resolution.exceptions.ts)) fire when you skip a step: releasing before the escrow is funded, funding twice, or disputing a closed order.
+- **Fix:** `GET` the order, compare its `status` against the [order lifecycle](/docs/guide/orders), and issue transitions in sequence: `ORDER_CREATED` → reserve → `FUNDS_RESERVED` → escrow create/fund → `ESCROW_FUNDED` → `IN_PROGRESS` → release/refund. The SDK raises `InvalidTransitionError` for these; never retry it blindly.
+
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
+
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
+
+The diagram shows the only path the state machine accepts — every `409 INVALID_STATE` in T11–T13 is an attempt to skip an arrow on it.
+
+### Escrow
+
+#### T12 — `409 ESCROW_ALREADY_EXISTS`
+
+- **Symptom:** `409` with `Escrow already exists for order ord_123` when calling the escrow creation route.
+- **Cause:** `EscrowAlreadyExistsException` — the order already has an escrow contract; creating one twice is not allowed.
+- **Fix:** Treat it as success-path confirmation: fetch the order/escrow state and continue with funding instead. Only re-create after the order reaches a terminal state and a new order is created.
+
+#### T13 — `409 ESCROW_NOT_READY` (release/refund before funding completes)
+
+- **Symptom:** `409 ESCROW_NOT_READY` — escrow is not in the correct state for this operation.
+- **Cause:** On-chain funding takes time; the escrow is still `CREATING`/`FUNDING` and you tried to release, refund, or dispute. The catalog entry is `ESCROW_NOT_READY` (see [`docs/api/errors.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/api/errors.md)).
+- **Fix:** Wait for the `order.escrow_funded` event (or poll `GET` the order) and act only when status is `IN_PROGRESS`. See [Escrow Flows](/docs/guide/escrow-flows) for the Trustless Work webhook lifecycle that drives these transitions.
+
+### Disputes
+
+#### T14 — `409 DISPUTE_ALREADY_OPEN`
+
+- **Symptom:** `409` with `Active dispute already exists for order ord_123`, or the release/refund route fails with the same code.
+- **Cause:** `DisputeAlreadyExistsException` / `ActiveDisputeException` — one open dispute per order, and resolution actions are blocked while it is open. Requesting release and refund simultaneously also fails with `409 INVALID_STATE` (`MutuallyExclusiveResolutionException`).
+- **Fix:** Query the open dispute and resolve it first; release and refund are mutually exclusive — pick one. See [Disputes](/docs/guide/disputes).
+
+### Inbound webhooks
+
+#### T15 — AirTM webhook rejected with `401`
+
+- **Symptom:** Your AirTM callback returns `401` / `WEBHOOK_SIGNATURE_INVALID`; deposits never credit.
+- **Cause:** Signature verification runs first in `handleAirtmWebhook` ([`webhooks.controller.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/webhooks/webhooks.controller.ts)) using the Svix headers `svix-id`, `svix-timestamp`, `svix-signature` and `svix.Webhook.verify(rawBody, headers)` in [`airtm-webhook.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/providers/airtm/services/airtm-webhook.service.ts). A mismatch — wrong `AIRTM_WEBHOOK_SECRET`, a proxy that rewrote the body, or forwarding to a different URL — fails closed.
+- **Fix:** Verify the secret matches the AirTM dashboard and that your tunnel/proxy forwards the raw body untouched. If `AIRTM_WEBHOOK_SECRET` is unset, verification is disabled **with a logged warning** — fine for local dev, never for production. Full reference: [Inbound Webhooks](/docs/api-reference/webhooks).
+
+#### T16 — Trustless Work webhook rejected with `401`
+
+- **Symptom:** Trustless Work escrow events return `401`; order status stays stuck at `ESCROW_CREATING`.
+- **Cause:** The receiver verifies the `x-tw-signature` header — `HMAC-SHA256(rawBody, TRUSTLESS_WEBHOOK_SECRET)` as a hex digest ([`webhook.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/providers/trustless-work/services/webhook.service.ts)) — and throws `UnauthorizedException` with `WEBHOOK_SIGNATURE_INVALID` on mismatch. The secret must match the value in the Trustless Work dashboard (values not starting with `tw_whsec_` log a warning).
+- **Fix:** Align `TRUSTLESS_WEBHOOK_SECRET` with the provider, and make sure you sign the **raw** body, not a re-serialized JSON.
+
+#### T17 — Trustless Work event processed without a signature
+
+- **Symptom:** Logs show `Trustless Work webhook received without signature header`, yet the event was processed.
+- **Cause:** The controller only verifies `when (signature)` is present — a missing header logs a warning and processing continues ([`webhooks.controller.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/webhooks/webhooks.controller.ts)). This is a documented development gap, not production behavior.
+- **Fix:** Put the receiver behind your Orchestrator's normal deployment boundary (see [Security](/docs/guide/security)) and set `TRUSTLESS_WEBHOOK_SECRET`; do not expose a signature-less webhook publicly.
+
+<Callout type="note">
+  Webhooks are answered `200` even when business processing fails (`{ "status": "ok", "processed": false }`) and duplicates return `{ "status": "ok", "duplicate": true }` — so a `200` never proves the event was applied. Dedup is keyed on `(provider, providerEventId)`. Judge outcomes by order/balance state, not by the HTTP status alone.
+</Callout>
+
+### Real-time events (SSE)
+
+#### T18 — SSE stream drops, or events stop after reconnect
+
+- **Symptom:** The event stream disconnects and reconnecting replays nothing — or events arrive in bursts with long gaps.
+- **Cause:** The stream pings every 30 seconds (`interval(30000)` in [`events.controller.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/events/events.controller.ts)); proxies that buffer or time out idle responses kill it. Replay comes from a Redis sorted set (`events:log`) capped at the last **1,000** events ([`sse.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/events/sse.service.ts)) — a client that was offline for more than the retention window simply has no backlog, and filter values are exact-match only.
+- **Fix:** Reconnect with `Last-Event-ID` (takes precedence over `since`) to resume inside the window, poll `GET` endpoints as a fallback for gaps, and disable proxy buffering for `/api/v1/events`. The stream is protected by `ApiKeyGuard` only — if the stream never opens, fix the key (T1/T2), not scopes. Full reference: [Events](/docs/api-reference/events).
+
+### Providers (Stellar, AirTM, Trustless Work)
+
+#### T19 — `502 PROVIDER_ERROR` or `PROVIDER_RATE_LIMITED`
+
+- **Symptom:** `502` with `details.provider` naming the failing integration; sometimes `details.retryRecommended: true`.
+- **Cause:** The upstream provider returned an error or throttled the Orchestrator (catalog: `PROVIDER_ERROR`, `PROVIDER_RATE_LIMITED`).
+- **Fix:** Retry with exponential backoff — the SDK does this automatically for `ProviderError` (see [SDK Errors — retry semantics](/docs/sdk/errors#retry-semantics)). If it persists, check `/health/detailed` for the provider's status.
+
+#### T20 — `504 PROVIDER_TIMEOUT` — did my transaction go through?
+
+- **Symptom:** `504 PROVIDER_TIMEOUT` after a fund, release, or withdrawal call; you do not know whether the on-chain transaction executed.
+- **Cause:** The provider did not respond within the timeout. On Stellar the transaction **may have been submitted** even though the confirmation never arrived.
+- **Fix:** Query the order/escrow (or withdrawal) status **before** retrying — if the state advanced, the transaction landed and you must not re-submit. Only retry when state is unchanged, using the same `Idempotency-Key` so an accidental duplicate stays a replay. See [Withdrawals](/docs/guide/withdrawals).
+
+### Rate limits and server errors
+
+#### T21 — `429 RATE_LIMITED`
+
+- **Symptom:** `429` after a burst of requests; disappears a minute later.
+- **Cause:** The rate-limit guard ([`rate-limit.guard.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/rate-limit.guard.ts)) enforces a per-API-key Redis bucket — 100 requests per 60 seconds by default.
+- **Fix:** Back off exponentially; the SDK auto-retries `RateLimitError`. If you legitimately need more, spread traffic across keys by marketplace rather than hammering one.
+
+#### T22 — `500 INTERNAL_ERROR`
+
+- **Symptom:** `500` with no specific code; possibly a stack trace in `details` on non-production instances.
+- **Cause:** An unhandled exception reached the global filter, which maps unknown errors to `INTERNAL_ERROR`.
+- **Fix:** Retry once (transient faults happen). On repeat, capture the `X-Request-ID` response header and report it — see below.
+
+## Checking instance health
+
+Before debugging client code, confirm the Orchestrator itself is healthy.
+
+`GET /health` returns a minimal liveness payload from [`health.controller.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/health/health.controller.ts):
+
+<CommandLine>curl http://localhost:4000/api/v1/health</CommandLine>
+
+```json
+{ "status": "healthy", "version": "1.0.0", "timestamp": "2026-09-27T12:00:00.000Z" }
+```
+
+`GET /health/detailed` runs real dependency checks (database, Redis, AirTM, Trustless Work) through the health service and reports each one:
+
+<CommandLine>curl http://localhost:4000/api/v1/health/detailed</CommandLine>
+
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "dependencies": { "database": "up", "redis": "up", "airtm": "up", "trustlessWork": "up" },
+  "timestamp": "2026-09-27T12:00:00.000Z"
+}
+```
+
+Any dependency other than `up` explains a whole class of failures: `redis: down` produces T7/T18-style symptoms, `trustlessWork: down` produces T13/T16. Both endpoints are public — wire them into your uptime checks (see [Self-Hosting](/docs/guide/self-hosting)).
+
+## Reporting an issue with X-Request-ID
+
+When an error persists and you need help, the correlation-ID middleware makes any request traceable:
+
+1. Send an `X-Request-ID` header (any UUID v4) on the failing request — or read the `X-Request-ID` **response** header; the server generates one when you do not supply it ([`correlation-id.middleware.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/middleware/correlation-id.middleware.ts)).
+2. Attach that ID to the report together with the `error.code`, the exact request (method, path, body — redact secrets), and the timestamp.
+3. The same ID appears in server logs and in the `metadata.correlationId` field of events emitted by the request, so it connects the API call, the resulting state changes, and the SSE trail.
+
+<Callout type="warning">
+  Never include API keys or webhook secrets in a report. The request ID is enough to trace everything.
+</Callout>
+
+## Hackathon FAQ
+
+Answers for participants building on OFFER-HUB under time pressure.
+
+**What do I need before my first API call?**
+A running Orchestrator instance and an API key (`ohk_live_...`). Follow [Installation](/docs/installation) then [Quick Start](/docs/guide/quick-start) — ten minutes end to end.
+
+**Testnet or mainnet?**
+Use a local or testnet instance for the hackathon; Stellar testnet USDC is free. Base URLs and keys are per-environment — mixing them is the #1 cause of T9 (`404`).
+
+**Do I have to handle webhooks?**
+Not to get started. Webhooks drive automatic status updates, but polling `GET` on the order works for a demo — combine it with SSE ([Events](/docs/api-reference/events)) for near-real-time without any public endpoint. Configure webhook secrets only if you self-host.
+
+**How do I retry safely without double-charging?**
+Send an `Idempotency-Key` (UUID v4) on every mutating request and retry with the **same** key and identical body — you will get the stored response instead of a second execution (T8). Never reuse a key for a changed payload (T6).
+
+**My escrow call succeeded but release fails with `409`.**
+On-chain steps are async. Wait for `IN_PROGRESS` (T13); watch the `order.*` events or poll the order.
+
+**The SSE stream works locally but not from my deployed frontend.**
+Proxies and serverless functions buffer or kill idle streams. Disable buffering, or poll on an interval for the demo (T18).
+
+**I keep getting `429`.**
+Default is 100 requests/minute per key (T21). The SDK backs off automatically; in a demo loop, add a short sleep or cache responses.
+
+**Where do I see the full list of error codes?**
+The [API Overview](/docs/api-reference/overview) table, the [SDK Errors](/docs/sdk/errors) catalog, and the Orchestrator repo's [`docs/api/errors.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/api/errors.md).
+
+**Something is broken and I cannot tell if it is my code or the API.**
+Check `/health/detailed` first. Then re-run the failing call with an `X-Request-ID` header, capture the response header, and include the ID plus the `error.code` when you ask for help — that single ID traces the request end to end.
+
+**Can buyer and seller be the same user?**
+No — creating an order with identical buyer and seller throws `400 INVALID_REQUEST` (`SameUserException`). Create two users, even for testing.
+
+**My deposit completed on-chain but the balance did not update.**
+Balance credit for crypto deposits is detected automatically; if it stalls, the Trustless Work webhook chain is the usual suspect — check the webhook logs and secrets (T16), then confirm via [balance](/docs/sdk/balance).
+
+## See also
+
+- [API Reference](/docs/api-reference/overview) — endpoint behavior, authentication, and idempotency rules
+- [SDK Errors](/docs/sdk/errors) — typed exception hierarchy and retry semantics
+- [Inbound Webhooks](/docs/api-reference/webhooks) — signature verification and delivery semantics
+- [Events](/docs/api-reference/events) — SSE stream, reconnection, and replay
+- [Orders](/docs/guide/orders) — the state machine behind T11–T13
+- [Security](/docs/guide/security) — key handling and webhook exposure
+- [Configuration](/docs/configuration) — environment variables referenced above

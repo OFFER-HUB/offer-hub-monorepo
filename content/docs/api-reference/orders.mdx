@@ -34,7 +34,7 @@ All seven handlers live in `OrdersController` (`apps/api/src/modules/orders/orde
 | Authentication | None enforced (no `ApiKeyGuard`) | `apps/api/src/modules/orders/orders.controller.ts` |
 | Required scope | None (no `ScopeGuard` / `@Scopes`) | `apps/api/src/modules/orders/orders.controller.ts` |
 | Rate limiting | Yes — global `RateLimitGuard` via `APP_GUARD`, 100 requests per 60-second window | `apps/api/src/app.module.ts`, [Rate Limiting](/docs/api-reference/overview#rate-limiting) |
-| Correlation | `X-Request-ID` echoed in `meta.requestId` when sent | `CorrelationIdMiddleware`, `ResponseInterceptor` |
+| Correlation | `X-Request-ID` is always set on the response and in `meta.requestId`: your value, or a generated UUID v4. See [Request correlation](/docs/api-reference/overview#request-correlation-x-request-id) | `CorrelationIdMiddleware`, `ResponseInterceptor` |
 | Request body | `create` (required), `cancel` (optional), `complete` (none) | `orders.controller.ts` |
 
 <Callout type="warning">
@@ -55,6 +55,8 @@ The global `ValidationPipe` runs with `whitelist: true`, `forbidNonWhitelisted: 
 None of the four `POST` handlers here (`create`, `reserve`, `cancel`, `completeMilestone`) declares `@HttpCode`, so NestJS applies its default **`201 Created`**; the three `GET` handlers return `200 OK`. That matches the escrow pair ([Escrow Endpoints](/docs/api-reference/escrow#success-status-codes)) and differs from the resolution endpoints, which set `200` explicitly except `dispute`.
 
 ### Response envelope
+
+For every endpoint group's envelope in one table, see [Envelope by endpoint group](/docs/api-reference/overview#envelope-by-endpoint-group).
 
 `ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps the handler's `{ success, data }` payload — `isAlreadyWrapped` only skips wrapping when a `meta` key is present or the payload has exactly one key — so a successful single-resource call looks like this on the wire:
 
@@ -235,8 +237,8 @@ Validated against `CreateOrderDto` (`apps/api/src/modules/orders/dto/create-orde
     },
     { name: "data.data.createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
     { name: "data.data.updatedAt", type: "string", required: true, description: "ISO 8601 update timestamp." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
-    { name: "meta.requestId", type: "string", required: false, description: "Your correlation ID, or undefined when you did not send one.", nullable: true },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+    { name: "meta.requestId", type: "string", required: true, description: "Your X-Request-ID, or the UUID v4 the server generated when you sent none." },
     { name: "meta.timestamp", type: "string", required: false, description: "Server timestamp of the response." },
   ]}
   example={{
@@ -365,91 +367,87 @@ await sdk.orders.fundEscrow(order.id);   // IN_PROGRESS`
 
 ## GET /api/v1/orders
 
-Lists orders with cursor pagination and role/status filters. `OrdersService.getOrders` reads the query object, applies the filters, and returns one page plus a cursor.
+Lists orders newest first, with cursor pagination and role and status filters. `OrdersController.listOrders` parses the query and `OrdersService.listOrders` returns one page plus a cursor.
 
 ### Query parameters
 
-All filters are optional. Query keys are snake_case, as documented in [Filters](/docs/api-reference/overview#filters) and [Pagination](/docs/api-reference/overview#pagination).
+All parameters are optional. Filter keys on this endpoint are snake_case; see [Filters](/docs/api-reference/overview#filters). `limit` and `cursor` behave as described in [Pagination](/docs/api-reference/overview#pagination).
 
 <ParamTable
   label="List orders query parameters"
   fields={[
     { name: "buyer_id", type: "string", required: false, description: "Return orders where this user is the buyer." },
-    { name: "seller_id", type: "string", required: false, description: "Return orders where this user is the seller. Sending both buyer_id and seller_id returns orders where the user holds either role." },
+    { name: "seller_id", type: "string", required: false, description: "Return orders where this user is the seller. Sending both buyer_id and seller_id returns orders matching either one." },
     { name: "status", type: "OrderStatus", required: false, description: "Filter by one status. An unknown value is ignored rather than filtered on.", enum: ["ORDER_CREATED", "FUNDS_RESERVED", "ESCROW_CREATING", "ESCROW_FUNDING", "ESCROW_FUNDED", "IN_PROGRESS", "RELEASE_REQUESTED", "RELEASED", "REFUND_REQUESTED", "REFUNDED", "DISPUTED", "CLOSED"] },
-    { name: "limit", type: "number", required: false, description: "Items per page. Values above 100 are capped at 100.", defaultValue: "20" },
-    { name: "cursor", type: "string", required: false, description: "The next_cursor from the previous page — an order ID, e.g. ord_xyz789. Omit for the first page." },
-    { name: "created_after", type: "string", required: false, description: "ISO 8601 lower bound on createdAt." },
-    { name: "created_before", type: "string", required: false, description: "ISO 8601 upper bound on createdAt." },
+    { name: "limit", type: "number", required: false, description: "Items per page. Values above 100 are capped at 100; a missing or non-numeric value falls back to 20.", defaultValue: "20" },
+    { name: "cursor", type: "string", required: false, description: "The nextCursor from the previous page (an order ID, e.g. ord_abc123). Omit it for the first page." },
   ]}
 />
 
 <Callout type="note">
-  This list is **cursor-based**, not offset-based. There is no `page`, `pageSize`, `sort`, or `search` parameter on this endpoint — those appear only in the generic `docs/backend/api-design.md` template, not on any orders artifact. Page forward with `cursor` = the `next_cursor` you received.
+  This list is **cursor-based**, not offset-based. There is no `page`, `pageSize`, `sort`, `search`, or date-range parameter on this endpoint. The controller reads only the five keys above.
 </Callout>
 
 ### Response
 
-<Badge variant="success">200</Badge> One page of orders, newest cursor last.
+<Badge variant="success">200</Badge> One page of orders, newest first. The controller returns `{ success, data, hasMore, nextCursor }`, and `ResponseInterceptor` wraps it, so the page info sits inside the outer `data`.
 
 <ResponseSchema
   label="List orders response"
   fields={[
-    { name: "data", type: "Order[]", required: true, description: "The page of orders. Each item is the order resource; relations are not expanded for every row, so read a single order for its escrow and milestones." },
-    { name: "data[].id", type: "string", required: true, description: "Order ID with the ord_ prefix." },
-    { name: "data[].status", type: "string", required: true, description: "Current order status.", enum: ["ORDER_CREATED", "FUNDS_RESERVED", "ESCROW_CREATING", "ESCROW_FUNDING", "ESCROW_FUNDED", "IN_PROGRESS", "RELEASE_REQUESTED", "RELEASED", "REFUND_REQUESTED", "REFUNDED", "DISPUTED", "CLOSED"] },
-    { name: "data[].buyerId", type: "string", required: true, description: "Buyer user ID." },
-    { name: "data[].sellerId", type: "string", required: true, description: "Seller user ID." },
-    { name: "data[].amount", type: "string", required: true, description: "Order amount as a decimal string." },
-    { name: "data[].currency", type: "string", required: true, description: "Currency code." },
-    { name: "data[].title", type: "string", required: true, description: "Order title." },
-    { name: "data[].createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
     {
-      name: "pagination",
+      name: "data",
       type: "object",
       required: true,
-      description: "Cursor pagination block for this page.",
+      description: "The controller payload, wrapped by ResponseInterceptor.",
       children: [
-        { name: "has_more", type: "boolean", required: true, description: "True when another page exists. The SDK exposes this as hasMore." },
-        { name: "next_cursor", type: "string", required: false, description: "Pass as cursor on the next request. The SDK exposes this as nextCursor.", nullable: true },
+        { name: "success", type: "boolean", required: true, description: "Always true on a 2xx." },
+        { name: "data", type: "Order[]", required: true, description: "The page of orders. Each row includes its escrow (or null) and milestones relations." },
+        { name: "hasMore", type: "boolean", required: true, description: "True when another page exists." },
+        { name: "nextCursor", type: "string", required: false, description: "Present only when hasMore is true. Pass it as cursor on the next request." },
       ],
     },
+    { name: "meta.requestId", type: "string", required: true, description: "Your X-Request-ID, or the UUID v4 the server generated when you sent none." },
+    { name: "meta.timestamp", type: "string", required: true, description: "ISO 8601 server timestamp." },
   ]}
   example={{
-    data: [
-      {
-        id: "ord_xyz789",
-        buyerId: "usr_buyer123",
-        sellerId: "usr_seller456",
-        amount: "5000.00",
-        currency: "USD",
-        status: "IN_PROGRESS",
-        title: "Mobile App Development",
-        createdAt: "2026-02-25T12:00:00.000Z"
-      },
-      {
-        id: "ord_abc123",
-        buyerId: "usr_buyer123",
-        sellerId: "usr_seller456",
-        amount: "2500.00",
-        currency: "USD",
-        status: "FUNDS_RESERVED",
-        title: "Landing page build",
-        createdAt: "2026-02-09T18:12:04.221Z"
-      }
-    ],
-    pagination: { has_more: true, next_cursor: "ord_abc123" }
+    data: {
+      success: true,
+      data: [
+        {
+          id: "ord_xyz789",
+          buyerId: "usr_buyer123",
+          sellerId: "usr_seller456",
+          amount: "5000.00",
+          currency: "USD",
+          status: "IN_PROGRESS",
+          title: "Mobile App Development",
+          createdAt: "2026-02-25T12:00:00.000Z"
+        },
+        {
+          id: "ord_abc123",
+          buyerId: "usr_buyer123",
+          sellerId: "usr_seller456",
+          amount: "2500.00",
+          currency: "USD",
+          status: "FUNDS_RESERVED",
+          title: "Landing page build",
+          createdAt: "2026-02-09T18:12:04.221Z"
+        }
+      ],
+      hasMore: true,
+      nextCursor: "ord_abc123"
+    },
+    meta: { requestId: "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", timestamp: "2026-02-25T12:00:00.412Z" }
   }}
 />
 
 ### Errors
 
-| HTTP | `error.code` | When |
-| --- | --- | --- |
-| `400` | `VALIDATION_ERROR` | `limit` is not a number, or `created_after` / `created_before` is not parseable as a date. |
+This endpoint defines no endpoint-specific errors. Query values are parsed leniently: a non-numeric `limit` falls back to `20`, and an unknown `status` is ignored.
 
 <Callout type="note">
-  An empty match is a `200` with `data: []`, not a `404`. The [SDK reference](/docs/sdk/orders#list-orders) lists `400` for a `status` outside the `OrderStatus` enum and then notes that the controller ignores an unknown status instead of filtering — treat a typo'd status as "filter not applied" and validate the value client-side.
+  An empty match is a `200` with `data.data: []` and `data.hasMore: false`, not a `404`. The [SDK reference](/docs/sdk/orders#list-orders) lists `400` for a `status` outside the `OrderStatus` enum, but the controller ignores an unknown status instead of rejecting it. Treat a mistyped status as "filter not applied" and validate the value client-side.
 </Callout>
 
 ### Examples
@@ -465,7 +463,7 @@ All filters are optional. Query keys are snake_case, as documented in [Filters](
 curl "http://localhost:4000/api/v1/orders?status=IN_PROGRESS&buyer_id=usr_buyer123&limit=20" \\
   -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
 
-# Next page — the cursor is the next_cursor from the previous response
+# Next page: the cursor is data.nextCursor from the previous response
 curl "http://localhost:4000/api/v1/orders?status=IN_PROGRESS&buyer_id=usr_buyer123&limit=20&cursor=ord_abc123" \\
   -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx"`
     },
@@ -537,7 +535,7 @@ Fetches one order. `OrdersService.getOrder` loads the order by ID and includes i
     { name: "data.data.escrow.fundedAt", type: "string", required: false, description: "ISO 8601 funding timestamp.", nullable: true },
     { name: "data.data.milestones", type: "Milestone[]", required: true, description: "Milestones ordered by creation time; empty when the order has none." },
     { name: "data.data.dispute", type: "object", required: false, description: "Not populated — see the note in Known behavior below.", nullable: true },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {
@@ -675,7 +673,7 @@ Moves `order.amount` from the buyer's **available** balance to **reserved**, so 
     { name: "data.data.currency", type: "string", required: true, description: "Currency the balance was reserved in." },
     { name: "data.data.escrow", type: "object", required: false, description: "Still null — reserve does not create the escrow row.", nullable: true },
     { name: "data.data.milestones", type: "Milestone[]", required: true, description: "Milestones, unchanged; reserve does not complete them." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {
@@ -814,7 +812,7 @@ Optional — `@Body() dto?: CancelOrderDto` (`apps/api/src/modules/orders/dto/ca
     { name: "data.data.escrow", type: "object", required: false, description: "Null for a canceled order — an escrow row can only exist from ESCROW_CREATING onward, and those states are not cancellable.", nullable: true },
     { name: "data.data.milestones", type: "Milestone[]", required: true, description: "Milestones, still OPEN. Cancelling does not complete or delete them." },
     { name: "data.data.updatedAt", type: "string", required: true, description: "ISO 8601 timestamp of the cancellation." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {
@@ -940,7 +938,7 @@ Lists the milestones of one order, ordered by creation time. Milestones belong t
     { name: "data.data[].amount", type: "string", required: true, description: "Milestone amount as a decimal string." },
     { name: "data.data[].status", type: "string", required: true, description: "Milestone status.", enum: ["OPEN", "COMPLETED"] },
     { name: "data.data[].createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {
@@ -1046,7 +1044,7 @@ Marks one milestone `COMPLETED`. This is a bookkeeping write on the order's mile
         { name: "createdAt", type: "string", required: true, description: "ISO 8601 creation timestamp." },
       ],
     },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {

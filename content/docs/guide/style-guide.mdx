@@ -5,7 +5,7 @@ order: 90
 section: Internal
 ---
 
-<Callout variant="warning">
+<Callout type="warning">
   This page is for OFFER-HUB contributors working on the documentation site itself. It is not part of
   the public marketplace-integration guidance for teams consuming the Orchestrator API or SDK.
 </Callout>
@@ -243,6 +243,56 @@ font-family: var(--font-inter), Roboto, Outfit, sans-serif;
   placeholder="Enter text..."
 />
 ```
+
+### Code Tabs
+
+Show the same request in multiple languages with the internal `CodeTabs`
+component (registered in `src/components/docs/mdx-components.tsx` and
+implemented in `src/components/docs/CodeTabs.tsx`):
+
+```mdx
+<CodeTabs
+  label="Create a user"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST http://localhost:4000/api/v1/users`,
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `await sdk.users.create({ externalUserId: 'your-user-123' });`,
+    },
+  ]}
+/>
+```
+
+Rules and behaviour:
+
+- **Keyboard accessibility** — WAI-ARIA `tablist` / `tab` / `tabpanel` roles with
+  roving `tabindex`. `ArrowLeft` / `ArrowRight` move between tabs, `Home` / `End`
+  jump to the first / last tab, and only the selected tab is in the tab order.
+  Panels are wired with `aria-controls` / `aria-labelledby`.
+- **Copy per panel** — each selected panel's **Copy** button copies that
+  panel's code; inactive panels are hidden from view and the accessibility tree.
+- **Selection is remembered** — the chosen tab label is persisted in
+  `localStorage` under `offer-hub-docs-code-tab` and re-applied on every docs
+  page. All `CodeTabs` instances on a page stay in sync (custom `storage` /
+  `offer-hub-code-tab-change` events), so a reader who picks *TypeScript* once
+  gets *TypeScript* preselected wherever a matching tab exists.
+- **Styling** — design tokens only (`bg-bg-elevated`, `bg-bg-sunken`,
+  `shadow-neu-raised`, `shadow-neu-sunken-subtle`, `shadow-neu-raised-sm`,
+  `text-content-*`). No hardcoded colors, no colored borders — light and dark
+  mode come from the token system automatically.
+
+<Callout type="note">
+  Tabs are matched by label, not index. Reuse the same labels across pages
+  (e.g. always `cURL`, `TypeScript`, `Python`) so the remembered choice
+  carries over.
+</Callout>
 
 ---
 

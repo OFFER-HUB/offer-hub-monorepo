@@ -1,0 +1,67 @@
+---
+title: Background Jobs and Reconciliation
+description: BullMQ queues, retry behaviour, reconciliation schedules, and operational checks in the OFFER-HUB Orchestrator.
+order: 29
+section: Guides
+---
+
+The API process runs the Orchestrator's BullMQ processors. Redis stores the queue state; PostgreSQL remains the source of truth for balances, payouts, escrows, and audit records. The queue names and job types below are taken from `apps/api/src/modules/queues/queue.constants.ts`, `queue.module.ts`, and `queue.service.ts` in the [OFFER-HUB Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
+
+## Queues
+
+| Queue | Job types | Purpose | Retry policy |
+|---|---|---|---|
+| `webhooks` | `airtm:payin`, `airtm:payout`, `trustless:escrow` | Process provider webhooks. | 5 attempts, exponential backoff starting at 2 seconds. |
+| `reconciliation` | `reconciliation:sync-topups`, `reconciliation:sync-withdrawals`, `reconciliation:sync-escrows`, `reconciliation:check-missed-deposits` | Re-check provider and chain state. | 3 attempts, 5-second fixed backoff. |
+| `notifications` | `notification:email`, `notification:webhook` | Deliver outbound notifications. | 3 attempts, exponential backoff starting at 1 second. |
+| `dead-letter-queue` | `failed-job` | Retain jobs that exhaust their source queue retries for inspection or manual retry. | One attempt; jobs are retained. |
+
+The retry values are queue defaults in `apps/api/src/modules/queues/queue.module.ts`. A processor may still record a failure before the job is moved to the DLQ.
+
+## Reconciliation schedules
+
+`QueueService.onModuleInit()` installs these repeatable jobs in Redis. Each run processes a bounded batch and records metrics for processed, synced, failed, and discrepant records.
+
+| Job | Schedule | Default processing window |
+|---|---:|---|
+| `reconciliation:sync-topups` | Every 5 minutes | Pending AirTM top-ups older than 5 minutes; batch size 50. |
+| `reconciliation:sync-withdrawals` | Every 5 minutes | Pending AirTM withdrawals older than 5 minutes; batch size 50. |
+| `reconciliation:sync-escrows` | Every 10 minutes | Escrow records older than 10 minutes; batch size 30. |
+| `reconciliation:check-missed-deposits` | Every 5 minutes | Stellar payments in a 24-hour lookback; batch size 100. |
+
+Top-up and withdrawal reconciliation are skipped in crypto-only mode because they depend on AirTM. Escrow reconciliation continues to verify Trustless Work state. The missed-deposit job is the one schedule controlled by `RECONCILIATION_ENABLED`.
+
+## Blockchain monitor
+
+`BlockchainMonitorService` opens a Horizon payment stream for each active invisible wallet and credits matching USDC deposits. It starts with the API module, reconnects through the Horizon SDK after stream errors, and closes all streams during shutdown. Set `DISABLE_BLOCKCHAIN_MONITOR=true` on a secondary API instance when only one instance should consume deposit streams.
+
+## Configuration
+
+| Variable | Behaviour | Source |
+|---|---|---|
+| `RECONCILIATION_ENABLED` | When exactly `false`, skips `CHECK_MISSED_DEPOSITS`; other reconciliation jobs are not gated by it. | `apps/api/src/modules/queues/processors/reconciliation.processor.ts` |
+| `DISABLE_BLOCKCHAIN_MONITOR` | When exactly `true`, prevents Horizon monitor initialization. | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
+
+These values are read at runtime. Restart the API after changing them so queue schedules and the blockchain monitor are initialized with the new configuration.
+
+## Inspecting failed jobs and the DLQ
+
+The queue service exposes queue counts and repeatable-job metadata for operational tooling. For a direct Redis check in a Docker deployment:
+
+```bash
+# Queue keys and waiting jobs
+docker compose exec redis redis-cli keys "bull:*"
+docker compose exec redis redis-cli llen "bull:webhooks:wait"
+
+# Failed jobs in a queue (inspect the JSON before retrying)
+docker compose exec redis redis-cli lrange "bull:reconciliation:failed" 0 20
+```
+
+The `QueueService` methods `getQueueStats()`, `getDlqJobs()`, and `retryFromDlq()` are the supported application-level operations. DLQ jobs are not automatically processed: inspect the original queue, job name, payload, error, and attempt count, correct the provider or data problem, then retry deliberately. Do not delete a failed job before preserving its audit context.
+
+## Related documentation
+
+- [Configuration](/docs/configuration) — runtime environment variables.
+- [Self-Hosting](/docs/guide/self-hosting) — Redis, Docker, and production operations.
+- [Orchestrator](/docs/guide/orchestrator) — request and payment flow.
+- [Webhooks](/docs/api-reference/webhooks) — provider event delivery and duplicate handling.

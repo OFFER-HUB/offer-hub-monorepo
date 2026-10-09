@@ -25,6 +25,24 @@ The API uses Bearer tokens for authentication, supporting Master Keys, API Keys,
 
 For full details on credential types, key lifecycle, and per-endpoint scopes, see the [Authentication & Scopes](/docs/api-reference/authentication) guide.
 
+### Token Exchange Flow
+
+A long-lived API key can be exchanged for a short-lived bearer token (valid for 1 hour). This is useful for clients, such as a browser, that should not hold the long-lived key. The exchange endpoint requires the `write` scope.
+
+```mermaid
+sequenceDiagram
+    accTitle: API key and token exchange
+    accDescr: A marketplace backend exchanges a long-lived API key for a short-lived bearer token, then uses that token to call the Orchestrator.
+    autonumber
+    participant App as Marketplace Backend
+    participant Auth as POST /auth/api-keys/&#123;id&#125;/token
+    participant API as Orchestrator API
+    App->>Auth: POST (Bearer key with write scope)
+    Auth-->>App: 201 &#123; data: &#123; token &#125;, meta &#125;
+    App->>API: GET /api/v1/orders (Bearer token)
+    API-->>App: 200 &#123; data: &#123; success, data: [...] &#125;, meta &#125;
+```
+
 ## Common Headers
 
 ### Request Headers
@@ -34,59 +52,159 @@ For full details on credential types, key lifecycle, and per-endpoint scopes, se
 | `Authorization` | Yes | `Bearer {api_key}` |
 | `Content-Type` | Yes (POST/PUT/PATCH) | `application/json` |
 | `Idempotency-Key` | Optional | UUID v4 for POST, PUT, and PATCH requests |
-| `X-Request-ID` | No | UUID for correlation/debugging |
+| `X-Request-ID` | No | Your correlation ID (any string). Generated as a UUID v4 when omitted. See [Request correlation](#request-correlation-x-request-id) |
 
 ### Response Headers
 
 | Header | Description |
 |--------|-------------|
-| `X-Request-ID` | Echo of request ID or auto-generated |
-| `X-Idempotency-Key` | Echo of key if applied |
+| `X-Request-ID` | Always present: your value, or the UUID v4 the server generated |
+| `Idempotency-Replay` | `true` when the response is a stored replay of an earlier request with the same `Idempotency-Key` |
 | `X-RateLimit-Limit` | Request limit |
 | `X-RateLimit-Remaining` | Remaining requests |
 | `X-RateLimit-Reset` | Reset timestamp |
 
 ## Response Format
 
-### Success Response
+Every JSON response passes through two global layers registered in `apps/api/src/main.ts`:
+
+- **Success:** `ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps what the controller returns.
+- **Error:** `GlobalExceptionFilter` (`apps/api/src/common/filters/global-exception.filter.ts`) writes the error envelope.
+
+The interceptor does **not** normalize every endpoint to one shape. It applies three rules to the controller's return value, in this order:
+
+1. **Passed through unchanged** when the value has a `data` key **and** either has a `meta` key or has no other keys. A controller that returns `{ data: X }` is sent exactly as `{ "data": X }`, with **no `meta`**.
+2. **Passed through unchanged** when the value has an `error` key.
+3. **Wrapped** in everything else: `{ "data": <value>, "meta": { "requestId", "timestamp" } }`. That includes controllers that return `{ success, data }`, which therefore arrive **nested one level deeper**.
+
+The interceptor can also lift a page-based block into `meta.pagination` (`page`, `limit`, `total`, `totalPages`). It only does this for a return value shaped `{ items, pagination: { page, limit, total } }`, and **no current endpoint returns that shape**, so `meta.pagination` never appears today. Pagination lives inside `data`. See [Pagination](#pagination).
+
+### Envelope by endpoint group
+
+Verified against each controller in `apps/api/src/modules` and against the Orchestrator e2e helpers (`tests/e2e/orders.e2e.ts`, `tests/e2e/wallet.e2e.ts`, `tests/e2e/disputes.e2e.ts`), which unwrap `body.data.data` for the `{ success, data }` controllers.
+
+| Endpoint group | Controller returns | On the wire | Source |
+| --- | --- | --- | --- |
+| Orders, escrow and milestones: `POST /orders`, `GET /orders/{id}`, `POST /orders/{id}/reserve`, `/cancel`, `/escrow`, `/escrow/fund`, `GET /orders/{id}/milestones`, `POST /orders/{id}/milestones/{ref}/complete` | `{ success, data }` | `{ data: { success, data }, meta }` | `orders/orders.controller.ts` |
+| `GET /orders` | `{ success, data, hasMore, nextCursor? }` | `{ data: { success, data, hasMore, nextCursor? }, meta }` | `orders/orders.controller.ts`, `orders/orders.service.ts` (`listOrders`) |
+| Resolution: `POST /orders/{orderId}/resolution/release`, `/refund`, `/dispute` | `{ success, data }` | `{ data: { success, data }, meta }` | `resolution/resolution.controller.ts` |
+| Disputes: `GET /disputes`, `GET /disputes/{id}`, `POST /disputes/{id}/assign`, `/resolve` | `{ success, data }` | `{ data: { success, data }, meta }` (the list is **not** paginated) | `disputes/disputes.controller.ts` |
+| Users: `POST /users`, `POST /users/{id}/airtm/link` | `{ data }` | `{ data }`, no `meta` | `users/users.controller.ts` |
+| Wallet: `GET /users/{userId}/wallet`, `/deposit`, `/transactions` | `{ data }` | `{ data }`, no `meta` | `wallet/wallet.controller.ts` |
+| Config: `GET /config` | `{ data }` | `{ data }`, no `meta` | `config/config.controller.ts` |
+| `GET /auth/me` | `{ data }` (`data: null` without a key) | `{ data }`, no `meta` | `auth/auth.controller.ts` |
+| `POST /auth/api-keys`, `POST /auth/api-keys/{id}/token` | the key object / `{ token }` | `{ data: { ... }, meta }` | `auth/auth.controller.ts`, `auth/auth.service.ts` |
+| `GET /auth/api-keys` | `{ data, pagination: { hasMore, nextCursor } }` | `{ data: { data, pagination }, meta }` | `auth/auth.service.ts` (`listApiKeys`) |
+| Balance: every route under `/users/{userId}/balance` | the balance object | `{ data: { ... }, meta }` | `balance/balance.controller.ts`, `balance/balance.service.ts` |
+| Top-ups and withdrawals: create, get, refresh, cancel, commit | the resource | `{ data: { ... }, meta }` | `topups/topups.controller.ts`, `withdrawals/withdrawals.controller.ts` |
+| `GET /topups`, `GET /withdrawals` | `{ data, hasMore, nextCursor? }` | `{ data: { data, hasMore, nextCursor? }, meta }` | `topups/topups.service.ts` (`listTopUps`), `withdrawals/withdrawals.service.ts` (`listWithdrawals`) |
+| `GET /audit/logs` | `{ data, pagination: { hasMore, nextCursor? } }` | `{ data: { data, pagination }, meta }` | `audit-logs/audit.controller.ts` |
+| Health: `GET /health`, `/health/detailed` | status object | `{ data: { ... }, meta }` | `health/health.controller.ts` |
+| Inbound webhooks: `POST /webhooks/airtm`, `/trustless-work` | `{ status: "ok", ... }` | `{ data: { status, ... }, meta }` | `webhooks/webhooks.controller.ts` |
+| `GET /events` | SSE message events | `text/event-stream`, not a JSON envelope. See [Events](/docs/api-reference/events) | `events/events.controller.ts` |
+| `GET /topups/{id}/callback` | redirect | `302` redirect to the configured Airtm return URL | `topups/topups.controller.ts` |
+| Any error | thrown exception | `{ error: { code, message, details? } }` | `common/filters/global-exception.filter.ts` |
+
+<Callout type="note">
+  The `@offerhub/sdk` removes these layers for you. Methods resolve to the resource itself, and list methods resolve to `{ data, hasMore, nextCursor }`. The shapes above matter when you call the REST API directly or proxy it.
+</Callout>
+
+### Examples
+
+**Double-wrapped** (`{ success, data }` controllers: orders, resolution, disputes). Here, `POST /orders/{id}/reserve`:
 
 ```json
 {
-  "id": "ord_abc123",
-  "status": "ORDER_CREATED",
-  "amount": "100.00",
-  "currency": "USD",
-  "created_at": "2026-01-12T10:00:00.000Z",
-  "updated_at": "2026-01-12T10:00:00.000Z"
-}
-```
-
-### List Response
-
-```json
-{
-  "data": ["..."],
-  "pagination": {
-    "has_more": true,
-    "next_cursor": "ord_abc123"
+  "data": {
+    "success": true,
+    "data": {
+      "id": "ord_abc123",
+      "status": "FUNDS_RESERVED",
+      "buyerId": "usr_buyer123",
+      "sellerId": "usr_seller456",
+      "amount": "2500.00",
+      "currency": "USD"
+    }
+  },
+  "meta": {
+    "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13",
+    "timestamp": "2026-02-25T12:04:56.010Z"
   }
 }
 ```
 
-### Error Response
+**Wrapped once** (controllers that return the resource itself). Here, `GET /users/{userId}/balance`:
+
+```json
+{
+  "data": {
+    "user_id": "usr_buyer123",
+    "available": "1250.00",
+    "reserved": "200.00",
+    "currency": "USD",
+    "total": "1450.00",
+    "updated_at": "2026-02-25T12:00:00.000Z"
+  },
+  "meta": {
+    "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13",
+    "timestamp": "2026-02-25T12:00:00.412Z"
+  }
+}
+```
+
+**Passed through** (controllers that already return `{ data }`). Here, `GET /users/{userId}/wallet/deposit`. It has no `meta`, so read the correlation ID from the `X-Request-ID` header:
+
+```json
+{
+  "data": {
+    "provider": "crypto",
+    "method": "stellar_address",
+    "address": "GBCG42WTVWPO4Q6N...",
+    "asset": { "code": "USDC", "issuer": "GBBD47IF6LWK7P7M..." },
+    "network": "testnet",
+    "instructions": "Send USDC to this Stellar address. Deposits are detected automatically within seconds."
+  }
+}
+```
+
+**Error**, from `GlobalExceptionFilter`. Here, a `400` from the validation pipe:
 
 ```json
 {
   "error": {
-    "code": "INSUFFICIENT_FUNDS",
-    "message": "Available balance is less than requested amount",
+    "code": "VALIDATION_ERROR",
+    "message": "General validation error",
     "details": {
-      "available": "50.00",
-      "requested": "100.00"
+      "validationErrors": ["amount must be a decimal string with exactly 2 decimal places (e.g., \"100.00\")"],
+      "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13"
     }
   }
 }
 ```
+
+The full error catalog, and the extra keys some codes add to `details`, are in [Error Codes](/docs/api-reference/errors).
+
+### Request correlation (X-Request-ID)
+
+`CorrelationIdMiddleware` (`apps/api/src/common/middleware/correlation-id.middleware.ts`) runs on every route (`app.module.ts`, `forRoutes('*')`):
+
+1. If the request carries an `X-Request-ID` header, its value is used **as is**. Any string is accepted. It isn't validated or reformatted.
+2. Otherwise the middleware generates a UUID v4 with `crypto.randomUUID()`.
+3. The value is written back onto the request, so later layers see it, and it is set as the `X-Request-ID` **response header** on every response, success or error.
+
+Where you can read it back:
+
+| Response | Location |
+| --- | --- |
+| Every response | `X-Request-ID` header |
+| Wrapped success | `meta.requestId`. It is always populated, because the middleware runs before `ResponseInterceptor` |
+| Passed-through `{ data }` success (users, wallet, config, `auth/me`) | Header only. There is no `meta` |
+| Error from validation, a generic HTTP exception, or an unhandled `500` | `error.details.requestId` (`GlobalExceptionFilter`) |
+| Domain error already in `{ error: { code, ... } }` form (for example `INSUFFICIENT_FUNDS`, `ORDER_NOT_FOUND`) | Header only. The filter returns these unchanged and doesn't add `requestId` |
+
+<Callout type="tip">
+  Send your own `X-Request-ID` (for example, your upstream request or trace ID) so the same value appears in your logs and the Orchestrator's. Quote it when reporting a `500 INTERNAL_ERROR`.
+</Callout>
 
 ## Error Codes
 
@@ -120,6 +238,9 @@ The summaries on this page cover the API surface at a glance. The endpoint group
 | [Resolution Endpoints](/docs/api-reference/resolution) | `POST /orders/{orderId}/resolution/release`, `/refund`, `/dispute` | `apps/api/src/modules/resolution/resolution.controller.ts` |
 | [Inbound Webhooks](/docs/api-reference/webhooks) | `POST /webhooks/airtm`, `POST /webhooks/trustless-work` | `apps/api/src/modules/webhooks/webhooks.controller.ts` |
 | [Events (SSE)](/docs/api-reference/events) | `GET /events` plus the event catalog | `apps/api/src/modules/events/events.controller.ts` |
+| [Auth Endpoints](/docs/api-reference/auth) | `POST /auth/api-keys`, `GET /auth/api-keys`, `POST /auth/api-keys/{id}/token`, `GET /auth/me` | `apps/api/src/modules/auth/auth.controller.ts` |
+| [Users Endpoints](/docs/api-reference/users) | `POST /users`, `POST /users/{id}/airtm/link` | `apps/api/src/modules/users/users.controller.ts` |
+| [Config and Health Endpoints](/docs/api-reference/config-and-health) | `GET /config`, `GET /health`, `GET /health/detailed` | `apps/api/src/modules/config/config.controller.ts`, `apps/api/src/modules/health/health.controller.ts` |
 | [Error Codes](/docs/api-reference/errors) | 40+ error codes, envelope format, and correlation IDs | `packages/shared/src/constants/error-codes.ts` |
 
 ## Escrows
@@ -130,36 +251,28 @@ Escrow contracts hold funds securely between buyers and sellers until project co
 
 <Badge variant="primary">POST</Badge> `/api/v1/orders/{id}/escrow`
 
-Creates a new escrow contract between buyer and seller. Funds are held until release. See [Escrow Endpoints](/docs/api-reference/escrow#post-apiv1ordersidescrow) for parameters, contract roles, and the full response schema.
+Deploys the Trustless Work escrow contract for an order in `FUNDS_RESERVED`. The request has **no body**: the amount and parties come from the order (`OrdersController.createEscrow`). See [Escrow Endpoints](/docs/api-reference/escrow#post-apiv1ordersidescrow) for contract roles and the full response schema.
 
-**Request Body**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `amount` | string | Yes | Amount to escrow |
-| `currency` | string | Yes | Currency code (USD, XLM, USDC) |
-
-```json
-{
-  "amount": "2500.00",
-  "currency": "USD"
-}
-```
-
-**Response**
+**Response** (`201`, double-wrapped; order and escrow fields trimmed)
 
 ```json
 {
   "data": {
-    "escrow_id": "esc_01JKL",
-    "order_id": "ord_abc123",
-    "buyer_id": "usr_01ABC",
-    "seller_id": "usr_02ABC",
-    "amount": "2500.00",
-    "currency": "USD",
-    "status": "PENDING",
-    "created_at": "2026-02-01T14:00:00.000Z"
-  }
+    "success": true,
+    "data": {
+      "id": "ord_abc123",
+      "status": "ESCROW_FUNDING",
+      "amount": "2500.00",
+      "currency": "USD",
+      "escrow": {
+        "id": "esc_01JKL",
+        "trustlessContractId": "CCBSP2XK4T7Q...",
+        "status": "CREATED",
+        "amount": "2500.00"
+      }
+    }
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-10T09:00:44.700Z" }
 }
 ```
 
@@ -179,16 +292,20 @@ Funds an existing escrow contract. See [Escrow Endpoints](/docs/api-reference/es
 
 Releases held funds from an escrow to the seller upon project completion. See [Resolution Endpoints](/docs/api-reference/resolution#post-apiv1ordersorderidresolutionrelease) for the three on-chain steps and their signer roles.
 
-**Response**
+**Response** (`200`, double-wrapped; fields trimmed). The handler returns the order, already `CLOSED`:
 
 ```json
 {
   "data": {
-    "escrow_id": "esc_01JKL",
-    "status": "RELEASED",
-    "released_amount": "2500.00",
-    "released_at": "2026-02-10T16:00:00.000Z"
-  }
+    "success": true,
+    "data": {
+      "id": "ord_abc123",
+      "status": "CLOSED",
+      "amount": "2500.00",
+      "escrow": { "id": "esc_01JKL", "status": "RELEASED", "releasedAt": "2026-02-10T16:00:00.000Z" }
+    }
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-10T16:00:00.412Z" }
 }
 ```
 
@@ -214,35 +331,37 @@ Retrieve user transaction and balance history.
 
 <Badge variant="success">GET</Badge> `/api/v1/users/{id}/balance`
 
-Returns the user's current balance across all currencies.
+Returns the user's ledger balance (`BalanceService.getBalance`).
 
-<CommandLine>curl -X GET http://localhost:4000/api/v1/users/usr_abc/balance -H "Authorization: Bearer TOKEN"</CommandLine>
+<CommandLine>curl -X GET http://localhost:4000/api/v1/users/usr_abc123/balance -H "Authorization: Bearer TOKEN"</CommandLine>
 
-**Response**
+**Response** (wrapped once)
 
 ```json
 {
   "data": {
     "user_id": "usr_abc123",
-    "balances": [
-      { "currency": "USD", "available": "1250.00", "held": "200.00" },
-      { "currency": "XLM", "available": "5000.00", "held": "0.00" }
-    ]
-  }
+    "available": "1250.00",
+    "reserved": "200.00",
+    "currency": "USD",
+    "total": "1450.00",
+    "updated_at": "2026-02-25T12:00:00.000Z"
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-25T12:00:00.412Z" }
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `currency` | string | Currency code |
 | `available` | string | Spendable balance |
-| `held` | string | Balance locked in escrows |
+| `reserved` | string | Locked for orders that are reserved but not yet funded into escrow |
+| `total` | string | `available` + `reserved` |
 
 ### Get Deposit Address
 
 <Badge variant="success">GET</Badge> `/api/v1/users/{id}/wallet/deposit`
 
-Returns a deposit address for the user to fund their account.
+Returns a Stellar deposit address and asset for the user. This endpoint passes `{ data }` through without `meta`; see the [passed-through example](#examples).
 
 ---
 
@@ -264,22 +383,25 @@ Initiate a withdrawal from user balance.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `user_id` | string | Yes | User requesting withdrawal |
-| `amount` | string | Yes | Amount to withdraw |
-| `currency` | string | Yes | Currency code |
-| `destination` | object | Yes | Withdrawal destination |
+| `userId` | string | Yes | User requesting the withdrawal |
+| `amount` | string | Yes | Decimal string with exactly two places, e.g. `"100.00"` |
+| `currency` | string | No | Defaults to `USD` |
+| `destinationType` | string | Yes | `bank`, `crypto`, or `airtm_balance` |
+| `destinationRef` | string | Yes | Destination reference for that type |
+| `commit` | boolean | No | Commit immediately. Defaults to `false` |
+| `description` | string | No | Free-text description |
 
 ```json
 {
-  "user_id": "usr_abc123",
+  "userId": "usr_abc123",
   "amount": "100.00",
   "currency": "USD",
-  "destination": {
-    "type": "stellar",
-    "address": "GBCG42WTVWPO4Q6N..."
-  }
+  "destinationType": "crypto",
+  "destinationRef": "GBCG42WTVWPO4Q6N..."
 }
 ```
+
+Fields are validated by `CreateWithdrawalDto` (`apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts`). The created withdrawal comes back wrapped once, as `{ data, meta }`.
 
 ### Get Withdrawal
 
@@ -291,46 +413,92 @@ Returns withdrawal status and details.
 
 ## Pagination
 
-List endpoints support cursor-based pagination:
+This is the single reference for list pagination. Endpoint pages link here instead of repeating it.
+
+List endpoints use **cursor pagination** over the resource ID, newest first. There is no `page`, `offset`, `total` or `sort` parameter.
 
 ### Request
 
 ```
-GET /orders?limit=20&cursor=ord_xyz789
+GET /api/v1/orders?limit=20&cursor=ord_xyz789
 ```
 
 | Param | Default | Max | Description |
 |-------|---------|-----|-------------|
-| `limit` | 20 | 100 | Items per page |
-| `cursor` | - | - | ID of last item from previous page |
+| `limit` | `20` | `100` | Items per page (`PAGINATION_DEFAULTS` in `packages/shared/src/types/pagination.types.ts`) |
+| `cursor` | none | n/a | The `nextCursor` from the previous page. Omit it for the first page |
+
+The cursor is the ID of the last item on the previous page. It is **exclusive**: that item isn't repeated (Prisma `cursor: { id }` with `skip: 1`, results ordered by `createdAt desc`).
 
 ### Response
 
+Pagination fields are **camelCase** and sit **inside `data`**. Their exact position varies by endpoint:
+
+| Endpoint | Params | Where the page info is | Over `100` |
+| --- | --- | --- | --- |
+| `GET /orders` | `limit`, `cursor` | `data.hasMore`, `data.nextCursor` (items in `data.data`) | Capped at `100` |
+| `GET /topups` | `limit`, `cursor` | `data.hasMore`, `data.nextCursor` (items in `data.data`) | Capped at `100` |
+| `GET /withdrawals` | `limit`, `cursor` | `data.hasMore`, `data.nextCursor` (items in `data.data`) | Capped at `100` |
+| `GET /auth/api-keys` | `limit`, `cursor` | `data.pagination.hasMore`, `data.pagination.nextCursor` | Capped at `100` |
+| `GET /audit/logs` | `limit`, `cursor` | `data.pagination.hasMore`, `data.pagination.nextCursor` | **`400 VALIDATION_ERROR`** (`@Max(100)` on `QueryAuditLogsDto`) |
+| `GET /users/{userId}/wallet/transactions` | `limit` only | Not paginated: returns the latest `limit` transactions | Capped at `100` |
+| `GET /disputes` | none | Not paginated: returns every match | n/a |
+
+When there is no next page, `hasMore` is `false`. `nextCursor` is then omitted, except on `GET /auth/api-keys`, which returns `null`.
+
+`GET /orders`:
+
 ```json
 {
-  "data": ["..."],
-  "pagination": {
-    "has_more": true,
-    "next_cursor": "ord_abc123"
-  }
+  "data": {
+    "success": true,
+    "data": [{ "id": "ord_xyz789", "status": "IN_PROGRESS" }, { "id": "ord_abc123", "status": "FUNDS_RESERVED" }],
+    "hasMore": true,
+    "nextCursor": "ord_abc123"
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-25T12:00:00.412Z" }
 }
 ```
 
+`GET /topups` and `GET /withdrawals` have the same shape, without `success`.
+
+`GET /audit/logs`:
+
+```json
+{
+  "data": {
+    "data": [{ "id": "aud_01", "action": "CREATE", "occurredAt": "2026-02-25T12:00:00.000Z" }],
+    "pagination": { "hasMore": true, "nextCursor": "aud_01" }
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-25T12:00:00.412Z" }
+}
+```
+
+### Paging through a list
+
+Keep requesting with `cursor` set to the last `nextCursor` until `hasMore` is `false`:
+
+```bash
+curl "http://localhost:4000/api/v1/orders?limit=20" -H "Authorization: Bearer TOKEN"
+curl "http://localhost:4000/api/v1/orders?limit=20&cursor=ord_abc123" -H "Authorization: Bearer TOKEN"
+```
+
+With the SDK, list methods already return `{ data, hasMore, nextCursor }`.
+
 ## Filters
 
-List endpoints accept query parameter filters:
+Filters are per endpoint. Query keys follow each controller exactly: `GET /orders` uses snake_case, the others use camelCase. Date-range filters exist only on audit logs.
+
+| Endpoint | Filters | Source |
+|----------|---------|--------|
+| `GET /orders` | `status`, `buyer_id`, `seller_id` (both together match either role) | `orders/orders.controller.ts`, `orders.service.ts` (`listOrders`) |
+| `GET /disputes` | `orderId`, `status` (`OPEN`, `UNDER_REVIEW`, `RESOLVED`), `openedBy` (`BUYER`, `SELLER`) | `disputes/disputes.controller.ts` |
+| `GET /withdrawals` | `userId` | `withdrawals/withdrawals.controller.ts` |
+| `GET /audit/logs` | `resourceType`, `resourceId`, `action`, `userId`, `from`, `to` | `audit-logs/dto/query-audit-logs.dto.ts` |
 
 ```
-GET /orders?status=IN_PROGRESS&buyer_id=usr_abc&created_after=2026-01-01
+GET /api/v1/orders?status=IN_PROGRESS&buyer_id=usr_abc123&limit=20
 ```
-
-| Filter | Type | Example |
-|--------|------|---------|
-| `status` | string | `IN_PROGRESS` |
-| `buyer_id` | string | `usr_abc123` |
-| `seller_id` | string | `usr_xyz789` |
-| `created_after` | ISO date | `2026-01-01T00:00:00Z` |
-| `created_before` | ISO date | `2026-01-31T23:59:59Z` |
 
 ## Idempotency
 

@@ -19,18 +19,43 @@ You need:
 
 ## Step 1: Create a User
 
-Register a buyer in the system:
+Register a buyer in the system. Pick your language below — the docs remember your choice on every page:
 
-```bash
-curl -X POST http://localhost:4000/api/v1/users \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
+<CodeTabs
+  label="Create a user"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST http://localhost:4000/api/v1/users \\
+  -H "Authorization: Bearer ohk_live_your_api_key" \\
+  -H "Content-Type: application/json" \\
   -d '{
     "externalUserId": "your-user-123",
     "email": "buyer@example.com",
     "type": "BUYER"
-  }'
-```
+  }'`,
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL,
+  apiKey: process.env.OFFERHUB_API_KEY,
+});
+
+const user = await sdk.users.create({
+  externalUserId: 'your-user-123',
+  email: 'buyer@example.com',
+  type: 'BUYER',
+});`,
+    },
+  ]}
+/>
 
 Response:
 

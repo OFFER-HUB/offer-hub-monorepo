@@ -20,7 +20,9 @@ By the end of this guide you will have:
 - Complete checkout: reserve → escrow → release (and dispute path)
 - Real-time event subscription to reflect state changes in your UI
 
-```mermaid
+<MermaidDiagram
+  caption="How your marketplace app, the OFFER-HUB Orchestrator, Stellar and Trustless Work fit together"
+  chart={`
 flowchart TB
     subgraph You["Your Marketplace App"]
         UI[Frontend / CLI]
@@ -41,7 +43,8 @@ flowchart TB
 
     Stellar[Stellar Testnet USDC]
     TW[Trustless Work Soroban Contracts]
-```
+`}
+/>
 
 ---
 
@@ -217,25 +220,29 @@ Every participant in your marketplace — buyer or seller — needs an OFFER-HUB
 When you call `sdk.users.create`, the Orchestrator:
 
 1. Stores the user in its database with an `available` and `reserved` balance (both start at `0.00`)
-2. Derives a unique Stellar keypair for that user and encrypts the private key at rest
+2. Generates a random Stellar keypair for that user, encrypts the private key at rest, and (on testnet) funds the account and adds the USDC trustline
 3. Returns the user ID you use for all subsequent API calls
 
 ### Signup Flow
 
-```mermaid
+<MermaidDiagram
+  caption="Signup: the Orchestrator generates, encrypts and funds a Stellar wallet for each new user"
+  chart={`
 sequenceDiagram
     participant App as Your App
     participant Orch as Orchestrator
     participant Stellar as Stellar Testnet
 
-    App->>Orch: users.create (BUYER)
-    Orch->>Stellar: derive keypair
+    App->>Orch: sdk.users.create (BUYER)
+    Orch->>Orch: generate random keypair, encrypt secret, store wallet
+    Orch->>Stellar: fund account (testnet) + add USDC trustline
     Orch-->>App: { id: "usr_buyer123", ... }
 
-    App->>Orch: users.create (SELLER)
-    Orch->>Stellar: derive keypair
+    App->>Orch: sdk.users.create (SELLER)
+    Note over Orch,Stellar: same wallet setup for the seller
     Orch-->>App: { id: "usr_seller456", ... }
-```
+`}
+/>
 
 Create `src/01-signup.ts`:
 
@@ -289,19 +296,22 @@ Before a buyer can place an order they need a USDC balance. On testnet, you use 
 
 ### How Deposits Work
 
-The Orchestrator watches the Stellar network for incoming USDC payments to each user's assigned address. When it detects a payment, it credits the user's `available` balance automatically.
+The Orchestrator opens a Horizon payment stream for each user's assigned address to watch for incoming USDC. When it detects a payment, it credits the user's `available` balance automatically.
 
-```mermaid
+<MermaidDiagram
+  caption="Deposit: a Horizon payment stream detects incoming USDC and credits the buyer's available balance"
+  chart={`
 sequenceDiagram
     participant Buyer as Buyer Wallet
     participant Stellar as Stellar Testnet
     participant Orch as Orchestrator
 
     Buyer->>Stellar: send USDC to deposit address
-    Stellar-->>Orch: payment detected (webhook / polling)
-    Orch->>Orch: credit buyer.available += amount
+    Stellar-->>Orch: payment received (Horizon payments stream)
+    Orch->>Orch: credit buyer available += amount
     Orch->>Orch: emit balance.credited event
-```
+`}
+/>
 
 ### Get and Display the Deposit Address
 
@@ -352,14 +362,17 @@ A "listing" in your marketplace is a concept you own — OFFER-HUB does not stor
 
 Your marketplace creates a listing record. When a buyer clicks "Buy", your backend calls `sdk.orders.create` to lock the financial agreement:
 
-```mermaid
+<MermaidDiagram
+  caption="Checkout: a listing becomes an order, then the buyer's funds are reserved in the ledger"
+  chart={`
 flowchart LR
     A["Buyer clicks 'Buy'"] --> B["Your backend validates listing"]
     B --> C["sdk.orders.create (buyer, seller, amount)"]
     C --> D["Order status: ORDER_CREATED"]
-    D --> E["sdk.orders.reserve — lock buyer funds"]
+    D --> E["sdk.orders.reserve: lock buyer funds"]
     E --> F["Order status: FUNDS_RESERVED"]
-```
+`}
+/>
 
 Create `src/03-listing-and-order.ts`:
 
@@ -430,7 +443,9 @@ Once funds are reserved, the next step is locking them into a Soroban smart cont
 
 ### Escrow Funding Flow
 
-```mermaid
+<MermaidDiagram
+  caption="Escrow: the Orchestrator deploys a Trustless Work contract, then funds it from the buyer's wallet"
+  chart={`
 sequenceDiagram
     participant App as Your App
     participant Orch as Orchestrator
@@ -438,15 +453,19 @@ sequenceDiagram
     participant Stellar as Stellar Testnet
 
     App->>Orch: sdk.orders.createEscrow(orderId)
-    Orch->>TW: deploy Soroban contract
+    Orch->>Orch: status → ESCROW_CREATING
+    Orch->>TW: create escrow (deploy Soroban contract)
     TW->>Stellar: contract deployed
-    Orch-->>App: status → ESCROW_CREATED
+    Orch-->>App: status → ESCROW_FUNDING
 
-    
-    Orch->>Stellar: transfer USDC into contract
+    App->>Orch: sdk.orders.fundEscrow(orderId)
+    Orch->>TW: fund escrow (buyer wallet signs)
+    TW->>Stellar: transfer USDC into contract
     Stellar-->>Orch: tx confirmed
+    Orch->>Orch: deduct buyer reserved
     Orch-->>App: status → IN_PROGRESS
-```
+`}
+/>
 
 Create `src/04-escrow.ts`:
 
@@ -460,8 +479,8 @@ async function fundEscrow(orderId: string) {
   console.log('Deploying escrow contract for order:', orderId);
 
   // Step 2: Wait for contract deployment (async on-chain)
-  await sdk.orders.waitForStatus(orderId, 'ESCROW_CREATED');
-  console.log('Contract deployed. Status: ESCROW_CREATED');
+  await sdk.orders.waitForStatus(orderId, 'ESCROW_FUNDING');
+  console.log('Contract deployed. Status: ESCROW_FUNDING');
 
   // Step 3: Transfer USDC from buyer's wallet into the contract
   await sdk.orders.fundEscrow(orderId);
@@ -497,24 +516,30 @@ The `reserved` balance becomes `0.00` because the funds are now truly on-chain i
 
 ## Part 7 — Release Funds to the Seller
 
-When the buyer is satisfied with the delivered work, they approve release. The Orchestrator co-signs the smart contract call, and USDC flows to the seller's Stellar address.
+When the buyer is satisfied with the delivered work, they approve release. The Orchestrator signs each Trustless Work step with the parties' managed wallets (the seller marks the milestone complete, the buyer approves and releases), and USDC flows to the seller's Stellar address.
 
 ### Release Flow
 
-```mermaid
+<MermaidDiagram
+  caption="Release: seller completes the milestone, buyer approves and releases, and the order closes"
+  chart={`
 sequenceDiagram
     participant App as Your App
     participant Orch as Orchestrator
     participant TW as Trustless Work
     participant Seller as Seller Wallet
 
-    App->>Orch: sdk.orders.release(orderId, reasonString)
-    Orch->>TW: release_escrow (buyer + platform co-sign)
+    App->>Orch: sdk.orders.release(orderId, reason)
+    Orch->>Orch: status → RELEASE_REQUESTED
+    Orch->>TW: complete milestone (seller wallet signs)
+    Orch->>TW: approve milestone (buyer wallet signs)
+    Orch->>TW: release escrow (buyer wallet signs)
     TW->>Seller: transfer USDC
-    Orch->>Orch: credit seller.available
-    Orch->>Orch: emit order.released event
-    Orch-->>App: status → CLOSED
-```
+    Orch->>Orch: move buyer reserved to seller available
+    Orch->>Orch: status → RELEASED → CLOSED
+    Orch-->>App: order.released and order.closed events
+`}
+/>
 
 Create `src/05-release.ts`:
 
@@ -559,16 +584,24 @@ If the buyer is not satisfied, they can open a dispute before approving release.
 
 ### Dispute and Resolution Flow
 
-```mermaid
+<MermaidDiagram
+  caption="Order states after funding: release, refund and the three dispute outcomes all end in CLOSED"
+  chart={`
 stateDiagram-v2
     [*] --> IN_PROGRESS : escrow funded
-    IN_PROGRESS --> DISPUTED : buyer disputes
-    IN_PROGRESS --> CLOSED : buyer releases
-    DISPUTED --> CLOSED : platform resolves → release
-    DISPUTED --> REFUNDED : platform resolves → refund
+    IN_PROGRESS --> RELEASE_REQUESTED : buyer releases
+    IN_PROGRESS --> REFUND_REQUESTED : refund requested
+    IN_PROGRESS --> DISPUTED : buyer opens dispute
+    DISPUTED --> RELEASE_REQUESTED : FULL_RELEASE
+    DISPUTED --> REFUND_REQUESTED : FULL_REFUND
+    DISPUTED --> RELEASED : SPLIT
+    RELEASE_REQUESTED --> RELEASED
+    REFUND_REQUESTED --> REFUNDED
+    RELEASED --> CLOSED
+    REFUNDED --> CLOSED
     CLOSED --> [*]
-    REFUNDED --> [*]
-```
+`}
+/>
 
 Create `src/06-dispute.ts`:
 
@@ -624,7 +657,7 @@ handleDispute('ord_xyz789', 'usr_buyer123', '75.00').catch(console.error);
 <CommandLine>npx tsx src/06-dispute.ts</CommandLine>
 
 <Callout type="note">
-  Only the platform (using the master API key) can resolve disputes. Dispute resolution requires a co-signature from the Trustless Work arbiter smart contract, ensuring neither party can unilaterally steal funds.
+  Only the platform (using the master API key) can resolve disputes. The platform wallet signs the resolution as the escrow's dispute resolver, so neither the buyer nor the seller can move the funds unilaterally.
 </Callout>
 
 ---
@@ -760,7 +793,7 @@ async function fullDemoFlow() {
 
   // 5. Create + fund escrow
   await sdk.orders.createEscrow(order.id);
-  await sdk.orders.waitForStatus(order.id, 'ESCROW_CREATED');
+  await sdk.orders.waitForStatus(order.id, 'ESCROW_FUNDING');
   console.log('✓ Escrow contract deployed');
 
   await sdk.orders.fundEscrow(order.id);

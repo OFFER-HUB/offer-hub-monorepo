@@ -41,6 +41,8 @@ Neither handler sets `@HttpCode`, so NestJS applies its default `201 Created` fo
 
 ### Response envelope
 
+For every endpoint group's envelope in one table, see [Envelope by endpoint group](/docs/api-reference/overview#envelope-by-endpoint-group).
+
 `ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps the handler's `{ success, data }` payload because `isAlreadyWrapped` only skips wrapping when a `meta` key is present or the payload has exactly one key:
 
 ```json
@@ -206,8 +208,8 @@ The order is the only input — there is no body. The service maps it into `Crea
     { name: "data.data.escrow.fundedAt", type: "string", required: false, description: "Null until the escrow is funded.", nullable: true },
     { name: "data.data.escrow.releasedAt", type: "string", required: false, description: "Null until the escrow is released.", nullable: true },
     { name: "data.data.escrow.refundedAt", type: "string", required: false, description: "Null until the escrow is refunded.", nullable: true },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
-    { name: "meta.requestId", type: "string", required: false, description: "Your correlation ID, or undefined when you did not send one.", nullable: true },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+    { name: "meta.requestId", type: "string", required: true, description: "Your X-Request-ID, or the UUID v4 the server generated when you sent none." },
   ]}
   example={{
     data: {
@@ -357,7 +359,7 @@ Moves the buyer's reserved balance into the on-chain contract. `OrdersService.fu
     { name: "data.data.escrow.fundedAt", type: "string", required: false, description: "ISO 8601 timestamp of the funding.", nullable: true },
     { name: "data.data.escrow.trustlessContractId", type: "string", required: false, description: "Deployed Stellar contract address that received the funds.", nullable: true },
     { name: "data.data.milestones", type: "array", required: true, description: "Milestones included in the response; they start as OPEN." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {

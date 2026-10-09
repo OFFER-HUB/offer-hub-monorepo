@@ -28,7 +28,7 @@ The three **resolution endpoints** decide how escrowed funds leave a funded orde
 | Authentication | None enforced (no `ApiKeyGuard`) | `resolution.controller.ts` |
 | Required scope | None (no `ScopeGuard` / `@Scopes`) | `resolution.controller.ts` |
 | Rate limiting | Yes — global `RateLimitGuard` via `APP_GUARD` | `apps/api/src/app.module.ts` |
-| Correlation | `X-Request-ID` echoed in `meta.requestId` when sent | `CorrelationIdMiddleware`, `ResponseInterceptor` |
+| Correlation | `X-Request-ID` is always set on the response and in `meta.requestId`: your value, or a generated UUID v4. See [Request correlation](/docs/api-reference/overview#request-correlation-x-request-id) | `CorrelationIdMiddleware`, `ResponseInterceptor` |
 
 <Callout type="warning">
   The examples below still send `Authorization: Bearer …` because that is how every other reference in these docs is written — and you should send it, since a future release may add `ApiKeyGuard` to this controller. Today the header is simply ignored by these three routes.
@@ -42,6 +42,8 @@ A global `ValidationPipe` runs with `whitelist: true`, `forbidNonWhitelisted: tr
 - `evidence` is validated as an array of any values (`@IsArray()` with no `@IsString({ each: true })` in `open-dispute.dto.ts`), so send an array of URL strings — that is what the schema, the docs, and the SDK types (`evidence?: string[]` in `packages/sdk/src/types/index.ts`) assume.
 
 ### Response envelope
+
+For every endpoint group's envelope in one table, see [Envelope by endpoint group](/docs/api-reference/overview#envelope-by-endpoint-group).
 
 `ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps every handler result. Its `isAlreadyWrapped` check only skips wrapping when the payload already has a `meta` key **or** exactly one key, and the controller returns `{ success, data }` — two keys, no `meta` — so the payload is wrapped. Successful calls therefore look like this on the wire:
 
@@ -211,8 +213,8 @@ Checked in `ResolutionService.requestRelease` before any state change:
     { name: "data.data.escrow.status", type: "string", required: true, description: "Escrow status; RELEASED once confirmRelease commits.", enum: ["CREATING", "CREATED", "FUNDING", "FUNDED", "RELEASED", "REFUNDED", "DISPUTED"] },
     { name: "data.data.escrow.releasedAt", type: "string", required: false, description: "ISO 8601 timestamp of the release.", nullable: true },
     { name: "data.data.milestones", type: "array", required: true, description: "Milestones included in the response; all must be COMPLETED before release." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
-    { name: "meta.requestId", type: "string", required: false, description: "Your correlation ID, or undefined when you did not send one.", nullable: true },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+    { name: "meta.requestId", type: "string", required: true, description: "Your X-Request-ID, or the UUID v4 the server generated when you sent none." },
     { name: "meta.timestamp", type: "string", required: false, description: "Server timestamp of the response." },
   ]}
   example={{
@@ -355,7 +357,7 @@ Identical to release, minus the milestone check: order exists, has an escrow, is
     { name: "data.data.escrow.status", type: "string", required: true, description: "Escrow status; REFUNDED once confirmRefund commits.", enum: ["FUNDED", "REFUNDED"] },
     { name: "data.data.escrow.refundedAt", type: "string", required: false, description: "ISO 8601 timestamp of the refund.", nullable: true },
     { name: "data.data.milestones", type: "array", required: true, description: "Milestones included in the response. Refund does not require them to be COMPLETED." },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {
@@ -505,7 +507,7 @@ Checked in `ResolutionService.openDispute`: the order exists, its status is `IN_
     { name: "data.data.decisionNote", type: "string", required: false, description: "Resolver note; null until the dispute is resolved.", nullable: true },
     { name: "data.data.order", type: "object", required: false, description: "The order with its escrow, dispute, and milestones relations." },
     { name: "data.data.order.status", type: "string", required: true, description: "DISPUTED — set in the same transaction as the dispute row.", enum: ["DISPUTED"] },
-    { name: "meta", type: "object", required: false, description: "Echoes X-Request-ID and adds a server timestamp." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
   ]}
   example={{
     data: {

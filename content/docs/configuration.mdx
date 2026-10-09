@@ -132,6 +132,8 @@ These variables throw at startup or at first use if absent. The application will
 
 ### Operations
 
+For the complete queue, retry, reconciliation, and blockchain-monitor runbook, see [Background Jobs and Reconciliation](/docs/guide/background-jobs).
+
 | Variable | Required | Default | Effect | Source |
 |----------|----------|---------|--------|--------|
 | `DISABLE_BLOCKCHAIN_MONITOR` | No | none | If set to the string `'true'`, `BlockchainMonitorService` skips initialization and does not open Horizon SSE streams. Use on secondary API instances in horizontal scaling to avoid duplicate deposit processing. | `apps/api/src/modules/wallet/blockchain-monitor.service.ts` |
