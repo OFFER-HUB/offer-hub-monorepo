@@ -72,20 +72,26 @@ OFFER-HUB monitors the blockchain for incoming transactions. When USDC arrives:
 
 <Callout type="note">
   Deposits are typically credited within 5-10 seconds of the Stellar transaction being confirmed.
+  Based on the Orchestrator `WalletController.getDepositAddress()` and the `BalanceService.credit()` flow.
 </Callout>
 
 ### Deposit Flow Diagram
 
-```mermaid
+<MermaidDiagram
+  caption="Crypto deposit path (default): the user sends USDC from an external Stellar wallet and the Orchestrator credits the off-chain balance"
+  chart={`
 sequenceDiagram
-    participant User as User's External Wallet
-    participant OH as OFFER-HUB
+    participant User as External Stellar wallet
+    participant Horizon as Stellar Horizon
+    participant Orch as OFFER-HUB Orchestrator
+    participant SSE as SSE event stream
 
-    User->>OH: 1. Send USDC
-    Note over OH: 2. Detect on blockchain
-    Note over OH: 3. Update balance
-    OH->>User: 4. Emit event
-```
+    User->>Horizon: 1. Send USDC
+    Horizon-->>Orch: 2. Payment detected
+    Orch->>Orch: 3. Credit off-chain balance
+    Orch->>SSE: 4. Emit balance.credited
+`}
+/>
 
 ## AirTM Deposits
 
@@ -146,6 +152,19 @@ The Orchestrator then:
 <Callout type="warning">
   AirTM deposits can take 1-24 hours depending on the user's payment method. Set user expectations accordingly.
 </Callout>
+
+### AirTM Deposit Flow Diagram
+
+<MermaidDiagram
+  caption="AirTM deposit path: the user completes the payment on AirTM and the Orchestrator credits the balance from the inbound webhook"
+  chart={`
+flowchart TB
+    User["User"] -->|1. Complete payment| Airtm["AirTM"]
+    Airtm -->|2. Inbound webhook| Webhook["Orchestrator webhook receiver"]
+    Webhook -->|3. Verify signature and credit| Balance["Off-chain balance (available)"]
+    Webhook -->|4. Emit balance.credited| SSE["SSE event stream"]
+`}
+/>
 
 ## Using the SDK
 

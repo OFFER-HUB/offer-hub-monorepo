@@ -19,7 +19,9 @@ Every request uses `Authorization: Bearer <api-key>`. Write endpoints require th
 
 The statuses used by the service are `WITHDRAWAL_CREATED`, `WITHDRAWAL_COMMITTED`, `WITHDRAWAL_PENDING`, `WITHDRAWAL_PENDING_USER_ACTION`, `WITHDRAWAL_COMPLETED`, `WITHDRAWAL_FAILED`, and `WITHDRAWAL_CANCELED`.
 
-```mermaid
+<MermaidDiagram
+  caption="Withdrawal lifecycle by destination type: crypto settles synchronously on Stellar, while bank and airtm_balance payouts use the AirTM create/commit flow"
+  chart={`
 stateDiagram-v2
     [*] --> WITHDRAWAL_CREATED
     WITHDRAWAL_CREATED --> WITHDRAWAL_COMMITTED: commit
@@ -33,7 +35,8 @@ stateDiagram-v2
     WITHDRAWAL_COMPLETED --> [*]
     WITHDRAWAL_FAILED --> [*]
     WITHDRAWAL_CANCELED --> [*]
-```
+`}
+/>
 
 ## POST `/withdrawals`
 

@@ -27,7 +27,9 @@ OFFER-HUB eliminates all of this. Users see a simple USD balance while the syste
 
 ### How It Works
 
-```mermaid
+<MermaidDiagram
+  caption="Invisible wallet model: users see a USD balance while the system holds the Stellar wallet, its USDC balance and the encrypted key"
+  chart={`
 flowchart LR
     subgraph UserSees["User sees"]
         Balance["Balance: $100.00 USD"]
@@ -38,7 +40,8 @@ flowchart LR
         Key["Private Key: encrypted in DB"]
     end
     Balance --> BehindTheScenes
-```
+`}
+/>
 
 ### Benefits
 
@@ -72,6 +75,22 @@ Behind the scenes:
 3. **Store in database** — Encrypted key saved with user record
 4. **Fund account** — Platform funds the account with minimum XLM for trustlines
 5. **Add USDC trustline** — Account configured to hold USDC
+
+The provider path decides whether a Stellar wallet exists at all: `PAYMENT_PROVIDER=crypto` provisions the invisible Stellar wallet described above, while AirTM mode issues a traditional fiat account instead.
+
+<MermaidDiagram
+  caption="Wallet provisioning by provider path: crypto generates and funds an invisible Stellar wallet, while AirTM mode issues a fiat account"
+  chart={`
+flowchart TB
+    Create["User created"] --> Provider{"PAYMENT_PROVIDER"}
+    Provider -->|crypto| Keypair["Generate Stellar Ed25519 keypair"]
+    Keypair --> Encrypt["Encrypt key (AES-256-GCM)"]
+    Encrypt --> Store["Store with user record"]
+    Store --> Fund["Fund account with minimum XLM"]
+    Fund --> Trustline["Add USDC trustline"]
+    Provider -->|airtm| Fiat["Fiat account, no Stellar wallet"]
+`}
+/>
 
 ### Response
 
