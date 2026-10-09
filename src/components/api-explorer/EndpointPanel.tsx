@@ -3,13 +3,13 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ChevronDown, Play, Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { ApiEndpoint } from "@/data/api-schema";
+import type { ApiEndpoint } from "@/lib/openapi-parser";
 import { MethodBadge } from "./MethodBadge";
 import { ParameterInput } from "./ParameterInput";
 import { ResponseViewer } from "./ResponseViewer";
 import { Textarea } from "@/components/ui/Textarea";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.offer-hub.com";
 
 interface EndpointPanelProps {
   endpoint: ApiEndpoint;
@@ -20,6 +20,8 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
   const [pathValues, setPathValues] = useState<Record<string, string>>({});
   const [queryValues, setQueryValues] = useState<Record<string, string>>({});
   const [bodyValue, setBodyValue] = useState(endpoint.requestBody?.example ?? "");
+  const [bearerToken, setBearerToken] = useState("");
+  const [idempotencyKey, setIdempotencyKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [showResponse, setShowResponse] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -29,7 +31,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
     if (isOpen && contentRef.current) {
       setContentHeight(contentRef.current.scrollHeight);
     }
-  }, [isOpen, showResponse]);
+  }, [isOpen, showResponse, bearerToken, idempotencyKey]);
 
   // Build the full URL from params
   const buildUrl = useCallback(() => {
@@ -57,7 +59,8 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
   async function handleTryIt() {
     setLoading(true);
     setShowResponse(false);
-    await new Promise((r) => setTimeout(r, 500));
+    // Simulate real request in the interactive explorer
+    await new Promise((r) => setTimeout(r, 800));
     setLoading(false);
     setShowResponse(true);
   }
@@ -67,10 +70,12 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
     (endpoint.queryParams && endpoint.queryParams.length > 0) ||
     endpoint.requestBody;
 
+  const generateIdempotencyKey = () => {
+    setIdempotencyKey(crypto.randomUUID());
+  };
+
   return (
-    <div
-      className="rounded-2xl overflow-hidden bg-bg-base shadow-neu-raised relative z-10"
-    >
+    <div className="rounded-2xl overflow-hidden bg-bg-base shadow-neu-raised relative z-10">
       {/* ── Header button ── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -82,10 +87,10 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
         )}
       >
         <MethodBadge method={endpoint.method} />
-        <span className="text-sm font-mono font-semibold text-content-primary">
+        <span className="text-sm font-mono font-semibold text-content-primary break-all">
           {endpoint.path}
         </span>
-        <span className="text-sm hidden sm:inline text-content-secondary">
+        <span className="text-sm hidden sm:inline text-content-secondary flex-1 truncate">
           {endpoint.title}
         </span>
         <ChevronDown
@@ -106,12 +111,55 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
       >
         <div
           ref={contentRef}
-          className="px-5 pb-6 pt-4 space-y-5 border-t border-theme-border/20"
+          className="px-5 pb-6 pt-4 space-y-5"
         >
           {/* Description */}
           <p className="text-sm text-content-secondary leading-relaxed">
             {endpoint.description}
           </p>
+
+          {/* Authentication & Headers */}
+          <div className="space-y-4 bg-bg-sunken p-4 rounded-xl shadow-neu-sunken-subtle">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">
+              Headers & Auth
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-content-primary mb-1">
+                  Bearer Token
+                </label>
+                <input
+                  type="text"
+                  placeholder="eyJhbGciOi..."
+                  value={bearerToken}
+                  onChange={(e) => setBearerToken(e.target.value)}
+                  className="w-full bg-bg-base text-content-primary placeholder:text-content-tertiary text-sm px-3 py-2 rounded-lg shadow-neu-sunken-subtle focus:outline-none focus:ring-1 focus:ring-theme-primary/30"
+                />
+              </div>
+              {endpoint.method !== "GET" && (
+                <div>
+                  <label className="block text-xs font-semibold text-content-primary mb-1">
+                    Idempotency-Key
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="uuid-v4"
+                      value={idempotencyKey}
+                      onChange={(e) => setIdempotencyKey(e.target.value)}
+                      className="flex-1 bg-bg-base text-content-primary placeholder:text-content-tertiary text-sm px-3 py-2 rounded-lg shadow-neu-sunken-subtle focus:outline-none focus:ring-1 focus:ring-theme-primary/30"
+                    />
+                    <button
+                      onClick={generateIdempotencyKey}
+                      className="px-3 py-2 text-xs font-semibold rounded-lg bg-bg-base text-theme-primary shadow-neu-raised hover:shadow-neu-raised-hover active:shadow-neu-sunken-subtle transition-all"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Parameters */}
           {hasParams && (
@@ -151,7 +199,7 @@ export function EndpointPanel({ endpoint }: EndpointPanelProps) {
               {endpoint.requestBody && (
                 <div className="space-y-2">
                   <Textarea
-                    id={`request-body-${endpoint.path}`}
+                    id={`request-body-${endpoint.path.replace(/\//g, "-")}`}
                     label="Request body"
                     labelClassName="text-[11px] font-black uppercase tracking-widest text-theme-primary"
                     value={bodyValue}
