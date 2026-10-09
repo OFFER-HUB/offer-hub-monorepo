@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { HttpMethod } from "@/data/api-schema";
+import type { HttpMethod } from "@/lib/openapi-parser";
 import { MethodBadge } from "@/components/api-explorer/MethodBadge";
 
 interface EndpointProps {
