@@ -236,6 +236,7 @@ The summaries on this page cover the API surface at a glance. The endpoint group
 | [Orders & Milestones Endpoints](/docs/api-reference/orders) | `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/reserve`, `POST /orders/{id}/cancel`, `GET /orders/{id}/milestones`, `POST /orders/{id}/milestones/{milestoneRef}/complete` | `apps/api/src/modules/orders/orders.controller.ts` |
 | [Escrow Endpoints](/docs/api-reference/escrow) | `POST /orders/{id}/escrow`, `POST /orders/{id}/escrow/fund` | `apps/api/src/modules/orders/orders.controller.ts` |
 | [Resolution Endpoints](/docs/api-reference/resolution) | `POST /orders/{orderId}/resolution/release`, `/refund`, `/dispute` | `apps/api/src/modules/resolution/resolution.controller.ts` |
+| [Wallet & Top-ups](/docs/api-reference/wallet-topups) | `GET /users/{userId}/wallet`, `/deposit`, `/transactions`, `POST /topups`, `GET /topups`, `GET /topups/{id}`, `/refresh`, `/cancel`, `/callback` | `apps/api/src/modules/wallet/wallet.controller.ts`, `apps/api/src/modules/topups/topups.controller.ts` |
 | [Inbound Webhooks](/docs/api-reference/webhooks) | `POST /webhooks/airtm`, `POST /webhooks/trustless-work` | `apps/api/src/modules/webhooks/webhooks.controller.ts` |
 | [Events (SSE)](/docs/api-reference/events) | `GET /events` plus the event catalog | `apps/api/src/modules/events/events.controller.ts` |
 | [Auth Endpoints](/docs/api-reference/auth) | `POST /auth/api-keys`, `GET /auth/api-keys`, `POST /auth/api-keys/{id}/token`, `GET /auth/me` | `apps/api/src/modules/auth/auth.controller.ts` |
@@ -639,24 +640,26 @@ All balance endpoints are scoped to a user: `/users/{userId}/balance`.
 
 ### Wallet
 
-Wallet endpoints are scoped to a user: `/users/{userId}/wallet`.
+Wallet endpoints are scoped to a user: `/users/{userId}/wallet`. Full reference in [Wallet & Top-ups](/docs/api-reference/wallet-topups).
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | Get wallet info |
-| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | Get deposit address |
-| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | Transaction history |
+| `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | [Get wallet info](/docs/api-reference/wallet-topups#get-usersuseridwallet) |
+| `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | [Get deposit address](/docs/api-reference/wallet-topups#get-usersuseridwalletdeposit) |
+| `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | [Transaction history](/docs/api-reference/wallet-topups#get-usersuseridwallettransactions) |
 
 ### Top-ups
 
+Full reference with request/response schemas in [Wallet & Top-ups](/docs/api-reference/wallet-topups).
+
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/topups` | <Badge variant="primary">POST</Badge> | Create top-up |
-| `/topups` | <Badge variant="success">GET</Badge> | List top-ups |
-| `/topups/{id}` | <Badge variant="success">GET</Badge> | Get top-up |
-| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | Refresh status from Airtm |
-| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | Cancel top-up |
-| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | Airtm callback (public) |
+| `/topups` | <Badge variant="primary">POST</Badge> | [Create top-up](/docs/api-reference/wallet-topups#post-topups) |
+| `/topups` | <Badge variant="success">GET</Badge> | [List top-ups](/docs/api-reference/wallet-topups#get-topups) |
+| `/topups/{id}` | <Badge variant="success">GET</Badge> | [Get top-up](/docs/api-reference/wallet-topups#get-topupsid) |
+| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | [Refresh status from AirTM](/docs/api-reference/wallet-topups#post-topupsidrefresh) |
+| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | [Cancel top-up](/docs/api-reference/wallet-topups#post-topupsidcancel) |
+| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | [AirTM callback (public)](/docs/api-reference/wallet-topups#get-topupsidcallback) |
 
 ### Orders
 
@@ -742,5 +745,6 @@ The API uses path versioning:
 - [Error Codes](/docs/api-reference/errors) - Complete 40+ error code reference and SDK mappings
 - [Events (SSE)](/docs/api-reference/events) - Real-time event stream and event catalog
 - [Inbound Webhooks](/docs/api-reference/webhooks) - AirTM and Trustless Work receivers
+- [Wallet & Top-ups](/docs/api-reference/wallet-topups) - Per-endpoint schemas for deposits and AirTM pay-ins
 - [Quick Start](/docs/guide/quick-start) - Your first API call
 - [SDK Guide](/docs/sdk/quick-start) - Use the TypeScript SDK
