@@ -1,0 +1,391 @@
+---
+title: Disputes API
+description: Reference for the Disputes endpoints — list, retrieve, assign, and resolve disputes with FULL_RELEASE, FULL_REFUND, or SPLIT decisions.
+order: 48
+section: API Reference
+---
+
+## Overview
+
+The Disputes group lets you list, inspect, assign, and resolve disputes raised on escrowed orders. All routes are served by the Disputes controller (`apps/api/src/modules/disputes/disputes.controller.ts`), which delegates to the resolution service (`apps/api/src/modules/resolution/resolution.service.ts`).
+
+<Callout type="note">
+  Sources verified against the orchestrator: `disputes.controller.ts`, `resolution.service.ts`, `resolution/dto/assign-dispute.dto.ts`, `resolution/dto/resolve-dispute.dto.ts`, and `packages/shared/src/enums/dispute-status.enum.ts`.
+</Callout>
+
+Every dispute lifecycle change is persisted to the audit trail (`DISPUTE_ASSIGNED`, `DISPUTE_RESOLVED` entries) and published on the event bus (`dispute.under_review`, `dispute.resolved`), so you can follow progress through [Audit Logs](/docs/api-reference/audit-logs) and [Webhooks](/docs/api-reference/webhooks).
+
+### Dispute lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> OPEN : POST /orders/{id}/resolution/dispute
+    OPEN --> UNDER_REVIEW : POST /disputes/{id}/assign
+    UNDER_REVIEW --> RESOLVED : POST /disputes/{id}/resolve
+    RESOLVED --> [*]
+```
+
+Disputes can only move forward — `OPEN → UNDER_REVIEW → RESOLVED` — and `RESOLVED` is terminal. The transitions are enforced by `DisputeStateMachine.assertTransition` (see `packages/shared/src/enums/dispute-status.enum.ts`).
+
+## Authentication
+
+All endpoints require an API key with `read` scope for GETs and `write` scope for the assign and resolve POSTs. Send it as a Bearer token:
+
+```http
+Authorization: Bearer ohk_live_xxxxxxxxxxxx
+```
+
+<Callout type="tip">
+  The support-facing [Audit Logs](/docs/api-reference/audit-logs) endpoint requires the dedicated `support` scope instead.
+</Callout>
+
+## The Dispute object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique dispute identifier |
+| `orderId` | string | Order the dispute belongs to |
+| `openedBy` | string | `BUYER` or `SELLER` (`DisputeOpenedBy`) |
+| `reason` | string | `NOT_DELIVERED`, `QUALITY_ISSUE`, or `OTHER` (`DisputeReason`) |
+| `evidence` | string[] | Array of evidence URLs (JSON column; `[]` when empty) |
+| `status` | string | `OPEN`, `UNDER_REVIEW`, or `RESOLVED` (`DisputeStatus`) |
+| `resolutionDecision` | string \| null | `FULL_RELEASE`, `FULL_REFUND`, or `SPLIT` once resolved |
+| `decisionNote` | string \| null | Free-form note recorded with the decision |
+| `createdAt` | string | ISO 8601 timestamp |
+| `updatedAt` | string | ISO 8601 timestamp |
+| `order` | object \| undefined | Related order with nested `escrow`, `dispute`, and `milestones` |
+
+Schema source: `DisputeWithRelations` in `apps/api/src/modules/resolution/resolution.service.ts`.
+
+## Endpoints
+
+### List disputes
+
+<Badge variant="success">GET</Badge> `/api/v1/disputes`
+
+Returns all disputes for your marketplace, newest first logic handled by the database ordering.
+
+**Query parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `orderId` | string | No | Filter to disputes of a single order |
+| `status` | string | No | `OPEN`, `UNDER_REVIEW`, or `RESOLVED` |
+| `openedBy` | string | No | `BUYER` or `SELLER` |
+
+**Response** — `200 OK`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "dsp_01JABCDEF",
+      "orderId": "ord_01HGFEDCBA",
+      "openedBy": "BUYER",
+      "reason": "NOT_DELIVERED",
+      "evidence": ["https://cdn.example.com/proof.png"],
+      "status": "OPEN",
+      "resolutionDecision": null,
+      "decisionNote": null,
+      "createdAt": "2026-02-01T10:15:00.000Z",
+      "updatedAt": "2026-02-01T10:15:00.000Z"
+    }
+  ]
+}
+```
+
+<Callout type="note">
+  The disputes controller returns the `{ "success": true, "data": ... }` envelope directly (see `disputes.controller.ts`), so responses are not double-wrapped by the global response interceptor.
+</Callout>
+
+**curl**
+
+```bash
+curl -X GET "http://localhost:4000/api/v1/disputes?status=OPEN&openedBy=BUYER" \
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxx"
+```
+
+**TypeScript SDK**
+
+```typescript
+import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "http://localhost:4000",
+  apiKey: "ohk_live_xxxxxxxxxxxx",
+});
+
+// All disputes
+const all = await sdk.disputes.list();
+
+// Open disputes opened by the buyer
+const openBuyerDisputes = await sdk.disputes.list({
+  status: "OPEN",
+  openedBy: "BUYER",
+});
+```
+
+### Get a dispute
+
+<Badge variant="success">GET</Badge> `/api/v1/disputes/{id}`
+
+Returns a single dispute including the related order (with escrow, dispute, and milestones relations).
+
+**Path parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Dispute identifier |
+
+**Response** — `200 OK`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dsp_01JABCDEF",
+    "orderId": "ord_01HGFEDCBA",
+    "openedBy": "BUYER",
+    "reason": "QUALITY_ISSUE",
+    "evidence": ["https://cdn.example.com/screenshot.png"],
+    "status": "UNDER_REVIEW",
+    "resolutionDecision": null,
+    "decisionNote": null,
+    "createdAt": "2026-02-01T10:15:00.000Z",
+    "updatedAt": "2026-02-02T09:30:00.000Z",
+    "order": {
+      "id": "ord_01HGFEDCBA",
+      "amount": "100.00",
+      "escrow": { "id": "esc_01JKL", "status": "FUNDED" },
+      "milestones": []
+    }
+  }
+}
+```
+
+**curl**
+
+```bash
+curl -X GET "http://localhost:4000/api/v1/disputes/dsp_01JABCDEF" \
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxx"
+```
+
+**TypeScript SDK**
+
+```typescript
+const dispute = await sdk.disputes.get("dsp_01JABCDEF");
+console.log(dispute.status); // "UNDER_REVIEW"
+```
+
+### Assign a dispute
+
+<Badge variant="primary">POST</Badge> `/api/v1/disputes/{id}/assign`
+
+Moves an `OPEN` dispute to `UNDER_REVIEW` and records who is reviewing it. Requires the dispute to be in `OPEN` state (`resolution.service.ts` → `assignDispute`); writes a `DISPUTE_ASSIGNED` audit entry and emits `dispute.under_review`.
+
+**Path parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Dispute identifier |
+
+**Request body** — `AssignDisputeDto` (`apps/api/src/modules/resolution/dto/assign-dispute.dto.ts`)
+
+| Field | Type | Required | Validation | Description |
+|-------|------|----------|------------|-------------|
+| `assignedTo` | string | Yes | `@IsString() @IsNotEmpty()` | Support agent handling the review |
+
+```json
+{
+  "assignedTo": "agent_support01"
+}
+```
+
+**Response** — `200 OK` (controller declares `@HttpCode(HttpStatus.OK)`)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dsp_01JABCDEF",
+    "orderId": "ord_01HGFEDCBA",
+    "openedBy": "BUYER",
+    "reason": "NOT_DELIVERED",
+    "evidence": ["https://cdn.example.com/proof.png"],
+    "status": "UNDER_REVIEW",
+    "resolutionDecision": null,
+    "decisionNote": null,
+    "createdAt": "2026-02-01T10:15:00.000Z",
+    "updatedAt": "2026-02-03T08:00:00.000Z"
+  }
+}
+```
+
+**Errors**
+
+| HTTP | Code | When |
+|------|------|------|
+| 400 | `VALIDATION_ERROR` | `assignedTo` missing or empty |
+| 400 | `INVALID_STATE` | Dispute is not in `OPEN` state (`InvalidDisputeStateException extends BadRequestException`) |
+| 404 | `DISPUTE_NOT_FOUND` | No dispute with the given id |
+
+**curl**
+
+```bash
+curl -X POST "http://localhost:4000/api/v1/disputes/dsp_01JABCDEF/assign" \
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -d '{"assignedTo": "agent_support01"}'
+```
+
+**TypeScript SDK**
+
+```typescript
+const dispute = await sdk.disputes.assign("dsp_01JABCDEF", {
+  assignedTo: "agent_support01",
+});
+```
+
+### Resolve a dispute
+
+<Badge variant="primary">POST</Badge> `/api/v1/disputes/{id}/resolve`
+
+Closes a dispute that is `UNDER_REVIEW` by executing a financial decision and setting the dispute to `RESOLVED` with the chosen `resolutionDecision` and `decisionNote`. Requires `UNDER_REVIEW` state; writes a `DISPUTE_RESOLVED` audit entry and emits `dispute.resolved`.
+
+**Path parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Dispute identifier |
+
+**Request body** — `ResolveDisputeDto` (`apps/api/src/modules/resolution/dto/resolve-dispute.dto.ts`)
+
+| Field | Type | Required | Validation | Description |
+|-------|------|----------|------------|-------------|
+| `decision` | string | Yes | `@IsEnum(ResolutionDecision)` | `FULL_RELEASE`, `FULL_REFUND`, or `SPLIT` |
+| `releaseAmount` | string | SPLIT: Yes | `@Matches(/^\d+\.\d{2}$/)` | Seller portion; decimal string with exactly 2 decimals |
+| `refundAmount` | string | SPLIT: Yes | `@Matches(/^\d+\.\d{2}$/)` | Buyer portion; decimal string with exactly 2 decimals |
+| `note` | string | No | `@IsString() @IsOptional()` | Free-form note stored as `decisionNote` |
+
+<Callout type="warning">
+  For `SPLIT`, both `releaseAmount` and `refundAmount` are required and their sum must exactly equal the order amount, or the API returns `422 INVALID_AMOUNT` (`InvalidDisputeResolutionException extends UnprocessableEntityException`).
+</Callout>
+
+**Decisions**
+
+| Decision | Effect |
+|----------|--------|
+| `FULL_RELEASE` | Executes the escrow release on-chain and pays the seller the full order amount |
+| `FULL_REFUND` | Refunds the buyer the full order amount |
+| `SPLIT` | Pays `releaseAmount` to the seller and refunds `refundAmount` to the buyer; must sum to the order amount |
+
+**Response** — `200 OK`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dsp_01JABCDEF",
+    "orderId": "ord_01HGFEDCBA",
+    "openedBy": "BUYER",
+    "reason": "NOT_DELIVERED",
+    "evidence": ["https://cdn.example.com/proof.png"],
+    "status": "RESOLVED",
+    "resolutionDecision": "SPLIT",
+    "decisionNote": "Partial work completed",
+    "createdAt": "2026-02-01T10:15:00.000Z",
+    "updatedAt": "2026-02-04T12:00:00.000Z"
+  }
+}
+```
+
+**Errors**
+
+| HTTP | Code | When |
+|------|------|------|
+| 400 | `VALIDATION_ERROR` | Body fails DTO validation (e.g. `decision` not in enum, amount not matching `^\d+\.\d{2}$`) |
+| 400 | `INVALID_STATE` | Dispute is not in `UNDER_REVIEW` state |
+| 404 | `DISPUTE_NOT_FOUND` | No dispute with the given id |
+| 422 | `INVALID_AMOUNT` | `SPLIT` without both amounts, or `releaseAmount + refundAmount` does not equal the order amount |
+
+**curl**
+
+```bash
+curl -X POST "http://localhost:4000/api/v1/disputes/dsp_01JABCDEF/resolve" \
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440001" \
+  -d '{"decision": "SPLIT", "releaseAmount": "60.00", "refundAmount": "40.00", "note": "Partial work completed"}'
+```
+
+**TypeScript SDK** — one example per decision (`packages/sdk/src/resources/disputes.ts`):
+
+```typescript
+// FULL_RELEASE — pay the seller the full order amount
+await sdk.disputes.resolve("dsp_01JABCDEF", {
+  decision: "FULL_RELEASE",
+  note: "Evidence shows work was completed",
+});
+
+// FULL_REFUND — return the full amount to the buyer
+await sdk.disputes.resolve("dsp_01JABCDEF", {
+  decision: "FULL_REFUND",
+  note: "Work was not delivered",
+});
+
+// SPLIT — split the escrow; amounts must sum to the order amount
+await sdk.disputes.resolve("dsp_01JABCDEF", {
+  decision: "SPLIT",
+  releaseAmount: "60.00",
+  refundAmount: "40.00",
+  note: "Partial work completed",
+});
+```
+
+## Idempotency
+
+`POST /disputes/{id}/assign` and `POST /disputes/{id}/resolve` are covered by the global idempotency machinery (`apps/api/src/modules/idempotency/idempotency.module.ts` registers `IdempotencyGuard` + `IdempotencyInterceptor`):
+
+- Send a UUID v4 in the `Idempotency-Key` header. Non-UUID keys are rejected with `400 VALIDATION_ERROR`.
+- Replaying the same key returns the original response with an `Idempotency-Replay: true` header.
+- Reusing a key with a different body returns `409 IDEMPOTENCY_KEY_REUSED`.
+- A key seen while the first request is still in flight returns `409 IDEMPOTENCY_KEY_IN_PROGRESS`.
+- Entries are kept for 24 hours (`idempotency.service.ts`, `ttlHours = 24`).
+
+GET endpoints are naturally idempotent and do not need the header.
+
+<Callout type="tip">
+  Generate a fresh key per logical operation and reuse it only for retries of that operation — e.g. `crypto.randomUUID()` in Node.
+</Callout>
+
+## Error handling
+
+Errors use the shared envelope (`GlobalExceptionFilter`):
+
+```json
+{
+  "error": {
+    "code": "INVALID_AMOUNT",
+    "message": "Split amounts (60.00 + 30.00 = 90.00) must equal order amount (100.00)"
+  }
+}
+```
+
+| Code | HTTP | Raised by |
+|------|------|-----------|
+| `VALIDATION_ERROR` | 400 | class-validator failures converted by `GlobalExceptionFilter`, with `details.validationErrors` |
+| `INVALID_STATE` | 400 | `InvalidDisputeStateException` (BadRequestException) in `resolution.exceptions.ts` |
+| `DISPUTE_NOT_FOUND` | 404 | `DisputeNotFoundException` (NotFoundException) |
+| `INVALID_AMOUNT` | 422 | `InvalidDisputeResolutionException` (UnprocessableEntityException) |
+
+<Callout type="note">
+  HTTP status comes from the exception class, not the shared `ERROR_HTTP_STATUS` map — that is why `INVALID_STATE` surfaces as **400** and `INVALID_AMOUNT` as **422** here.
+</Callout>
+
+## Related pages
+
+- [Audit Logs](/docs/api-reference/audit-logs) — trace `DISPUTE_ASSIGNED` and `DISPUTE_RESOLVED` entries
+- [Webhooks](/docs/api-reference/webhooks) — receive `dispute.under_review` and `dispute.resolved` events
+- [API Reference overview](/docs/api-reference/overview) — full endpoint table
