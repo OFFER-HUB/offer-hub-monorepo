@@ -5,6 +5,7 @@ import { EndpointPanel } from "@/components/api-explorer/EndpointPanel";
 import { parseOpenApi, type EndpointCategory } from "@/lib/openapi-parser";
 import { Loader2 } from "lucide-react";
 
+
 export default function InteractiveExplorerPage() {
   const [categories, setCategories] = useState<EndpointCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,7 @@ export default function InteractiveExplorerPage() {
         <p className="text-base text-content-secondary">
           Browse endpoints, fill in parameters, and see live request/response payloads — all without leaving the docs.
         </p>
+
       </header>
 
       {/* Loading state */}
