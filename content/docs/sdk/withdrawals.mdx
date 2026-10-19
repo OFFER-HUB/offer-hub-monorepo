@@ -37,12 +37,13 @@ stateDiagram-v2
     WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_PENDING
     WITHDRAWAL_PENDING --> WITHDRAWAL_COMPLETED
     WITHDRAWAL_PENDING --> WITHDRAWAL_FAILED
+    WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_FAILED
     WITHDRAWAL_COMPLETED --> [*]
     WITHDRAWAL_FAILED --> [*]
     WITHDRAWAL_CANCELED --> [*]
 ```
 
-Source: `packages/shared/src/enums/withdrawal-status.enum.ts` in the orchestrator repo.
+Source: `packages/shared/src/enums/withdrawal-status.enum.ts` in the orchestrator repo. See the [Withdrawal state machine](/docs/guide/state-machines#withdrawal) for what triggers each transition.
 
 <Callout type="tip">
   Crypto-destination withdrawals (`destinationType: 'crypto'`) are synchronous: the USDC is sent on Stellar immediately and the withdrawal is returned as `WITHDRAWAL_COMPLETED` in the create response.

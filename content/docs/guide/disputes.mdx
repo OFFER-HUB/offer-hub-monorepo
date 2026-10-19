@@ -32,6 +32,8 @@ A dispute should be opened when:
 
 ### State Machine
 
+Two lifecycles move together during a dispute. The dispute record itself goes `OPEN` to `UNDER_REVIEW` to `RESOLVED`, as shown in the [Dispute state machine](/docs/guide/state-machines#dispute). The diagram below is the order's side of it: opening the dispute moves the order from `IN_PROGRESS` to `DISPUTED`, and resolving it settles the funds. The full order machine is in the [Orders Guide](/docs/guide/orders#order-lifecycle).
+
 ```
 IN_PROGRESS
       ↓
@@ -46,6 +48,8 @@ REFUNDED  RELEASED
 ```
 
 ### State Descriptions
+
+These are the **order** statuses you will see while a dispute is open and after it is resolved.
 
 | State | Description |
 |-------|-------------|
