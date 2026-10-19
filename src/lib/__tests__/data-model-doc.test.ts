@@ -26,6 +26,21 @@ const EXPECTED_MODELS = [
   "ProcessedTransaction",
 ];
 
+/** Mirrors ID_PREFIXES in the orchestrator's packages/shared/src/constants/id-prefixes.ts. */
+const EXPECTED_ID_PREFIXES = [
+  "usr_",
+  "ord_",
+  "topup_",
+  "esc_",
+  "dsp_",
+  "wd_",
+  "evt_",
+  "aud_",
+  "key_",
+  "mkt_",
+  "wal_",
+];
+
 /**
  * These tests verify the new data-model reference page through the real docs
  * pipeline: the same `getDocBySlug`/`getSidebarNav` helpers the site uses to
@@ -52,6 +67,22 @@ describe("docs/guide/data-model", () => {
     const doc = getDocBySlug("guide/data-model")!;
     for (const model of EXPECTED_MODELS) {
       expect(doc.content).toContain(`### ${model}`);
+    }
+  });
+
+  it("lists every model in the at-a-glance table, linked to its section", () => {
+    const doc = getDocBySlug("guide/data-model")!;
+    for (const model of EXPECTED_MODELS) {
+      expect(doc.content).toContain(`[\`${model}\`](#${model.toLowerCase()})`);
+    }
+  });
+
+  it("documents every ID prefix from packages/shared/src/constants/id-prefixes.ts", () => {
+    const doc = getDocBySlug("guide/data-model")!;
+    const section = doc.content.split("## ID Prefixes")[1]?.split("\n## ")[0];
+    expect(section).toBeDefined();
+    for (const prefix of EXPECTED_ID_PREFIXES) {
+      expect(section).toMatch(new RegExp(`^\\| \`${prefix}\` \\|`, "m"));
     }
   });
 
