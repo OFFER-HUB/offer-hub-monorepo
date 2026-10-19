@@ -306,7 +306,7 @@ events.onmessage = (e) => {
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `INSUFFICIENT_FUNDS` | Balance too low | Check `available` before creating order |
-| `INVALID_STATE_TRANSITION` | Wrong order status | Check current status before action |
+| `INVALID_STATE` | Wrong order status | Check current status before action |
 | `USER_NOT_FOUND` | Unknown user ID | Create user first |
 | `IDEMPOTENCY_CONFLICT` | Same key, different body | Use a new `Idempotency-Key` |
 

@@ -229,7 +229,7 @@ The Orchestrator uses standard HTTP status codes and structured error responses.
 | Code | HTTP | Description |
 |------|------|-------------|
 | `INSUFFICIENT_BALANCE` | 422 | Buyer's available balance is too low |
-| `INVALID_STATE_TRANSITION` | 409 | Transition not allowed from the current state |
+| `INVALID_STATE` | 400 / 409 | Action not allowed in the resource's current state (see [State Machines](/docs/guide/state-machines)) |
 | `DUPLICATE_IDEMPOTENCY_KEY` | 200 | Already processed — cached response returned |
 | `STELLAR_TX_FAILED` | 502 | On-chain transaction rejected by Stellar |
 | `ESCROW_NOT_FOUND` | 404 | No escrow found with the given ID |

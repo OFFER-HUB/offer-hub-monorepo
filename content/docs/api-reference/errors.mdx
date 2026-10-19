@@ -124,7 +124,7 @@ For the complete SDK exception class hierarchy, retry options, and client catchi
 | `USER_NOT_FOUND`, `ORDER_NOT_FOUND`, `ESCROW_NOT_FOUND`, `DISPUTE_NOT_FOUND`, `TOPUP_NOT_FOUND`, `WITHDRAWAL_NOT_FOUND`, `RESERVE_NOT_FOUND`, `WALLET_NOT_FOUND` | `404` | `NotFoundError` | The requested entity ID does not exist. |
 | `VALIDATION_ERROR`, `INVALID_AMOUNT_FORMAT`, `INVALID_CURRENCY`, `MISSING_REQUIRED_FIELD`, `INVALID_PAGINATION`, `INVALID_RESOLUTION` | `400` | `ValidationError` | Request payload failed DTO field or format constraints. |
 | `INSUFFICIENT_FUNDS`, `RESERVE_MISMATCH_AMOUNT`, `TOPUP_EXPIRED`, `WITHDRAWAL_DESTINATION_INVALID`, `TRUSTLINE_MISSING`, `AIRTM_USER_NOT_LINKED`, `AIRTM_USER_INVALID` | `422` | `InsufficientFundsError` / `OfferHubError` | Business rule rejected the transaction. |
-| `INVALID_STATE`, `INVALID_STATE_TRANSITION`, `ORDER_NOT_IN_PROGRESS`, `ESCROW_NOT_READY`, `ESCROW_NOT_FUNDED` | `409` / `400` | `InvalidTransitionError` | State machine rejected the requested status transition. |
+| `INVALID_STATE`, `ORDER_NOT_IN_PROGRESS`, `ESCROW_NOT_READY`, `ESCROW_NOT_FUNDED` | `409` / `400` | `InvalidTransitionError` | State machine rejected the requested status transition. |
 | `IDEMPOTENCY_KEY_REUSED`, `IDEMPOTENCY_KEY_IN_PROGRESS`, `IDEMPOTENCY_CONFLICT` | `409` | `IdempotencyError` | Replay key collision or concurrent execution in progress. |
 | `PROVIDER_ERROR`, `PROVIDER_TIMEOUT`, `PROVIDER_RATE_LIMITED`, `ESCROW_CREATE_FAILED`, `ESCROW_FUNDING_FAILED`, `TOPUP_FAILED`, `WITHDRAWAL_FAILED` | `502` / `504` | `ProviderError` | Upstream provider (Trustless Work, Airtm, Stellar Horizon) failed. |
 | `RATE_LIMIT_EXCEEDED`, `RATE_LIMITED` | `429` | `RateLimitError` | Request volume exceeded allocated per-minute bucket. |
@@ -192,7 +192,6 @@ Implemented in `apps/api/src/modules/orders/orders.service.ts`, `apps/api/src/mo
 | --- | --- | --- | --- | --- |
 | `ORDER_NOT_FOUND` | `404` | Order ID (`ord_...`) does not exist in the database. | Verify the order identifier or list active orders with `GET /api/v1/orders`. | `OrdersService.getOrder` |
 | `INVALID_STATE` | `409` / `400` | The requested action is not permitted in the order's current state. | Inspect `details.currentState` and `details.allowedStates` to follow the valid lifecycle. | `OrdersService.validateStateTransition` |
-| `INVALID_STATE_TRANSITION` | `409` | Requested transition violates the formal finite state machine. | Follow the documented order state progression graph. | `OrderStateMachine`, `OrdersService` |
 | `ORDER_NOT_IN_PROGRESS` | `409` | Settlement or dispute action requires order to be in `IN_PROGRESS` status. | Complete escrow contract creation and on-chain funding before initiating settlement. | `ResolutionService.validateInProgress` |
 | `ORDER_ALREADY_EXISTS` | `409` | An order with the specified external reference identifier already exists. | Fetch existing order with `GET /api/v1/orders/{id}` or generate a fresh ID. | `OrdersService.createOrder` |
 

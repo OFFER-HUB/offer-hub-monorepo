@@ -551,7 +551,7 @@ events.on('order.refunded', (data) => {
 |-------|-------|-----|
 | `ESCROW_ALREADY_EXISTS` | Contract already created for this order | Check status before calling create |
 | `ESCROW_NOT_FUNDED` | Release attempted before funding | Fund the escrow first |
-| `INVALID_STATE_TRANSITION` | Action not valid in current status | Follow the state machine |
+| `INVALID_STATE` | Action not valid in current status | Follow the state machine |
 | `INSUFFICIENT_FUNDS` | Buyer wallet has insufficient USDC | Check balance before funding |
 | `DISPUTE_ALREADY_OPEN` | Duplicate dispute on same order | Resolve existing dispute first |
 | `FUNDING_TIMEOUT` | Stellar transaction not confirmed | Check order status — do not retry blindly |
