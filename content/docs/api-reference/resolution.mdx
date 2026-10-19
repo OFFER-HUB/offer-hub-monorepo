@@ -456,6 +456,8 @@ console.log(order.status, order.escrow?.status); // "CLOSED" "REFUNDED"`
 
 Freezes the escrow and opens a dispute. `ResolutionService.openDispute` creates the `Dispute` row, moves the order to `DISPUTED`, and marks the escrow `DISPUTED` in one serializable transaction. No on-chain transaction is sent — the Trustless Work contract is only touched later, when the dispute is resolved.
 
+The new dispute starts `OPEN` and then follows its own lifecycle through `/disputes/{id}/assign` and `/disputes/{id}/resolve`. See the [Dispute state machine](/docs/guide/state-machines#dispute).
+
 ### Path parameters
 
 <ParamTable

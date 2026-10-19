@@ -27,6 +27,8 @@ stateDiagram-v2
 
 Disputes can only move forward — `OPEN → UNDER_REVIEW → RESOLVED` — and `RESOLVED` is terminal. The transitions are enforced by `DisputeStateMachine.assertTransition` (see `packages/shared/src/enums/dispute-status.enum.ts`).
 
+The [Dispute state machine](/docs/guide/state-machines#dispute) puts this lifecycle next to the other domains and lists the `INVALID_STATE` guard behind each transition.
+
 ## Authentication
 
 All endpoints require an API key with `read` scope for GETs and `write` scope for the assign and resolve POSTs. Send it as a Bearer token:
@@ -386,6 +388,7 @@ Errors use the shared envelope (`GlobalExceptionFilter`):
 
 ## Related pages
 
+- [State Machines](/docs/guide/state-machines#dispute): the dispute lifecycle and its `INVALID_STATE` guards
 - [Audit Logs](/docs/api-reference/audit-logs) — trace `DISPUTE_ASSIGNED` and `DISPUTE_RESOLVED` entries
 - [Webhooks](/docs/api-reference/webhooks) — receive `dispute.under_review` and `dispute.resolved` events
 - [API Reference overview](/docs/api-reference/overview) — full endpoint table

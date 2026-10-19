@@ -999,6 +999,8 @@ console.log(open.length === 0);`
 
 Marks one milestone `COMPLETED`. This is a bookkeeping write on the order's milestone row — it moves no money and makes no on-chain call. The on-chain milestone signature happens later, inside `resolution/release`, which refuses to run while any milestone is still `OPEN`.
 
+Milestones only move from `OPEN` to `COMPLETED`; the [Milestone state machine](/docs/guide/state-machines#milestone) lists every `INVALID_STATE` case around them, including the release guard.
+
 ### Path parameters
 
 <ParamTable

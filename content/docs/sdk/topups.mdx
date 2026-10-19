@@ -40,6 +40,8 @@ stateDiagram-v2
 | `TOPUP_FAILED` | Payment rejected or abandoned by user |
 | `TOPUP_CANCELED` | Top-up cancelled by user or platform before payment completion |
 
+The [Top-up state machine](/docs/guide/state-machines#top-up) covers the full transition table and the `409 INVALID_STATE` returned by `cancel()` outside `TOPUP_AWAITING_USER_CONFIRMATION`.
+
 ---
 
 ## Resource Overview

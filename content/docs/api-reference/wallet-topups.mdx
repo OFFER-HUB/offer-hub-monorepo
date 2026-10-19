@@ -698,6 +698,8 @@ console.log(topup.status); // refreshed from AirTM
 
 Cancels a top-up that is still awaiting user confirmation. Cancellation only works while `status` is `TOPUP_AWAITING_USER_CONFIRMATION`; any other state returns `409 INVALID_STATE`. The AirTM pay-in is cancelled first when one exists, and the local status is set to `TOPUP_CANCELED` regardless of the AirTM result.
 
+The [Top-up state machine](/docs/guide/state-machines#top-up) shows where cancellation sits among the other transitions.
+
 ### Request parameters
 
 | Parameter | Type | Location | Required | Description |
