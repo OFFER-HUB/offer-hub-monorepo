@@ -112,10 +112,10 @@ stateDiagram-v2
 | --- | --- | --- |
 | `POST /topups/{id}/cancel` | Status is not `TOPUP_AWAITING_USER_CONFIRMATION` | `409 INVALID_STATE` |
 
-`cancelTopUp` raises it as a `ConflictException`. This is the one guard that returns `details`: `currentStatus` and `allowedStatuses`. See [Wallet & Top-ups](/docs/api-reference/wallet-topups#post-topupsidcancel) for the full response.
+`cancelTopUp` raises it as a `ConflictException`. This is the only `INVALID_STATE` guard that returns `details`: `currentStatus` and `allowedStatuses`. See [Wallet & Top-ups](/docs/api-reference/wallet-topups#post-topupsidcancel) for the full response.
 
 <Callout type="note">
-  AirTM is the source of truth for pay-in status, so not every write goes through the map. `POST /topups` stores whatever status AirTM returns for the new pay-in, and marks the top-up `TOPUP_FAILED` if the AirTM call fails. `POST /topups/{id}/refresh` only saves a new status when the transition is valid and otherwise leaves the record as it was, without an error. The AirTM webhook logs a warning on an invalid transition and applies the status anyway.
+  AirTM is the source of truth for pay-in status, so not every write goes through the map. `POST /topups` stores whatever status AirTM returns for the new pay-in, and marks the top-up `TOPUP_FAILED` if the AirTM call fails. `POST /topups/{id}/refresh` only saves a new status when the transition is valid and otherwise leaves the record as it was, without an error. The AirTM webhook ignores top-ups that are already terminal; otherwise it logs a warning on an invalid transition and applies the status anyway.
 </Callout>
 
 ## Withdrawal
@@ -168,7 +168,7 @@ Withdrawals do **not** return `INVALID_STATE`. The only state guard on a public 
 `commitWithdrawal` checks `canCommitPayout` and raises a `ConflictException`. The response includes `details.currentStatus`. Endpoint details live in the [Withdrawals Guide](/docs/guide/withdrawals).
 
 <Callout type="note">
-  Crypto withdrawals (`destinationType: "crypto"`) are created as `WITHDRAWAL_CREATED` and moved straight to `WITHDRAWAL_COMPLETED` or `WITHDRAWAL_FAILED` inside the same request (`executeCryptoWithdrawal`), outside the map above. For AirTM payouts, a failed provider call on create marks the withdrawal `WITHDRAWAL_FAILED`. Refresh and webhook updates behave like top-ups: refresh skips invalid transitions silently, and the webhook logs a warning and applies the AirTM status.
+  Crypto withdrawals (`destinationType: "crypto"`) are created as `WITHDRAWAL_CREATED` and moved straight to `WITHDRAWAL_COMPLETED` or `WITHDRAWAL_FAILED` inside the same request (`executeCryptoWithdrawal`), outside the map above. For AirTM payouts, create and commit both store the status AirTM returns for the payout, so a withdrawal can land directly in a later status such as `WITHDRAWAL_PENDING`, and a failed provider call on create marks it `WITHDRAWAL_FAILED`. Refresh and webhook updates behave like top-ups: refresh skips invalid transitions silently, and the webhook ignores terminal withdrawals but otherwise logs a warning and applies the AirTM status.
 </Callout>
 
 ## Milestone
@@ -198,11 +198,11 @@ stateDiagram-v2
 
 | Endpoint | Rejected when | Response |
 | --- | --- | --- |
-| `POST /orders/{id}/milestones/{ref}/complete` | The order is not `IN_PROGRESS` (`InvalidOrderStateException`) | `400 INVALID_STATE` |
-| `POST /orders/{id}/milestones/{ref}/complete` | The milestone is already `COMPLETED` (`MilestoneAlreadyCompletedException`) | `400 INVALID_STATE` |
+| `POST /orders/{id}/milestones/{milestoneRef}/complete` | The order is not `IN_PROGRESS` (`InvalidOrderStateException`) | `400 INVALID_STATE` |
+| `POST /orders/{id}/milestones/{milestoneRef}/complete` | The milestone is already `COMPLETED` (`MilestoneAlreadyCompletedException`) | `400 INVALID_STATE` |
 | `POST /orders/{orderId}/resolution/release` | Any milestone is still `OPEN` (`InvalidResolutionStateException` in `requestRelease`) | `400 INVALID_STATE` |
 
-Because completing an already completed milestone is rejected, a retry after a timeout is harmless. See [Orders & Milestones Endpoints](/docs/api-reference/orders#post-apiv1ordersidmilestonesmilestonerefcomplete) for request and response shapes.
+Completing an already completed milestone is rejected before anything is written, so a retry after a timeout cannot complete it twice. It returns `400 INVALID_STATE`, which you can treat as confirmation that the first call went through. See [Orders & Milestones Endpoints](/docs/api-reference/orders#post-apiv1ordersidmilestonesmilestonerefcomplete) for request and response shapes.
 
 ## Handling INVALID_STATE
 
