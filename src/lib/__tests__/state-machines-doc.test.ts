@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import path from "node:path";
-import fs from "fs";
+import fs from "node:fs";
 import matter from "gray-matter";
 import { getDocBySlug, getSidebarNav } from "../mdx";
 
@@ -44,6 +44,8 @@ const CROSS_LINKS: Record<string, string> = {
   "guide/withdrawals.mdx": "#withdrawal",
   "sdk/withdrawals.mdx": "#withdrawal",
   "api-reference/orders.mdx": "#milestone",
+  "sdk/topups.mdx": "#top-up",
+  "guide/disputes.mdx": "#dispute",
 };
 
 /** `<MermaidDiagram caption="..." chart={`...`} />` blocks, keyed by caption. */
@@ -97,17 +99,19 @@ describe("docs/guide/state-machines", () => {
     },
   );
 
-  it("documents the INVALID_STATE guards and the withdrawal commit guard", () => {
-    const doc = getDocBySlug(SLUG)!;
-    for (const source of [
-      "InvalidDisputeStateException",
-      "cancelTopUp",
-      "WITHDRAWAL_NOT_COMMITTABLE",
-      "MilestoneAlreadyCompletedException",
-      "InvalidOrderStateException",
-    ]) {
-      expect(doc.content).toContain(source);
-    }
+  it.each([
+    ["POST /disputes/{id}/assign", "400 INVALID_STATE"],
+    ["POST /disputes/{id}/resolve", "400 INVALID_STATE"],
+    ["POST /topups/{id}/cancel", "409 INVALID_STATE"],
+    ["POST /withdrawals/{id}/commit", "409 WITHDRAWAL_NOT_COMMITTABLE"],
+    ["POST /orders/{id}/milestones/{milestoneRef}/complete", "400 INVALID_STATE"],
+    ["POST /orders/{orderId}/resolution/release", "400 INVALID_STATE"],
+  ])("documents the guard on %s as %s", (endpoint, response) => {
+    const rows = getDocBySlug(SLUG)!
+      .content.split("\n")
+      .filter((line) => line.startsWith(`| \`${endpoint}\` |`));
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) expect(row).toContain(`\`${response}\``);
   });
 
   it("only contains state diagrams that mermaid can parse", async () => {
