@@ -258,14 +258,14 @@ export function CodeBlock({
 
       <style jsx global>{`
         .shiki-container pre {
-          color: var(--color-text-primary);
+          color: inherit;
         }
         .shiki-container .line {
-          display: block;
+          display: inline-block;
+          width: 100%;
           min-height: 1.5rem;
           padding: 0 1rem;
           margin: 0 -1rem;
-          color: inherit;
           transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
         .shiki-container .line.highlighted-line {
