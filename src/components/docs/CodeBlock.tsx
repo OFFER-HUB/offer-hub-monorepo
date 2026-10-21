@@ -259,6 +259,10 @@ export function CodeBlock({
       <style jsx global>{`
         .shiki-container pre {
           color: inherit;
+          background-color: transparent !important;
+        }
+        .shiki-container code {
+          background-color: transparent !important;
         }
         .shiki-container .line {
           display: inline-block;
@@ -266,10 +270,11 @@ export function CodeBlock({
           min-height: 1.5rem;
           padding: 0 1rem;
           margin: 0 -1rem;
+          background-color: transparent !important;
           transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
         .shiki-container .line.highlighted-line {
-          background-color: var(--color-bg-sunken);
+          background-color: var(--color-bg-sunken) !important;
           box-shadow: inset 1px 1px 2px var(--neu-shadow-dark, rgba(0, 0, 0, 0.08)), inset -1px -1px 2px var(--neu-shadow-light, rgba(255, 255, 255, 0.04));
           border-radius: 6px;
         }
