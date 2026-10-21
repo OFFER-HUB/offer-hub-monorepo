@@ -6,6 +6,7 @@ import { contactFormSchema } from "@/lib/validation/contact.schema"
 import { formatFieldErrors } from "@/lib/validation/errors"
 
 export interface ContactFormData {
+  website?: string
   company: string
   name: string
   email: string

@@ -25,6 +25,7 @@ declare global {
 }
 
 export interface WaitlistFormData {
+  website?: string
   name: string
   email: string
   purpose: string

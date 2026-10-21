@@ -38,6 +38,15 @@ function fireInput(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
 }
 
 describe("RegistrationForm", () => {
+  it("keeps the honeypot outside the tab order and accessibility tree", () => {
+    const { container } = render(<RegistrationForm />);
+    const field = container.querySelector<HTMLInputElement>('[name="website"]')!;
+    expect(field).toHaveAttribute("tabindex", "-1");
+    expect(field).toHaveAttribute("autocomplete", "off");
+    expect(field.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.queryByRole("textbox", { name: /leave this field empty/i })).toBeNull();
+  });
+
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubGlobal("fetch", vi.fn());

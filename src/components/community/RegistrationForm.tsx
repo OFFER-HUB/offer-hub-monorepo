@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { Send, User, Mail, MessageSquare, CheckCircle2, AlertCircle, Timer } from "lucide-react";
 import { FormField } from "@/components/forms/FormField";
+import { HoneypotField } from "@/components/forms/HoneypotField";
 import { useWaitlistForm } from "@/hooks/use-waitlist-form";
 
 export function RegistrationForm() {
@@ -61,6 +62,7 @@ export function RegistrationForm() {
                     noValidate
                     className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-8"
                 >
+                    <HoneypotField id="waitlist-website" value={formData.website ?? ""} onChange={handleInputChange} />
                     {error && (
                         <div role="alert" className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 flex items-start gap-3 animate-fadeIn">
                             <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
