@@ -3,10 +3,15 @@
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { MockResponse } from "@/data/api-schema";
+
+export interface ResponseTab {
+  status: string;
+  label: string;
+  body: string;
+}
 
 interface ResponseViewerProps {
-  responses: MockResponse[];
+  responses: ResponseTab[];
 }
 
 export function ResponseViewer({ responses }: ResponseViewerProps) {
@@ -22,31 +27,24 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
   }
 
   return (
-    <div className="rounded-2xl shadow-neu-sunken overflow-hidden" style={{ background: "#0f172a" }}>
+    <div className="rounded-2xl shadow-neu-sunken overflow-hidden bg-bg-sunken">
       {/* Tab bar */}
-      <div
-        className="flex items-center justify-between px-4 py-2 border-b"
-        style={{ borderColor: "rgba(255,255,255,0.08)" }}
-      >
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-theme-border/20">
+        <div className="flex flex-wrap gap-1">
           {responses.map((res, i) => {
             const isActive = i === activeTab;
-            const isSuccess = res.status >= 200 && res.status < 300;
+            const statusNum = Number.parseInt(res.status, 10);
+            const isSuccess = statusNum >= 200 && statusNum < 400;
             return (
               <button
-                key={res.status}
+                key={`${res.status}-${i}`}
                 onClick={() => setActiveTab(i)}
                 className={cn(
-                  "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors duration-200"
+                  "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors duration-200",
+                  isActive && isSuccess && "text-theme-success bg-theme-success/10",
+                  isActive && !isSuccess && "text-theme-error bg-theme-error/10",
+                  !isActive && "text-content-muted hover:text-content-secondary",
                 )}
-                style={{
-                  color: isActive
-                    ? isSuccess
-                      ? "#4ade80"
-                      : "#f87171"
-                    : "rgba(255,255,255,0.4)",
-                  background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
-                }}
               >
                 {res.status} {res.label}
               </button>
@@ -60,7 +58,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium",
             "transition-colors duration-200",
-            copied ? "text-green-400" : "text-white/40 hover:text-white/80"
+            copied ? "text-theme-success" : "text-content-muted hover:text-content-secondary",
           )}
         >
           {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
@@ -68,11 +66,9 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
         </button>
       </div>
 
-      {/* JSON body */}
+      {/* Body */}
       <pre className="overflow-x-auto p-4 text-sm leading-relaxed m-0">
-        <code style={{ color: "#a5f3fc", fontFamily: "ui-monospace, monospace" }}>
-          {current.body}
-        </code>
+        <code className="text-content-primary font-mono">{current.body}</code>
       </pre>
     </div>
   );

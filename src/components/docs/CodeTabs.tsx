@@ -175,5 +175,3 @@ export function CodeTabs({ tabs, label = "Code examples", className }: CodeTabsP
     </div>
   );
 }
-
-export default CodeTabs;

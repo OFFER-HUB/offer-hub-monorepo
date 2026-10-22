@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import type { HttpMethod } from "@/data/api-schema";
-import { MethodBadge } from "@/components/api-explorer/MethodBadge";
+import { MethodBadge, type HttpMethod } from "@/components/api-explorer/MethodBadge";
 
 interface EndpointProps {
   method: HttpMethod;

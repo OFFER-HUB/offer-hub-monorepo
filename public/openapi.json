@@ -3,7 +3,7 @@
   "info": {
     "title": "OFFER-HUB Orchestrator API",
     "version": "1.0.0",
-    "description": "Generated from the real orchestrator controllers and DTOs - see src/data/api-schema.ts and scripts/README.md for how.",
+    "description": "Generated from the real orchestrator controllers and DTOs - see scripts/openapi-source-data.ts and scripts/README.md for how.",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"

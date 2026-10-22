@@ -1,4 +1,5 @@
 import { CheckCircle2, Lock, Loader2 } from "lucide-react";
+import { statusColors, type StatusTone } from "@/components/ui/status-colors";
 import type { PhaseDomain, PhaseStatus, StatusConfig } from "./types";
 
 export const NEU_ELEVATED = "shadow-neu-raised";
@@ -12,37 +13,27 @@ export const DOMAINS: { key: "all" | PhaseDomain; label: string }[] = [
   { key: "crypto", label: "Crypto-Native (Phase 10)" },
 ];
 
+const STATUS_TONES: Record<PhaseStatus, StatusTone> = {
+  completed: "success",
+  "in-progress": "primary",
+  planned: "muted",
+};
+
+const STATUS_VISUALS: Record<PhaseStatus, Pick<StatusConfig, "icon" | "label">> = {
+  completed: { icon: CheckCircle2, label: "Completed" },
+  "in-progress": { icon: Loader2, label: "In Progress" },
+  planned: { icon: Lock, label: "Planned" },
+};
+
 export function statusConfig(status: PhaseStatus): StatusConfig {
-  switch (status) {
-    case "completed":
-      return {
-        icon: CheckCircle2,
-        color: "text-[var(--color-success)]",
-        bg: "bg-[var(--color-success)]/10",
-        border: "border-[var(--color-success)]/30",
-        label: "Completed",
-        dotColor: "var(--color-success)",
-        dotBg: "bg-[var(--color-success)]",
-      };
-    case "in-progress":
-      return {
-        icon: Loader2,
-        color: "text-[var(--color-primary)]",
-        bg: "bg-[var(--color-primary)]/10",
-        border: "border-[var(--color-primary)]/40",
-        label: "In Progress",
-        dotColor: "var(--color-primary)",
-        dotBg: "bg-[var(--color-primary)]",
-      };
-    case "planned":
-      return {
-        icon: Lock,
-        color: "text-[var(--color-text-muted)]",
-        bg: "bg-[var(--color-text-muted)]/10",
-        border: "border-[var(--color-text-muted)]/20",
-        label: "Planned",
-        dotColor: "var(--color-text-muted)",
-        dotBg: "bg-[var(--color-text-muted)]",
-      };
-  }
+  const colors = statusColors[STATUS_TONES[status]];
+
+  return {
+    ...STATUS_VISUALS[status],
+    color: colors.text,
+    bg: colors.bg,
+    border: colors.border,
+    dotColor: colors.cssVar,
+    dotBg: colors.dotBg,
+  };
 }

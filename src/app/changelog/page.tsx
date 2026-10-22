@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-colors";
 import { buildPageMetadata } from "@/lib/seo";
 import type { GitHubRelease } from "@/types/github";
 import { GITHUB_RELEASES_API_URL } from "@/constants/github";
@@ -25,7 +27,7 @@ interface ChangelogEntry {
   date: string;
   title: string;
   badge: string;
-  badgeColor: string;
+  badgeTone: StatusTone;
   description: string;
   changes: string[];
 }
@@ -82,24 +84,24 @@ function parseReleaseBody(body: string | null): Pick<ChangelogEntry, "descriptio
   };
 }
 
-function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): Pick<ChangelogEntry, "badge" | "badgeColor"> {
+function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): Pick<ChangelogEntry, "badge" | "badgeTone"> {
   if (release.draft) {
     return {
       badge: "Draft",
-      badgeColor: "bg-content-secondary/10 text-content-secondary",
+      badgeTone: "default",
     };
   }
 
   if (release.prerelease) {
     return {
       badge: "Pre-release",
-      badgeColor: "bg-theme-warning/10 text-theme-warning",
+      badgeTone: "warning",
     };
   }
 
   return {
     badge: "Release",
-    badgeColor: "bg-theme-success/10 text-theme-success",
+    badgeTone: "success",
   };
 }
 
@@ -212,11 +214,12 @@ export default async function ChangelogPage() {
                           <span className="text-2xl font-black text-content-primary tracking-tight group-hover:text-theme-primary transition-colors">
                             {entry.version}
                           </span>
-                          <span
-                            className={`${entry.badgeColor} text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-neu-raised-sm`}
+                          <StatusBadge
+                            variant={entry.badgeTone}
+                            className="text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest"
                           >
                             {entry.badge}
-                          </span>
+                          </StatusBadge>
                         </div>
                         <span className="text-xs font-black text-content-secondary block md:hidden uppercase tracking-widest opacity-60">
                           {entry.date}

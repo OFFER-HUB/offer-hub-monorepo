@@ -1,0 +1,45 @@
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg width="827pt" height="220pt" viewBox="0 0 827 219.63" xmlns="http://www.w3.org/2000/svg"><style>.oh-node path, .oh-node polygon, .oh-node ellipse {
+  fill: var(--color-bg-elevated);
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  filter: drop-shadow(3px 3px 4px var(--shadow-dark)) drop-shadow(-2px -2px 4px var(--shadow-light));
+}
+.oh-node text {
+  fill: var(--color-text-primary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+.oh-node--terminal ellipse {
+  fill: var(--color-primary);
+  stroke: var(--color-primary);
+  filter: none;
+}
+.oh-edge path {
+  stroke: var(--color-text-secondary);
+  fill: none;
+}
+.oh-edge polygon {
+  fill: var(--color-text-secondary);
+  stroke: var(--color-text-secondary);
+}
+.oh-edge--alt path {
+  stroke-dasharray: 5 4;
+}
+.oh-edge--alt polygon {
+  stroke-dasharray: none;
+}
+.oh-cluster path, .oh-cluster polygon {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+.oh-cluster text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-weight: 600;
+}
+.oh-edge text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}</style><g id="graph0" class="graph" transform="scale(1) translate(4 215.63)"><title>wallet-model</title><g id="clust1" class="cluster oh-cluster"><title>cluster_visible</title><path d="m627-28.63h172c6 0 12-6 12-12v-91c0-6-6-12-12-12h-172c-6 0-12 6-12 12v91c0 6 6 12 12 12" fill="transparent" stroke="black"/><text x="713" y="-130.03" font-family="Inter, sans-serif" font-size="12" text-anchor="middle">What the user sees</text></g><g id="clust2" class="cluster oh-cluster"><title>cluster_hidden</title><path d="m20-22.63h469c6 0 12-6 12-12v-157c0-6-6-12-12-12h-469c-6 0-12 6-12 12v157c0 6 6 12 12 12" fill="transparent" stroke="black"/><text x="254.5" y="-190.03" font-family="Inter, sans-serif" font-size="12" text-anchor="middle">Managed by OFFER-HUB</text></g><g id="node1" class="node oh-node"><title>balance</title><path d="m783-106.63h-140c-6 0-12 6-12 12v38c0 6 6 12 12 12h140c6 0 12-6 12-12v-38c0-6-6-12-12-12" fill="white" stroke="black"/><text x="713" y="-86.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Balance</text><text x="713" y="-72.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">available / reserved</text><text x="713" y="-58.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(USD)</text></g><g id="node2" class="node oh-node"><title>wallet</title><path d="m179-101.63h-143c-6 0-12 6-12 12v38c0 6 6 12 12 12h143c6 0 12-6 12-12v-38c0-6-6-12-12-12" fill="white" stroke="black"/><text x="107.5" y="-81.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Wallet record</text><text x="107.5" y="-67.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">INVISIBLE / STELLAR</text><text x="107.5" y="-53.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">publicKey</text></g><g id="edge1" class="edge oh-edge"><title>balance-&gt;wallet</title><path d="m631.16-44.51c-38.75 13.29-86.19 27.26-130.16 33.88-91.41 13.76-116.7 14.47-208 0-32.57-5.17-67.21-15.15-97.58-25.52" fill="none" stroke="black"/><polygon points="194.01 -32.94 185.72 -39.53 196.31 -39.55" fill="black" stroke="black"/><text x="389" y="-13.83" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">backed by</text></g><g id="node3" class="node oh-node"><title>secret</title><path d="m473-86.63h-168c-6 0-12 6-12 12v24c0 6 6 12 12 12h168c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="389" y="-66.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">secretEncrypted</text><text x="389" y="-52.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(decrypted only to sign)</text></g><g id="edge2" class="edge oh-edge"><title>wallet-&gt;secret</title><path d="m191.22-68.26c28.64 0.81 61.13 1.74 91.34 2.61" fill="none" stroke="black"/><polygon points="282.82 -69.14 292.71 -65.36 282.62 -62.15" fill="black" stroke="black"/><text x="242" y="-69.83" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">holds</text></g><g id="node4" class="node oh-node"><title>usdc</title><path d="m453-166.63h-128c-6 0-12 6-12 12v24c0 6 6 12 12 12h128c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="389" y="-146.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">USDC on Stellar</text><text x="389" y="-132.23" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(read via Horizon)</text></g><g id="edge3" class="edge oh-edge"><title>wallet-&gt;usdc</title><path d="m191.22-91.94c35.17-9.06 76.15-19.62 111.58-28.75" fill="none" stroke="black"/><polygon points="302.08 -124.11 312.64 -123.22 303.83 -117.34" fill="black" stroke="black"/><text x="242" y="-113.83" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">address of</text></g><g id="edge4" class="edge oh-edge oh-edge--alt"><title>usdc-&gt;balance</title><path d="m465.09-127.01c46.51 9.68 106.54 22.17 155.76 32.41" fill="none" stroke="black"/><polygon points="621.79 -97.98 630.87 -92.51 620.36 -91.12" fill="black" stroke="black"/><text x="558" y="-131.83" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">deposits credit /</text><text x="558" y="-119.83" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">withdrawals debit</text></g></g></svg>

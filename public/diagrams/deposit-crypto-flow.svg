@@ -1,0 +1,45 @@
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg width="458pt" height="753pt" viewBox="0 0 457.5 753" xmlns="http://www.w3.org/2000/svg"><style>.oh-node path, .oh-node polygon, .oh-node ellipse {
+  fill: var(--color-bg-elevated);
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  filter: drop-shadow(3px 3px 4px var(--shadow-dark)) drop-shadow(-2px -2px 4px var(--shadow-light));
+}
+.oh-node text {
+  fill: var(--color-text-primary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+.oh-node--terminal ellipse {
+  fill: var(--color-primary);
+  stroke: var(--color-primary);
+  filter: none;
+}
+.oh-edge path {
+  stroke: var(--color-text-secondary);
+  fill: none;
+}
+.oh-edge polygon {
+  fill: var(--color-text-secondary);
+  stroke: var(--color-text-secondary);
+}
+.oh-edge--alt path {
+  stroke-dasharray: 5 4;
+}
+.oh-edge--alt polygon {
+  stroke-dasharray: none;
+}
+.oh-cluster path, .oh-cluster polygon {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+.oh-cluster text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-weight: 600;
+}
+.oh-edge text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}</style><g id="graph0" class="graph" transform="scale(1) translate(4 749)"><title>deposit-crypto-flow</title><g id="node1" class="node oh-node oh-node--terminal"><title>start</title><ellipse cx="289" cy="-739" rx="6" ry="6" fill="black" stroke="black"/></g><g id="node2" class="node oh-node"><title>addr</title><path d="m394-688h-210c-6 0-12 6-12 12v24c0 6 6 12 12 12h210c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="289" y="-667.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">GET /users/{id}/wallet/deposit</text><text x="289" y="-653.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">returns the Stellar address</text></g><g id="edge1" class="edge oh-edge"><title>start-&gt;addr</title><path d="m289-732.75v34.24" fill="none" stroke="black"/><polygon points="292.5 -698.15 289 -688.15 285.5 -698.15" fill="black" stroke="black"/></g><g id="node3" class="node oh-node"><title>send</title><path d="m368.5-595h-159c-6 0-12 6-12 12v24c0 6 6 12 12 12h159c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="289" y="-574.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">User sends USDC</text><text x="289" y="-560.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">from any Stellar wallet</text></g><g id="edge2" class="edge oh-edge"><title>addr-&gt;send</title><path d="m289-639.57v34.45" fill="none" stroke="black"/><polygon points="292.5 -605.04 289 -595.04 285.5 -605.04" fill="black" stroke="black"/></g><g id="node4" class="node oh-node"><title>stream</title><path d="m384-502h-190c-6 0-12 6-12 12v24c0 6 6 12 12 12h190c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="289" y="-481.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Horizon payment stream</text><text x="289" y="-467.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(BlockchainMonitorService)</text></g><g id="edge3" class="edge oh-edge"><title>send-&gt;stream</title><path d="m289-546.57v34.45" fill="none" stroke="black"/><polygon points="292.5 -512.04 289 -502.04 285.5 -512.04" fill="black" stroke="black"/></g><g id="node5" class="node oh-node"><title>filter</title><path d="m397-409h-216c-6 0-12 6-12 12v24c0 6 6 12 12 12h216c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="289" y="-388.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Filter: incoming payment,</text><text x="289" y="-374.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">configured USDC code + issuer</text></g><g id="edge4" class="edge oh-edge"><title>stream-&gt;filter</title><path d="m289-453.57v34.45" fill="none" stroke="black"/><polygon points="292.5 -419.04 289 -409.04 285.5 -419.04" fill="black" stroke="black"/></g><g id="node6" class="node oh-node"><title>dedup</title><path d="m281-316h-120c-6 0-12 6-12 12v24c0 6 6 12 12 12h120c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="221" y="-295.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">De-duplicate by</text><text x="221" y="-281.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">transaction hash</text></g><g id="edge5" class="edge oh-edge"><title>filter-&gt;dedup</title><path d="m271.49-360.57c-8.23 11.02-18.17 24.32-27.04 36.19" fill="none" stroke="black"/><polygon points="247.01 -321.96 238.22 -316.04 241.4 -326.15" fill="black" stroke="black"/></g><g id="node10" class="node oh-node"><title>skip</title><path d="m437.5-212h-161c-6 0-12 6-12 12v38c0 6 6 12 12 12h161c6 0 12-6 12-12v-38c0-6-6-12-12-12" fill="white" stroke="black"/><text x="357" y="-191.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Ignored</text><text x="357" y="-177.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(other asset, outgoing,</text><text x="357" y="-163.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">or already processed)</text></g><g id="edge9" class="edge oh-edge"><title>filter-&gt;skip</title><path d="m296.8-360.83c11.43 33.96 32.89 97.72 46.86 139.21" fill="none" stroke="black"/><polygon points="346.99 -222.69 346.87 -212.1 340.36 -220.46" fill="black" stroke="black"/><text x="354" y="-289.2" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">no match</text></g><g id="node7" class="node oh-node"><title>credit</title><path d="m220-212h-208c-6 0-12 6-12 12v38c0 6 6 12 12 12h208c6 0 12-6 12-12v-38c0-6-6-12-12-12" fill="white" stroke="black"/><text x="116" y="-191.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">One DB transaction:</text><text x="116" y="-177.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">balance.available += amount</text><text x="116" y="-163.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">+ ProcessedTransaction row</text></g><g id="edge6" class="edge oh-edge"><title>dedup-&gt;credit</title><path d="m198.73-267.88c-13.57 14.09-31.23 32.42-46.75 48.53" fill="none" stroke="black"/><polygon points="154.48 -216.9 145.02 -212.13 149.44 -221.76" fill="black" stroke="black"/></g><g id="edge10" class="edge oh-edge"><title>dedup-&gt;skip</title><path d="m249.84-267.88c17.9 14.34 41.29 33.08 61.64 49.4" fill="none" stroke="black"/><polygon points="313.8 -221.11 319.41 -212.13 309.42 -215.65" fill="black" stroke="black"/><text x="302.5" y="-237.2" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">seen</text></g><g id="node8" class="node oh-node"><title>event</title><path d="m193.5-105h-155c-6 0-12 6-12 12v24c0 6 6 12 12 12h155c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="116" y="-84.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Emit balance.credited</text><text x="116" y="-70.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(SSE event stream)</text></g><g id="edge7" class="edge oh-edge"><title>credit-&gt;event</title><path d="m116-149.8v34.45" fill="none" stroke="black"/><polygon points="119.5 -115.1 116 -105.1 112.5 -115.1" fill="black" stroke="black"/></g><g id="node9" class="node oh-node oh-node--terminal"><title>end</title><ellipse cx="116" cy="-6" rx="6" ry="6" fill="black" stroke="black"/></g><g id="edge8" class="edge oh-edge"><title>event-&gt;end</title><path d="m116-56.9v34.57" fill="none" stroke="black"/><polygon points="119.5 -22.08 116 -12.08 112.5 -22.08" fill="black" stroke="black"/></g></g></svg>

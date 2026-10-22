@@ -1,5 +1,19 @@
 import { docExportBaseName, docExportDateStamp } from "@/lib/docs/export-filenames";
 
+/** Fixed print palette. A PDF has no theme, so these stay outside the color tokens. */
+const PDF_COLORS = {
+  page: "#ffffff",
+  text: "#6D758F",
+  heading: "#19213D",
+  accent: "#149A9B",
+  accentTint: "rgba(20, 154, 155, 0.07)",
+  divider: "#e5e7eb",
+  tableBorder: "#d1d5db",
+  tableHeader: "#eef2ff",
+  codeBg: "#0f172a",
+  codeText: "#e2e8f0",
+} as const;
+
 export interface ExportDocPdfOptions {
   slug: string;
   title: string;
@@ -9,10 +23,6 @@ export interface ExportDocPdfOptions {
 /**
  * Renders `#doc-page-export-content` (the current doc's MDX body) to a
  * branded, print-styled PDF and triggers a download.
- *
- * This builds an offscreen, fixed-white-background export document — the
- * hardcoded colors below are intentional (a PDF has no dark mode) and are
- * not part of the on-page color-token system.
  *
  * Throws on failure; callers own the try/catch, error logging, and any
  * loading-state UI.
@@ -32,10 +42,10 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
   exportContainer.style.left = "-100000px";
   exportContainer.style.top = "0";
   exportContainer.style.width = "850px";
-  exportContainer.style.background = "#ffffff";
+  exportContainer.style.background = PDF_COLORS.page;
   exportContainer.style.padding = "28px 34px";
   exportContainer.style.fontFamily = "Inter, Roboto, Arial, sans-serif";
-  exportContainer.style.color = "#6D758F";
+  exportContainer.style.color = PDF_COLORS.text;
 
   const logo = `${window.location.origin}/OFFER-HUB-logo.png`;
   const printableDate = new Date().toLocaleDateString("en-CA", {
@@ -45,17 +55,17 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
   });
 
   exportContainer.innerHTML = `
-    <header style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid #e5e7eb;margin-bottom:18px;">
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid ${PDF_COLORS.divider};margin-bottom:18px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <img src="${logo}" alt="OFFER-HUB" style="height:48px;width:auto;object-fit:contain;" />
       </div>
       <div style="text-align:right;">
-        <div style="font-size:12px;letter-spacing:0.08em;color:#149A9B;font-weight:700;text-transform:uppercase;">Documentation Export</div>
-        <div style="font-size:12px;color:#6D758F;">${printableDate}</div>
+        <div style="font-size:12px;letter-spacing:0.08em;color:${PDF_COLORS.accent};font-weight:700;text-transform:uppercase;">Documentation Export</div>
+        <div style="font-size:12px;color:${PDF_COLORS.text};">${printableDate}</div>
       </div>
     </header>
-    <h1 style="font-size:30px;line-height:1.2;margin:0 0 8px;color:#19213D;">${title}</h1>
-    ${description ? `<p style="font-size:14px;line-height:1.6;margin:0 0 18px;color:#6D758F;">${description}</p>` : ""}
+    <h1 style="font-size:30px;line-height:1.2;margin:0 0 8px;color:${PDF_COLORS.heading};">${title}</h1>
+    ${description ? `<p style="font-size:14px;line-height:1.6;margin:0 0 18px;color:${PDF_COLORS.text};">${description}</p>` : ""}
   `;
 
   const clonedContent = source.cloneNode(true) as HTMLElement;
@@ -72,24 +82,24 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
     [data-doc-pdf-root] h2,
     [data-doc-pdf-root] h3,
     [data-doc-pdf-root] h4 {
-      color: #19213D !important;
+      color: ${PDF_COLORS.heading} !important;
       break-after: avoid-page;
     }
     [data-doc-pdf-root] p,
     [data-doc-pdf-root] li,
     [data-doc-pdf-root] td,
     [data-doc-pdf-root] th {
-      color: #6D758F !important;
+      color: ${PDF_COLORS.text} !important;
       line-height: 1.65;
       font-size: 13px;
     }
     [data-doc-pdf-root] a {
-      color: #149A9B !important;
+      color: ${PDF_COLORS.accent} !important;
       text-decoration: underline;
     }
     [data-doc-pdf-root] pre {
-      background: #0f172a !important;
-      color: #e2e8f0 !important;
+      background: ${PDF_COLORS.codeBg} !important;
+      color: ${PDF_COLORS.codeText} !important;
       border-radius: 10px;
       padding: 14px;
       overflow: hidden;
@@ -109,17 +119,17 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
     }
     [data-doc-pdf-root] table th,
     [data-doc-pdf-root] table td {
-      border: 1px solid #d1d5db;
+      border: 1px solid ${PDF_COLORS.tableBorder};
       padding: 8px;
       text-align: left;
     }
     [data-doc-pdf-root] table th {
-      background: #eef2ff;
-      color: #19213D !important;
+      background: ${PDF_COLORS.tableHeader};
+      color: ${PDF_COLORS.heading} !important;
       font-weight: 700;
     }
     [data-doc-pdf-root] blockquote {
-      background: rgba(20, 154, 155, 0.07);
+      background: ${PDF_COLORS.accentTint};
       border-radius: 8px;
       padding: 8px 12px;
       margin: 12px 0;
@@ -139,7 +149,7 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
         html2canvas: {
           scale: 2,
           useCORS: true,
-          backgroundColor: "#ffffff",
+          backgroundColor: PDF_COLORS.page,
         },
         jsPDF: {
           unit: "mm",

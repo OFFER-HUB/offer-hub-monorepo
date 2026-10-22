@@ -7,7 +7,7 @@ import {
   type JsonSchema,
   type Parameter,
   type SchemaProperty,
-} from '../src/data/api-schema';
+} from './openapi-source-data';
 
 interface OpenApiParameter {
   name: string;
@@ -283,7 +283,7 @@ function generateOpenApiSpec(): OpenApiSpec {
       title: 'OFFER-HUB Orchestrator API',
       version: '1.0.0',
       description:
-        'Generated from the real orchestrator controllers and DTOs - see src/data/api-schema.ts and scripts/README.md for how.',
+        'Generated from the real orchestrator controllers and DTOs - see scripts/openapi-source-data.ts and scripts/README.md for how.',
       license: { name: 'MIT', url: 'https://opensource.org/licenses/MIT' },
     },
     servers: [
@@ -316,7 +316,7 @@ const generated = JSON.stringify(generateOpenApiSpec(), null, 2);
 
 if (process.argv.includes('--check')) {
   // Staleness guard (used by `npm run validate:openapi` in CI): fail if the
-  // committed spec no longer matches its source (src/data/api-schema.ts).
+  // committed spec no longer matches its source (scripts/openapi-source-data.ts).
   // Normalize CRLF so Windows checkouts don't report false drift.
   let committed: string | null = null;
   try {

@@ -76,16 +76,9 @@ OFFER-HUB monitors the blockchain for incoming transactions. When USDC arrives:
 
 ### Deposit Flow Diagram
 
-```mermaid
-sequenceDiagram
-    participant User as User's External Wallet
-    participant OH as OFFER-HUB
+<StaticDiagram name="deposit-crypto-flow" caption="Crypto deposit: the Horizon payment stream detects the USDC transfer, de-duplicates it by transaction hash, credits the available balance and emits balance.credited." />
 
-    User->>OH: 1. Send USDC
-    Note over OH: 2. Detect on blockchain
-    Note over OH: 3. Update balance
-    OH->>User: 4. Emit event
-```
+Source: `blockchain-monitor.service.ts` (`handlePayment`) and `wallet.controller.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
 
 ## AirTM Deposits
 
@@ -142,6 +135,10 @@ The Orchestrator then:
 1. Verifies the AirTM webhook signature (Svix headers + `AIRTM_WEBHOOK_SECRET`)
 2. Credits the user's balance
 3. Emits `balance.credited` on the SSE stream, which your app can listen to
+
+<StaticDiagram name="deposit-airtm-flow" caption="AirTM top-up: statuses follow TOPUP_TRANSITIONS; the provider webhook (or a manual refresh) moves the top-up forward and the balance is credited on success." />
+
+Source: `topup-status.enum.ts`, `topups.controller.ts`, `topups.service.ts` and `airtm-webhook.service.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
 
 <Callout type="warning">
   AirTM deposits can take 1-24 hours depending on the user's payment method. Set user expectations accordingly.

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { TopProgressBar } from "./TopProgressBar";
 
+/** Page-load animation that then tracks scroll position. See NavigationProgress for route changes. */
 export function LoadingBar() {
     const [progress, setProgress] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,9 +26,9 @@ export function LoadingBar() {
     }, [isLoading, scrollY]);
 
     return (
-        <div
-            className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-theme-primary to-[#22e0e2] z-[9999] origin-left"
-            style={{ transform: `scaleX(${progress})`, transition: isLoading ? "transform 0.4s ease" : "none" }}
+        <TopProgressBar
+            progress={progress}
+            transition={isLoading ? "transform 0.4s ease" : "none"}
         />
     );
 }

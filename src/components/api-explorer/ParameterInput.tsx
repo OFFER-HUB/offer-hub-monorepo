@@ -11,6 +11,11 @@ interface ParameterInputProps {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  /** Scopes the generated id to the owning operation - every panel is kept
+   * mounted (just collapsed) while the page is open, so a bare `param-${name}`
+   * id collides across the many endpoints that share a parameter name like
+   * "id" or "limit". */
+  idPrefix: string;
 }
 
 export function ParameterInput({
@@ -23,8 +28,9 @@ export function ParameterInput({
   value,
   onChange,
   error,
+  idPrefix,
 }: ParameterInputProps) {
-  const inputId = `param-${name}`;
+  const inputId = `param-${idPrefix}-${name}`;
   const labelId = `${inputId}-label`;
   const descriptionId = `${inputId}-description`;
 

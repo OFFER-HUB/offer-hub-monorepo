@@ -6,7 +6,7 @@ import { CodeBlock } from "./CodeBlock";
 import { CodeTabs } from "./CodeTabs";
 import { Callout } from "./Callout";
 import { CommandLine } from "./CommandLine";
-import { Badge } from "./Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Endpoint } from "./Endpoint";
 import { Steps } from "./Steps";
 import { LinkCard } from "./LinkCard";
@@ -36,7 +36,7 @@ export const MDX_COMPONENTS: MDXComponents = {
   CodeTabs,
   Callout,
   CommandLine,
-  Badge,
+  Badge: StatusBadge,
   MethodBadge: DocsMethodBadge,
   Endpoint,
   Steps,

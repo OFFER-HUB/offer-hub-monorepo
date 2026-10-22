@@ -22,6 +22,23 @@
   fill: var(--color-text-secondary);
   stroke: var(--color-text-secondary);
 }
+.oh-edge--alt path {
+  stroke-dasharray: 5 4;
+}
+.oh-edge--alt polygon {
+  stroke-dasharray: none;
+}
+.oh-cluster path, .oh-cluster polygon {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+.oh-cluster text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-weight: 600;
+}
 .oh-edge text {
   fill: var(--color-text-secondary);
   font-family: var(--font-inter), Inter, sans-serif;

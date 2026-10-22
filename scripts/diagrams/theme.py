@@ -63,6 +63,23 @@ STYLE_BLOCK = """<style>
   fill: var(--color-text-secondary);
   stroke: var(--color-text-secondary);
 }
+.oh-edge--alt path {
+  stroke-dasharray: 5 4;
+}
+.oh-edge--alt polygon {
+  stroke-dasharray: none;
+}
+.oh-cluster path, .oh-cluster polygon {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+.oh-cluster text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-weight: 600;
+}
 .oh-edge text {
   fill: var(--color-text-secondary);
   font-family: var(--font-inter), Inter, sans-serif;
@@ -110,9 +127,54 @@ def terminal_node(g: graphviz.Digraph, name: str) -> None:
     )
 
 
-def transition_edge(g: graphviz.Digraph, source: str, target: str, label: str = "") -> None:
-    """A labeled transition edge, styled via the ``oh-edge`` class."""
-    g.edge(source, target, label=label, color="black", fontcolor="black", **{"class": "oh-edge"})
+def transition_edge(
+    g: graphviz.Digraph,
+    source: str,
+    target: str,
+    label: str = "",
+    *,
+    alt: bool = False,
+    **attrs: str,
+) -> None:
+    """A labeled transition edge, styled via the ``oh-edge`` class.
+
+    ``alt=True`` draws it dashed (``oh-edge--alt``) to mark a path that belongs
+    to a different provider than the solid edges in the same diagram.
+    """
+    css_class = "oh-edge oh-edge--alt" if alt else "oh-edge"
+    g.edge(source, target, label=label, color="black", fontcolor="black", **{"class": css_class}, **attrs)
+
+
+def cluster(g: graphviz.Digraph, name: str, label: str) -> graphviz.Digraph:
+    """A labeled, dashed group box (``oh-cluster``) used to separate provider paths.
+
+    Use as ``with cluster(g, "crypto", "Crypto-native (Stellar)") as c:`` and add
+    nodes to ``c``.
+    """
+    c = graphviz.Digraph(name=f"cluster_{name}")
+    c.attr(
+        label=label,
+        style="rounded",
+        color="black",
+        fontcolor="black",
+        fontname="Inter, sans-serif",
+        fontsize="12",
+        margin="16",
+        **{"class": "oh-cluster"},
+    )
+    return _Cluster(g, c)
+
+
+class _Cluster:
+    def __init__(self, parent: graphviz.Digraph, sub: graphviz.Digraph) -> None:
+        self._parent = parent
+        self._sub = sub
+
+    def __enter__(self) -> graphviz.Digraph:
+        return self._sub
+
+    def __exit__(self, *exc: object) -> None:
+        self._parent.subgraph(self._sub)
 
 
 def _inject_style(svg: str) -> str:

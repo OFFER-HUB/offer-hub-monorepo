@@ -182,5 +182,3 @@ export function ParamTable({
     </div>
   );
 }
-
-export default ParamTable;

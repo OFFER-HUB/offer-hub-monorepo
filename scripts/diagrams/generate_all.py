@@ -12,9 +12,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import order_state_machine  # noqa: E402  (must follow the sys.path insert above)
+import deposit_airtm_flow  # noqa: E402  (must follow the sys.path insert above)
+import deposit_crypto_flow  # noqa: E402
+import order_state_machine  # noqa: E402
+import wallet_model  # noqa: E402
+import wallet_provisioning  # noqa: E402
+import withdrawal_lifecycle  # noqa: E402
 
-DIAGRAM_MODULES = [order_state_machine]
+DIAGRAM_MODULES = [
+    order_state_machine,
+    deposit_crypto_flow,
+    deposit_airtm_flow,
+    withdrawal_lifecycle,
+    wallet_model,
+    wallet_provisioning,
+]
 
 
 def main() -> None:

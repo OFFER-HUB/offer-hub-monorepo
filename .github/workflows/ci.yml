@@ -42,7 +42,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       # Same guard pattern as the diagram pipeline: fails CI when the
-      # committed public/openapi.json drifts from src/data/api-schema.ts,
+      # committed public/openapi.json drifts from scripts/openapi-source-data.ts,
       # so the spec served from /docs can never silently go stale.
       - run: npm run validate:openapi
 

@@ -3,35 +3,32 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
 const state = vi.hoisted(() => ({
-  configured: true,
-  supabase: null as unknown,
+  admin: null as unknown,
+  mailer: true,
 }));
 
-vi.mock("@/lib/supabase", () => ({
-  get supabase() {
-    return state.supabase;
-  },
-  get isSupabaseConfigured() {
-    return state.configured;
-  },
+vi.mock("@/lib/supabase-admin", () => ({
+  getSupabaseAdmin: () => state.admin,
+}));
+
+const sendMail = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/mailer", () => ({
+  isMailerConfigured: () => state.mailer,
+  sendMail,
 }));
 
 import { POST } from "../export/route";
+import { DATA_RIGHTS_REQUEST_MESSAGE } from "@/lib/data-rights-request";
+import { hashDataRightsToken } from "@/lib/data-rights-tokens";
 
-/** `.select("*").eq("email", x).maybeSingle<WaitlistRow>()` */
 const maybeSingle = vi.fn();
 const eq = vi.fn(() => ({ maybeSingle }));
 const select = vi.fn(() => ({ eq }));
-const from = vi.fn(() => ({ select }));
-
-const ROW = {
-  id: "row-1",
-  email: "jane@acme.com",
-  name: "Jane Doe",
-  purpose: "Marketplace payouts",
-  referral: "Twitter",
-  created_at: "2026-04-01T10:00:00Z",
-};
+const insert = vi.fn();
+const from = vi.fn((table: string) =>
+  table === "waitlist" ? { select } : { insert },
+);
 
 function request(body: unknown, raw = false) {
   return new NextRequest("https://offer-hub.tech/api/privacy/export", {
@@ -43,9 +40,11 @@ function request(body: unknown, raw = false) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  maybeSingle.mockResolvedValue({ data: ROW, error: null });
-  state.configured = true;
-  state.supabase = { from };
+  maybeSingle.mockResolvedValue({ data: { id: "row-1" }, error: null });
+  insert.mockResolvedValue({ error: null });
+  sendMail.mockResolvedValue(true);
+  state.mailer = true;
+  state.admin = { from };
 });
 
 describe("POST /api/privacy/export - input validation", () => {
@@ -83,8 +82,8 @@ describe("POST /api/privacy/export - input validation", () => {
 });
 
 describe("POST /api/privacy/export - service availability", () => {
-  it("returns 503 when Supabase is not configured", async () => {
-    state.configured = false;
+  it("returns 503 when the service role client is not configured", async () => {
+    state.admin = null;
 
     const res = await POST(request({ email: "jane@acme.com" }));
 
@@ -92,69 +91,78 @@ describe("POST /api/privacy/export - service availability", () => {
     await expect(res.json()).resolves.toEqual({
       error: "Service temporarily unavailable.",
     });
-    expect(from).not.toHaveBeenCalled();
+    expect(sendMail).not.toHaveBeenCalled();
   });
 
-  it("returns 503 when the client is null even though the flag is true", async () => {
-    state.supabase = null;
+  it("returns 503 when the mailer is not configured", async () => {
+    state.mailer = false;
 
     const res = await POST(request({ email: "jane@acme.com" }));
 
     expect(res.status).toBe(503);
+    expect(from).not.toHaveBeenCalled();
   });
 });
 
-describe("POST /api/privacy/export - retrieval", () => {
-  it("returns the full waitlist row under a data key", async () => {
+describe("POST /api/privacy/export - verification step", () => {
+  it("emails a confirmation link and stores only the token hash", async () => {
     const res = await POST(request({ email: "jane@acme.com" }));
 
-    expect(from).toHaveBeenCalledWith("waitlist");
-    expect(select).toHaveBeenCalledWith("*");
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual({ data: ROW });
+    await expect(res.json()).resolves.toEqual({
+      message: DATA_RIGHTS_REQUEST_MESSAGE,
+    });
+
+    const mail = sendMail.mock.calls[0][0];
+    const token = /token=([a-f0-9]{64})/.exec(mail.text)?.[1] as string;
+    expect(mail.to).toBe("jane@acme.com");
+    expect(token).toBeDefined();
+
+    const [row] = insert.mock.calls[0][0];
+    expect(row.token_hash).toBe(hashDataRightsToken(token));
+    expect(JSON.stringify(row)).not.toContain(token);
+    expect(row.action).toBe("export");
+    expect(row.email).toBe("jane@acme.com");
+    expect(new Date(row.expires_at).getTime()).toBeGreaterThan(Date.now());
   });
 
-  it("returns 404 when no row matches the address", async () => {
+  it("never returns the record or acts on it from the request alone", async () => {
+    const res = await POST(request({ email: "jane@acme.com" }));
+
+    expect(JSON.stringify(await res.json())).not.toContain("row-1");
+    expect(select).toHaveBeenCalledWith("id");
+  });
+
+  it("returns the same response for an unknown email and sends nothing", async () => {
+    const known = await POST(request({ email: "jane@acme.com" }));
+    const knownBody = await known.json();
     maybeSingle.mockResolvedValue({ data: null, error: null });
+    sendMail.mockClear();
+    insert.mockClear();
 
-    const res = await POST(request({ email: "ghost@acme.com" }));
+    const unknown = await POST(request({ email: "ghost@acme.com" }));
 
-    expect(res.status).toBe(404);
-    await expect(res.json()).resolves.toEqual({
-      error: "No record found for that email address.",
-    });
+    expect(unknown.status).toBe(known.status);
+    await expect(unknown.json()).resolves.toEqual(knownBody);
+    expect(sendMail).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
   });
 
-  it("returns 500 when the query itself fails", async () => {
-    maybeSingle.mockResolvedValue({
-      data: null,
-      error: { message: "permission denied" },
-    });
+  it("keeps the generic response when the lookup, insert or mail fails", async () => {
+    maybeSingle.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+    const lookup = await POST(request({ email: "jane@acme.com" }));
 
-    const res = await POST(request({ email: "jane@acme.com" }));
+    insert.mockResolvedValueOnce({ error: { message: "boom" } });
+    const stored = await POST(request({ email: "jane@acme.com" }));
 
-    expect(res.status).toBe(500);
-    await expect(res.json()).resolves.toEqual({
-      error: "Failed to retrieve data.",
-    });
-  });
+    sendMail.mockResolvedValueOnce(false);
+    const mailed = await POST(request({ email: "jane@acme.com" }));
 
-  it("prefers the 500 error path over the 404 when both would apply", async () => {
-    maybeSingle.mockResolvedValue({ data: null, error: { message: "boom" } });
-
-    const res = await POST(request({ email: "jane@acme.com" }));
-
-    expect(res.status).toBe(500);
-  });
-
-  it("does not leak the raw Supabase error message to the caller", async () => {
-    maybeSingle.mockResolvedValue({
-      data: null,
-      error: { message: "relation waitlist does not exist" },
-    });
-
-    const res = await POST(request({ email: "jane@acme.com" }));
-
-    expect(JSON.stringify(await res.json())).not.toContain("relation waitlist");
+    for (const res of [lookup, stored, mailed]) {
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toEqual({
+        message: DATA_RIGHTS_REQUEST_MESSAGE,
+      });
+    }
   });
 });

@@ -305,6 +305,9 @@ The documentation site (`github.com/OFFER-HUB/offer-hub-monorepo`) is a Next.js 
 | `NEXT_PUBLIC_SITE_URL` | No (warns in production) | `'https://offer-hub.tech'` | CORS `Access-Control-Allow-Origin` header and canonical URL generation. In production, a warning is logged if absent. Falls back to the hardcoded constant in `src/constants/site.ts`. | `next.config.ts`, `src/lib/llms-txt.ts`, `src/components/docs/Breadcrumb.tsx`, `src/components/docs/PageActionsMenu.tsx` |
 | `NEXT_PUBLIC_SUPABASE_URL` | No | `''` (Supabase disabled) | Supabase project URL. If absent, empty, or a placeholder value, `isSupabaseConfigured` is `false` and all form API routes return HTTP 503. | `src/lib/supabase.ts`, `config/security-headers.ts` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No | `''` (Supabase disabled) | Supabase anonymous key. Same placeholder guard as `NEXT_PUBLIC_SUPABASE_URL`. | `src/lib/supabase.ts` |
+| `SUPABASE_SERVICE_ROLE_KEY` | No | none | Server-only key used by the GDPR data-rights routes to store confirmation tokens and read or delete the confirmed record. If absent, `POST /api/privacy/*` returns HTTP 503. | `src/lib/supabase-admin.ts` |
+| `RESEND_API_KEY` | No | none | Resend API key used to email the data-rights confirmation link. If absent, `POST /api/privacy/export` and `/delete` return HTTP 503. | `src/lib/mailer.ts` |
+| `MAIL_FROM` | No | none | Sender address for the confirmation email. Required together with `RESEND_API_KEY`. | `src/lib/mailer.ts` |
 | `NEXT_PUBLIC_API_BASE_URL` | No | `'http://localhost:4000/api/v1'` | Base URL for the interactive API explorer widget. Also added to the CSP `connect-src` allowlist. | `src/components/api-explorer/EndpointPanel.tsx`, `config/security-headers.ts` |
 | `NEXT_PUBLIC_API_URL` | No | none | Added to the CSP `connect-src` allowlist only. Not read anywhere else. | `config/security-headers.ts` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | none | Cloudflare Turnstile site key. If absent, the waitlist form renders without CAPTCHA and submits without token verification. | `src/hooks/use-waitlist-form.ts` |
@@ -336,8 +339,7 @@ const looksLikePlaceholder =
 When Supabase is not configured, all of these API routes return HTTP 503:
 - `POST /api/waitlist`
 - `POST /api/contact`
-- `POST /api/privacy/delete`
-- `POST /api/privacy/export`
+- `POST /api/privacy/delete` and `POST /api/privacy/export` (these additionally need `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` and `MAIL_FROM`; apply `supabase/migrations/20261020000000_data_rights_tokens.sql` for the token table)
 
 ### End-to-End Test Variables
 

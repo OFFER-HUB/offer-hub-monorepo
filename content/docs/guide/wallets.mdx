@@ -27,18 +27,9 @@ OFFER-HUB eliminates all of this. Users see a simple USD balance while the syste
 
 ### How It Works
 
-```mermaid
-flowchart LR
-    subgraph UserSees["User sees"]
-        Balance["Balance: $100.00 USD"]
-    end
-    subgraph BehindTheScenes["What actually happens"]
-        Wallet["Stellar Wallet: GCV24WNJ..."]
-        USDC["USDC Balance: 100.0000000"]
-        Key["Private Key: encrypted in DB"]
-    end
-    Balance --> BehindTheScenes
-```
+<StaticDiagram name="wallet-model" caption="The user sees one balance; OFFER-HUB keeps a Stellar wallet record with an encrypted secret and reads the USDC balance from Horizon." />
+
+Source: `wallet.service.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
 
 ### Benefits
 
@@ -72,6 +63,10 @@ Behind the scenes:
 3. **Store in database** — Encrypted key saved with user record
 4. **Fund account** — Platform funds the account with minimum XLM for trustlines
 5. **Add USDC trustline** — Account configured to hold USDC
+
+<StaticDiagram name="wallet-provisioning" caption="Wallet provisioning in crypto mode. On testnet the Orchestrator also funds the account and adds the USDC trustline." />
+
+Source: `users.service.ts`, `crypto-native.provider.ts` and `wallet.service.ts` (`createWallet`) in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
 
 ### Response
 

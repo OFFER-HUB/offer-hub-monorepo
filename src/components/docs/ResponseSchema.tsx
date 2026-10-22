@@ -81,5 +81,3 @@ export function ResponseSchema({
     </section>
   );
 }
-
-export default ResponseSchema;
