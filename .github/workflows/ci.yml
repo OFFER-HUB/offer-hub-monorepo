@@ -7,6 +7,18 @@ on:
     branches: [main]
 
 jobs:
+  dependency-audit:
+    name: Production Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+
   frontend:
     name: Frontend Build
     runs-on: ubuntu-latest
