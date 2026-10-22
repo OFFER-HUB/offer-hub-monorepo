@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { consumeRateLimit, getRateLimitPolicy } from "@/lib/rate-limit";
 
 export async function middleware(request: NextRequest) {
+  // Local development and tests must work without provisioning Redis.
+  // Production builds (including previews) keep the fail-closed policy.
+  if (process.env.NODE_ENV !== "production") return NextResponse.next();
+
   try {
     const policy = getRateLimitPolicy(request.nextUrl.pathname.replace(/\/+$/, ""), request.method);
     const result = await consumeRateLimit(request.headers, policy);

@@ -7,6 +7,7 @@ import { middleware, config } from "../middleware";
 const fetchMock = vi.fn();
 
 beforeEach(() => {
+  vi.stubEnv("NODE_ENV", "production");
   vi.stubEnv("VERCEL", "1");
   vi.stubEnv("RATE_LIMIT_IP_HEADER", "");
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example.test");
@@ -27,6 +28,36 @@ function request(path: string, method = "GET") {
 }
 
 describe("API middleware", () => {
+  it.each(["development", "test"])(
+    "allows API requests without Redis configuration in %s", async (environment) => {
+      vi.stubEnv("NODE_ENV", environment);
+      vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+      vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+      const req = new NextRequest("https://offer-hub.tech/api/contact", {
+        method: "POST", body: JSON.stringify({ company: "Acme" }),
+      });
+
+      const response = await middleware(req);
+
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(response.headers.has("Retry-After")).toBe(false);
+      expect(req.bodyUsed).toBe(false);
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["development", "test"])(
+    "skips the limiter even when Redis is configured in %s", async (environment) => {
+      vi.stubEnv("NODE_ENV", environment);
+      fetchMock.mockRejectedValue(new Error("Redis unavailable"));
+
+      const response = await middleware(request("/docs/guide/escrow/raw"));
+
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     ["/api/waitlist", "POST", 5, 600_000],
     ["/api/contact", "POST", 5, 600_000],
@@ -79,9 +110,15 @@ describe("API middleware", () => {
     expect(response.headers.has("x-middleware-next")).toBe(false);
   });
 
-  it("fails closed when Redis is not configured", async () => {
-    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
-    expect((await middleware(request("/api/waitlist", "POST"))).status).toBe(503);
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
+  it.each(["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"])(
+    "fails closed in production when %s is missing", async (variable) => {
+      vi.stubEnv(variable, "");
+      const response = await middleware(request("/api/waitlist", "POST"));
+      expect(response.status).toBe(503);
+      expect(response.headers.get("Retry-After")).toBe("30");
+      expect(response.headers.get("Cache-Control")).toBe("no-store");
+      expect(response.headers.has("x-middleware-next")).toBe(false);
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
 });

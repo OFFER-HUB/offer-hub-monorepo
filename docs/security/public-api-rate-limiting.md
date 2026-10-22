@@ -5,6 +5,13 @@ runs. It also checks `/docs/:slug*/raw`, which Next.js rewrites to the raw-docs
 API after middleware runs. New API routes inherit protection automatically;
 add any future public rewrite aliases to the middleware matcher too.
 
+The limiter runs only when `NODE_ENV=production`. In development and test,
+middleware immediately continues to the route handler without contacting Redis,
+even if Redis credentials are present. Local API calls therefore work without
+provisioning Redis; handler validation and form honeypots still apply. Preview
+deployments built with `NODE_ENV=production` retain production protection and
+must configure Redis too. `VERCEL_ENV=preview` does not bypass the limiter.
+
 ## Limits
 
 Budgets are per client IP, shared across paths and methods within each row:
@@ -36,7 +43,8 @@ Allowed requests retain their normal response bodies and cache headers.
 
 ## Deployment setup
 
-Configure these **server-only** environment variables before deploying:
+Configure these **server-only** environment variables for production builds,
+including preview deployments that use `NODE_ENV=production`:
 
 - `UPSTASH_REDIS_REST_URL`: the HTTPS endpoint of a shared Upstash Redis database.
 - `UPSTASH_REDIS_REST_TOKEN`: its write-capable REST token; the limiter uses `EVAL`,
@@ -53,8 +61,9 @@ Each matched request makes one `EVAL` call; provision Redis capacity accordingly
 Missing credentials, a non-HTTPS endpoint, Redis errors, invalid responses and
 network failures (including a 2-second timeout) **fail closed**: API requests get
 HTTP `503 SERVICE_UNAVAILABLE`, `Retry-After: 30` and `Cache-Control: no-store`.
-Handlers do not run. This applies in development too; there is no unprotected
-in-memory fallback. Pages outside the matcher continue to load. Provision and
+Handlers do not run. This fail-closed behavior applies only in production;
+non-production middleware skips the limiter entirely. There is no process-local
+counter fallback. Pages outside the matcher continue to load. Provision and
 configure Redis before merging/deploying this change, and alert on API `503`s.
 Builds and mocked unit tests do not require credentials.
 
@@ -67,6 +76,11 @@ ingress **overwrites with one client IP**, such as `x-real-ip`. Restrict origin
 access to that ingress. Do not pass through caller-supplied headers or configure
 a header that appends a comma-separated proxy chain. When Vercel is behind
 another proxy, verify its IP forwarding configuration before deployment.
+
+**Outside Vercel, leaving `RATE_LIMIT_IP_HEADER` unset puts all visitors in one
+shared `unknown` bucket**, regardless of any client-supplied forwarding headers.
+Non-Vercel production deployments must configure their trusted ingress and
+`RATE_LIMIT_IP_HEADER` to obtain separate per-client budgets.
 
 Unconfigured, missing or malformed addresses share an `unknown` bucket. They
 cannot evade limits by inventing arbitrary strings or changing an untrusted
@@ -102,6 +116,8 @@ npm run build
 Unit tests mock Redis HTTP responses and exercise allowed, limited and reset
 decisions, TTL rounding, cold-start key stability, IP isolation, trusted proxy
 handling, fail-closed responses and matcher coverage (including the rewrite).
+Middleware tests also verify non-production bypass with and without Redis
+configuration, and production fail-closed behavior for either missing credential.
 Form and route tests cover accessible trap fields and server-side rejection
 before persistence. They make no external service calls.
 
