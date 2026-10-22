@@ -1,0 +1,447 @@
+---
+title: Withdrawals Endpoints
+description: Per-endpoint reference for creating, listing, retrieving, committing, and refreshing withdrawals with request fields, response schemas, errors, idempotency, and examples.
+order: 55
+section: API Reference
+---
+
+The withdrawals API supports crypto transfers to Stellar addresses and asynchronous AirTM payouts. The routes below are implemented by `WithdrawalsController` and `WithdrawalsService` in the Orchestrator.
+
+## Endpoints at a glance
+
+| Method | Path | Scope | Success |
+| --- | --- | --- | --- |
+| <Badge variant="primary">POST</Badge> | [`/api/v1/withdrawals`](#post-withdrawals) | `write` | `201 Created` |
+| <Badge variant="success">GET</Badge> | [`/api/v1/withdrawals`](#get-withdrawals) | `read` | `200 OK` |
+| <Badge variant="success">GET</Badge> | [`/api/v1/withdrawals/&#123;id&#125;`](#get-withdrawalsid) | `read` | `200 OK` |
+| <Badge variant="primary">POST</Badge> | [`/api/v1/withdrawals/&#123;id&#125;/commit`](#post-withdrawalsidcommit) | `write` | `200 OK` |
+| <Badge variant="primary">POST</Badge> | [`/api/v1/withdrawals/&#123;id&#125;/refresh`](#post-withdrawalsidrefresh) | `read` | `200 OK` |
+
+Paths include the global `/api/v1` prefix. Every route requires an API key or short-lived token with the listed scope. Send it in the `Authorization` header; see [Authentication & Scopes](/docs/api-reference/authentication).
+
+The controller identifies the acting user from `userId` in the create body, or from `?userId=` on each other route. The API key itself does not identify the user.
+
+## Common behavior
+
+### Validation and errors
+
+`POST /withdrawals` is validated against `CreateWithdrawalDto`. The global validation pipe rejects unknown body fields and returns `400 VALIDATION_ERROR` when required fields or validators fail. The other routes bind query and path values directly in the controller rather than through a DTO.
+
+Errors use the Orchestrator's standard envelope:
+
+```json
+{
+  "error": {
+    "code": "WITHDRAWAL_NOT_FOUND",
+    "message": "Withdrawal not found"
+  }
+}
+```
+
+All endpoints are guarded by the API-key and scope guards. Missing or invalid credentials return `401 UNAUTHORIZED`; a key without the required scope returns `403 INSUFFICIENT_SCOPE`. The global rate limiter may return `429 RATE_LIMITED`.
+
+### Response envelope
+
+Withdrawal service responses are wrapped by the global `ResponseInterceptor`. A single withdrawal is returned as `{ "data": { ... }, "meta": { "requestId", "timestamp" } }`. A list is nested as `{ "data": { "data": [...], "hasMore": ..., "nextCursor"?: ... }, "meta": ... }`. `X-Request-ID` is also returned as a response header.
+
+### Idempotency
+
+All three `POST` routes support the optional `Idempotency-Key` header through the global idempotency guard. Use a UUID v4. A matching retry replays the stored response; a malformed key returns `400 VALIDATION_ERROR`. `GET` routes do not use idempotency keys. See [API overview: common headers](/docs/api-reference/overview#common-headers).
+
+### Withdrawal statuses
+
+The `status` field is a `WithdrawalStatus` value:
+
+`WITHDRAWAL_CREATED` | `WITHDRAWAL_COMMITTED` | `WITHDRAWAL_PENDING` | `WITHDRAWAL_PENDING_USER_ACTION` | `WITHDRAWAL_COMPLETED` | `WITHDRAWAL_FAILED` | `WITHDRAWAL_CANCELED`
+
+## POST /withdrawals
+
+<Badge variant="primary">POST</Badge> `/api/v1/withdrawals` · `write` · `201 Created`
+
+Creates a withdrawal. For `destinationType: "crypto"`, the Orchestrator sends USDC on Stellar synchronously and returns a completed withdrawal. For `bank` and `airtm_balance`, it creates an AirTM payout; by default it is a two-step flow and requires a later commit. Set `commit: true` to request one-step AirTM processing.
+
+### Request body
+
+Fields and validation are from `CreateWithdrawalDto` in `apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts`.
+
+| Field | Type | Required | Validation / default |
+| --- | --- | --- | --- |
+| `userId` | `string` | Yes | Non-empty internal OFFER-HUB user ID |
+| `amount` | `string` | Yes | Digits followed by a decimal point and exactly two digits, e.g. `"100.00"` |
+| `destinationType` | enum | Yes | `bank` \| `crypto` \| `airtm_balance` |
+| `destinationRef` | `string` | Yes | Non-empty destination reference |
+| `currency` | `string` | No | Defaults to `"USD"`; the DTO does not enforce an enum |
+| `commit` | `boolean` | No | Defaults to `false` |
+| `description` | `string` | No | Free-form string |
+
+```json
+{
+  "userId": "usr_abc123",
+  "amount": "100.00",
+  "currency": "USD",
+  "destinationType": "airtm_balance",
+  "destinationRef": "bank_account_42",
+  "commit": false,
+  "description": "Monthly payout"
+}
+```
+
+### Response schema
+
+The create response follows `CreateWithdrawalResponse` in `apps/api/src/modules/withdrawals/withdrawals.service.ts`. The service returns fewer fields than the get/list response.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.id` | `string` | Yes | Generated withdrawal ID |
+| `data.amount` | `string` | Yes | Amount as a decimal string |
+| `data.fee` | `string` | No | AirTM fee, when returned by the payout provider |
+| `data.currency` | `string` | Yes | Currency, default `"USD"` |
+| `data.status` | `WithdrawalStatus` | Yes | Current state |
+| `data.destinationType` | `string` | Yes | `bank`, `crypto`, or `airtm_balance` |
+| `data.committed` | `boolean` | Yes | `true` for crypto transfers; for AirTM, reflects the `commit` request |
+| `data.createdAt` | `string` | Yes | ISO 8601 timestamp |
+| `meta.requestId` | `string` | Yes | Correlation ID |
+| `meta.timestamp` | `string` | Yes | ISO 8601 response timestamp |
+
+### Errors
+
+| Status | Code | Cause |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | Missing or invalid DTO field, unknown field, or invalid `Idempotency-Key` |
+| `401` | `UNAUTHORIZED` | Missing or invalid credential |
+| `403` | `INSUFFICIENT_SCOPE` | Credential lacks `write` scope |
+| `404` | `USER_NOT_FOUND` | `userId` does not identify a user |
+| `422` | `INSUFFICIENT_FUNDS` | Available balance is below `amount` |
+| `422` | `AIRTM_USER_NOT_LINKED` | AirTM destination selected but the user has not linked an AirTM account |
+| `422` | `AIRTM_USER_INVALID` | Linked AirTM account is not eligible |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+| `502` | `WITHDRAWAL_FAILED` | Provider operation failed; the service rolls back the balance change and marks the withdrawal failed |
+
+### Examples
+
+<CodeTabs
+  label="Create withdrawal examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/withdrawals" \\
+  -H "Authorization: YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -H "Idempotency-Key: 3f1c2a4e-8b7d-4c1e-9a6f-2d5b7e9c1a3f" \\
+  -d '{
+    "userId": "usr_abc123",
+    "amount": "100.00",
+    "currency": "USD",
+    "destinationType": "airtm_balance",
+    "destinationRef": "bank_account_42",
+    "commit": false,
+    "description": "Monthly payout"
+  }'`
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `const response = await fetch("http://localhost:4000/api/v1/withdrawals", {
+  method: "POST",
+  headers: {
+    Authorization: "YOUR_API_KEY",
+    "Content-Type": "application/json",
+    "Idempotency-Key": crypto.randomUUID(),
+  },
+  body: JSON.stringify({
+    userId: "usr_abc123",
+    amount: "100.00",
+    currency: "USD",
+    destinationType: "airtm_balance",
+    destinationRef: "bank_account_42",
+    commit: false,
+    description: "Monthly payout",
+  }),
+});
+
+const result = await response.json();`
+    }
+  ]}
+/>
+
+## GET /withdrawals
+
+<Badge variant="success">GET</Badge> `/api/v1/withdrawals` · `read` · `200 OK`
+
+Lists a user's withdrawals, newest first. `userId` is required to scope the result to the acting user.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `userId` | `string` | Yes | Internal user ID |
+| `limit` | `number` | No | Page size; defaults to `20`, capped at `100` |
+| `cursor` | `string` | No | `nextCursor` from the previous response; omit on the first page |
+
+### Response schema
+
+Each item uses the `WithdrawalResponse` schema described under [Get a withdrawal](#get-withdrawalsid). Pagination fields are inside the nested `data` object.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.data` | `WithdrawalResponse[]` | Yes | Page of withdrawals |
+| `data.hasMore` | `boolean` | Yes | Whether another page exists |
+| `data.nextCursor` | `string` | No | Cursor for the next page; omitted when there is no next page |
+| `meta.requestId` | `string` | Yes | Correlation ID |
+| `meta.timestamp` | `string` | Yes | ISO 8601 response timestamp |
+
+### Errors
+
+| Status | Code | Cause |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | `userId` is missing, as declared by the OpenAPI contract |
+| `401` | `UNAUTHORIZED` | Missing or invalid credential |
+| `403` | `INSUFFICIENT_SCOPE` | Credential lacks `read` scope |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+### Examples
+
+<CodeTabs
+  label="List withdrawals examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl "http://localhost:4000/api/v1/withdrawals?userId=usr_abc123&limit=20" \\
+  -H "Authorization: YOUR_API_KEY"`
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `const query = new URLSearchParams({ userId: "usr_abc123", limit: "20" });
+const response = await fetch(
+  \`http://localhost:4000/api/v1/withdrawals?\${query}\`,
+  { headers: { Authorization: "YOUR_API_KEY" } },
+);
+
+const result = await response.json();`
+    }
+  ]}
+/>
+
+## GET /withdrawals/&#123;id&#125;
+
+<Badge variant="success">GET</Badge> `/api/v1/withdrawals/&#123;id&#125;` · `read` · `200 OK`
+
+Returns one withdrawal, scoped to the combination of withdrawal ID and `userId`. A withdrawal owned by another user is treated as not found.
+
+### Path and query parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | `string` | path | Yes | Withdrawal ID |
+| `userId` | `string` | query | Yes | Owning internal user ID |
+
+### Response schema
+
+This is the `WithdrawalResponse` returned by the service for get, list, commit, and refresh.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data.id` | `string` | Yes | Withdrawal ID |
+| `data.userId` | `string` | Yes | Owning user ID |
+| `data.amount` | `string` | Yes | Decimal amount |
+| `data.fee` | `string` | No | Declared by the service response type; not currently stored or returned by get/list |
+| `data.currency` | `string` | Yes | Currency code |
+| `data.status` | `WithdrawalStatus` | Yes | Current state |
+| `data.destinationType` | `string` | Yes | Destination family |
+| `data.destinationRef` | `string` | Yes | Destination reference |
+| `data.airtmPayoutId` | `string` | No | AirTM payout ID, when present |
+| `data.failureReason` | `string` | No | Declared by the response type; not currently stored or returned by get/list |
+| `data.createdAt` | `string` | Yes | ISO 8601 creation timestamp |
+| `data.updatedAt` | `string` | Yes | ISO 8601 last-update timestamp |
+| `meta.requestId` | `string` | Yes | Correlation ID |
+| `meta.timestamp` | `string` | Yes | ISO 8601 response timestamp |
+
+### Errors
+
+| Status | Code | Cause |
+| --- | --- | --- |
+| `401` | `UNAUTHORIZED` | Missing or invalid credential |
+| `403` | `INSUFFICIENT_SCOPE` | Credential lacks `read` scope |
+| `404` | `WITHDRAWAL_NOT_FOUND` | No withdrawal matches both `id` and `userId` |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+### Examples
+
+<CodeTabs
+  label="Get withdrawal examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl "http://localhost:4000/api/v1/withdrawals/wd_abc123?userId=usr_abc123" \\
+  -H "Authorization: YOUR_API_KEY"`
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `const query = new URLSearchParams({ userId: "usr_abc123" });
+const response = await fetch(
+  \`http://localhost:4000/api/v1/withdrawals/wd_abc123?\${query}\`,
+  { headers: { Authorization: "YOUR_API_KEY" } },
+);
+
+const result = await response.json();`
+    }
+  ]}
+/>
+
+## POST /withdrawals/&#123;id&#125;/commit
+
+<Badge variant="primary">POST</Badge> `/api/v1/withdrawals/&#123;id&#125;/commit` · `write` · `200 OK`
+
+Commits an AirTM withdrawal created in two-step mode and returns its updated withdrawal. The withdrawal must be in a committable status and have an associated AirTM payout.
+
+### Path and query parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | `string` | path | Yes | Withdrawal ID |
+| `userId` | `string` | query | Yes | Owning internal user ID |
+
+There is no request body.
+
+### Response
+
+Returns the updated `WithdrawalResponse` described under [Get a withdrawal](#get-withdrawalsid).
+
+### Errors
+
+| Status | Code | Cause |
+| --- | --- | --- |
+| `401` | `UNAUTHORIZED` | Missing or invalid credential |
+| `403` | `INSUFFICIENT_SCOPE` | Credential lacks `write` scope |
+| `404` | `WITHDRAWAL_NOT_FOUND` | No withdrawal matches both `id` and `userId` |
+| `409` | `WITHDRAWAL_NOT_COMMITTABLE` | Current state does not allow commit |
+| `422` | `PROVIDER_ERROR` | Withdrawal has no associated AirTM payout |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+### Examples
+
+<CodeTabs
+  label="Commit withdrawal examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/commit?userId=usr_abc123" \\
+  -H "Authorization: YOUR_API_KEY" \\
+  -H "Idempotency-Key: 3f1c2a4e-8b7d-4c1e-9a6f-2d5b7e9c1a3f"`
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `const query = new URLSearchParams({ userId: "usr_abc123" });
+const response = await fetch(
+  \`http://localhost:4000/api/v1/withdrawals/wd_abc123/commit?\${query}\`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: "YOUR_API_KEY",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
+  },
+);
+
+const result = await response.json();`
+    }
+  ]}
+/>
+
+## POST /withdrawals/&#123;id&#125;/refresh
+
+<Badge variant="primary">POST</Badge> `/api/v1/withdrawals/&#123;id&#125;/refresh` · `read` · `200 OK`
+
+Fetches the latest status from AirTM and applies it locally when the transition is valid. Use this when an AirTM status-change webhook may have been missed. If the withdrawal has no AirTM payout ID, the current withdrawal is returned unchanged.
+
+### Path and query parameters
+
+| Parameter | Type | Location | Required | Description |
+| --- | --- | --- | --- | --- |
+| `id` | `string` | path | Yes | Withdrawal ID |
+| `userId` | `string` | query | Yes | Owning internal user ID |
+
+There is no request body.
+
+### Response
+
+Returns the updated `WithdrawalResponse` described under [Get a withdrawal](#get-withdrawalsid).
+
+### Errors
+
+| Status | Code | Cause |
+| --- | --- | --- |
+| `401` | `UNAUTHORIZED` | Missing or invalid credential |
+| `403` | `INSUFFICIENT_SCOPE` | Credential lacks `read` scope |
+| `404` | `WITHDRAWAL_NOT_FOUND` | No withdrawal matches both `id` and `userId` |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+### Examples
+
+<CodeTabs
+  label="Refresh withdrawal examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/refresh?userId=usr_abc123" \\
+  -H "Authorization: YOUR_API_KEY" \\
+  -H "Idempotency-Key: 3f1c2a4e-8b7d-4c1e-9a6f-2d5b7e9c1a3f"`
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `const query = new URLSearchParams({ userId: "usr_abc123" });
+const response = await fetch(
+  \`http://localhost:4000/api/v1/withdrawals/wd_abc123/refresh?\${query}\`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: "YOUR_API_KEY",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
+  },
+);
+
+const result = await response.json();`
+    }
+  ]}
+/>
+
+<Callout type="warning">
+  The current `@offerhub/sdk` resource methods for `list`, `get`, `commit`, and `refresh` do not send the required `userId` query parameter. The REST examples above include it and match the controller contract. Use these requests until the SDK exposes the parameter; see the [Withdrawals SDK reference](/docs/sdk/withdrawals).
+</Callout>
+
+## Source files
+
+Verified against the Orchestrator source (`OFFER-HUB/OFFER-HUB`), not inferred:
+
+- [WithdrawalsController](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/withdrawals.controller.ts) — routes, scopes, HTTP statuses, and parameter locations
+- [CreateWithdrawalDto](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts) — request fields and validation
+- [WithdrawalsService](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/withdrawals.service.ts) — response shapes, provider behavior, pagination, and service errors
+- [IdempotencyModule](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/idempotency/idempotency.module.ts) and [IdempotencyGuard](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/common/guards/idempotency.guard.ts) — global POST idempotency behavior
+- [Withdrawals SDK resource](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/packages/sdk/src/resources/withdrawals.ts) — SDK methods and the missing `userId` query parameter
+- [OpenAPI specification](/openapi.json) — published route contract and examples
+
+## Related
+
+- [Withdrawals Guide](/docs/guide/withdrawals) — provider flows and withdrawal lifecycle
+- [Withdrawals SDK Reference](/docs/sdk/withdrawals) — `sdk.withdrawals` methods
+- [API Reference overview](/docs/api-reference/overview) — authentication, common headers, response format, and endpoint catalog
