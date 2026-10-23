@@ -30,7 +30,7 @@
     "fuse.js": "^7.1.0",
     "gray-matter": "^4.0.3",
     "html2pdf.js": "^0.14.0",
-    "lucide-react": "^0.574.0",
+    "lucide-react": "^1.60.0",
     "mermaid": "^11.12.3",
     "next": "^15.5.28",
     "next-mdx-remote": "^6.0.0",
