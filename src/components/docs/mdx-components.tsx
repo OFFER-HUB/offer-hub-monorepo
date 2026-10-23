@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Endpoint } from "./Endpoint";
 import { Steps } from "./Steps";
 import { LinkCard } from "./LinkCard";
+import { DocDiagram } from "./DocDiagram";
 import { MermaidDiagram } from "@/components/shared/MermaidDiagram";
 import { StaticDiagram } from "./StaticDiagram";
 import { ParamTable } from "./ParamTable";
@@ -41,6 +42,7 @@ export const MDX_COMPONENTS: MDXComponents = {
   Endpoint,
   Steps,
   LinkCard,
+  DocDiagram,
   MermaidDiagram,
   StaticDiagram,
   ParamTable,

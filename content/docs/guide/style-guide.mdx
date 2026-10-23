@@ -56,6 +56,20 @@ The example below is reviewed against the checked-in Orchestrator contract at `p
   example={{ code: 200, type: "success", ok: true, message: "Balances retrieved", data: { balances: [{ currency: "USD", available: 1250, held: 200 }] } }}
 />
 
+## Diagrams (`DocDiagram`)
+
+Use `DocDiagram` for pre-rendered, generated diagrams once the diagram pipeline (#1581) has produced assets. It resolves a light and a dark SVG variant from `public/diagrams/`, swaps them with the active theme without shifting layout, opens a keyboard-accessible zoom/pan modal, and falls back to a labelled empty state when an asset is missing.
+
+```mdx
+<DocDiagram
+  name="orchestrator-architecture"
+  caption="Marketplace → Orchestrator → Stellar / Trustless Work"
+  alt="A marketplace backend calls the Offer Hub orchestrator, which coordinates Stellar and Trustless Work."
+/>
+```
+
+The name maps to `/diagrams/<name>-light.svg` and `/diagrams/<name>-dark.svg`. Keep diagram content in sync with the Orchestrator repository: the example above mirrors the architecture on [Orchestrator](/docs/guide/orchestrator), which is verified against `apps/api/src/modules/orders/orders.controller.ts`, its `dto/create-order.dto.ts`, and `apps/api/src/modules/events/event-catalog.ts`. Prefer `MermaidDiagram` for diagrams until those generated variants exist.
+
 ## Color System
 
 OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically adapt when switching between light and dark modes.
