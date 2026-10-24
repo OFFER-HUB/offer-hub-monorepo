@@ -95,7 +95,7 @@ Verified against each controller in `apps/api/src/modules` and against the Orche
 | `GET /auth/me` | `{ data }` (`data: null` without a key) | `{ data }`, no `meta` | `auth/auth.controller.ts` |
 | `POST /auth/api-keys`, `POST /auth/api-keys/{id}/token` | the key object / `{ token }` | `{ data: { ... }, meta }` | `auth/auth.controller.ts`, `auth/auth.service.ts` |
 | `GET /auth/api-keys` | `{ data, pagination: { hasMore, nextCursor } }` | `{ data: { data, pagination }, meta }` | `auth/auth.service.ts` (`listApiKeys`) |
-| Balance: every route under `/users/{userId}/balance` | the balance object | `{ data: { ... }, meta }` | `balance/balance.controller.ts`, `balance/balance.service.ts` |
+| [Balance: all nine routes](/docs/api-reference/balance) | `Balance`, `BalanceOperationResult`, or `SyncResult` | `{ data: { ... }, meta }` | `balance/balance.controller.ts`, `balance/balance.service.ts` |
 | Top-ups and withdrawals: create, get, refresh, cancel, commit | the resource | `{ data: { ... }, meta }` | `topups/topups.controller.ts`, `withdrawals/withdrawals.controller.ts` |
 | `GET /topups`, `GET /withdrawals` | `{ data, hasMore, nextCursor? }` | `{ data: { data, hasMore, nextCursor? }, meta }` | `topups/topups.service.ts` (`listTopUps`), `withdrawals/withdrawals.service.ts` (`listWithdrawals`) |
 | `GET /audit/logs` | `{ data, pagination: { hasMore, nextCursor? } }` | `{ data: { data, pagination }, meta }` | `audit-logs/audit.controller.ts` |
@@ -106,7 +106,7 @@ Verified against each controller in `apps/api/src/modules` and against the Orche
 | Any error | thrown exception | `{ error: { code, message, details? } }` | `common/filters/global-exception.filter.ts` |
 
 <Callout type="note">
-  The `@offerhub/sdk` removes these layers for you. Methods resolve to the resource itself, and list methods resolve to `{ data, hasMore, nextCursor }`. The shapes above matter when you call the REST API directly or proxy it.
+  Check the HTTP client in your installed `@offerhub/sdk` version before assuming it unwraps these layers. The pinned Balance SDK source returns JSON unchanged despite declaring a bare resource type; see [Balance SDK compatibility](/docs/api-reference/balance#examples-setup). The shapes above also apply when calling REST directly or through a proxy.
 </Callout>
 
 ### Examples
@@ -233,6 +233,7 @@ The summaries on this page cover the API surface at a glance. The endpoint group
 
 | Page | Endpoints | Source in the Orchestrator repo |
 | --- | --- | --- |
+| [Balance Endpoints](/docs/api-reference/balance) | Get, verify, credit, debit, reserve, release, cancel-reservation, deduct-reserved, sync | `apps/api/src/modules/balance/balance.controller.ts` |
 | [Orders & Milestones Endpoints](/docs/api-reference/orders) | `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/reserve`, `POST /orders/{id}/cancel`, `GET /orders/{id}/milestones`, `POST /orders/{id}/milestones/{milestoneRef}/complete` | `apps/api/src/modules/orders/orders.controller.ts` |
 | [Escrow Endpoints](/docs/api-reference/escrow) | `POST /orders/{id}/escrow`, `POST /orders/{id}/escrow/fund` | `apps/api/src/modules/orders/orders.controller.ts` |
 | [Resolution Endpoints](/docs/api-reference/resolution) | `POST /orders/{orderId}/resolution/release`, `/refund`, `/dispute` | `apps/api/src/modules/resolution/resolution.controller.ts` |
@@ -628,7 +629,7 @@ Every entry below was verified against the real controllers in `apps/api/src/mod
 
 ### Balance
 
-All balance endpoints are scoped to a user: `/users/{userId}/balance`.
+All balance endpoints are scoped to a user: `/users/{userId}/balance`. See [Balance Endpoints](/docs/api-reference/balance) for exact DTOs, response envelopes, errors, and tabbed examples.
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
