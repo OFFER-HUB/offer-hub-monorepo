@@ -48,7 +48,7 @@ describe("MCP HTTP Transport", () => {
     expect(res.status).toBe(400);
   });
 
-  it("handles POST requests with JSON-RPC messages", async () => {
+  it("advertises and validates tool arguments after initialization", async () => {
     // Test a basic JSON-RPC POST (initialize)
     const rpcRequest = {
       jsonrpc: "2.0",
@@ -65,6 +65,46 @@ describe("MCP HTTP Transport", () => {
     const res = await POST(request("POST", "/api/mcp", rpcRequest));
     expect(res.status).toBe(200); 
     expect(res.headers.get("Content-Type")).toContain("text/event-stream");
+
+    const sessionId = res.headers.get("mcp-session-id");
+    expect(sessionId).toBeTruthy();
+
+    async function call(body: unknown) {
+      const req = request("POST", "/api/mcp", body);
+      req.headers.set("mcp-session-id", sessionId!);
+      req.headers.set("mcp-protocol-version", "2024-11-05");
+      return POST(req);
+    }
+
+    async function readMessage(response: Response) {
+      expect(response.status).toBe(200);
+      const data = (await response.text()).split(/\r?\n/).find((line) => line.startsWith("data:"));
+      expect(data).toBeDefined();
+      return JSON.parse(data!.slice(5));
+    }
+
+    const initialized = await call({ jsonrpc: "2.0", method: "notifications/initialized" });
+    expect(initialized.status).toBe(202);
+
+    const listed = await readMessage(await call({ jsonrpc: "2.0", id: 2, method: "tools/list" }));
+    const search = listed.result.tools.find((tool: { name: string }) => tool.name === "search_docs");
+    expect(search.inputSchema.required).toContain("query");
+    expect(search.inputSchema.properties.maxResults.default).toBe(10);
+
+    const result = await readMessage(await call({
+      jsonrpc: "2.0", id: 3, method: "tools/call",
+      params: { name: "search_docs", arguments: { query: "escrow" } },
+    }));
+    expect(result.result.isError).not.toBe(true);
+    expect(docsLoader.searchDocs).toHaveBeenCalledWith("escrow", 10);
+
+    vi.mocked(docsLoader.searchDocs).mockClear();
+    const invalid = await readMessage(await call({
+      jsonrpc: "2.0", id: 4, method: "tools/call",
+      params: { name: "search_docs", arguments: { query: 123 } },
+    }));
+    expect(invalid.result.isError).toBe(true);
+    expect(docsLoader.searchDocs).not.toHaveBeenCalled();
   });
   
   it("rejects invalid requests gracefully", async () => {
