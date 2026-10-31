@@ -357,13 +357,16 @@ export function DocDiagram({
   const [hasError, setHasError] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const label = alt?.trim() || caption?.trim() || name;
   const src = diagramSrc(name, resolvedTheme);
 
-  // A new name or theme gets a fresh chance to load.
+  // A new name or theme gets a fresh chance to load. A server-rendered <img> can
+  // fail before hydration attaches onError, so also check its settled load state.
   useEffect(() => {
-    setHasError(false);
+    const image = imageRef.current;
+    setHasError(Boolean(image && image.complete && image.naturalWidth === 0));
   }, [src]);
 
   // Warm the opposite variant so the swap is instant once the theme changes.
@@ -387,6 +390,7 @@ export function DocDiagram({
             <>
               {/* eslint-disable-next-line @next/next/no-img-element -- generated SVG variants are served as static assets */}
               <img
+                ref={imageRef}
                 src={src}
                 alt={label}
                 role="img"
