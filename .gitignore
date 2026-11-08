@@ -13,8 +13,6 @@ dist/
 coverage/
 
 # Environment
-.env
-.env.local
 .env.*.local
 
 # Debug
@@ -30,7 +28,6 @@ temp_css.txt
 next-env.d.ts
 
 # IDE
-.vscode/
 .idea/
 
 # Backend
@@ -56,3 +53,4 @@ src/data/docs-index.json
 __pycache__/
 *.pyc
 .venv/
+config.bat
