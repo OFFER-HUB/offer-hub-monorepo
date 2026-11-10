@@ -7,10 +7,10 @@
   ],
   "scripts": {
     "predev": "node mcp/scripts/sync-shared.mjs",
-    "dev": "next dev",
+    "dev": "node init && next dev",
     "prebuild": "node mcp/scripts/sync-shared.mjs && npx tsx scripts/generate-docs-index.ts",
-    "build": "next build",
-    "start": "next start",
+    "build": "node init && next build",
+    "start": "node init && next start",
     "lint": "next lint",
     "lint:classes": "node scripts/check-undefined-utility-classes.js",
     "test": "vitest run",
