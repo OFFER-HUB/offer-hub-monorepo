@@ -4,13 +4,13 @@
  * whoever owns the actual company address / support email routing.
  */
 export const COMPANY_INFO = {
-  name: "Offer Hub Inc.",
+  name: "OFFER-HUB Inc.",
   address: {
     line1: "123 Market Street, Suite 400",
     line2: "San Francisco, CA 94105, USA",
   },
   emails: {
-    privacy: "privacy@offerhub.io",
-    support: "support@offerhub.io",
+    privacy: "privacy@offer-hub.tech",
+    support: "support@offer-hub.tech",
   },
 } as const;
