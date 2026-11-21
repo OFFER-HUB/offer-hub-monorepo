@@ -152,31 +152,31 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link
               href="/docs"
-              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 inline-flex items-center"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
             >
               Docs
             </Link>
             <Link
               href="/docs/api-reference/overview"
-              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 inline-flex items-center"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
             >
               API
             </Link>
             <Link
               href="/docs/sdk/quick-start"
-              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 inline-flex items-center"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
             >
               SDK
             </Link>
             <Link
               href="/terms"
-              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 inline-flex items-center"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
             >
               Terms
             </Link>
             <Link
               href="/privacy"
-              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 inline-flex items-center"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
             >
               Privacy
             </Link>
