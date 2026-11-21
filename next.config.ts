@@ -25,6 +25,20 @@ const corsHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/docs/api-reference/webhooks",
+        destination: "/docs/api-reference/events",
+        permanent: true,
+      },
+      {
+        source: "/docs/api-reference/audit-logs",
+        destination: "/docs/api-reference/overview",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     const securityHeaders = getSecurityHeaders();
     return [
