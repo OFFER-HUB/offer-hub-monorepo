@@ -1,11 +1,10 @@
----
+﻿---
 title: Order State Machine
-description: Complete order lifecycle — statuses, transitions and the cancel rule.
+description: Complete order lifecycle â€” statuses, transitions and the cancel rule.
 order: 16
 section: Guides
 ---
 
-import { Callout } from '@/components/callout'
 
 ## Order Lifecycle
 
@@ -67,7 +66,7 @@ flowchart TD
 | `DELIVERED` | Seller marks delivery | `RELEASE_REQUESTED`, `DISPUTED` |
 | `RELEASE_REQUESTED` | Buyer approves delivery | `RELEASED` |
 | `RELEASED` | Escrow release transaction submitted and confirmed | `CLOSED` |
-| `CLOSED` | Terminal state — order settled, cancelled, or refunded | — |
+| `CLOSED` | Terminal state â€” order settled, cancelled, or refunded | â€” |
 | `REFUND_REQUESTED` | Buyer or seller requests refund | `REFUNDED` |
 | `REFUNDED` | Escrow refund transaction confirmed | `CLOSED` |
-| `DISPUTED` | Buyer or seller opens a dispute | Resolved externally → `CLOSED` |
+| `DISPUTED` | Buyer or seller opens a dispute | Resolved externally â†’ `CLOSED` |

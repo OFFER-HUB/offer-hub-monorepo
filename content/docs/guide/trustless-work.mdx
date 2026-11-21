@@ -1,23 +1,22 @@
----
+﻿---
 title: Trustless Work Integration
 description: How OFFER-HUB uses Trustless Work Soroban smart contracts for escrow.
 order: 20
 section: Guides
 ---
 
-import { Callout } from '@/components/callout'
 
 ## What Is Trustless Work?
 
-[Trustless Work](https://trustlesswork.com) provides audited Soroban smart contracts on Stellar for non-custodial USDC escrow. Smart contracts enforce every escrow rule — creation, funding, release, refund, and dispute settlement — without any party needing to trust a custodian.
+[Trustless Work](https://trustlesswork.com) provides audited Soroban smart contracts on Stellar for non-custodial USDC escrow. Smart contracts enforce every escrow rule â€” creation, funding, release, refund, and dispute settlement â€” without any party needing to trust a custodian.
 
 ## How OFFER-HUB Uses It
 
 The OFFER-HUB Orchestrator wraps the Trustless Work API to give a REST interface for all escrow operations. The integration follows a consistent three-step pattern for every on-chain action:
 
-1. **Prepare** — The Orchestrator calls the Trustless Work API to build the transaction and returns an unsigned XDR to the client.
-2. **Sign** — The user signs the XDR client-side using Stellar Wallets Kit. No key ever reaches the server.
-3. **Submit** — The client posts the signed XDR back to the Orchestrator, which forwards it to the Stellar network and updates the order state.
+1. **Prepare** â€” The Orchestrator calls the Trustless Work API to build the transaction and returns an unsigned XDR to the client.
+2. **Sign** â€” The user signs the XDR client-side using Stellar Wallets Kit. No key ever reaches the server.
+3. **Submit** â€” The client posts the signed XDR back to the Orchestrator, which forwards it to the Stellar network and updates the order state.
 
 <Callout type="info">
   OFFER-HUB never holds or controls user funds. All USDC is locked in and released by the Soroban contract on-chain.
@@ -27,11 +26,11 @@ The OFFER-HUB Orchestrator wraps the Trustless Work API to give a REST interface
 
 Each order milestone maps to its own escrow contract. This means:
 
-- Funds for different milestones are isolated — a release on milestone 2 does not affect milestone 1.
+- Funds for different milestones are isolated â€” a release on milestone 2 does not affect milestone 1.
 - Disputes are scoped to a single milestone contract.
 - Partial delivery and partial refunds are supported by resolving individual milestone escrows.
 
 ## Further Reading
 
-- [Escrow Overview](/docs/guide/escrow) — Non-custodial design, operations summary, and the prepare → sign → submit pattern.
-- [Escrow Flows](/docs/guide/escrow-flows) — Sequence diagrams for every escrow operation.
+- [Escrow Overview](/docs/guide/escrow) â€” Non-custodial design, operations summary, and the prepare â†’ sign â†’ submit pattern.
+- [Escrow Flows](/docs/guide/escrow-flows) â€” Sequence diagrams for every escrow operation.
