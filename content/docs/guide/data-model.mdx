@@ -1,11 +1,10 @@
----
+﻿---
 title: Data Model
 description: Core entities and their relationships in the OFFER-HUB Orchestrator.
 order: 14
 section: Guides
 ---
 
-import { Callout } from '@/components/callout'
 
 ## IDs
 
@@ -72,7 +71,7 @@ Provide a unique string per logical operation. The server caches the response fo
 | `DELIVERED` | Seller marked the milestone as delivered. |
 | `RELEASE_REQUESTED` | Buyer approved delivery; release transaction pending. |
 | `RELEASED` | Release transaction confirmed on-chain. |
-| `CLOSED` | Terminal state — order fully settled or cancelled. |
+| `CLOSED` | Terminal state â€” order fully settled or cancelled. |
 | `REFUND_REQUESTED` | Refund initiated by buyer or seller. |
 | `REFUNDED` | Refund transaction confirmed on-chain. |
 | `DISPUTED` | A dispute is open against this order. |

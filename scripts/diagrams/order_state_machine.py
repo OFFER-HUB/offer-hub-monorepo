@@ -1,4 +1,4 @@
-"""Order state machine — sample diagram for the static diagram pipeline.
+﻿"""Order state machine â€” sample diagram for the static diagram pipeline.
 
 Source of truth (verified against the orchestrator repository, not guessed):
 
@@ -31,6 +31,7 @@ STATES = [
     "ESCROW_FUNDING",
     "ESCROW_FUNDED",
     "IN_PROGRESS",
+    "DELIVERED",
     "RELEASE_REQUESTED",
     "RELEASED",
     "REFUND_REQUESTED",
@@ -39,7 +40,7 @@ STATES = [
     "CLOSED",
 ]
 
-# (source, target, label) — mirrors ORDER_TRANSITIONS exactly, one row per
+# (source, target, label) â€” mirrors ORDER_TRANSITIONS exactly, one row per
 # allowed transition, labeled with the endpoint or event that triggers it.
 TRANSITIONS = [
     ("ORDER_CREATED", "FUNDS_RESERVED", "POST /orders/{id}/reserve"),
@@ -50,8 +51,10 @@ TRANSITIONS = [
     ("ESCROW_FUNDING", "ESCROW_FUNDED", "POST /orders/{id}/escrow/fund"),
     ("ESCROW_FUNDING", "IN_PROGRESS", "Funding confirmed (fast path)"),
     ("ESCROW_FUNDED", "IN_PROGRESS", "Work starts"),
-    ("IN_PROGRESS", "RELEASE_REQUESTED", "POST /orders/{id}/resolution/release"),
-    ("IN_PROGRESS", "REFUND_REQUESTED", "POST /orders/{id}/resolution/refund"),
+    ("IN_PROGRESS", "DELIVERED", "POST /orders/{id}/complete"),
+    ("DELIVERED", "RELEASE_REQUESTED", "POST /orders/{id}/resolution/release"),
+    ("DELIVERED", "REFUND_REQUESTED", "POST /orders/{id}/resolution/refund"),
+    ("DELIVERED", "DISPUTED", "POST /orders/{id}/resolution/dispute"),
     ("IN_PROGRESS", "DISPUTED", "POST /orders/{id}/resolution/dispute"),
     ("RELEASE_REQUESTED", "RELEASED", "TW confirms release"),
     ("REFUND_REQUESTED", "REFUNDED", "TW confirms refund"),

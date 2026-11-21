@@ -1,11 +1,10 @@
----
+﻿---
 title: Orders
 description: Create, manage and settle orders using the OFFER-HUB Orchestrator.
 order: 15
 section: Guides
 ---
 
-import { Callout } from '@/components/callout'
 
 ## Overview
 
@@ -15,21 +14,21 @@ An order represents an agreement between a buyer and a seller for a service or d
 
 Orders move through the following statuses in sequence:
 
-1. **ORDER_CREATED** — The buyer submits the order. Funds have not moved yet.
-2. **FUNDS_RESERVED** — The buyer's payment is reserved pending escrow creation.
-3. **ESCROW_CREATING** — The Orchestrator begins creating the Soroban escrow contract.
-4. **ESCROW_FUNDING** — The escrow contract is live on Stellar; USDC funding is in progress.
-5. **ESCROW_FUNDED** — USDC is confirmed inside the escrow contract.
-6. **IN_PROGRESS** — Work begins. The seller can now deliver.
-7. **DELIVERED** — The seller marks the deliverable as complete.
-8. **RELEASE_REQUESTED** — The buyer approves delivery and requests fund release.
-9. **RELEASED** — The escrow release transaction is confirmed on-chain.
-10. **CLOSED** — The order is fully settled. No further transitions are possible.
+1. **ORDER_CREATED** â€” The buyer submits the order. Funds have not moved yet.
+2. **FUNDS_RESERVED** â€” The buyer's payment is reserved pending escrow creation.
+3. **ESCROW_CREATING** â€” The Orchestrator begins creating the Soroban escrow contract.
+4. **ESCROW_FUNDING** â€” The escrow contract is live on Stellar; USDC funding is in progress.
+5. **ESCROW_FUNDED** â€” USDC is confirmed inside the escrow contract.
+6. **IN_PROGRESS** â€” Work begins. The seller can now deliver.
+7. **DELIVERED** â€” The seller marks the deliverable as complete.
+8. **RELEASE_REQUESTED** â€” The buyer approves delivery and requests fund release.
+9. **RELEASED** â€” The escrow release transaction is confirmed on-chain.
+10. **CLOSED** â€” The order is fully settled. No further transitions are possible.
 
 Two additional paths can branch off this main sequence:
 
-- **Refund path** — Either party can request a refund from `FUNDS_RESERVED` or `IN_PROGRESS`, moving the order to `REFUND_REQUESTED` → `REFUNDED` → `CLOSED`.
-- **Dispute path** — Either party can open a dispute from `IN_PROGRESS` or `DELIVERED`, moving the order to `DISPUTED`.
+- **Refund path** â€” Either party can request a refund from `FUNDS_RESERVED` or `IN_PROGRESS`, moving the order to `REFUND_REQUESTED` â†’ `REFUNDED` â†’ `CLOSED`.
+- **Dispute path** â€” Either party can open a dispute from `IN_PROGRESS` or `DELIVERED`, moving the order to `DISPUTED`.
 
 ## Escrow Integration
 
