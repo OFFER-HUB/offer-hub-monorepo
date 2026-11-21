@@ -28,7 +28,7 @@ export function LoadingBar() {
     return (
         <TopProgressBar
             progress={progress}
-            transition={isLoading ? "transform 0.4s ease" : "none"}
+            transition={isLoading ? "transform 0.3s ease" : "none"}
         />
     );
 }

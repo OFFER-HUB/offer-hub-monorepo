@@ -254,7 +254,7 @@ body::before {
       -6px -6px 12px var(--shadow-light),
       inset 2px 2px 5px rgba(255, 255, 255, 0.4),
       inset -3px -3px 7px rgba(0, 0, 0, 0.15);
-    transition: all 400ms cubic-bezier(0.25, 1, 0.5, 1);
+    transition: all 300ms cubic-bezier(0.25, 1, 0.5, 1);
     color: white;
   }
 
@@ -285,7 +285,7 @@ body::before {
       -6px -6px 12px var(--shadow-light),
       inset 1px 1px 2px rgba(255, 255, 255, 0.8),
       inset -1px -1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 400ms cubic-bezier(0.25, 1, 0.5, 1);
+    transition: all 300ms cubic-bezier(0.25, 1, 0.5, 1);
     color: var(--color-text-primary);
   }
 
@@ -355,11 +355,17 @@ body::before {
   }
 }
 
+/* Global keyboard focus ring: 2px brand outline on every focusable control */
+:where(a, button, input, select, textarea, summary, [role="button"], [role="tab"], [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* CSS-only fade-in-up animation (replaces framer-motion whileInView) */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(12px);
   }
 
   to {
@@ -370,7 +376,7 @@ body::before {
 
 @keyframes fadeIn {
   from {
-    opacity: 0;
+    opacity: 0.4;
   }
 
   to {
@@ -391,15 +397,15 @@ body::before {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.6s ease-out both;
+  animation: fadeIn 0.3s ease-out both;
 }
 
 .animate-fadeInUp {
-  animation: fadeInUp 0.6s ease-out both;
+  animation: fadeInUp 0.3s ease-out both;
 }
 
 .animate-fadeInScale {
-  animation: fadeInScale 0.6s ease-out both;
+  animation: fadeInScale 0.3s ease-out both;
 }
 
 @keyframes dropdownIn {
@@ -430,6 +436,20 @@ body::before {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .animate-fadeIn,
+  .animate-fadeInUp,
+  .animate-fadeInScale {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }
 

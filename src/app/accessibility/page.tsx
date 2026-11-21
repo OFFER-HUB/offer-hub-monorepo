@@ -120,7 +120,7 @@ export default function AccessibilityPage() {
                               return (
                                    <div
                                         key={feature.title}
-                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500"
+                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-300"
                                    >
                                         <div
                                              className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-shadow duration-300"

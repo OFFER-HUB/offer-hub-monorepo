@@ -162,7 +162,7 @@ export default function DocsPage() {
               Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the Offer Hub ecosystem.
             </p>
 
-            <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "400ms" }}>
+            <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "200ms" }}>
               <DocsSearchBar />
             </div>
           </div>
@@ -176,11 +176,11 @@ export default function DocsPage() {
                 <Link
                   href={section.link}
                   className={cn(
-                    "block p-8 rounded-3xl transition-[border-color,box-shadow,transform] duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
+                    "block p-8 rounded-3xl transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
                     "hover:border-theme-border/40 hover:shadow-neu-raised"
                   )}
                 >
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-[background-color,color,transform] duration-500 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-[background-color,color,transform] duration-300 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
                     {section.icon}
                   </div>
                   <div className="flex items-center gap-3 flex-wrap mb-4">
@@ -198,7 +198,7 @@ export default function DocsPage() {
                   </p>
                   <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-content-secondary/40">
                     <span>{section.count}</span>
-                    <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
+                    <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-300 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
                       Explore <ChevronRight size={14} />
                     </span>
                   </div>
