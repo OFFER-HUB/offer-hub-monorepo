@@ -1,314 +1,96 @@
 ---
 title: Auth Endpoints
-description: Per-endpoint reference for the OFFER-HUB Auth API - create and list API keys, exchange a key for a short-lived token, and read the current auth context - with real scopes, request fields, response shapes, error codes, idempotency behavior, and cURL plus TypeScript examples.
+description: Marketplace API-key administration, wallet and email sign-in, user sessions, OAuth linking, and 7-day user JWTs.
 order: 51
 section: API Reference
 ---
 
-The Auth endpoints create and inspect the credentials every other endpoint uses. Four routes live in `AuthController` (`apps/api/src/modules/auth/auth.controller.ts`) and delegate to `AuthService` (`apps/api/src/modules/auth/auth.service.ts`). With the global `/api/v1` prefix from `apps/api/src/main.ts`, the paths below are the full routes.
+## Credential model
 
-| Method | Path | Scope | Success status | Controller handler |
-| --- | --- | --- | --- | --- |
-| <Badge variant="primary">POST</Badge> | `/api/v1/auth/api-keys` | `support` | `201 Created` | `AuthController.createApiKey` |
-| <Badge variant="success">GET</Badge> | `/api/v1/auth/api-keys` | `support` | `200 OK` | `AuthController.listApiKeys` |
-| <Badge variant="primary">POST</Badge> | `/api/v1/auth/api-keys/{id}/token` | `write` | `201 Created` | `AuthController.generateToken` |
-| <Badge variant="success">GET</Badge> | `/api/v1/auth/me` | any valid key | `200 OK` | `AuthController.getMe` |
+| Credential | Where it lives | Lifetime | Uses |
+|---|---|---|---|
+| API key (`ohk_live_…`) | Marketplace backend secrets | Long-lived | Create keys, mint short-lived tokens, create marketplace users |
+| API-key token (`ohk_tok_…`) | Marketplace backend/SDK cache | 1 hour | Business endpoints; never use the API key directly |
+| User session JWT | Signed-in user's session | 7 days | Orders, escrow, resolution, disputes, wallet, payouts, bank accounts, KYC |
+
+The API key is exchanged with `POST /api/v1/auth/api-keys/:id/token` using `write` scope. The SDK caches and re-mints it. API-key values are never returned after creation.
+
+## Marketplace API-key endpoints
+
+| Method | Path | Auth | Request fields | Response fields |
+|---|---|---|---|---|
+| `POST` | `/api/v1/auth/api-keys` | API key, `support` | `name` string; `scopes` array (`read`, `write`, `support`) | `id`, `key`, `name`, `scopes`, plus response metadata |
+| `GET` | `/api/v1/auth/api-keys` | API key, `support` | Query: `limit`; `cursor` | Key metadata: `id`, `name`, `scopes`, `lastUsedAt`, `createdAt`, pagination |
+| `GET` | `/api/v1/auth/me` | API-key context | None | `apiKeyId`, `apiKeyName`, `scopes` |
+| `POST` | `/api/v1/auth/api-keys/:id/token` | API key, `write` | Path: API-key `id`; no body | `token` (`ohk_tok_…`) |
+
+Key values are omitted from list responses. The API-key token carries the source key's scopes and expires after one hour.
+
+## User sign-in endpoints
+
+| Method | Path | Auth | Request fields | Response fields |
+|---|---|---|---|---|
+| `POST` | `/api/v1/auth/wallet/challenge` | Public | Published wallet challenge fields (use the SDK method) | Challenge message to sign |
+| `POST` | `/api/v1/auth/wallet/verify` | Public | Wallet address, signature, and challenge fields from the SDK | 7-day user session JWT |
+| `POST` | `/api/v1/auth/register` | Public | Published registration fields (email and password) | User and 7-day session JWT |
+| `POST` | `/api/v1/auth/login` | Public | Published login fields (email and password) | 7-day session JWT |
+| `POST` | `/api/v1/auth/forgot-password` | Public | Email | Password-reset request result |
+| `POST` | `/api/v1/auth/reset-password` | Public | Reset token and new password | Password-reset result |
+| `GET` | `/api/v1/auth/verify-email` | Public | Verification token/query fields | Email-verification result |
+| `POST` | `/api/v1/auth/send-verification` | JWT | Email or current-session identity, according to SDK types | Verification-request result |
+| `POST` | `/api/v1/auth/change-password` | JWT | Current password and new password | Password-change result |
 
 <Callout type="note">
-  The TypeScript SDK (`packages/sdk`) has no `auth` resource: its resources are users, balance, orders, top-ups, withdrawals, disputes and wallet. The TypeScript examples on this page therefore use plain `fetch`. For a conceptual overview of credential types and scopes, see [Authentication & Scopes](/docs/api-reference/authentication) and [Security Best Practices](/docs/guide/security).
+Prefer `sdk.auth.walletChallenge(...)` and `sdk.auth.walletVerify(...)`. The maintainer is publishing `@offerhub/sdk` 3.0.0; until that release is available, use the maintainer-confirmed SDK signature for a method rather than inventing fields.
 </Callout>
 
-## Common behavior
+## Wallet sign-in sequence
 
-### Authentication and scope
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant M as Marketplace
+    participant S as OFFER-HUB
+    participant W as Stellar wallet
 
-Each route attaches `ApiKeyGuard` and, except `GET /auth/me`, `ScopeGuard` with a `@Scopes(...)` declaration (`apps/api/src/common/guards/api-key.guard.ts`, `scope.guard.ts`). Send the credential as `Authorization: Bearer <token>`.
+    U->>M: Sign in with wallet
+    M->>S: POST /auth/wallet/challenge
+    S-->>M: Message to sign
+    M->>W: Request signature
+    W-->>U: User approves
+    U->>W: Sign challenge message
+    W-->>M: Signature
+    M->>S: POST /auth/wallet/verify
+    S-->>M: 7-day session JWT
+    M-->>U: Signed-in session
+```
 
-| Credential | Format | Scopes it carries |
-| --- | --- | --- |
-| API key | `ohk_{env}_{id}_{random}` where `env` is `live` or `test` | The scopes stored when the key was created |
-| Short-lived token | `ohk_tok_` followed by a signed JWT, valid for 1 hour | The scopes of the key it was issued from |
-| Master key | The value of `OFFERHUB_MASTER_KEY` | `read`, `write`, `support` |
+Wallet sign-in and email/password sign-in produce the same session-JWT shape and 7-day lifetime.
 
-The master key exists so you can create the first real key. Use real keys in application code.
+## Session endpoints
 
-### Success status codes and response envelope
+| Method | Path | Auth | Request fields | Response fields |
+|---|---|---|---|---|
+| `GET` | `/api/v1/auth/sessions` | JWT | None | Session list |
+| `DELETE` | `/api/v1/auth/sessions/:id` | JWT | Path: session `id` | Revocation result |
+| `DELETE` | `/api/v1/auth/sessions` | JWT | None | All-session revocation result |
 
-None of the handlers declares `@HttpCode`, so the two `POST` routes return NestJS's default `201 Created`. `ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) skips wrapping only when a payload has a `meta` key or is exactly one key named `data`. As a result:
+## OAuth endpoints
 
-- `POST /auth/api-keys` and `POST /auth/api-keys/{id}/token` are wrapped as `{ "data": { ... }, "meta": { "requestId", "timestamp" } }`.
-- `GET /auth/me` is returned as-is, as `{ "data": { ... } }` with no `meta`.
-- `GET /auth/api-keys` returns an object with two keys (`data` and `pagination`), so it **is** wrapped. The list therefore sits one level deeper than you might expect: `data.data` is the array and `data.pagination` is the cursor info (see the response below).
+| Method | Path | Auth | Request fields | Response fields |
+|---|---|---|---|---|
+| `POST` | `/api/v1/auth/oauth/callback` | Public | Provider callback fields | 7-day session or OAuth callback result |
+| `GET` | `/api/v1/auth/oauth/check-email` | Public | Email query parameter | Email availability/link status |
+| `POST` | `/api/v1/auth/oauth/link` | JWT | Provider and provider account fields | Linked-account result |
+| `DELETE` | `/api/v1/auth/oauth/link/:provider` | JWT | Path: `provider` | Unlink result |
+| `GET` | `/api/v1/auth/oauth/linked-accounts` | JWT | None | Linked-account list |
 
-Errors use `{ "error": { "code", "message", "details?" } }` from `GlobalExceptionFilter`. See [Error Codes](/docs/api-reference/errors).
+## Marketplace user creation
 
-### Idempotency and rate limiting
+| Method | Path | Auth | Request fields | Response fields |
+|---|---|---|---|---|
+| `POST` | `/api/v1/users` | API-key token, `write` | Published marketplace user fields: external identity, email, and `type` (`BUYER`, `SELLER`, or `BOTH`) | Marketplace user; no user-session JWT is returned |
 
-`IdempotencyGuard` and `IdempotencyInterceptor` are registered globally (`apps/api/src/modules/idempotency/idempotency.module.ts`), so both `POST` routes honor an optional `Idempotency-Key` header (a UUID v4; scoped to your key; completed results replay for 24 hours by default). The `GET` routes ignore it. The global `RateLimitGuard` allows 100 requests per 60 seconds per key.
-
-### Request validation
-
-These handlers bind individual body fields (`@Body('name')`, `@Body('scopes')`) instead of a DTO class, so the global `ValidationPipe` has no DTO rules to enforce for them. Validate `name` and `scopes` on your side.
-
-## POST /api/v1/auth/api-keys
-
-Creates an API key. **Requires the `support` scope.** The plain-text key is in this response only; the database stores a salted hash, so it cannot be shown again.
-
-<ParamTable
-  label="Create API key request body"
-  fields={[
-    { name: "name", type: "string", required: true, description: "Human-readable label for the key. Returned in list responses and GET /auth/me." },
-    { name: "scopes", type: "string[]", required: true, description: "Scopes granted to the key. The guards in the orchestrator recognize read, write, support and the wildcard *. The controller does not validate the values, so a misspelled scope is stored and simply never matches." }
-  ]}
-/>
-
-<ResponseSchema
-  label="Create API key response (201 Created)"
-  fields={[
-    { name: "data", type: "object", required: true, description: "Envelope added by ResponseInterceptor." },
-    { name: "data.id", type: "string", required: true, description: "API key ID. It is also the id segment inside the key string and the :id used by the token endpoint." },
-    { name: "data.key", type: "string", required: true, description: "The full key, shown once. Store it securely." },
-    { name: "data.name", type: "string", required: true, description: "The name you sent." },
-    { name: "data.scopes", type: "string[]", required: true, description: "The scopes stored for the key." },
-    { name: "meta.requestId", type: "string", required: false, description: "Echo of X-Request-ID when you sent one." },
-    { name: "meta.timestamp", type: "string", required: true, description: "ISO 8601 time the response was produced." }
-  ]}
-  example={{
-    data: {
-      id: "key_V1StGXR8Z5jdHi6B3mEv0",
-      key: "ohk_live_key_V1StGXR8Z5jdHi6B3mEv0_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a08c6e4b2d7f9a1c3e",
-      name: "Marketplace backend",
-      scopes: ["read", "write"]
-    },
-    meta: { requestId: "req_1ab90c", timestamp: "2026-09-30T10:00:00.000Z" }
-  }}
-/>
-
-| Status | `error.code` | When |
-| --- | --- | --- |
-| `401` | `UNAUTHORIZED` | Missing, malformed or unknown credential |
-| `403` | `INSUFFICIENT_SCOPE` | The caller does not have the `support` scope |
-| `429` | `RATE_LIMITED` | More than 100 requests in 60 seconds |
-| `500` | `INTERNAL_ERROR` | For example, the request omits `name`: the body is not validated, so the database rejects it |
-
-<CodeTabs
-  label="Create API key examples"
-  tabs={[
-    {
-      id: "curl",
-      label: "cURL",
-      language: "bash",
-      code: `curl -X POST "http://localhost:4000/api/v1/auth/api-keys" \\
-  -H "Authorization: Bearer $OFFERHUB_MASTER_KEY" \\
-  -H "Content-Type: application/json" \\
-  -H "Idempotency-Key: 3f1c2a4e-8b7d-4c1e-9a6f-2d5b7e9c1a3f" \\
-  -d '{ "name": "Marketplace backend", "scopes": ["read", "write"] }'`
-    },
-    {
-      id: "fetch",
-      label: "TypeScript (fetch)",
-      language: "typescript",
-      code: `const res = await fetch("http://localhost:4000/api/v1/auth/api-keys", {
-  method: "POST",
-  headers: {
-    Authorization: \`Bearer \${process.env.OFFERHUB_MASTER_KEY}\`,
-    "Content-Type": "application/json",
-    "Idempotency-Key": crypto.randomUUID(),
-  },
-  body: JSON.stringify({ name: "Marketplace backend", scopes: ["read", "write"] }),
-});
-
-const { data } = await res.json();
-console.log(data.id, data.key); // save data.key now - it is not shown again`
-    }
-  ]}
-/>
-
-## GET /api/v1/auth/api-keys
-
-Lists API keys, newest first. **Requires the `support` scope.** Key values are never returned, only their metadata.
-
-<ParamTable
-  label="List API keys query parameters"
-  fields={[
-    { name: "limit", type: "number", required: false, description: "Keys per page. Values above 100 are capped at 100; a missing or non-numeric value falls back to 20.", defaultValue: "20" },
-    { name: "cursor", type: "string", required: false, description: "The nextCursor from the previous page (an API key ID). Omit for the first page." }
-  ]}
-/>
-
-<ResponseSchema
-  label="List API keys response (200 OK)"
-  fields={[
-    { name: "data", type: "object", required: true, description: "Envelope added by ResponseInterceptor. It wraps the object the service returns, which has its own data and pagination keys." },
-    { name: "data.data", type: "object[]", required: true, description: "The page of keys." },
-    { name: "data.data[].id", type: "string", required: true, description: "API key ID." },
-    { name: "data.data[].name", type: "string", required: true, description: "Key label." },
-    { name: "data.data[].scopes", type: "string[]", required: true, description: "Scopes stored for the key." },
-    { name: "data.data[].lastUsedAt", type: "string", required: false, description: "ISO 8601 time the key last authenticated.", nullable: true },
-    { name: "data.data[].createdAt", type: "string", required: true, description: "ISO 8601 creation time." },
-    { name: "data.pagination.hasMore", type: "boolean", required: true, description: "True when another page exists." },
-    { name: "data.pagination.nextCursor", type: "string", required: false, description: "Pass as cursor to get the next page.", nullable: true },
-    { name: "meta", type: "object", required: true, description: "requestId (when sent) and timestamp." }
-  ]}
-  example={{
-    data: {
-      data: [
-        {
-          id: "key_V1StGXR8Z5jdHi6B3mEv0",
-          name: "Marketplace backend",
-          scopes: ["read", "write"],
-          lastUsedAt: "2026-09-30T09:58:12.000Z",
-          createdAt: "2026-09-29T14:20:00.000Z"
-        }
-      ],
-      pagination: { hasMore: false, nextCursor: null }
-    },
-    meta: { requestId: "req_1ab90d", timestamp: "2026-09-30T10:00:05.000Z" }
-  }}
-/>
-
-| Status | `error.code` | When |
-| --- | --- | --- |
-| `401` | `UNAUTHORIZED` | Missing, malformed or unknown credential |
-| `403` | `INSUFFICIENT_SCOPE` | The caller does not have the `support` scope |
-| `429` | `RATE_LIMITED` | Rate limit exceeded |
-
-<CodeTabs
-  label="List API keys examples"
-  tabs={[
-    {
-      id: "curl",
-      label: "cURL",
-      language: "bash",
-      code: `curl "http://localhost:4000/api/v1/auth/api-keys?limit=20" \\
-  -H "Authorization: Bearer $OFFERHUB_API_KEY"
-
-# Next page
-curl "http://localhost:4000/api/v1/auth/api-keys?limit=20&cursor=key_V1StGXR8Z5jdHi6B3mEv0" \\
-  -H "Authorization: Bearer $OFFERHUB_API_KEY"`
-    },
-    {
-      id: "fetch",
-      label: "TypeScript (fetch)",
-      language: "typescript",
-      code: `const res = await fetch("http://localhost:4000/api/v1/auth/api-keys?limit=20", {
-  headers: { Authorization: \`Bearer \${process.env.OFFERHUB_API_KEY}\` },
-});
-
-const body = await res.json();
-const keys = body.data.data;          // array of keys
-const { hasMore, nextCursor } = body.data.pagination;`
-    }
-  ]}
-/>
-
-## POST /api/v1/auth/api-keys/:id/token
-
-Exchanges an API key ID for a short-lived token (`ohk_tok_...`) that expires after 1 hour. It is designed for a frontend or other untrusted client that should not hold the long-lived key. **Requires the `write` scope.** The token carries the scopes of the key with that ID.
-
-<ParamTable
-  label="Token request"
-  fields={[
-    { name: "id", type: "string", required: true, description: "Path parameter: the API key ID (the id field from create or list), not the key secret. No request body." }
-  ]}
-/>
-
-<ResponseSchema
-  label="Token response (201 Created)"
-  fields={[
-    { name: "data.token", type: "string", required: true, description: "The short-lived token, prefixed with ohk_tok_. Send it as a Bearer token. It expires 1 hour after issue." },
-    { name: "meta", type: "object", required: true, description: "requestId (when sent) and timestamp." }
-  ]}
-  example={{
-    data: { token: "ohk_tok_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJrZXlfVjFTdEdYUjhaNWpkSGk2QjNtRXYwIiwic2NvcGVzIjpbInJlYWQiXSwidHlwZSI6InNob3J0LWxpdmVkIn0.signature" },
-    meta: { requestId: "req_1ab90e", timestamp: "2026-09-30T10:01:00.000Z" }
-  }}
-/>
-
-| Status | `error.code` | When |
-| --- | --- | --- |
-| `401` | `UNAUTHORIZED` | Caller credential invalid, or no key exists with that `:id` (message: `Invalid API Key ID`) |
-| `403` | `INSUFFICIENT_SCOPE` | The caller does not have the `write` scope |
-| `429` | `RATE_LIMITED` | Rate limit exceeded |
-
-<CodeTabs
-  label="Generate token examples"
-  tabs={[
-    {
-      id: "curl",
-      label: "cURL",
-      language: "bash",
-      code: `curl -X POST "http://localhost:4000/api/v1/auth/api-keys/key_V1StGXR8Z5jdHi6B3mEv0/token" \\
-  -H "Authorization: Bearer $OFFERHUB_API_KEY"`
-    },
-    {
-      id: "fetch",
-      label: "TypeScript (fetch)",
-      language: "typescript",
-      code: `const keyId = "key_V1StGXR8Z5jdHi6B3mEv0";
-
-const res = await fetch(\`http://localhost:4000/api/v1/auth/api-keys/\${keyId}/token\`, {
-  method: "POST",
-  headers: { Authorization: \`Bearer \${process.env.OFFERHUB_API_KEY}\` },
-});
-
-const { data } = await res.json();
-// hand data.token to the browser; it expires in 1 hour`
-    }
-  ]}
-/>
-
-## GET /api/v1/auth/me
-
-Returns the identity behind the credential you sent. **Any valid API key, token or master key works; no specific scope is needed.** Use it to check a key, or to see which scopes a token carries.
-
-<ResponseSchema
-  label="Current auth context (200 OK)"
-  fields={[
-    { name: "data.apiKeyId", type: "string", required: true, description: "ID of the API key. For the master key this is master; for a short-lived token it is the ID of the key that issued it." },
-    { name: "data.apiKeyName", type: "string", required: false, description: "Key label. Omitted for short-lived tokens, which do not carry a name." },
-    { name: "data.scopes", type: "string[]", required: true, description: "Scopes the credential grants." }
-  ]}
-  example={{
-    data: { apiKeyId: "key_V1StGXR8Z5jdHi6B3mEv0", apiKeyName: "Marketplace backend", scopes: ["read", "write"] }
-  }}
-/>
-
-This response has no `meta` object, because the handler already returns a single-key `{ "data": ... }` payload.
-
-| Status | `error.code` | When |
-| --- | --- | --- |
-| `401` | `UNAUTHORIZED` | Missing, malformed, unknown or expired credential |
-| `429` | `RATE_LIMITED` | Rate limit exceeded |
-
-<CodeTabs
-  label="Get current context examples"
-  tabs={[
-    {
-      id: "curl",
-      label: "cURL",
-      language: "bash",
-      code: `curl "http://localhost:4000/api/v1/auth/me" \\
-  -H "Authorization: Bearer $OFFERHUB_API_KEY"`
-    },
-    {
-      id: "fetch",
-      label: "TypeScript (fetch)",
-      language: "typescript",
-      code: `const res = await fetch("http://localhost:4000/api/v1/auth/me", {
-  headers: { Authorization: \`Bearer \${process.env.OFFERHUB_API_KEY}\` },
-});
-
-const { data } = await res.json();
-console.log(data.scopes.includes("write"));`
-    }
-  ]}
-/>
-
-## Related documentation
-
-- [Users Endpoints](/docs/api-reference/users) - create users and link Airtm accounts
-- [Config and Health Endpoints](/docs/api-reference/config-and-health) - public configuration and health checks
-- [Authentication & Scopes](/docs/api-reference/authentication) - credential types and the scope model
-- [Security Best Practices](/docs/guide/security) - key storage, scopes and rotation
-- [Error Codes](/docs/api-reference/errors) - the full error catalog
+<Callout type="warning">
+Creating a marketplace user does not replace wallet or email sign-in. A created user must still obtain a 7-day JWT through wallet, email/password, or OAuth sign-in for user-resource endpoints.
+</Callout>

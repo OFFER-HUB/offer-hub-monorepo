@@ -1,104 +1,99 @@
 ---
-title: Authentication & Scopes
-description: Guide to credential types, API keys, scopes, and security best practices in the OFFER-HUB Orchestrator.
+title: Authentication & Credentials
+description: Use API-key credentials for marketplace backend operations and short-lived user sessions for signed-in users.
 order: 50
 section: API Reference
 ---
 
-The OFFER-HUB Orchestrator secures all API endpoints using Bearer token authentication. Requests must include an `Authorization` header with a valid credential.
+OFFER-HUB has two independent credential models. Use the marketplace backend credential for marketplace operations and a signed-in user's JWT for user-facing operations.
 
-```http
-Authorization: Bearer <credential>
-```
+| Credential | Where it lives | Lifetime | Resources |
+|---|---|---|---|
+| API key | Marketplace backend secrets (`ohk_live_…` or `ohk_test_…`) | Long-lived; not sent to business endpoints | API-key administration and minting short-lived tokens |
+| API-key token | Marketplace backend or short-lived browser/server handoff (`ohk_tok_…`) | 1 hour | Marketplace backend calls to business endpoints |
+| User session JWT | Marketplace frontend/session storage or secure client state | 7 days | Orders, escrow, resolution, disputes, wallet, payouts, bank accounts, and KYC |
 
-## Credential Types
-
-There are three types of credentials you can use to authenticate with the API, each suited for different security and lifecycle requirements.
-
-### 1. Master Key (`OFFERHUB_MASTER_KEY`)
-- **Format:** Configured in your environment variables.
-- **Description:** The root administrative key that grants access to all endpoints with the `*` (all) scope. 
-- **When to use:** Use only for infrastructure provisioning, backend administration, or to generate initial API keys. **Never** expose this key to clients.
-
-### 2. API Key (`ohk_{env}_{id}_{random}`)
-- **Format:** Starts with `ohk_live_` or `ohk_test_`.
-- **Description:** Long-lived keys meant for server-to-server communication. They are restricted by specific scopes (e.g., `read`, `write`).
-- **When to use:** Use in your backend services to interact with the Orchestrator (e.g., creating orders, fetching lists).
-
-### 3. Temporary Token (`ohk_tok_*`)
-- **Format:** Starts with `ohk_tok_`.
-- **Description:** Short-lived tokens that expire exactly 1 hour after creation. 
-- **When to use:** Ideal for temporary operations, limited-time access grants, or specific client-side handoffs that require strict timeboxing without exposing a permanent API key.
-
-## Scopes & Permissions
-
-Every endpoint in the Orchestrator enforces permission checks based on the scopes attached to your API key or token, verified via `@Scopes` decorators in the codebase.
-
-| Scope | Description | Associated Endpoints | Source Controller |
-|-------|-------------|----------------------|-------------------|
-| `*` | Full access. Automatically applied to the Master Key. | All endpoints | `apps/api/src/modules/auth/guards/scope.guard.ts` |
-| `support` | Administrative access for management and auditing. | `/auth/api-keys`, `/audit/logs` | `apps/api/src/modules/auth/auth.controller.ts`, `apps/api/src/modules/audit/audit.controller.ts` |
-| `write` | Write access to modify resources and generate tokens. | `/auth/token`, POST/PUT/PATCH routes | `apps/api/src/modules/auth/auth.controller.ts` |
-| `read` | Read-only access to view resources. | GET routes | Various |
-
-<Callout type="note">
-  **Unscoped Endpoints:** Some specific endpoints in the Orchestrator deliberately declare **no guards and no scopes** (e.g., they lack the `@Scopes()` decorator). 
-  - Escrow endpoints: `apps/api/src/modules/orders/orders.controller.ts`
-  - Resolution endpoints: `apps/api/src/modules/resolution/resolution.controller.ts`
+<Callout type="warning">
+Never embed a marketplace API key in browser code or an end-user application. The API key is exchanged for a one-hour API-key token and the SDK caches and re-mints that token.
 </Callout>
 
-## Key Lifecycle
+## Scopes
 
-Managing your API keys and tokens involves four primary operations. 
+API keys use these scopes:
 
-### 1. Create an API Key
-Generate a long-lived API key. **Requires the `support` scope** (usually performed using the `OFFERHUB_MASTER_KEY`).
+| Scope | Purpose |
+|---|---|
+| `read` | Read marketplace and user resources |
+| `write` | Create or change resources; mint API-key tokens; create users |
+| `support` | Manage API keys and inspect the API-key context |
 
-<Badge variant="primary">POST</Badge> `/api/v1/auth/api-keys`
+Use the least privilege required. A short-lived `ohk_tok_…` token carries the scopes of the API key that minted it.
 
-```bash
-curl -X POST https://api.offer-hub.org/api/v1/auth/api-keys \
-  -H "Authorization: Bearer YOUR_OFFERHUB_MASTER_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Production Backend", "scopes": ["read", "write"]}'
+## Marketplace API key flow
+
+1. A self-hosted marketplace creates its first API key from the bootstrap master key. Master-key setup belongs only in the self-hosting guide.
+2. Store the returned API key in the marketplace backend.
+3. Call `POST /api/v1/auth/api-keys/:id/token` with the API key and `write` scope.
+4. Use the returned `ohk_tok_…` token for business endpoints.
+5. Let the SDK cache the token and re-mint it as needed; tokens expire after one hour.
+
+```http
+POST /api/v1/auth/api-keys/:id/token
+Authorization: Bearer ohk_live_…
 ```
 
-### 2. List API Keys
-Retrieve a list of all active API keys. **Requires the `support` scope.**
+The API key and short-lived token are both Bearer credentials, but they have different roles:
 
-<Badge variant="primary">GET</Badge> `/api/v1/auth/api-keys`
+- **Never send the API key** to ordinary business endpoints.
+- **Send the short-lived token** to business endpoints.
+- API-key values are never returned after creation.
 
-```bash
-curl https://api.offer-hub.org/api/v1/auth/api-keys \
-  -H "Authorization: Bearer YOUR_OFFERHUB_MASTER_KEY"
+## Signed-in user sessions
+
+A user can sign in with a Stellar wallet or email/password. Both paths produce the same 7-day JWT.
+
+### Wallet sign-in
+
+1. Request a challenge from `POST /api/v1/auth/wallet/challenge`.
+2. Sign the returned message with the user's Stellar wallet.
+3. Verify the signature at `POST /api/v1/auth/wallet/verify`.
+4. Use the returned JWT for user-resource endpoints.
+
+### Email/password sign-in
+
+Registration and login are public. Password reset and email verification routes are public unless they explicitly require a JWT, as listed in the endpoint reference.
+
+```http
+Authorization: Bearer <7-day user-session JWT>
 ```
 
-### 3. Generate a Temporary Token
-Create a 1-hour `ohk_tok_*` token. **Requires the `write` scope.**
+Send the user-session JWT to orders, escrow, resolution, disputes, wallet, payout, bank-account, and KYC resources. API-key scopes do not replace a user's session JWT for these routes.
 
-<Badge variant="primary">POST</Badge> `/api/v1/auth/token`
+## Supported Stellar wallets
 
-```bash
-curl -X POST https://api.offer-hub.org/api/v1/auth/token \
-  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"scopes": ["read"]}'
-```
+Users connect a wallet in their browser with Stellar Wallets Kit:
 
-### 4. Verify Identity (Get Me)
-Check the identity and granted scopes of the currently authenticated credential.
+- Freighter (now branded Varial)
+- Lobstr
+- xBull
 
-<Badge variant="primary">GET</Badge> `/api/v1/auth/me`
+The Orchestrator never receives or stores the user's Stellar private key for external wallets.
 
-```bash
-curl https://api.offer-hub.org/api/v1/auth/me \
-  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxx"
-```
+## API-key endpoint summary
 
-## Security Guidance
+| Method | Path | Auth |
+|---|---|---|
+| `POST` | `/api/v1/auth/api-keys` | API key, `support` |
+| `GET` | `/api/v1/auth/api-keys` | API key, `support` |
+| `GET` | `/api/v1/auth/me` | API key context |
+| `POST` | `/api/v1/auth/api-keys/:id/token` | API key, `write` |
 
-To ensure the security of your integration, adhere to the following best practices:
+For request and response fields, see [Auth Endpoints](/docs/api-reference/auth).
 
-- **Server-Side Only:** Never embed `ohk_live_` API keys or the `OFFERHUB_MASTER_KEY` in frontend code, mobile apps, or public repositories. All requests to the Orchestrator should originate from your secure backend servers.
-- **Key Rotation:** If you suspect an API key has been compromised, generate a new key via `POST /auth/api-keys`, update your application configurations to use the new key, and delete the compromised key immediately. 
-- **Principle of Least Privilege:** Always grant the minimum required scopes. Do not use the Master Key for everyday API requests; generate specific keys with `read` or `write` access instead.
+## Security guidance
+
+- Store API keys only in marketplace backend secrets.
+- Mint and cache API-key tokens in the backend.
+- Store user-session JWTs using your application's normal secure session mechanism.
+- Revoke a user session from the current session list when a sign-out or account-security action requires it.
+- Rotate or replace an API key rather than recovering its plaintext after creation.
