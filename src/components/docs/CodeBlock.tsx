@@ -242,7 +242,7 @@ export function CodeBlock({
                     data-line={hasLineNumbers ? lineNum : undefined}
                     className={cn(
                       "block min-h-[1.5rem] px-4 -mx-4 transition-colors",
-                      isHighlighted && "bg-bg-sunken shadow-neu-sunken-subtle rounded-md",
+                      isHighlighted && "bg-bg-sunken shadow-neu-sunken-subtle rounded-xl",
                       hasLineNumbers &&
                         "before:inline-block before:w-9 before:text-right before:mr-5 before:text-content-muted/60 before:select-none before:tabular-nums before:content-[attr(data-line)]",
                     )}

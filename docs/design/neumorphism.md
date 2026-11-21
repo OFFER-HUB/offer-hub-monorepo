@@ -38,11 +38,12 @@ This creates:
 
 ## Elevation States
 
-OFFER-HUB uses two primary elevation states:
+OFFER-HUB uses three surface levels, two interaction states, and one Blueprint-only L2 token.
+See [CSS Utility Classes](#css-utility-classes) for the complete scale.
 
 ### 1. Raised (Elevated) Surface
 
-**Used for:** Cards, primary buttons, status badges, panels
+**Used for:** Cards, controls, and panels. Status badges use tinted pills without shadows.
 
 The element appears to **protrude from** the background.
 
@@ -62,11 +63,11 @@ box-shadow:
 
 ```css
 box-shadow: 
-  6px 6px 12px #0a0f1a,    /* Deep void (bottom-right) */
-  -1px -1px 12px #1e2a4a;  /* Soft edge light (top-left) */
+  6px 6px 12px var(--shadow-dark),
+  -6px -6px 12px var(--shadow-light);
 ```
 
-**Note:** Dark theme uses a subtler light highlight to avoid over-brightening.
+**Note:** Dark mode changes the shadow colors through theme variables, not the geometry.
 
 ---
 
@@ -93,8 +94,8 @@ box-shadow:
 
 ```css
 box-shadow: 
-  inset 4px 4px 8px #0a0f1a, 
-  inset -2px -2px 8px #1e2a4a;
+  inset 4px 4px 8px var(--shadow-dark),
+  inset -4px -4px 8px var(--shadow-light);
 ```
 
 ---
@@ -119,7 +120,7 @@ box-shadow: 2px 2px 4px #d1d5db, -2px -2px 4px #ffffff;
 
 **Transition:**
 ```css
-transition: box-shadow 400ms ease-out;
+transition: box-shadow 200ms ease-out;
 ```
 
 ### Focus State: Ring
@@ -154,11 +155,12 @@ Border radius is mathematically matched to shadow blur for visual harmony.
 
 | Radius | Blur | Usage |
 |:-------|:-----|:------|
-| `16px` | `12px` | High-level containers (cards, panels) |
-| `12px` | `8px` | Interactive elements (buttons, inputs) |
-| `8px` | `6px` | Small components (chips, badges) |
+| `24px` (`rounded-3xl`) | token-defined | Section cards and major panels |
+| `16px` (`rounded-2xl`) | token-defined | Inner cards, code, callouts, tables |
+| `12px` (`rounded-xl`) | token-defined | Controls and inputs |
+| Pill (`rounded-full`) | none | Badges and avatars |
 
-**Rule:** Radius should be approximately 1.3x the shadow blur radius.
+Choose radius by component role; do not derive a new radius from shadow blur.
 
 ---
 
@@ -197,11 +199,11 @@ For accessibility, ensure text on neumorphic surfaces maintains at least:
 ```tsx
 <div className="
   bg-background 
-  rounded-2xl 
+  rounded-3xl
   p-8
-  shadow-[6px_6px_12px_#d1d5db,-6px_-6px_12px_#ffffff]
-  hover:shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff]
-  transition-shadow duration-400 ease-out
+  shadow-neu-raised
+  hover:shadow-neu-raised-hover
+  transition-shadow duration-200 ease-out
 ">
   Card Content
 </div>
@@ -215,10 +217,10 @@ For accessibility, ensure text on neumorphic surfaces maintains at least:
   text-white 
   rounded-xl 
   px-6 py-3
-  shadow-[6px_6px_12px_#d1d5db,-6px_-6px_12px_#ffffff]
-  hover:shadow-[2px_2px_4px_#d1d5db,-2px_-2px_4px_#ffffff]
-  active:shadow-[inset_2px_2px_4px_#d1d5db,inset_-2px_-2px_4px_#ffffff]
-  transition-all duration-400 ease-out
+  shadow-neu-raised
+  hover:shadow-neu-raised-hover
+  active:shadow-neu-sunken-subtle
+  transition-shadow duration-200 ease-out
   focus:outline-2 focus:outline-primary focus:outline-offset-2
 ">
   Click Me
@@ -233,7 +235,7 @@ For accessibility, ensure text on neumorphic surfaces maintains at least:
   text-primary 
   rounded-xl 
   px-4 py-3
-  shadow-[inset_4px_4px_8px_#d1d5db,inset_-4px_-4px_8px_#ffffff]
+  shadow-neu-sunken
   placeholder:text-secondary
   focus:outline-2 focus:outline-primary focus:outline-offset-2
   transition-all duration-300
@@ -242,17 +244,16 @@ placeholder="Enter text..."
 />
 ```
 
-### Status Badge (Raised)
+### Status Badge (Pill)
 
 ```tsx
 <span className="
   inline-flex items-center
   bg-success/10 
   text-success 
-  rounded-lg 
+  rounded-full
   px-3 py-1
   text-sm font-medium
-  shadow-[3px_3px_6px_#d1d5db,-3px_-3px_6px_#ffffff]
 ">
   Active
 </span>
@@ -262,34 +263,23 @@ placeholder="Enter text..."
 
 ## CSS Utility Classes
 
-For consistency, define reusable shadow utilities in `globals.css`:
+The only elevation tokens are defined in `tailwind.config.ts`. Their colors come
+from `--shadow-dark` and `--shadow-light`, so geometry is identical in both themes.
 
-```css
-@layer utilities {
-  .shadow-raised {
-    box-shadow: 6px 6px 12px #d1d5db, -6px -6px 12px #ffffff;
-  }
-  
-  .shadow-raised-hover {
-    box-shadow: 2px 2px 4px #d1d5db, -2px -2px 4px #ffffff;
-  }
-  
-  .shadow-sunken {
-    box-shadow: inset 4px 4px 8px #d1d5db, inset -4px -4px 8px #ffffff;
-  }
-  
-  .shadow-sunken-subtle {
-    box-shadow: inset 2px 2px 4px #d1d5db, inset -2px -2px 4px #ffffff;
-  }
-}
-```
+| Token | Offset / blur | Role |
+| --- | --- | --- |
+| `shadow-neu-raised` | 6 / 12px | Raised cards and panels |
+| `shadow-neu-raised-sm` | 3 / 6px | Small raised controls and surfaces |
+| `shadow-neu-sunken` | inset 4 / 8px | Input wells and recessed surfaces |
+| `shadow-neu-raised-hover` | 2 / 4px | Compressed hover state |
+| `shadow-neu-sunken-subtle` | inset 2 / 4px | Subtle pressed/selected state |
+| `shadow-neu-raised-l2` | 12 / 24px | Nested Blueprint orchestrator showcase only |
 
-**Usage:**
-```tsx
-<div className="shadow-raised hover:shadow-raised-hover transition-shadow">
-  Content
-</div>
-```
+Badges are tinted pills without shadows. Do not introduce Tailwind drop shadows,
+arbitrary shadows, inline `boxShadow`, or additional elevation tokens. The
+`.neu-input`, `.neu-table-*`, `.neu-btn`, and `.neu-circle` utilities compose these
+same tokens with `@apply`. The separately maintained `.btn-neumorphic-*` button
+styles are outside this surface-token migration.
 
 ---
 
@@ -353,7 +343,7 @@ Every interactive element should have hover, focus, and active states.
 
 ### ✅ DO: Match Radius to Shadow
 
-Use 16px radius with 12px blur, or 12px radius with 8px blur.
+Use the 12 / 16 / 24 / pill radius steps by role, independently of shadow depth.
 
 ### ✅ DO: Test Accessibility
 
@@ -369,11 +359,11 @@ When creating neumorphic components:
 - [ ] Light source is at 145° (top-left)
 - [ ] Background color is `#F1F3F7` or close to it
 - [ ] Shadow colors are `#d1d5db` (dark) and `#ffffff` (light)
-- [ ] Border radius matches shadow blur (16px/12px or 12px/8px)
+- [ ] Radius uses 12 / 16 / 24 / pill according to component role
 - [ ] Hover state compresses shadows
 - [ ] Focus state shows outline ring
 - [ ] Active state uses inset shadow
-- [ ] Transition duration is 300-400ms
+- [ ] Shadow hover/press transitions use 200ms
 - [ ] Text contrast meets WCAG AA standards
 
 ---
@@ -383,15 +373,15 @@ When creating neumorphic components:
 For complex components, you can layer neumorphic elements:
 
 ```tsx
-<div className="shadow-raised rounded-2xl p-8">
+<div className="shadow-neu-raised rounded-3xl p-8">
   {/* Outer raised card */}
   
-  <div className="shadow-sunken rounded-xl p-4 mb-4">
+  <div className="shadow-neu-sunken rounded-2xl p-4 mb-4">
     {/* Inner sunken section */}
-    <input className="shadow-sunken-subtle rounded-lg p-2" />
+    <input className="shadow-neu-sunken rounded-xl p-2" />
   </div>
   
-  <button className="shadow-raised rounded-xl px-6 py-3">
+  <button className="shadow-neu-raised rounded-xl px-6 py-3">
     {/* Raised button */}
   </button>
 </div>
@@ -410,14 +400,9 @@ When implementing dark mode:
 3. **Increase dark shadow:** Use deeper shadow for contrast
 4. **Test contrast:** Ensure text remains readable
 
-**Example Dark Theme:**
-```css
-@media (prefers-color-scheme: dark) {
-  .shadow-raised {
-    box-shadow: 6px 6px 12px #0a0f1a, -1px -1px 12px #1e2a4a;
-  }
-}
-```
+Both themes use the same `shadow-neu-*` classes. The `.dark` rule in
+`src/app/globals.css` supplies `--shadow-dark` and `--shadow-light`; do not
+redefine shadow geometry in components or media queries.
 
 ---
 

@@ -70,7 +70,7 @@ export function CookieConsentBanner() {
           <button
             type="button"
             onClick={accept}
-            className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-theme-primary text-white text-xs font-black uppercase tracking-wider shadow-lg hover:bg-theme-primary-hover transition-colors"
+            className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-theme-primary text-white text-xs font-black uppercase tracking-wider shadow-neu-raised hover:bg-theme-primary-hover transition-colors"
           >
             Accept all
           </button>

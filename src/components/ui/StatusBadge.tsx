@@ -13,7 +13,7 @@ export function StatusBadge({ variant = "default", children, className }: Status
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold shadow-neu-raised-sm",
+        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold",
         colors.bg,
         colors.text,
         className

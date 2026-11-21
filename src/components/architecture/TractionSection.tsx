@@ -75,15 +75,15 @@ export function TractionSection() {
             <h3 className="text-xl font-bold text-content-primary">The LATAM freelance gap</h3>
             
             <div className="flex flex-col gap-4">
-              <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex items-center justify-between">
+              <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex items-center justify-between">
                 <span className="text-3xl md:text-4xl font-black text-theme-primary">$85B</span>
                 <span className="text-sm text-content-muted text-right max-w-[150px]">LATAM freelance market size (2024)</span>
               </div>
-              <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex items-center justify-between">
+              <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex items-center justify-between">
                 <span className="text-3xl md:text-4xl font-black text-theme-primary">47%</span>
                 <span className="text-sm text-content-muted text-right max-w-[150px]">Workforce without bank accounts — Colombia</span>
               </div>
-              <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex items-center justify-between">
+              <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex items-center justify-between">
                 <span className="text-3xl md:text-4xl font-black text-theme-primary">7</span>
                 <span className="text-sm text-content-muted text-right max-w-[150px]">Countries covered by BlindPay corridors</span>
               </div>

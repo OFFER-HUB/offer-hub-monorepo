@@ -18,7 +18,7 @@ export function WhyStellarSection() {
     >
         <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
           
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
+          <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex flex-col gap-4">
             <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
               <DollarSign size={24} className="text-theme-primary" />
             </div>
@@ -28,7 +28,7 @@ export function WhyStellarSection() {
             </p>
           </div>
 
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
+          <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex flex-col gap-4">
             <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
               <Zap size={24} className="text-theme-primary" />
             </div>
@@ -38,7 +38,7 @@ export function WhyStellarSection() {
             </p>
           </div>
 
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
+          <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex flex-col gap-4">
             <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
               <Shield size={24} className="text-[var(--color-secondary)]" />
             </div>
@@ -48,7 +48,7 @@ export function WhyStellarSection() {
             </p>
           </div>
 
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
+          <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex flex-col gap-4">
             <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
               <Lock size={24} className="text-theme-primary" />
             </div>
@@ -58,7 +58,7 @@ export function WhyStellarSection() {
             </p>
           </div>
 
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
+          <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex flex-col gap-4">
             <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
               <Globe size={24} className="text-theme-primary" />
             </div>
@@ -68,7 +68,7 @@ export function WhyStellarSection() {
             </p>
           </div>
 
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
+          <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-7 flex flex-col gap-4">
             <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
               <Users size={24} className="text-[var(--color-secondary)]" />
             </div>

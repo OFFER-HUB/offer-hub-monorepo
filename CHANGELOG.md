@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidate theme surfaces onto six neumorphic shadow tokens and the
+  12 / 16 / 24 / pill radius scale across pages, dialogs, and documentation.
+
 ### Security
 
 - Update DOMPurify and body-parser to patched releases and move frontend and

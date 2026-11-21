@@ -7,7 +7,7 @@ export function SystemArchitectureDiagram() {
     <ArchitectureSection
       id="system"
       sectionClassName="px-6 py-24 bg-transparent"
-      panelClassName="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 p-8 md:p-12"
+      panelClassName="rounded-3xl bg-bg-elevated shadow-neu-raised p-8 md:p-12"
       headerClassName="flex flex-col items-center text-center mb-10"
       descriptionClassName="text-content-secondary max-w-2xl text-lg"
       infoClassName="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-6 flex gap-3 items-start"

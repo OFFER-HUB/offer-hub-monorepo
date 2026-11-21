@@ -51,13 +51,12 @@ function DocTooltip({ href, label }: { href: string; label: string }) {
       <span
         className={cn(
           "pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2",
-          "whitespace-nowrap rounded-xl px-3 py-1.5",
+          "whitespace-nowrap rounded-xl px-3 py-1.5 shadow-neu-raised-sm",
           "text-[10px] font-semibold text-white",
           "opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         )}
         style={{
           background: "rgba(20,154,155,0.95)",
-          boxShadow: "0 4px 12px rgba(20,154,155,0.35)",
         }}
       >
         See Full {label}
@@ -99,12 +98,12 @@ function CopyButton({ code }: { code: string }) {
         "text-[10px] font-black uppercase tracking-widest",
         "transition-[color,background-color,box-shadow] duration-300",
         copied
-          ? "text-white shadow-lg"
+          ? "text-white shadow-neu-raised"
           : "text-content-secondary hover:text-content-primary"
       )}
       style={
         copied
-          ? { background: "var(--color-primary)", boxShadow: "0 4px 12px rgba(20,154,155,0.4)" }
+          ? { background: "var(--color-primary)" }
           : { background: "rgba(255,255,255,0.06)", backdropFilter: "blur(4px)" }
       }
     >
@@ -209,7 +208,7 @@ export function CodeIntegrationShowcase({
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-content-secondary">
             The{" "}
-            <code className="rounded-md bg-bg-sunken px-1.5 py-0.5 font-mono text-[0.85em] text-theme-primary">
+            <code className="rounded-xl bg-bg-sunken px-1.5 py-0.5 font-mono text-[0.85em] text-theme-primary">
               @offerhub/sdk
             </code>{" "}
             {description}
@@ -217,9 +216,9 @@ export function CodeIntegrationShowcase({
         </div>
 
         <div
-          className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 blueprint-layer"
+          className="rounded-3xl bg-bg-elevated shadow-neu-raised blueprint-layer"
         >
-          <div className="flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3 rounded-t-[2.5rem] bg-bg-sunken px-4 py-4 shadow-neu-sunken-subtle sm:px-6">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3 rounded-t-3xl bg-bg-sunken px-4 py-4 shadow-neu-sunken-subtle sm:px-6">
             <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1" role="tablist" aria-label="SDK language">
               {tabs.map((tab) => {
                 const TabIcon = tab.icon;
@@ -255,7 +254,7 @@ export function CodeIntegrationShowcase({
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-b-[2.5rem]">
+          <div className="relative overflow-hidden rounded-b-3xl">
             <div
               className="flex items-center gap-3 border-b px-6 py-3"
               style={{
@@ -291,7 +290,7 @@ export function CodeIntegrationShowcase({
           {sdkCards.map((item) => (
             <div
               key={item.method}
-              className="rounded-[1.5rem] bg-bg-elevated shadow-neu-raised-l2-sm p-5 blueprint-layer overflow-visible"
+              className="rounded-2xl bg-bg-elevated shadow-neu-raised p-5 blueprint-layer overflow-visible"
             >
               <div className="mb-3 inline-flex rounded-full bg-theme-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-theme-primary">
                 SDK

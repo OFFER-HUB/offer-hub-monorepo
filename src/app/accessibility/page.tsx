@@ -120,7 +120,7 @@ export default function AccessibilityPage() {
                               return (
                                    <div
                                         key={feature.title}
-                                        className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500"
+                                        className="p-10 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500"
                                    >
                                         <div
                                              className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-shadow duration-300"
@@ -161,10 +161,10 @@ export default function AccessibilityPage() {
                                    return (
                                         <div
                                              key={feature.title}
-                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300"
+                                             className="p-8 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300"
                                         >
                                              <div className="flex items-center gap-3">
-                                                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-theme-primary/10">
+                                                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-theme-primary/10">
                                                        <Icon size={20} className="text-theme-primary" />
                                                   </div>
                                                   <h3 className="text-lg font-black text-content-primary">{feature.title}</h3>
@@ -201,7 +201,7 @@ export default function AccessibilityPage() {
                                         href={contact.href}
                                         target={contact.external ? "_blank" : undefined}
                                         rel={contact.external ? "noopener noreferrer" : undefined}
-                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-shadow duration-300 group"
+                                        className="p-8 rounded-3xl bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-shadow duration-300 group"
                                    >
                                         <div className="flex items-start justify-between mb-4">
                                              <div>
@@ -215,7 +215,7 @@ export default function AccessibilityPage() {
                               ))}
                          </div>
 
-                         <div className="p-8 rounded-[2rem] bg-theme-primary/5 border border-theme-primary/20 flex flex-col gap-4">
+                         <div className="p-8 rounded-3xl bg-theme-primary/5 border border-theme-primary/20 flex flex-col gap-4">
                               <div className="flex items-start gap-3">
                                    <MessageSquare size={20} className="text-theme-primary mt-1 flex-shrink-0" />
                                    <div>
@@ -241,24 +241,24 @@ export default function AccessibilityPage() {
                          </div>
 
                          <div className="space-y-6">
-                              <div className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised">
+                              <div className="p-10 rounded-3xl bg-bg-elevated shadow-neu-raised">
                                    <h3 className="text-xl font-black text-content-primary mb-4">Target Level: WCAG 2.1 Level AA</h3>
                                    <p className="text-base font-medium text-content-secondary mb-6 leading-relaxed">
                                         We are committed to achieving and maintaining compliance with the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standard. This is the industry-recommended conformance level and covers accessibility for individuals with vision, hearing, motor, and cognitive impairments.
                                    </p>
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="p-4 rounded-lg bg-theme-primary/5 border border-theme-primary/20">
+                                        <div className="p-4 rounded-xl bg-theme-primary/5 border border-theme-primary/20">
                                              <p className="text-xs font-bold text-theme-primary uppercase tracking-wider mb-1">Last Full Audit</p>
                                              <p className="text-lg font-black text-content-primary">August 2026</p>
                                         </div>
-                                        <div className="p-4 rounded-lg bg-theme-primary/5 border border-theme-primary/20">
+                                        <div className="p-4 rounded-xl bg-theme-primary/5 border border-theme-primary/20">
                                              <p className="text-xs font-bold text-theme-primary uppercase tracking-wider mb-1">Next Review</p>
                                              <p className="text-lg font-black text-content-primary">November 2026</p>
                                         </div>
                                    </div>
                               </div>
 
-                              <div className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised">
+                              <div className="p-10 rounded-3xl bg-bg-elevated shadow-neu-raised">
                                    <h3 className="text-xl font-black text-content-primary mb-4">Known Limitations</h3>
                                    <div className="space-y-4">
                                         <div>
@@ -328,7 +328,7 @@ export default function AccessibilityPage() {
                                         description: "We follow accessibility guidance from organizations like IAAP and 18F",
                                    },
                               ].map((item) => (
-                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
+                                   <div key={item.standard} className="p-6 rounded-2xl bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
                                         <h4 className="font-black text-content-primary mb-2">{item.standard}</h4>
                                         <p className="text-sm text-content-secondary">{item.description}</p>
                                    </div>
@@ -337,14 +337,14 @@ export default function AccessibilityPage() {
                     </div>
 
                     {/* CTA */}
-                    <div className="mt-24 mb-8 p-10 sm:p-14 rounded-[2.5rem] bg-gradient-to-br from-theme-primary/10 to-theme-primary/5 border border-theme-primary/20 text-center">
+                    <div className="mt-24 mb-8 p-10 sm:p-14 rounded-3xl bg-gradient-to-br from-theme-primary/10 to-theme-primary/5 border border-theme-primary/20 text-center">
                          <h2 className="text-2xl sm:text-4xl font-black text-content-primary mb-4">Questions About Accessibility?</h2>
                          <p className="text-lg text-content-secondary font-medium mb-8 max-w-2xl mx-auto">
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.
                          </p>
                          <a
                               href="mailto:support@offerhub.io?subject=Accessibility%20Question"
-                              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-theme-primary text-white font-bold text-sm uppercase tracking-wider hover:bg-theme-primary-hover transition-colors shadow-lg"
+                              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-theme-primary text-white font-bold text-sm uppercase tracking-wider hover:bg-theme-primary-hover transition-colors shadow-neu-raised"
                          >
                               <Mail size={18} />
                               Email Support

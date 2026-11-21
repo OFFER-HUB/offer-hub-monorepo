@@ -37,9 +37,9 @@ const RouteErrorCard = ({
           ease: "easeInOut" as const,
           repeat: Infinity,
         }}
-        className="rounded-3xl p-10 flex flex-col items-center text-center bg-bg-base shadow-neu-raised-l2"
+        className="rounded-3xl p-10 flex flex-col items-center text-center bg-bg-base shadow-neu-raised"
       >
-        <div className="w-36 h-36 rounded-2xl flex items-center justify-center mb-6 bg-bg-sunken shadow-neu-sunken-l2">
+        <div className="w-36 h-36 rounded-2xl flex items-center justify-center mb-6 bg-bg-sunken shadow-neu-sunken">
           <AlertTriangle
             size={48}
             strokeWidth={1.5}

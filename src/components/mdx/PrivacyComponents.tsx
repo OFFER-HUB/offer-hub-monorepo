@@ -21,7 +21,7 @@ export function PrivacyFeatureCard({
     <div
       className={`${
         large ? "sm:col-span-2 md:col-span-2" : ""
-      } p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500`}
+      } p-10 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-6 group hover:shadow-neu-raised-hover transition-shadow duration-500`}
     >
       <div className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated group-hover:shadow-neu-sunken transition-shadow duration-300">
         <Icon size={24} className="text-theme-primary" />
@@ -60,7 +60,7 @@ export function ProcessorCard({
   link: string;
 }): React.ReactElement {
   return (
-    <div className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
+    <div className="p-8 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-black text-content-primary">{name}</h3>
         <a
@@ -104,7 +104,7 @@ export function ProcessorsGrid({ children }: { children: React.ReactNode }): Rea
 
 export function ContactSection(): React.ReactElement {
   return (
-    <div className="p-8 sm:p-12 md:p-14 rounded-[3rem] shadow-neu-raised flex flex-col md:flex-row md:items-center md:justify-between gap-10 md:gap-14 mt-16 bg-bg-elevated">
+    <div className="p-8 sm:p-12 md:p-14 rounded-3xl shadow-neu-raised flex flex-col md:flex-row md:items-center md:justify-between gap-10 md:gap-14 mt-16 bg-bg-elevated">
       <div className="flex flex-col gap-6 md:max-w-md">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-neu-sunken-subtle bg-bg-elevated">
           <Mail size={24} className="text-theme-primary" />

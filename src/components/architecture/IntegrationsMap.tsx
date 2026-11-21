@@ -43,7 +43,7 @@ export function IntegrationsMap() {
 
           {/* Center Hub: OfferHub */}
           <div className="relative z-10 w-full md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[220px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 flex flex-col items-center text-center border border-[var(--color-border)]">
+            <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 flex flex-col items-center text-center border border-[var(--color-border)]">
               <div className="w-4 h-4 rounded-full bg-theme-primary animate-pulse mb-3 shadow-neu-raised-sm"></div>
               <h3 className="text-xl font-bold text-content-primary">OfferHub</h3>
               <p className="text-sm text-theme-primary font-medium mt-1 mb-3">NestJS Orchestrator</p>
@@ -55,7 +55,7 @@ export function IntegrationsMap() {
 
           {/* Left Spoke: SWK */}
           <div className="relative z-10 w-full md:absolute md:left-[5%] md:top-1/2 md:-translate-y-1/2 md:w-[320px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
+            <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-bold text-content-primary">Stellar Wallets Kit</h3>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-base shadow-neu-sunken px-2 py-1 rounded-full text-theme-primary">SCF Integration #1</span>
@@ -81,20 +81,20 @@ export function IntegrationsMap() {
 
           {/* Right Spoke: BlindPay */}
           <div className="relative z-10 w-full md:absolute md:right-[5%] md:top-1/2 md:-translate-y-1/2 md:w-[340px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
+            <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-bold text-content-primary">BlindPay</h3>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-base shadow-neu-sunken px-2 py-1 rounded-full text-theme-primary">SCF Integration #2</span>
               </div>
               
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="text-[10px] bg-bg-base shadow-neu-sunken-subtle px-2 py-1 rounded-md text-content-muted">FinCEN MSB</span>
-                <span className="text-[10px] bg-bg-base shadow-neu-sunken-subtle px-2 py-1 rounded-md text-content-muted">YC-backed</span>
+                <span className="text-[10px] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-2 py-1 rounded-full text-content-secondary">FinCEN MSB</span>
+                <span className="text-[10px] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-2 py-1 rounded-full text-content-secondary">YC-backed</span>
               </div>
               
               <div className="grid grid-cols-3 gap-2">
                 {['MX/SPEI', 'BR/Pix', 'CO/PSE', 'AR/Transfer 3.0', 'PE', 'CL', 'CR'].map(c => (
-                  <div key={c} className="text-[10px] font-medium text-center bg-bg-base shadow-neu-raised-sm rounded-lg py-2 text-content-primary px-1">
+                  <div key={c} className="text-[10px] font-medium text-center bg-bg-base shadow-neu-raised-sm rounded-xl py-2 text-content-primary px-1">
                     {c}
                   </div>
                 ))}

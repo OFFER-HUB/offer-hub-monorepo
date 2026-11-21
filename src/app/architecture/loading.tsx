@@ -18,14 +18,14 @@ export default function ArchitectureLoading() {
             <Skeleton className="h-16 w-2/3 rounded-xl mb-8" />
             <Skeleton className="h-5 w-2/3 mb-2" />
             <Skeleton className="h-5 w-1/2 mb-12" />
-            <Skeleton className="w-full max-w-3xl rounded-[2rem] h-64" />
+            <Skeleton className="w-full max-w-3xl rounded-3xl h-64" />
           </div>
         </section>
 
         <section className="px-6 py-24 bg-transparent">
           <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-8">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="rounded-[2.5rem] h-96" />
+              <Skeleton key={i} className="rounded-3xl h-96" />
             ))}
           </div>
         </section>

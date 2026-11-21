@@ -144,7 +144,7 @@ export function UseCasesClient() {
             "pointer-events-auto relative flex items-center p-1.5 sm:p-2 rounded-2xl bg-bg-base",
             "overflow-x-auto no-scrollbar scroll-smooth max-w-full",
             "transition-shadow duration-500 will-change-[box-shadow]",
-            isNavPinned ? "shadow-neu-raised-scrolled" : "shadow-neu-raised",
+            isNavPinned ? "shadow-neu-raised" : "shadow-neu-raised-sm",
           )}
         >
           <div

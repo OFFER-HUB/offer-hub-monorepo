@@ -108,7 +108,7 @@ function BusinessView() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-lg p-2 text-center bg-bg-base shadow-neu-raised-sm"
+              className="rounded-2xl p-2 text-center bg-bg-base shadow-neu-raised-sm"
             >
               <p className="text-lg font-bold font-mono text-content-primary">{stat.value}</p>
               <p className="text-[10px] text-content-muted leading-tight">{stat.label}</p>
@@ -158,7 +158,7 @@ export function MarketplaceTemplate() {
               ))}
             </div>
 
-            <div className="w-full rounded-3xl p-4 bg-bg-base shadow-neu-raised-l2">
+            <div className="w-full rounded-3xl p-4 bg-bg-base shadow-neu-raised">
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 bg-bg-sunken shadow-neu-sunken-subtle">
                 <div className="flex gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />

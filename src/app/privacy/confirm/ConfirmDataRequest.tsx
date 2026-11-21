@@ -40,7 +40,7 @@ export function ConfirmDataRequest() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-8 sm:p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
+    <div className="max-w-xl mx-auto p-8 sm:p-10 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
       <h1 className="text-2xl font-black tracking-tight text-content-primary">
         Confirm your data request
       </h1>
@@ -59,7 +59,7 @@ export function ConfirmDataRequest() {
                 type="button"
                 onClick={confirm}
                 disabled={loading}
-                className="py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-theme-primary text-white hover:bg-theme-primary-hover shadow-lg transition-colors disabled:opacity-50"
+                className="py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-theme-primary text-white hover:bg-theme-primary-hover shadow-neu-raised transition-colors disabled:opacity-50"
               >
                 {loading ? "Processing…" : "Confirm request"}
               </button>

@@ -339,7 +339,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
           role="menu"
           aria-label="Page actions"
           onKeyDown={handleMenuKeyDown}
-          className="absolute right-0 top-full mt-2 w-64 rounded-xl z-[100] bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 py-2 animate-dropdownIn"
+          className="absolute right-0 top-full mt-2 w-64 rounded-xl z-[100] bg-bg-elevated border border-theme-border/40 shadow-neu-raised py-2 animate-dropdownIn"
         >
           {items.map((item, index) => {
             const Icon = item.icon;

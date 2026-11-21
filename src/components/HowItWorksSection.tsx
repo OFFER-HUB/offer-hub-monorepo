@@ -54,7 +54,7 @@ export function HowItWorksSection() {
             >
               {/* Step number container - uses sunken effect */}
               <div className="w-20 h-20 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 relative z-10 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-[360deg]">
-                <span className="text-3xl font-black text-theme-primary drop-shadow-sm">
+                <span className="text-3xl font-black text-theme-primary">
                   {step.number}
                 </span>
               </div>

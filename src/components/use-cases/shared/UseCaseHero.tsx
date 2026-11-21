@@ -177,7 +177,7 @@ export function UseCaseHero({
 
       <div className="absolute inset-x-0 top-24 bottom-10 mx-auto max-w-7xl w-full min-w-0 overflow-hidden px-6 lg:px-8">
         <div className="sticky top-28 min-w-0 max-w-full">
-          <div className="relative overflow-hidden rounded-[2.75rem] border border-theme-primary/10 bg-bg-elevated/80 px-4 py-10 shadow-neu-raised backdrop-blur-sm sm:px-6 md:px-10 md:py-12">
+          <div className="relative overflow-hidden rounded-3xl border border-theme-primary/10 bg-bg-elevated/80 px-4 py-10 shadow-neu-raised backdrop-blur-sm sm:px-6 md:px-10 md:py-12">
             <div
               className="absolute inset-0"
               style={{
@@ -246,7 +246,7 @@ export function UseCaseHero({
                       duration: 0.5,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="rounded-[1.75rem] border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover min-w-0 max-w-full overflow-hidden"
+                    className="rounded-2xl border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover min-w-0 max-w-full overflow-hidden"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>

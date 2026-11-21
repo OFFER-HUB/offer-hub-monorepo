@@ -8,7 +8,7 @@ interface OrchestratorDiagramProps {
 
 export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: OrchestratorDiagramProps) {
   return (
-    <div className="rounded-[2rem] bg-bg-base p-4 shadow-neu-sunken-l2 md:p-6 overflow-visible blueprint-layer">
+    <div className="rounded-3xl bg-bg-base p-4 shadow-neu-sunken md:p-6 overflow-visible blueprint-layer">
       <svg
         viewBox="0 0 720 336"
         className="h-full w-full"

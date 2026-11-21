@@ -68,8 +68,8 @@ export function Navbar() {
         className={cn(
           "fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl xl:max-w-7xl md:w-full z-[500] transition-shadow duration-300 ease-out rounded-full bg-bg-base print:hidden",
           isScrolled
-            ? "shadow-neu-raised-scrolled py-1"
-            : "shadow-neu-raised py-2"
+            ? "shadow-neu-raised py-1"
+            : "shadow-neu-raised-sm py-2"
         )}
       >
         <nav className="px-6 lg:px-8">
@@ -166,7 +166,7 @@ export function Navbar() {
           <div
             id="mobile-menu"
             ref={menuRef}
-            className="lg:hidden fixed top-24 left-4 right-4 z-[501] p-6 rounded-3xl bg-bg-base shadow-neu-raised-scrolled animate-fadeInUp"
+            className="lg:hidden fixed top-24 left-4 right-4 z-[501] p-6 rounded-3xl bg-bg-base shadow-neu-raised animate-fadeInUp"
           >
             <div className="flex flex-col gap-2">
               <Link

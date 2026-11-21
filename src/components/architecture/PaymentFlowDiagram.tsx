@@ -21,7 +21,7 @@ export function PaymentFlowDiagram() {
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 p-6 md:p-8 flex flex-col h-full">
+        <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-8 flex flex-col h-full">
           <h3 className="text-xl font-bold text-content-primary mb-6 ml-2">Transaction Flow</h3>
           <ZoomableDiagram
             chart={PAYMENT_SEQUENCE_CHART}
@@ -30,7 +30,7 @@ export function PaymentFlowDiagram() {
           />
         </div>
 
-        <div className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 p-6 md:p-8 flex flex-col h-full">
+        <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-8 flex flex-col h-full">
           <h3 className="text-xl font-bold text-content-primary mb-6 ml-2">Escrow State Machine</h3>
           <ZoomableDiagram
             chart={PAYMENT_STATE_CHART}

@@ -98,7 +98,7 @@ function StepCard({
       aria-expanded={isActive}
       aria-label={`Step ${step.stepNumber}: ${step.label}`}
       className={cn(
-        "flex flex-col p-5 md:p-6 rounded-[1.5rem] bg-bg-elevated transition-all duration-300 ease-out cursor-pointer select-none",
+        "flex flex-col p-5 md:p-6 rounded-2xl bg-bg-elevated transition-all duration-300 ease-out cursor-pointer select-none",
         "w-full min-w-0",
         isActive ? "md:flex-[2.2]" : "md:flex-1",
         "animate-fadeInUp",
@@ -258,7 +258,7 @@ export function EscrowFlowDiagram({
   return (
     <div
       className={cn(
-        "relative rounded-[3rem] shadow-neu-sunken w-full max-w-7xl mx-auto bg-bg-base p-6 md:p-12 animate-fadeInScale overflow-hidden",
+        "relative rounded-3xl shadow-neu-sunken w-full max-w-7xl mx-auto bg-bg-base p-6 md:p-12 animate-fadeInScale overflow-hidden",
         className,
       )}
     >

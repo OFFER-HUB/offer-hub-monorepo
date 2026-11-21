@@ -47,7 +47,7 @@ export function ParameterInput({
         </label>
         <span
           className={cn(
-            "text-xs font-medium px-1.5 py-0.5 rounded",
+            "text-xs font-medium px-1.5 py-0.5 rounded-full",
             required ? "text-theme-error bg-theme-error/10" : "text-content-secondary bg-content-muted/10"
           )}
         >

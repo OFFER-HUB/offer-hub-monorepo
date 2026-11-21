@@ -268,7 +268,7 @@ function SummaryBarDetailed({
       className="bg-bg-elevated shadow-neu-raised rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 min-w-0 max-w-full overflow-hidden"
     >
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-theme-success/10 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-theme-success/10 flex items-center justify-center">
           <Icon size={16} className="text-theme-success" />
         </div>
         <p className="text-sm font-bold text-content-primary">
@@ -338,7 +338,7 @@ function DetailedMetricCardComponent({
       }}
       onClick={() => setExpanded((p) => !p)}
       className={cn(
-        "relative rounded-[1.75rem] bg-bg-elevated cursor-pointer select-none",
+        "relative rounded-2xl bg-bg-elevated cursor-pointer select-none",
         "p-6 md:p-7 transition-shadow duration-300",
         "shadow-neu-raised hover:shadow-neu-raised-hover",
         "overflow-hidden",
@@ -346,7 +346,7 @@ function DetailedMetricCardComponent({
     >
       {isOfferHub && (
         <div
-          className="absolute inset-0 rounded-[1.75rem] pointer-events-none"
+          className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
             background:
               "linear-gradient(135deg, rgba(20,154,155,0.04) 0%, transparent 60%)",
@@ -466,7 +466,7 @@ function SimpleMetricCardComponent({
 
   return (
     <motion.div
-      className="flex-1 min-w-0 flex flex-col gap-4 p-6 md:p-8 rounded-[2rem] shadow-neu-raised bg-bg-elevated animate-fadeInUp"
+      className="flex-1 min-w-0 flex flex-col gap-4 p-6 md:p-8 rounded-3xl shadow-neu-raised bg-bg-elevated animate-fadeInUp"
       style={{ animationDelay: `${index * 100}ms` }}
       whileHover={{ scale: 1.015 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}

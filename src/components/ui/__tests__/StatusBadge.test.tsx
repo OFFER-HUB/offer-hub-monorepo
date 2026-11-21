@@ -8,7 +8,8 @@ describe("StatusBadge", () => {
     render(<StatusBadge>Draft</StatusBadge>);
 
     const badge = screen.getByText("Draft");
-    expect(badge).toHaveClass(statusColors.default.bg, statusColors.default.text);
+    expect(badge).toHaveClass(statusColors.default.bg, statusColors.default.text, "rounded-full");
+    expect(badge).not.toHaveClass("shadow-neu-raised-sm");
   });
 
   it.each(Object.keys(statusColors) as StatusTone[])(
@@ -24,10 +25,10 @@ describe("StatusBadge", () => {
   );
 
   it("lets callers override the shape", () => {
-    render(<StatusBadge className="rounded-full">pill</StatusBadge>);
+    render(<StatusBadge className="rounded-2xl">custom shape</StatusBadge>);
 
-    const badge = screen.getByText("pill");
-    expect(badge).toHaveClass("rounded-full");
-    expect(badge).not.toHaveClass("rounded-md");
+    const badge = screen.getByText("custom shape");
+    expect(badge).toHaveClass("rounded-2xl");
+    expect(badge).not.toHaveClass("rounded-full");
   });
 });

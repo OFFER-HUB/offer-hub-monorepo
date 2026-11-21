@@ -22,7 +22,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
             #{issue.number}
           </div>
           {isGoodFirstIssue && (
-            <span className="text-[10px] font-black text-theme-primary uppercase tracking-widest bg-theme-primary/10 px-2 py-1 rounded-lg shadow-sm">
+            <span className="text-[10px] font-black text-theme-primary uppercase tracking-widest bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-2 py-1 rounded-full">
               Starter
             </span>
           )}
@@ -42,7 +42,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
             {issue.labels.slice(0, 2).map((label) => (
               <span
                 key={label}
-                className="flex items-center gap-1.5 text-[10px] font-bold text-content-secondary px-3 py-1.5 bg-bg-base rounded-xl shadow-neu-raised-sm"
+                className="flex items-center gap-1.5 text-[10px] font-bold text-content-secondary px-3 py-1.5 bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] rounded-full"
               >
                 <Tag size={10} className="text-theme-primary" />
                 {label}
@@ -55,7 +55,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
       <div className="flex items-center justify-between pt-6 mt-2">
         <div className="flex flex-col">
           <span className="text-[9px] font-black uppercase tracking-widest text-content-muted mb-1">Priority</span>
-          <div className="px-3 py-1 rounded-lg bg-bg-base shadow-neu-sunken-subtle">
+          <div className="px-3 py-1 rounded-xl bg-bg-base shadow-neu-sunken-subtle">
             <span className={cn(
               "text-[10px] font-black uppercase tracking-widest",
               issue.priority === 'High' ? 'text-red-500' :

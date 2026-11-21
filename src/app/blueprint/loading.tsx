@@ -18,7 +18,7 @@ export default function BlueprintLoading() {
             <Skeleton className="h-16 w-2/3 rounded-xl mb-8" />
             <Skeleton className="h-5 w-2/3 mb-2" />
             <Skeleton className="h-5 w-1/2 mb-12" />
-            <Skeleton className="w-full max-w-3xl rounded-[2rem] h-64" />
+            <Skeleton className="w-full max-w-3xl rounded-3xl h-64" />
           </div>
         </section>
 

@@ -17,7 +17,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
     <article className="flex flex-col gap-4 rounded-3xl bg-bg-base p-5 shadow-neu-raised-sm hover:shadow-neu-raised transition-shadow duration-300 group/card min-w-0 overflow-hidden">
       <div className="flex items-start justify-between gap-4 min-w-0">
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          <div className="mt-1 w-8 h-8 rounded-lg bg-bg-base flex items-center justify-center shadow-neu-sunken-subtle transition-transform group-hover/card:scale-110 shrink-0">
+          <div className="mt-1 w-8 h-8 rounded-xl bg-bg-base flex items-center justify-center shadow-neu-sunken-subtle transition-transform group-hover/card:scale-110 shrink-0">
             <GitPullRequest size={14} className={isMerged ? "text-purple-500" : "text-theme-primary"} />
           </div>
           <div className="min-w-0 max-w-full overflow-hidden">
@@ -41,7 +41,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
               {!isMerged && (
                 <>
                   <div className="w-1 h-1 rounded-full bg-content-muted/30" />
-                  <span className="min-w-0 max-w-full truncate text-[9px] font-black uppercase tracking-widest text-theme-primary px-1.5 py-0.5 rounded bg-theme-primary/10 shadow-sm">
+                  <span className="min-w-0 max-w-full truncate text-[9px] font-black uppercase tracking-widest text-theme-primary px-1.5 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
                     Open
                   </span>
                 </>
@@ -55,7 +55,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open pull request: ${pr.title}`}
-          className="min-h-11 min-w-11 max-w-full shrink-0 truncate p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow flex items-center justify-center"
+          className="min-h-11 min-w-11 max-w-full shrink-0 truncate p-2 rounded-xl bg-bg-base shadow-neu-raised-sm text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow flex items-center justify-center"
         >
           <ArrowUpRight size={14} aria-hidden="true" />
         </a>
@@ -82,7 +82,7 @@ export const RecentPRsSection = ({ pullRequests }: RecentPRsSectionProps) => {
             />
 
             <div className="mt-10 flex flex-col gap-6">
-              <div className="flex items-start gap-4 p-5 rounded-[2rem] bg-bg-base shadow-neu-sunken-subtle">
+              <div className="flex items-start gap-4 p-5 rounded-3xl bg-bg-base shadow-neu-sunken-subtle">
                 <div className="w-10 h-10 rounded-xl bg-bg-base flex items-center justify-center shadow-neu-raised-sm">
                   <Timer size={18} className="text-theme-primary" />
                 </div>

@@ -27,7 +27,7 @@ function FlowLegend() {
       ].map((item) => (
         <div
           key={item.label}
-          className="rounded-[1.5rem] bg-bg-base p-4 shadow-neu-sunken-l2-subtle text-left overflow-visible"
+          className="rounded-2xl bg-bg-base p-4 shadow-neu-sunken-subtle text-left overflow-visible"
         >
           <div className="mb-2 inline-flex rounded-full bg-theme-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-theme-primary">
             {item.label}
@@ -50,7 +50,7 @@ export function OrchestratorShowcase() {
   return (
     <BlueprintMotionSection id="orchestrator" className="px-6 py-24 bg-transparent">
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[2.5rem] bg-bg-elevated p-10 shadow-neu-raised-l2 overflow-visible blueprint-layer">
+        <div className="rounded-3xl bg-bg-elevated p-10 shadow-neu-raised-l2 overflow-visible blueprint-layer">
           <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-bg-base px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary shadow-neu-sunken">
@@ -73,7 +73,7 @@ export function OrchestratorShowcase() {
                   { label: "Custody core", value: "Escrow + Vault" },
                   { label: "Settlement", value: "Seller release" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-[1.5rem] bg-bg-base p-4 shadow-neu-sunken">
+                  <div key={item.label} className="rounded-2xl bg-bg-base p-4 shadow-neu-sunken">
                     <p className="text-xs uppercase tracking-[0.2em] text-content-muted">{item.label}</p>
                     <p className="mt-2 text-sm font-semibold text-content-primary">{item.value}</p>
                   </div>

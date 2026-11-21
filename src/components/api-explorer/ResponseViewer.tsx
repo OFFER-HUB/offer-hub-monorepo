@@ -40,7 +40,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
                 key={`${res.status}-${i}`}
                 onClick={() => setActiveTab(i)}
                 className={cn(
-                  "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors duration-200",
+                  "px-3 py-1 rounded-xl text-xs font-mono font-medium transition-colors duration-200",
                   isActive && isSuccess && "text-theme-success bg-theme-success/10",
                   isActive && !isSuccess && "text-theme-error bg-theme-error/10",
                   !isActive && "text-content-muted hover:text-content-secondary",
@@ -56,7 +56,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
           onClick={handleCopy}
           aria-label="Copy response"
           className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium",
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium",
             "transition-colors duration-200",
             copied ? "text-theme-success" : "text-content-muted hover:text-content-secondary",
           )}

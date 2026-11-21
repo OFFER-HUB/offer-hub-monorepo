@@ -114,7 +114,7 @@ export function FloatingCTA() {
               </div>
 
               {/* CTA Button */}
-              <div className="mt-3 md:mt-4 w-full py-2 md:py-2.5 rounded-xl bg-theme-primary text-white text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-theme-primary-hover transition-colors group/btn">
+              <div className="mt-3 md:mt-4 w-full py-2 md:py-2.5 rounded-xl bg-theme-primary text-white text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-neu-raised hover:bg-theme-primary-hover transition-colors group/btn">
                 Get Started
                 <ArrowRight
                   size={14}

@@ -108,7 +108,7 @@ export function CommandLine({
           onClick={handleCopy}
           aria-label={copied ? "Command copied" : "Copy command"}
           className={cn(
-            "ml-auto inline-flex items-center gap-1.5 px-2 min-h-11 min-w-11 justify-center rounded-md text-xs font-medium",
+            "ml-auto inline-flex items-center gap-1.5 px-2 min-h-11 min-w-11 justify-center rounded-xl text-xs font-medium",
             "transition-colors duration-200",
             copied
               ? "text-theme-success"
@@ -134,7 +134,7 @@ export function CommandLine({
           tabIndex={0}
           role="region"
           aria-label="Command line, scrollable horizontally"
-          className="relative flex-1 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50 rounded-md"
+          className="relative flex-1 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50 rounded-xl"
         >
           <code className="block whitespace-nowrap text-sm text-content-primary font-mono pr-2">
             {trimmed}

@@ -29,7 +29,7 @@ export function FeaturesGrid({ features }: { features: FeatureCard[] }) {
             return (
               <div
                 key={feat.title}
-                className="flex flex-col items-center text-center p-10 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-300 ease-out group"
+                className="flex flex-col items-center text-center p-10 rounded-3xl bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-300 ease-out group"
               >
                 <div className="w-16 h-16 rounded-2xl shadow-neu-sunken-subtle bg-bg-base flex items-center justify-center mb-8 group-hover:shadow-neu-sunken transition-shadow duration-300 text-theme-primary">
                   <FeatIcon size={28} />

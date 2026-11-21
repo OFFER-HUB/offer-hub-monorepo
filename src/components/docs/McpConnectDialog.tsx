@@ -34,7 +34,7 @@ export function McpConnectDialog({ onClose }: McpConnectDialogProps) {
   }
 
   const copyButtonClasses =
-    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 transition-colors";
+    "inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 transition-colors";
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -48,7 +48,7 @@ export function McpConnectDialog({ onClose }: McpConnectDialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="mcp-connect-title"
-        className="relative w-full max-w-lg rounded-2xl bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 p-6 animate-fadeIn"
+        className="relative w-full max-w-lg rounded-2xl bg-bg-elevated border border-theme-border/40 shadow-neu-raised p-6 animate-fadeIn"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -66,7 +66,7 @@ export function McpConnectDialog({ onClose }: McpConnectDialogProps) {
             type="button"
             onClick={onClose}
             aria-label="Close Connect with MCP dialog"
-            className="rounded-lg p-2 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 transition-colors"
+            className="rounded-xl p-2 text-content-secondary hover:text-content-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 transition-colors"
           >
             <X size={18} aria-hidden="true" />
           </button>

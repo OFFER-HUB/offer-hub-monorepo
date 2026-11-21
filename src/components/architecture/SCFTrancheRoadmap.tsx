@@ -13,7 +13,7 @@ export function SCFTrancheRoadmap() {
       description="Detailed timeline for the execution of our $74,000 SCF Build Award milestones."
       infoText="Three tranches, each tied to verifiable on-chain or functional deliverables. Tranche 1 ships the wallet connection layer. Tranche 2 completes both SCF integrations on testnet. Tranche 3 migrates to Stellar RPC, launches on mainnet, records 10 live transactions as proof, and open-sources the integration adapters."
     >
-      <div className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 p-6 md:p-10 mb-12">
+      <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-10 mb-12">
         <ZoomableDiagram
           chart={SCF_GANTT_CHART}
           title="SCF Build #44 Roadmap"
@@ -21,7 +21,7 @@ export function SCFTrancheRoadmap() {
         />
       </div>
 
-      <div className="rounded-[2rem] bg-bg-base shadow-neu-sunken overflow-hidden max-w-4xl mx-auto border border-[var(--color-border)]">
+      <div className="rounded-3xl bg-bg-base shadow-neu-sunken overflow-hidden max-w-4xl mx-auto border border-[var(--color-border)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

@@ -17,7 +17,7 @@ export function LinkCard({ title, href, description, eyebrow, className }: LinkC
     <a
       href={href}
       className={cn(
-        "group my-6 block rounded-[1.5rem] bg-bg-elevated p-5 shadow-neu-raised transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-neu-raised-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary md:p-6",
+        "group my-6 block rounded-2xl bg-bg-elevated p-5 shadow-neu-raised transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-neu-raised-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary md:p-6",
         className
       )}
       target={isExternal ? "_blank" : undefined}

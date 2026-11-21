@@ -131,17 +131,16 @@ Based on an 8px grid for consistent rhythm.
 
 | Radius | Value | Usage |
 |:-------|:------|:------|
-| `rounded-2xl` | 16px | **Universal for high-level containers:** Bento cards, dashboard blocks, modals. Mathematically matched to shadow blur. |
-| `rounded-xl` | 12px | **Universal for interactive elements:** Buttons, inputs, badges, dropdowns. |
-| `rounded-lg` | 8px | Small cards, chips |
-| `rounded-md` | 6px | Tiny elements, avatars |
-| `rounded-full` | 9999px | Circular buttons, avatars |
+| `rounded-3xl` | 24px | Section cards, major panels, modals |
+| `rounded-2xl` | 16px | Inner cards, code blocks, callouts, tables |
+| `rounded-xl` | 12px | Controls, inputs, buttons, dropdowns |
+| `rounded-full` | 9999px | Badges, avatars, circular controls |
 
 ### Radius Rules
 
 **DO:**
-- Use 16px for all major containers
-- Use 12px for all interactive elements
+- Use 24px for section cards and 16px for inner surfaces
+- Use 12px for controls and pill radii for badges and avatars
 - Match radius to component hierarchy
 - Keep radius consistent within component families
 
@@ -237,10 +236,7 @@ All design tokens are defined in `globals.css` under the `@theme` directive:
   --color-warning: #d97706;
   --color-error: #FF0000;
   
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* Radii use the standard Tailwind xl / 2xl / 3xl / full utilities. */
   
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -259,7 +255,7 @@ When creating new components, ensure:
 - [ ] Colors use CSS variables from the palette
 - [ ] Typography follows the type scale
 - [ ] Spacing uses 8px grid multiples
-- [ ] Border radius is 16px (containers) or 12px (interactive)
+- [ ] Radius follows the 12 / 16 / 24 / pill role hierarchy
 - [ ] Shadows follow neumorphic physics (see `neumorphism.md`)
 - [ ] Animations use defined keyframes (see `motion.md`)
 - [ ] Hover states provide clear feedback

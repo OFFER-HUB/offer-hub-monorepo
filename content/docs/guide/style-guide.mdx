@@ -160,9 +160,32 @@ Use these Tailwind classes for theme-aware styling:
 // Sunken/pressed surface
 <div className="shadow-neu-sunken" />
 
-// Subtle sunken
+// Subtle pressed/selected state
 <div className="shadow-neu-sunken-subtle" />
+
+// Compressed hover state
+<div className="shadow-neu-raised hover:shadow-neu-raised-hover transition-elevation" />
+
+// Reserved for the nested Blueprint orchestrator showcase
+<div className="shadow-neu-raised-l2" />
 ```
+
+Use only these six elevation tokens; do not add generic Tailwind shadows,
+arbitrary shadows, or inline `boxShadow`. Theme shadow colors are resolved from
+`--shadow-dark` and `--shadow-light` in both light and dark mode.
+
+### Corner Radii
+
+| Utility | Radius | Role |
+| --- | --- | --- |
+| `rounded-xl` | 12px | Controls and inputs |
+| `rounded-2xl` | 16px | Inner cards, code, callouts, tables |
+| `rounded-3xl` | 24px | Section cards and major panels |
+| `rounded-full` | Pill | Badges and avatars |
+
+Directional corner utilities use the same steps. Use `rounded-none` when square
+edges are intentional; do not introduce arbitrary radii or the smaller default
+Tailwind radius utilities.
 
 ### Borders
 

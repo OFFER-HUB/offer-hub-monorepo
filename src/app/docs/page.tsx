@@ -146,7 +146,7 @@ export default function DocsPage() {
 
             <h1
               ref={headingRef}
-              className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8 select-none drop-shadow-[0_10px_30px_rgba(20,154,155,0.15)]"
+              className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8 select-none"
               style={{
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
@@ -188,7 +188,7 @@ export default function DocsPage() {
                       {section.title}
                     </h3>
                     {section.highlight && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-theme-primary/10 text-theme-primary shadow-neu-raised-sm">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary">
                         Hackathon Start Here
                       </span>
                     )}

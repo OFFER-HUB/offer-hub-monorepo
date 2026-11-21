@@ -59,7 +59,7 @@ export function RegistrationForm() {
                 <form
                     onSubmit={handleSubmit}
                     noValidate
-                    className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-8"
+                    className="p-10 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-8"
                 >
                     {error && (
                         <div role="alert" className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 flex items-start gap-3 animate-fadeIn">
