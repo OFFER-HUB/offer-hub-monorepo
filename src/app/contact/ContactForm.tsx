@@ -21,18 +21,18 @@ export function ContactForm() {
         <div className="w-20 h-20 rounded-3xl bg-bg-elevated shadow-neu-raised flex items-center justify-center mb-8 animate-fadeInScale">
           <CheckCircle2 size={40} className="text-theme-primary" />
         </div>
-        <h2 className="text-3xl font-black text-content-primary tracking-tight mb-4">Thanks — we&apos;ll be in touch</h2>
+        <h2 className="text-3xl font-bold text-content-primary tracking-tight mb-4">Thanks — we&apos;ll be in touch</h2>
         <p className="text-content-secondary max-w-sm font-medium">A member of our enterprise team will reach out to you shortly to discuss your inquiry.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="p-8 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
+    <form onSubmit={handleSubmit} noValidate className="p-8 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
       {submitError && (
-        <div role="alert" aria-live="assertive" className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 flex items-start gap-3 animate-fadeIn">
-          <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-400 font-medium">{submitError}</p>
+        <div role="alert" aria-live="assertive" className="p-4 rounded-2xl bg-bg-sunken border border-theme-error/20 flex items-start gap-3 animate-fadeIn">
+          <AlertCircle size={20} className="text-theme-error flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-theme-error font-medium">{submitError}</p>
         </div>
       )}
 
@@ -91,9 +91,13 @@ export function ContactForm() {
         icon={MessageSquare}
       />
 
-      <button type="submit" disabled={isLoading} className="btn-neumorphic-primary mt-2 w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed">
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="btn-neumorphic-primary mt-2 w-full h-12 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         {isLoading ? 'Submitting...' : 'Contact Sales'}
-        <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+        <Send size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
       </button>
     </form>
   );
