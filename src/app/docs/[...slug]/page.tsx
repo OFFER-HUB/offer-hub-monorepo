@@ -45,7 +45,7 @@ export default async function DocPage({ params }: PageProps) {
   return (
     <article className="min-w-0">
       {/* Page header */}
-      <div className="mb-8 pb-6 border-b border-theme-border/20">
+      <div className="mb-8 pb-6 border-b border-[color-mix(in_srgb,var(--color-border)_20%,transparent)]">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2 text-content-primary">

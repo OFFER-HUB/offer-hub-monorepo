@@ -176,8 +176,8 @@ export default function DocsPage() {
                 <Link
                   href={section.link}
                   className={cn(
-                    "block p-8 rounded-3xl transition-[border-color,box-shadow,transform] duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
-                    "hover:border-theme-border/40 hover:shadow-neu-raised"
+                    "block p-8 rounded-3xl transition-[border-color,box-shadow,transform] duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-[color-mix(in_srgb,var(--color-bg-base)_50%,transparent)] backdrop-blur-sm",
+                    "hover:border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] hover:shadow-neu-raised"
                   )}
                 >
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-[background-color,color,transform] duration-500 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
@@ -188,7 +188,7 @@ export default function DocsPage() {
                       {section.title}
                     </h3>
                     {section.highlight && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-theme-primary/10 text-theme-primary shadow-neu-raised-sm">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary shadow-neu-raised-sm">
                         Hackathon Start Here
                       </span>
                     )}
@@ -196,7 +196,7 @@ export default function DocsPage() {
                   <p className="text-[15px] leading-relaxed mb-8 font-medium text-content-secondary">
                     {section.description}
                   </p>
-                  <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-content-secondary/40">
+                  <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--color-text-secondary)_40%,transparent)]">
                     <span>{section.count}</span>
                     <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
                       Explore <ChevronRight size={14} />
@@ -220,12 +220,12 @@ export default function DocsPage() {
 
         {/* Support Section */}
         <div className="container mx-auto px-6 py-24 max-w-4xl text-center">
-          <p className="italic mb-6 text-sm font-medium text-content-secondary/60">
+          <p className="italic mb-6 text-sm font-medium text-[color-mix(in_srgb,var(--color-text-secondary)_60%,transparent)]">
             Can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex justify-center items-center gap-8">
             <Link href="/community" className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">Help Center</Link>
-            <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-border)_40%,transparent)]" />
             <Link href={`${GITHUB_REPO_URL}/issues`} className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">GitHub Issues</Link>
           </div>
         </div>

@@ -177,7 +177,7 @@ export function UseCaseHero({
 
       <div className="absolute inset-x-0 top-24 bottom-10 mx-auto max-w-7xl w-full min-w-0 overflow-hidden px-6 lg:px-8">
         <div className="sticky top-28 min-w-0 max-w-full">
-          <div className="relative overflow-hidden rounded-[2.75rem] border border-theme-primary/10 bg-bg-elevated/80 px-4 py-10 shadow-neu-raised backdrop-blur-sm sm:px-6 md:px-10 md:py-12">
+          <div className="relative overflow-hidden rounded-[2.75rem] border border-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] bg-[color-mix(in_srgb,var(--color-bg-elevated)_80%,transparent)] px-4 py-10 shadow-neu-raised backdrop-blur-sm sm:px-6 md:px-10 md:py-12">
             <div
               className="absolute inset-0"
               style={{
@@ -190,10 +190,10 @@ export function UseCaseHero({
               <div className="min-w-0 w-full max-w-3xl">
                 <motion.div
                   style={{ y: badgeY }}
-                  className="mb-8 inline-flex max-w-full min-w-0 flex-wrap items-center gap-3 rounded-full border border-theme-primary/10 bg-bg-base px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-theme-primary shadow-neu-raised sm:px-5"
+                  className="mb-8 inline-flex max-w-full min-w-0 flex-wrap items-center gap-3 rounded-full border border-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] bg-bg-base px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-theme-primary shadow-neu-raised sm:px-5"
                 >
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-theme-primary/55" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color-mix(in_srgb,var(--color-primary)_55%,transparent)]" />
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-theme-primary" />
                   </span>
                   <span className="min-w-0 max-w-full break-words">{badgeLabel}</span>
@@ -246,7 +246,7 @@ export function UseCaseHero({
                       duration: 0.5,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="rounded-[1.75rem] border border-theme-primary/10 bg-bg-base/95 p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover min-w-0 max-w-full overflow-hidden"
+                    className="rounded-[1.75rem] border border-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] bg-[color-mix(in_srgb,var(--color-bg-base)_95%,transparent)] p-5 shadow-neu-raised transition-elevation hover:shadow-neu-raised-hover min-w-0 max-w-full overflow-hidden"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>

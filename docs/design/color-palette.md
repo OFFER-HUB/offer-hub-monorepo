@@ -76,7 +76,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-success`
 - **Light hex:** `#166534` | **Dark hex:** `#4ade80`
 - **Usage:** Success messages, completed states, positive indicators; icon and text use in Callout tip, Badge, CommandLine copied state
-- **Common Pattern:** `bg-theme-success/10 text-theme-success` for badges
+- **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-theme-success` for badges (Tailwind 3 ignores the `/opacity` modifier on CSS-variable token colors — use color-mix instead, see issue #1734)
 - **Accessibility:**
   - Light `#166534` on `#F1F3F7`: **6.42:1** ✓ AA (was `#16a34a` = 2.97:1 ✗)
   - Light `#166534` on `#ffffff`: **7.13:1** ✓ AA
@@ -87,7 +87,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-warning`
 - **Light hex:** `#b45309` | **Dark hex:** `#f59e0b`
 - **Usage:** Pending status, caution alerts, non-critical warnings
-- **Common Pattern:** `bg-theme-warning/10 text-theme-warning` for badges
+- **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] text-theme-warning` for badges (Tailwind 3 ignores the `/opacity` modifier on CSS-variable token colors — use color-mix instead, see issue #1734)
 - **Accessibility:**
   - Light `#b45309` on `#F1F3F7`: **4.52:1** ✓ AA (was `#d97706` = 3.14:1 ✗)
   - Light `#b45309` on `#ffffff`: **5.02:1** ✓ AA
@@ -98,7 +98,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-error`
 - **Light hex:** `#c0392b` | **Dark hex:** `#f87171`
 - **Usage:** Form validation errors, destructive actions, critical alerts
-- **Common Pattern:** `text-theme-error bg-theme-error/10` for error states
+- **Common Pattern:** `text-theme-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]` for error states (Tailwind 3 ignores the `/opacity` modifier on CSS-variable token colors — use color-mix instead, see issue #1734)
 - **Accessibility:**
   - Light `#c0392b` on `#F1F3F7`: **4.90:1** ✓ AA (was `#FF0000` = harsh pure red)
   - Light `#c0392b` on `#ffffff`: **5.44:1** ✓ AA
@@ -159,7 +159,23 @@ Use these opacity values for consistency:
 | `opacity-10` | `0.1` | Very transparent (backgrounds) |
 | `opacity-0` | `0` | Fully transparent |
 
-**Common Pattern:** `bg-success/10` = success color at 10% opacity
+> **Heads-up — token colors and the `/opacity` modifier.** Tailwind 3 cannot
+> apply an opacity modifier to a color defined as a CSS variable, so classes
+> like `bg-theme-primary/10`, `border-theme-border/40` or `text-content-secondary/70`
+> emit **no CSS** at all. For a tinted token background/border/text, use an
+> equivalent `color-mix` arbitrary value instead:
+>
+> | Don't (no CSS emitted) | Do (emits CSS) |
+> |:---|:---|
+> | `bg-theme-primary/10` | `bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]` |
+> | `border-theme-border/40` | `border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]` |
+> | `text-content-secondary/70` | `text-[color-mix(in_srgb,var(--color-text-secondary)_70%,transparent)]` |
+>
+> The `lint:classes` script (`scripts/check-undefined-utility-classes.js`) fails
+> the build if one of these classes is reintroduced. See issue #1734 and the
+> reference pattern in `src/components/ui/status-colors.ts`.
+
+**Common Pattern:** `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]` = success color at 10% opacity
 
 ---
 
@@ -206,7 +222,8 @@ Use these opacity values for consistency:
 - Use success for completed actions
 - Use warning for pending/caution states
 - Use error for validation and critical alerts
-- Use with 10% opacity backgrounds for badges
+- Use semantic colors for decoration only when decorative (dots)
+- Use 10% tinted backgrounds for badges via `bg-[color-mix(in_srgb,var(--color-<token>)_10%,transparent)]`, not `/<opacity>` (which emits no CSS — see #1734)
 
 **DON'T:**
 - Use semantic colors for decoration

@@ -71,7 +71,7 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                       <div className="p-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle">
                         <stat.icon size={18} className={`${stat.color} transition-transform group-hover:scale-110`} />
                       </div>
-                      <div className="h-1 w-4 rounded-full bg-theme-primary/20" />
+                      <div className="h-1 w-4 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]" />
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary truncate">
                       {stat.label}

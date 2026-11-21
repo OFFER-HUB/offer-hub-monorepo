@@ -42,7 +42,7 @@ function DocTooltip({ href, label }: { href: string; label: string }) {
           "flex items-center gap-1.5 rounded-xl px-3 py-1.5 min-h-11",
           "text-[10px] font-bold uppercase tracking-widest text-content-muted",
           "transition-colors duration-200",
-          "hover:text-theme-primary hover:bg-theme-primary/10"
+          "hover:text-theme-primary hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]"
         )}
       >
         <ExternalLink size={11} />
@@ -293,7 +293,7 @@ export function CodeIntegrationShowcase({
               key={item.method}
               className="rounded-[1.5rem] bg-bg-elevated shadow-neu-raised-l2-sm p-5 blueprint-layer overflow-visible"
             >
-              <div className="mb-3 inline-flex rounded-full bg-theme-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-theme-primary">
+              <div className="mb-3 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-theme-primary">
                 SDK
               </div>
               <code className="block font-mono text-xs font-semibold text-theme-primary mb-2">

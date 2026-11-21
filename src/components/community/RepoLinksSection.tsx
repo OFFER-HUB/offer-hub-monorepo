@@ -24,7 +24,7 @@ export function RepoLinksSection() {
         <section id="repo-links" className="py-12 bg-transparent w-full min-w-0 max-w-full overflow-hidden">
             <div className="mx-auto max-w-7xl w-full min-w-0 px-6 lg:px-8">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-1 rounded-full bg-theme-primary/20 mb-12" />
+                    <div className="w-12 h-1 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] mb-12" />
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full min-w-0 max-w-full">
                         {repos.map((repo) => (
@@ -42,7 +42,7 @@ export function RepoLinksSection() {
                                 <div className="min-w-0">
                                     <h3 className="text-sm font-black uppercase tracking-widest text-content-primary flex min-w-0 max-w-full flex-wrap items-center gap-2">
                                         <span className="truncate break-all">{repo.name}</span>
-                                        <FolderGit2 size={12} className="text-content-secondary/40" />
+                                        <FolderGit2 size={12} className="text-[color-mix(in_srgb,var(--color-text-secondary)_40%,transparent)]" />
                                     </h3>
                                     <p className="text-[11px] font-medium text-content-secondary mt-1 truncate">
                                         {repo.description}

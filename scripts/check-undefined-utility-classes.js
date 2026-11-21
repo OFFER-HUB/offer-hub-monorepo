@@ -5,10 +5,72 @@
  * tailwind.config.ts, or an inline `.animate-x { }` / `.shadow-x { }` rule in
  * a component). Catches typos like `animate-fade-in-up` vs `animate-fadeInUp`
  * silently rendering as a no-op (see issue #1500).
+ *
+ * Also guards against opacity-suffixed theme token classes (e.g.
+ * `bg-theme-primary/10`, `border-theme-border/40`): Tailwind 3 cannot apply an
+ * opacity modifier to colors defined as CSS variables, so those classes emit no
+ * CSS at all. The replacement is an equivalent color-mix arbitrary value (see
+ * issue #1734 and the reference pattern in src/components/ui/status-colors.ts).
  */
 
 const fs = require("fs");
 const path = require("path");
+
+/**
+ * Theme tokens whose backing value is a CSS variable (see tailwind.config.ts).
+ * Mapping each token to its CSS variable lets the guard suggest the exact
+ * color-mix replacement in its error message.
+ */
+const TOKEN_TO_CSS_VAR = {
+  "theme-primary": "--color-primary",
+  "theme-primary-hover": "--color-primary-hover",
+  "theme-secondary": "--color-secondary",
+  "theme-accent": "--color-accent",
+  "bg-base": "--color-bg-base",
+  "bg-elevated": "--color-bg-elevated",
+  "bg-sunken": "--color-bg-sunken",
+  "content-primary": "--color-text-primary",
+  "content-secondary": "--color-text-secondary",
+  "content-muted": "--color-text-muted",
+  "theme-success": "--color-success",
+  "theme-warning": "--color-warning",
+  "theme-error": "--color-error",
+  "theme-border": "--color-border",
+};
+
+// Matches an opacity-suffixed theme token class as a standalone token. The
+// lookbehind `(?<![\w-])` avoids matching inside another class name; variant
+// prefixes like `hover:`/`md:` end with `:`, which is not [\w-], so they pass
+// and are preserved (only the matched span is flagged for replacement).
+const OPACITY_TOKEN_RE =
+  /(?<![\w-])(bg|text|border|ring|from|to|via|divide|outline|fill|stroke)-(theme-[a-z-]+|bg-(?:base|elevated|sunken)|content-(?:primary|secondary|muted))\/(\d+)/g;
+
+/**
+ * Scan a single line of source for opacity-suffixed theme token classes and
+ * return a descriptive error string per match. Exported so it can be unit
+ * tested without touching the filesystem.
+ *
+ * @param {string} line   one source line
+ * @param {string} file   repo-relative file path (for the error location)
+ * @param {number} lineNo 1-based line number
+ * @returns {string[]}    error messages (empty when the line is clean)
+ */
+function findOpacityTokenErrors(line, file, lineNo) {
+  const errors = [];
+  for (const m of line.matchAll(OPACITY_TOKEN_RE)) {
+    const [, prefix, token, opacity] = m;
+    const cssVar = TOKEN_TO_CSS_VAR[token];
+    if (!cssVar) continue; // unknown token — not the guard's concern
+    const suggestion = `${prefix}-[color-mix(in_srgb,var(${cssVar})_${opacity}%,transparent)]`;
+    errors.push(
+      `${file}:${lineNo}: opacity-suffixed token class "${m[0]}" emits no CSS in Tailwind 3 ` +
+        `(CSS-variable colors ignore the /opacity modifier). Replace with "${suggestion}".`,
+    );
+  }
+  return errors;
+}
+
+module.exports = { findOpacityTokenErrors, OPACITY_TOKEN_RE, TOKEN_TO_CSS_VAR };
 
 const ROOT = path.resolve(__dirname, "..");
 const SRC_DIR = path.join(ROOT, "src");
@@ -113,17 +175,59 @@ function checkUsages(defined) {
   return errors;
 }
 
+function checkOpacitySuffixedTokenClasses() {
+  const errors = [];
+  const codeFiles = walk(SRC_DIR, [".ts", ".tsx"]);
+
+  for (const file of codeFiles) {
+    const content = fs.readFileSync(file, "utf8");
+    const lines = content.split("\n");
+    lines.forEach((line, idx) => {
+      const lineErrors = findOpacityTokenErrors(
+        line,
+        path.relative(ROOT, file),
+        idx + 1,
+      );
+      errors.push(...lineErrors);
+    });
+  }
+
+  return errors;
+}
+
 function main() {
   const defined = collectDefined();
+
   const errors = checkUsages(defined);
+  const opacityErrors = checkOpacitySuffixedTokenClasses();
 
   if (errors.length > 0) {
     console.error(`Found ${errors.length} undefined animate-*/shadow-* class usage(s):\n`);
     errors.forEach((e) => console.error(`  ${e}`));
+  }
+
+  if (opacityErrors.length > 0) {
+    console.error(
+      `\nFound ${opacityErrors.length} opacity-suffixed theme token class(es) that emit no CSS:\n`,
+    );
+    opacityErrors.forEach((e) => console.error(`  ${e}`));
+    console.error(
+      "\nTailwind 3 ignores the /opacity modifier on CSS-variable colors. " +
+        "Use an equivalent color-mix arbitrary value, e.g. " +
+        "bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]. " +
+        "See src/components/ui/status-colors.ts for the reference pattern.\n",
+    );
+  }
+
+  if (errors.length > 0 || opacityErrors.length > 0) {
     process.exit(1);
   }
 
   console.log("No undefined animate-*/shadow-* classes found.");
+  console.log("No opacity-suffixed theme token classes found.");
 }
 
-main();
+// Run only when invoked directly (not when required by a test).
+if (require.main === module) {
+  main();
+}

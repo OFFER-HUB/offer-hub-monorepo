@@ -42,7 +42,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   ),
 
   code: ({ children }) => (
-    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-theme-primary/10 text-theme-primary">
+    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary">
       {children}
     </code>
   ),
@@ -65,12 +65,12 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
 
   li: ({ children }) => (
     <li className="leading-relaxed flex items-start gap-2.5">
-      <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-theme-primary/30 flex-shrink-0" />
+      <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] flex-shrink-0" />
       <span className="flex-1 font-medium">{children}</span>
     </li>
   ),
 
-  hr: () => <hr className="my-12 border-t border-theme-border/30" />,
+  hr: () => <hr className="my-12 border-t border-[color-mix(in_srgb,var(--color-border)_30%,transparent)]" />,
 
   a: ({ href, children }) => (
     <a

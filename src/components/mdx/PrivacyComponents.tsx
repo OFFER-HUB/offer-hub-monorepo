@@ -60,7 +60,7 @@ export function ProcessorCard({
   link: string;
 }): React.ReactElement {
   return (
-    <div className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
+    <div className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] hover:shadow-neu-raised-hover transition-shadow duration-300">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-black text-content-primary">{name}</h3>
         <a

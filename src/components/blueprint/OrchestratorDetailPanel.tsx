@@ -49,7 +49,7 @@ function ArchitectureCard({
       <p className="mt-6 text-sm leading-7 text-content-secondary">{card.summary}</p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <span className="inline-flex items-center rounded-full bg-theme-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-theme-primary">
+        <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-theme-primary">
           Core call: {card.method}
         </span>
         <span className="inline-flex items-center rounded-full bg-bg-base px-3 py-1 text-xs text-content-muted shadow-neu-sunken-subtle">

@@ -133,7 +133,7 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         )}
 
         {/* Hover Highlight */}
-        <div className="absolute inset-0 bg-theme-primary/0 group-hover:bg-theme-primary/5 transition-colors z-0" />
+        <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--color-primary)_0%,transparent)] group-hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] transition-colors z-0" />
 
         <span className={cn(
           "relative z-10 flex-shrink-0 transition-[color,transform] duration-300",

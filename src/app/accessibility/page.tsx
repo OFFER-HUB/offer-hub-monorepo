@@ -161,10 +161,10 @@ export default function AccessibilityPage() {
                                    return (
                                         <div
                                              key={feature.title}
-                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300"
+                                             className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-4 border border-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] hover:shadow-neu-raised-hover transition-shadow duration-300"
                                         >
                                              <div className="flex items-center gap-3">
-                                                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-theme-primary/10">
+                                                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
                                                        <Icon size={20} className="text-theme-primary" />
                                                   </div>
                                                   <h3 className="text-lg font-black text-content-primary">{feature.title}</h3>
@@ -201,7 +201,7 @@ export default function AccessibilityPage() {
                                         href={contact.href}
                                         target={contact.external ? "_blank" : undefined}
                                         rel={contact.external ? "noopener noreferrer" : undefined}
-                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-theme-primary/5 transition-shadow duration-300 group"
+                                        className="p-8 rounded-[2rem] bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] transition-shadow duration-300 group"
                                    >
                                         <div className="flex items-start justify-between mb-4">
                                              <div>
@@ -215,7 +215,7 @@ export default function AccessibilityPage() {
                               ))}
                          </div>
 
-                         <div className="p-8 rounded-[2rem] bg-theme-primary/5 border border-theme-primary/20 flex flex-col gap-4">
+                         <div className="p-8 rounded-[2rem] bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] flex flex-col gap-4">
                               <div className="flex items-start gap-3">
                                    <MessageSquare size={20} className="text-theme-primary mt-1 flex-shrink-0" />
                                    <div>
@@ -247,11 +247,11 @@ export default function AccessibilityPage() {
                                         We are committed to achieving and maintaining compliance with the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standard. This is the industry-recommended conformance level and covers accessibility for individuals with vision, hearing, motor, and cognitive impairments.
                                    </p>
                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="p-4 rounded-lg bg-theme-primary/5 border border-theme-primary/20">
+                                        <div className="p-4 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]">
                                              <p className="text-xs font-bold text-theme-primary uppercase tracking-wider mb-1">Last Full Audit</p>
                                              <p className="text-lg font-black text-content-primary">August 2026</p>
                                         </div>
-                                        <div className="p-4 rounded-lg bg-theme-primary/5 border border-theme-primary/20">
+                                        <div className="p-4 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]">
                                              <p className="text-xs font-bold text-theme-primary uppercase tracking-wider mb-1">Next Review</p>
                                              <p className="text-lg font-black text-content-primary">November 2026</p>
                                         </div>
@@ -328,7 +328,7 @@ export default function AccessibilityPage() {
                                         description: "We follow accessibility guidance from organizations like IAAP and 18F",
                                    },
                               ].map((item) => (
-                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-theme-primary/5 hover:shadow-neu-raised-hover transition-shadow duration-300">
+                                   <div key={item.standard} className="p-6 rounded-[1.5rem] bg-bg-elevated shadow-neu-raised border border-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] hover:shadow-neu-raised-hover transition-shadow duration-300">
                                         <h4 className="font-black text-content-primary mb-2">{item.standard}</h4>
                                         <p className="text-sm text-content-secondary">{item.description}</p>
                                    </div>
@@ -337,7 +337,7 @@ export default function AccessibilityPage() {
                     </div>
 
                     {/* CTA */}
-                    <div className="mt-24 mb-8 p-10 sm:p-14 rounded-[2.5rem] bg-gradient-to-br from-theme-primary/10 to-theme-primary/5 border border-theme-primary/20 text-center">
+                    <div className="mt-24 mb-8 p-10 sm:p-14 rounded-[2.5rem] bg-gradient-to-br from-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] to-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] text-center">
                          <h2 className="text-2xl sm:text-4xl font-black text-content-primary mb-4">Questions About Accessibility?</h2>
                          <p className="text-lg text-content-secondary font-medium mb-8 max-w-2xl mx-auto">
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.

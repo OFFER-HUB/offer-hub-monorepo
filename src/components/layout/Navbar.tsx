@@ -198,7 +198,7 @@ export function Navbar() {
               ))}
             </div>
 
-            <div className="mt-6 pt-6 border-t border-theme-border/50 flex flex-col gap-4">
+            <div className="mt-6 pt-6 border-t border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-content-secondary">Theme</span>
                 <ThemeToggle />

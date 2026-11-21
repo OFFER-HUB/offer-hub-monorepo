@@ -69,7 +69,7 @@ export const CommunityChannelsSection = () => {
                 <p className="mt-4 text-sm font-medium leading-relaxed text-content-secondary">
                   {channel.description}
                 </p>
-                <span className="mt-8 pt-6 border-t border-theme-border/10 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary group-hover:gap-3 transition-[gap]">
+                <span className="mt-8 pt-6 border-t border-[color-mix(in_srgb,var(--color-border)_10%,transparent)] inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary group-hover:gap-3 transition-[gap]">
                   Join channel <ArrowUpRight size={14} />
                 </span>
               </a>
