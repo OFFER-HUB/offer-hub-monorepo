@@ -1,14 +1,14 @@
 ---
 title: Events
-description: Server-Sent Events (SSE) reference for OFFER-HUB — subscribe, filter, reconnect and replay, plus the complete domain event catalog with a payload example for every event type.
+description: "Server-Sent Events (SSE) reference for OFFER-HUB: subscribe, filter, reconnect and replay, plus the complete domain event catalog with a payload example for every event type."
 order: 42
 section: API Reference
 ---
 
-OFFER-HUB delivers real-time domain events over Server-Sent Events (SSE). Connect your marketplace backend once and react to changes such as a credited balance, funded escrow, or resolved dispute without polling.
+OFFER-HUB delivers real-time domain events over Server-Sent Events (SSE). Connect your marketplace backend once and react to changes such as a credited balance, funded escrow, or completed payout without polling.
 
 <Callout type="note">
-  This is an outbound stream from the Orchestrator. OFFER-HUB does **not** send outbound webhooks to your application. The only inbound webhook endpoints that exist (`POST /api/v1/webhooks/airtm` and `POST /api/v1/webhooks/trustless-work`) are receivers used by external providers to notify your Orchestrator — see the [Inbound Webhooks](/docs/api-reference/webhooks) reference.
+  This is an outbound stream from the Orchestrator. OFFER-HUB does not send outbound webhooks to your application: integrations subscribe to the SSE stream using a scoped API key token.
 </Callout>
 
 ## Subscribe to the event stream
@@ -21,7 +21,7 @@ Authenticate with a valid API key in the `Authorization` header:
 Authorization: Bearer ohk_live_...
 ```
 
-The route is protected by `ApiKeyGuard` only — no additional scope is required. `EventsController.streamEvents` in the Orchestrator (`apps/api/src/modules/events/events.controller.ts`) does not apply `ScopeGuard`, so any valid API key (or the master key) can connect.
+The route is protected by `ApiKeyGuard` with `read` scope. `EventsController.streamEvents` in the Orchestrator (`apps/api/src/modules/events/events.controller.ts`) verifies the credential and streams events scoped to the caller's marketplace.
 
 ```bash
 curl -N \
@@ -34,7 +34,7 @@ curl -N \
 
 ### Marketplace isolation
 
-Events are scoped to the marketplace bound to your API key. The controller reads `apiKey.marketplaceId` and `SseService.getEventStream` drops every event whose `metadata.marketplaceId` does not match (`apps/api/src/modules/events/sse.service.ts`). Each marketplace only ever receives its own events — even with a replay request.
+Events are scoped to the marketplace bound to your API key. The controller reads `apiKey.marketplaceId` and `SseService.getEventStream` drops every event whose `metadata.marketplaceId` does not match (`apps/api/src/modules/events/sse.service.ts`). Each marketplace only ever receives its own events: even with a replay request.
 
 ### Filter the stream
 
@@ -53,7 +53,7 @@ curl -N \
 | `since` | ISO 8601 timestamp | Replays buffered events after the timestamp when no `Last-Event-ID` header is supplied. |
 
 <Callout type="warning">
-  SSE filters use exact matches (`filters.types.includes(event.eventType)` against the values you send). `types=order.*` and `types=*` are not valid on the public stream — use individual event types such as `order.created` and `order.closed`. Wildcard patterns (`order.*`, `*`) exist only on the internal event bus.
+  SSE filters use exact matches (`filters.types.includes(event.eventType)` against the values you send). Wildcard patterns (`order.*`, `*`) exist only on the internal event bus.
 </Callout>
 
 ## Event envelope
@@ -62,11 +62,11 @@ Every event is a `DomainEvent`. `payload` varies by `eventType`; the remaining f
 
 ```typescript
 interface DomainEvent<T = unknown> {
-  eventId: string;           // "evt_..." — unique, for dedup
-  eventType: string;         // "order.escrow_funded" — from the catalog below
+  eventId: string;           // "evt_..." - unique, for dedup
+  eventType: string;         // "order.escrow_funded" - from the catalog below
   occurredAt: string;        // ISO 8601 timestamp
   aggregateId: string;       // ID of the resource that produced the event
-  aggregateType: string;     // "Order", "TopUp", "Withdrawal", ...
+  aggregateType: string;     // "Order", "Balance", "Payout", ...
   payload: T;                // Event-specific data (see catalog below)
   metadata: {
     correlationId?: string;  // Request ID that triggered the event
@@ -80,20 +80,20 @@ interface DomainEvent<T = unknown> {
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `eventId` | string | Unique event identifier, generated with the `evt_` prefix. Use it for deduplication. |
+| `eventId` | string | Unique event identifier, generated with the `evt_` prefix + 32 random characters. Use it for deduplication. |
 | `eventType` | string | The event name from the catalog below, such as `order.escrow_funded`. |
 | `occurredAt` | string | ISO 8601 timestamp at which the event was emitted. |
 | `aggregateId` | string | ID of the resource that produced the event. |
-| `aggregateType` | string | Resource type, such as `Order`, `TopUp`, or `Withdrawal`. |
+| `aggregateType` | string | Resource type, such as `Order`, `Balance`, or `Payout`. |
 | `payload` | object | Data specific to the event type. |
 | `metadata` | object | Correlation, causation, user, marketplace, and any additional context. |
 
-On the wire, each SSE message uses the event's timestamp as its SSE `id`, its `eventType` as the SSE event name, and the complete envelope as JSON `data` (`apps/api/src/modules/events/events.controller.ts`):
+On the wire, each SSE message uses the event's timestamp as its SSE `id`, its `eventType` as the SSE event name, and the complete envelope as JSON `data`:
 
 ```text
 id: 2026-02-18T17:37:12.000Z
 event: order.escrow_funded
-data: {"eventId":"evt_abc123","eventType":"order.escrow_funded","occurredAt":"2026-02-18T17:37:12.000Z","aggregateId":"ord_abc123","aggregateType":"Order","payload":{"orderId":"ord_abc123","escrowId":"esc_abc123","trustlessContractId":"CTW...","amount":"100.00","fundedAt":"2026-02-18T17:37:12.000Z"},"metadata":{}}
+data: {"eventId":"evt_102030405060708090a0b0c0d0e0f010","eventType":"order.escrow_funded","occurredAt":"2026-02-18T17:37:12.000Z","aggregateId":"ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d","aggregateType":"Order","payload":{"orderId":"ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d","escrowId":"esc_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d","amount":"2500.00","currency":"USDC"},"metadata":{}}
 ```
 
 ### Heartbeat
@@ -105,7 +105,7 @@ event: ping
 data: {"ping":true,"timestamp":"2026-02-18T17:37:42.000Z"}
 ```
 
-The ping has no `eventId` — ignore it rather than treating it as a domain event.
+The ping has no `eventId`: ignore it rather than treating it as a domain event.
 
 ### Reconnect and replay
 
@@ -118,7 +118,7 @@ curl -N \
   "http://localhost:4000/api/v1/events"
 ```
 
-Replay is **exclusive** of the cursor timestamp (`SseService.getMissedEvents` opens the scan at `(<timestamp>`), so the event you already processed is not re-sent. While history is being replayed, live events are buffered at the connection and de-duplicated against the history by `eventId`, closing the gap between `Last-Event-ID` and reconnection (`ReplaySubject(100)` in `EventsController`).
+Replay is **exclusive** of the cursor timestamp, so the event you already processed is not re-sent. While history is being replayed, live events are buffered at the connection and de-duplicated against the history by `eventId`, closing the gap between `Last-Event-ID` and reconnection.
 
 Treat the stream as at-least-once delivery: persist processed `eventId` values and ignore a duplicate before performing side effects.
 
@@ -132,7 +132,7 @@ import { EventSource } from 'eventsource';
 class EventSubscriber {
   private url = 'http://localhost:4000/api/v1/events';
   private lastEventId?: string;
-  private processed = new Set<string>(); // persist this in production
+  private processed = new Set<string>();
 
   connect() {
     const headers = { Authorization: 'Bearer ohk_live_...' };
@@ -145,7 +145,7 @@ class EventSubscriber {
     es.onmessage = (message) => {
       if (message.lastEventId) this.lastEventId = message.lastEventId;
       const event = JSON.parse(message.data);
-      if (this.processed.has(event.eventId)) return; // already handled
+      if (this.processed.has(event.eventId)) return;
       this.processed.add(event.eventId);
       this.handle(event);
     };
@@ -153,6 +153,10 @@ class EventSubscriber {
     es.onerror = () => {
       // EventSource auto-reconnects; the next connection replays from lastEventId
     };
+  }
+
+  handle(event: any) {
+    console.log('Received event:', event.eventType, event.payload);
   }
 }
 ```
@@ -173,25 +177,13 @@ events.on('order.escrow_funded', (data) => {
   console.log('Escrow funded:', data);
 });
 
-events.on('withdrawal.completed', (data) => {
-  console.log('Withdrawal completed:', data);
-});
-```
-
-### Using EventSource in the browser
-
-The native browser `EventSource` cannot set an `Authorization` header, so connect through your backend or another credential-safe proxy:
-
-```typescript
-const events = new EventSource('/api/v1/events'); // proxied by your backend
-
-events.addEventListener('order.escrow_funded', (message) => {
-  const event = JSON.parse(message.data);
-  console.log(event.eventType, event.payload);
+events.on('payout.completed', (data) => {
+  console.log('Payout completed:', data);
 });
 ```
 
 ## Event catalog
+
 ### Replay Sequence
 
 ```mermaid
@@ -209,24 +201,25 @@ sequenceDiagram
     SSE->>SSE: scan events:log > cursor
     SSE-->>Client: replay order.released
     SSE-->>Client: buffered live events (deduped)
-`
 ```
 
-The catalog below is derived from the Orchestrator's `apps/api/src/modules/events/event-catalog.ts` (event names) and `apps/api/src/modules/events/types/*-events.ts` (payload contracts). There are currently **no `wallet.*` events** in the catalog — wallet activity that changes available funds is represented by the balance events below. Optional fields are suffixed with `?`.
+The catalog below is derived from the Orchestrator's domain events. Optional fields are suffixed with `?`.
 
-### User events
+### User and wallet events
 
 | Event | Payload |
 | --- | --- |
 | `user.created` | `{ userId, externalUserId, email?, type, status }` |
-| `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
-| `user.stellar_linked` | `{ userId, stellarAddress, linkedAt }` |
+| `wallet.connected` | `{ walletId, userId, address, walletType, provider }` |
+| `wallet.disconnected` | `{ walletId, userId, address }` |
+| `wallet.primary_changed` | `{ userId, primaryAddress }` |
 
 ```json
 {
-  "user.created": { "userId": "usr_abc123", "externalUserId": "buyer-001", "email": "buyer@example.com", "type": "BUYER", "status": "ACTIVE" },
-  "user.airtm_linked": { "userId": "usr_abc123", "airtmUserId": "atm_456", "linkedAt": "2026-02-18T17:37:12.000Z" },
-  "user.stellar_linked": { "userId": "usr_abc123", "stellarAddress": "GBCG42WTVWPO4Q6N...", "linkedAt": "2026-02-18T17:37:12.000Z" }
+  "user.created": { "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "externalUserId": "buyer_001", "email": "buyer@example.com", "type": "BUYER", "status": "ACTIVE" },
+  "wallet.connected": { "walletId": "wal_4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e", "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "address": "GABCMX76J6XFMH67QJ5J4K2VXZ4QW6A6Y...", "walletType": "EXTERNAL", "provider": "freighter" },
+  "wallet.disconnected": { "walletId": "wal_4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e", "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "address": "GABCMX76J6XFMH67QJ5J4K2VXZ4QW6A6Y..." },
+  "wallet.primary_changed": { "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "primaryAddress": "GABCMX76J6XFMH67QJ5J4K2VXZ4QW6A6Y..." }
 }
 ```
 
@@ -241,68 +234,44 @@ The catalog below is derived from the Orchestrator's `apps/api/src/modules/event
 
 ```json
 {
-  "balance.credited": { "userId": "usr_abc123", "amount": "250.00", "currency": "USDC", "source": "release", "sourceId": "ord_abc123", "previousAvailableBalance": "1000.00", "newAvailableBalance": "1250.00" },
-  "balance.debited": { "userId": "usr_abc123", "amount": "100.00", "currency": "USDC", "destination": "withdrawal", "destinationId": "wd_abc123", "previousAvailableBalance": "1250.00", "newAvailableBalance": "1150.00" },
-  "balance.reserved": { "userId": "usr_abc123", "amount": "200.00", "currency": "USDC", "orderId": "ord_abc123", "previousReservedBalance": "0.00", "newReservedBalance": "200.00", "previousAvailableBalance": "1150.00", "newAvailableBalance": "950.00" },
-  "balance.released": { "userId": "usr_abc123", "amount": "200.00", "currency": "USDC", "orderId": "ord_abc123", "reason": "escrow_funded", "previousReservedBalance": "200.00", "newReservedBalance": "0.00", "previousAvailableBalance": "950.00", "newAvailableBalance": "1150.00" }
-}
-```
-
-### Top-up events
-
-| Event | Payload |
-| --- | --- |
-| `topup.created` | `{ userId, amount, currency }` |
-| `topup.confirmation_required` | `{ topupId, confirmationUri }` |
-| `topup.processing` | `{ topupId, airtmPayinId }` |
-| `topup.succeeded` | `{ topupId, userId, amount, currency, newAvailableBalance, airtmPayinId? }` |
-| `topup.failed` | `{ topupId, userId, amount, reason, errorCode?, airtmPayinId? }` |
-| `topup.canceled` | `{ topupId, userId, amount, canceledBy, reason? }` |
-
-```json
-{
-  "topup.created": { "userId": "usr_abc123", "amount": "50.00", "currency": "USDC" },
-  "topup.confirmation_required": { "topupId": "topup_abc123", "confirmationUri": "https://airtm.example/confirm/abc123" },
-  "topup.processing": { "topupId": "topup_abc123", "airtmPayinId": "payin_789" },
-  "topup.succeeded": { "topupId": "topup_abc123", "userId": "usr_abc123", "amount": "50.00", "currency": "USDC", "newAvailableBalance": "1200.00", "airtmPayinId": "payin_789" },
-  "topup.failed": { "topupId": "topup_abc123", "userId": "usr_abc123", "amount": "50.00", "reason": "Payment rejected by AirTM", "errorCode": "PAYIN_REJECTED" },
-  "topup.canceled": { "topupId": "topup_abc123", "userId": "usr_abc123", "amount": "50.00", "canceledBy": "user", "reason": "user_requested" }
+  "balance.credited": { "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "250.00", "currency": "USDC", "source": "release", "sourceId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "previousAvailableBalance": "1000.00", "newAvailableBalance": "1250.00" },
+  "balance.debited": { "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "100.00", "currency": "USDC", "destination": "withdrawal", "destinationId": "wd_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e", "previousAvailableBalance": "1250.00", "newAvailableBalance": "1150.00" },
+  "balance.reserved": { "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "200.00", "currency": "USDC", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "previousReservedBalance": "0.00", "newReservedBalance": "200.00", "previousAvailableBalance": "1150.00", "newAvailableBalance": "950.00" },
+  "balance.released": { "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "200.00", "currency": "USDC", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "reason": "escrow_funded", "previousReservedBalance": "200.00", "newReservedBalance": "0.00", "previousAvailableBalance": "950.00", "newAvailableBalance": "1150.00" }
 }
 ```
 
 ### Order events
 
+Order state machine transitions emit real-time events. (Note: There is no `CANCELLED` status: cancelled orders transition directly to `CLOSED`).
+
 | Event | Payload |
 | --- | --- |
-| `order.created` | `{ orderId, buyerId, sellerId, amount, currency, title, description?, clientOrderRef? }` |
+| `order.created` | `{ orderId, buyerId, sellerId, amount, currency, title, description? }` |
 | `order.funds_reserved` | `{ orderId, buyerId, amount, currency, reservedBalance, availableBalance }` |
 | `order.escrow_creating` | `{ orderId, escrowId, amount }` |
 | `order.escrow_funding` | `{ orderId, escrowId, trustlessContractId, amount }` |
 | `order.escrow_funded` | `{ orderId, escrowId, trustlessContractId, amount, fundedAt }` |
 | `order.in_progress` | `{ orderId, escrowId }` |
+| `order.delivered` | `{ orderId, deliveredAt }` |
 | `order.release_requested` | `{ orderId, requestedBy, requestedAt }` |
-| `order.released` | `{ orderId, sellerId, amount, currency, releasedAt, newSellerBalance }` |
+| `order.released` | `{ orderId, sellerId, amount, currency, releasedAt }` |
 | `order.refund_requested` | `{ orderId, requestedBy, requestedAt }` |
-| `order.refunded` | `{ orderId, buyerId, amount, currency, refundedAt, newBuyerBalance }` |
+| `order.refunded` | `{ orderId, buyerId, amount, currency, refundedAt }` |
 | `order.disputed` | `{ orderId, disputeId, openedBy, reason, openedAt }` |
 | `order.closed` | `{ orderId, finalStatus, closedAt }` |
-| `order.canceled` | `{ orderId, buyerId, canceledBy, reason?, canceledAt, fundsReleased }` |
 
 ```json
 {
-  "order.created": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "sellerId": "usr_xyz789", "amount": "500.00", "currency": "USDC", "title": "Design landing page", "description": "3 pages, responsive", "clientOrderRef": "REQ-1001" },
-  "order.funds_reserved": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "amount": "500.00", "currency": "USDC", "reservedBalance": "500.00", "availableBalance": "700.00" },
-  "order.escrow_creating": { "orderId": "ord_abc123", "escrowId": "esc_abc123", "amount": "500.00" },
-  "order.escrow_funding": { "orderId": "ord_abc123", "escrowId": "esc_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00" },
-  "order.escrow_funded": { "orderId": "ord_abc123", "escrowId": "esc_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00", "fundedAt": "2026-02-18T17:37:12.000Z" },
-  "order.in_progress": { "orderId": "ord_abc123", "escrowId": "esc_abc123" },
-  "order.release_requested": { "orderId": "ord_abc123", "requestedBy": "usr_xyz789", "requestedAt": "2026-02-19T10:00:00.000Z" },
-  "order.released": { "orderId": "ord_abc123", "sellerId": "usr_xyz789", "amount": "500.00", "currency": "USDC", "releasedAt": "2026-02-19T12:00:00.000Z", "newSellerBalance": "1500.00" },
-  "order.refund_requested": { "orderId": "ord_abc123", "requestedBy": "usr_abc123", "requestedAt": "2026-02-19T10:00:00.000Z" },
-  "order.refunded": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "amount": "500.00", "currency": "USDC", "refundedAt": "2026-02-19T12:00:00.000Z", "newBuyerBalance": "1200.00" },
-  "order.disputed": { "orderId": "ord_abc123", "disputeId": "disp_abc123", "openedBy": "BUYER", "reason": "Deliverable not provided", "openedAt": "2026-02-19T10:00:00.000Z" },
-  "order.closed": { "orderId": "ord_abc123", "finalStatus": "CLOSED", "closedAt": "2026-02-19T12:05:00.000Z" },
-  "order.canceled": { "orderId": "ord_abc123", "buyerId": "usr_abc123", "canceledBy": "usr_abc123", "reason": "Changed mind", "canceledAt": "2026-02-18T18:00:00.000Z", "fundsReleased": true }
+  "order.created": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "buyerId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "sellerId": "usr_7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e", "amount": "2500.00", "currency": "USDC", "title": "Smart contract audit" },
+  "order.funds_reserved": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "buyerId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "2500.00", "currency": "USDC", "reservedBalance": "2500.00", "availableBalance": "5000.00" },
+  "order.escrow_funded": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "escrowId": "esc_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d", "trustlessContractId": "CA3D5K...", "amount": "2500.00", "fundedAt": "2026-02-18T17:37:12.000Z" },
+  "order.in_progress": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "escrowId": "esc_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d" },
+  "order.delivered": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "deliveredAt": "2026-02-19T10:00:00.000Z" },
+  "order.released": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "sellerId": "usr_7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e", "amount": "2500.00", "currency": "USDC", "releasedAt": "2026-02-19T12:00:00.000Z" },
+  "order.refunded": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "buyerId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "2500.00", "currency": "USDC", "refundedAt": "2026-02-19T12:00:00.000Z" },
+  "order.disputed": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "disputeId": "dsp_1f2e3d4c5b6a708990a1b2c3d4e5f6a7", "openedBy": "BUYER", "reason": "NOT_DELIVERED", "openedAt": "2026-02-19T10:00:00.000Z" },
+  "order.closed": { "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "finalStatus": "CLOSED", "closedAt": "2026-02-19T12:05:00.000Z" }
 }
 ```
 
@@ -313,18 +282,15 @@ The catalog below is derived from the Orchestrator's `apps/api/src/modules/event
 | `escrow.created` | `{ escrowId, orderId, amount, currency }` |
 | `escrow.funding_started` | `{ escrowId, orderId, trustlessContractId, amount }` |
 | `escrow.funded` | `{ escrowId, orderId, trustlessContractId, amount, fundedAt }` |
-| `escrow.milestone_completed` | `{ escrowId, orderId, milestoneRef, milestoneTitle, amount, completedAt }` |
+| `escrow.milestone_completed` | `{ escrowId, orderId, milestoneRef, completedAt }` |
 | `escrow.released` | `{ escrowId, orderId, sellerId, amount, releasedAt }` |
 | `escrow.refunded` | `{ escrowId, orderId, buyerId, amount, refundedAt }` |
 
 ```json
 {
-  "escrow.created": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "amount": "500.00", "currency": "USDC" },
-  "escrow.funding_started": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00" },
-  "escrow.funded": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "trustlessContractId": "CTW4Q6N...", "amount": "500.00", "fundedAt": "2026-02-18T17:37:12.000Z" },
-  "escrow.milestone_completed": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "milestoneRef": "M1", "milestoneTitle": "Wireframes", "amount": "200.00", "completedAt": "2026-02-19T09:00:00.000Z" },
-  "escrow.released": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "sellerId": "usr_xyz789", "amount": "500.00", "releasedAt": "2026-02-19T12:00:00.000Z" },
-  "escrow.refunded": { "escrowId": "esc_abc123", "orderId": "ord_abc123", "buyerId": "usr_abc123", "amount": "500.00", "refundedAt": "2026-02-19T12:00:00.000Z" }
+  "escrow.created": { "escrowId": "esc_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "amount": "2500.00", "currency": "USDC" },
+  "escrow.funded": { "escrowId": "esc_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "trustlessContractId": "CA3D5K...", "amount": "2500.00", "fundedAt": "2026-02-18T17:37:12.000Z" },
+  "escrow.released": { "escrowId": "esc_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "sellerId": "usr_7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e", "amount": "2500.00", "releasedAt": "2026-02-19T12:00:00.000Z" }
 }
 ```
 
@@ -332,15 +298,41 @@ The catalog below is derived from the Orchestrator's `apps/api/src/modules/event
 
 | Event | Payload |
 | --- | --- |
-| `dispute.opened` | `{ disputeId, orderId, openedBy, reason, evidence?, openedAt }` |
-| `dispute.under_review` | `{ disputeId, orderId, reviewedBy?, reviewStartedAt }` |
-| `dispute.resolved` | `{ disputeId, orderId, decision, decisionNote?, resolvedBy, resolvedAt, buyerAmount?, sellerAmount? }` |
+| `dispute.opened` | `{ disputeId, orderId, openedBy, reason, openedAt }` |
+| `dispute.under_review` | `{ disputeId, orderId, reviewStartedAt }` |
+| `dispute.resolved` | `{ disputeId, orderId, outcome, resolvedAt, buyerAmount?, sellerAmount? }` |
+| `dispute.cancelled` | `{ disputeId, orderId, cancelledAt }` |
 
 ```json
 {
-  "dispute.opened": { "disputeId": "disp_abc123", "orderId": "ord_abc123", "openedBy": "BUYER", "reason": "Deliverable not provided", "evidence": ["https://cdn.example.com/evidence/1.png"], "openedAt": "2026-02-19T10:00:00.000Z" },
-  "dispute.under_review": { "disputeId": "disp_abc123", "orderId": "ord_abc123", "reviewedBy": "usr_support01", "reviewStartedAt": "2026-02-19T11:00:00.000Z" },
-  "dispute.resolved": { "disputeId": "disp_abc123", "orderId": "ord_abc123", "decision": "SPLIT", "decisionNote": "50/50 split", "resolvedBy": "usr_support01", "resolvedAt": "2026-02-19T14:00:00.000Z", "buyerAmount": "250.00", "sellerAmount": "250.00" }
+  "dispute.opened": { "disputeId": "dsp_1f2e3d4c5b6a708990a1b2c3d4e5f6a7", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "openedBy": "BUYER", "reason": "NOT_DELIVERED", "openedAt": "2026-02-19T10:00:00.000Z" },
+  "dispute.under_review": { "disputeId": "dsp_1f2e3d4c5b6a708990a1b2c3d4e5f6a7", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "reviewStartedAt": "2026-02-19T11:00:00.000Z" },
+  "dispute.resolved": { "disputeId": "dsp_1f2e3d4c5b6a708990a1b2c3d4e5f6a7", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "outcome": "FULL_REFUND", "resolvedAt": "2026-02-19T14:00:00.000Z", "buyerAmount": "2500.00" },
+  "dispute.cancelled": { "disputeId": "dsp_1f2e3d4c5b6a708990a1b2c3d4e5f6a7", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "cancelledAt": "2026-02-19T11:30:00.000Z" }
+}
+```
+
+### Payout events (BlindPay off-ramp)
+
+BlindPay off-ramp events update order payout status in real-time across the 4 supported corridors (Brazil, Mexico, Argentina, Colombia).
+
+| Event | Payload |
+| --- | --- |
+| `payout.new` | `{ payoutId, orderId, amount, currency, bankAccountId, corridor }` |
+| `payout.update` | `{ payoutId, orderId, status }` |
+| `payout.completed` | `{ payoutId, orderId, amount, fiatAmount, fiatCurrency, completedAt }` |
+| `payout.failed` | `{ payoutId, orderId, amount, reason, errorCode? }` |
+| `payout.on_hold` | `{ payoutId, orderId, reason }` |
+| `payout.refunded` | `{ payoutId, orderId, amount, refundedAt }` |
+
+```json
+{
+  "payout.new": { "payoutId": "pay_3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "amount": "2500.00", "currency": "USDC", "bankAccountId": "ba_7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f", "corridor": "BR" },
+  "payout.update": { "payoutId": "pay_3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "status": "PROCESSING" },
+  "payout.completed": { "payoutId": "pay_3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "amount": "2500.00", "fiatAmount": "12500.00", "fiatCurrency": "BRL", "completedAt": "2026-02-19T15:00:00.000Z" },
+  "payout.failed": { "payoutId": "pay_3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "amount": "2500.00", "reason": "Bank account rejected transaction", "errorCode": "PAYOUT_FAILED" },
+  "payout.on_hold": { "payoutId": "pay_3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "reason": "Receiver compliance review in progress" },
+  "payout.refunded": { "payoutId": "pay_3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a", "orderId": "ord_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", "amount": "2500.00", "refundedAt": "2026-02-19T16:00:00.000Z" }
 }
 ```
 
@@ -348,23 +340,17 @@ The catalog below is derived from the Orchestrator's `apps/api/src/modules/event
 
 | Event | Payload |
 | --- | --- |
-| `withdrawal.created` | `{ withdrawalId, userId, amount, currency, destinationType, destinationRef }` |
-| `withdrawal.committed` | `{ withdrawalId, userId, amount, currency, committedBalance, availableBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, userId, airtmPayoutId, amount }` |
-| `withdrawal.pending_user_action` | `{ withdrawalId, userId, actionRequired, actionUrl? }` |
-| `withdrawal.completed` | `{ withdrawalId, userId, amount, currency, completedAt, airtmPayoutId? }` |
-| `withdrawal.failed` | `{ withdrawalId, userId, amount, reason, errorCode?, airtmPayoutId? }` |
-| `withdrawal.canceled` | `{ withdrawalId, userId, amount, canceledBy, reason?, refundedToBalance, newAvailableBalance? }` |
+| `withdrawal.created` | `{ withdrawalId, userId, amount, currency, destinationAddress }` |
+| `withdrawal.committed` | `{ withdrawalId, userId, amount, currency }` |
+| `withdrawal.completed` | `{ withdrawalId, userId, amount, currency, completedAt }` |
+| `withdrawal.failed` | `{ withdrawalId, userId, amount, reason, errorCode? }` |
 
 ```json
 {
-  "withdrawal.created": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "currency": "USDC", "destinationType": "crypto", "destinationRef": "GBCG42WTVWPO4Q6N..." },
-  "withdrawal.committed": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "currency": "USDC", "committedBalance": "80.00", "availableBalance": "620.00" },
-  "withdrawal.pending": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "airtmPayoutId": "payout_789", "amount": "80.00" },
-  "withdrawal.pending_user_action": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "actionRequired": "confirm_payout", "actionUrl": "https://airtm.example/confirm/789" },
-  "withdrawal.completed": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "currency": "USDC", "completedAt": "2026-02-19T15:00:00.000Z", "airtmPayoutId": "payout_789" },
-  "withdrawal.failed": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "reason": "Insufficient AirTM balance", "errorCode": "PAYOUT_FAILED" },
-  "withdrawal.canceled": { "withdrawalId": "wd_abc123", "userId": "usr_abc123", "amount": "80.00", "canceledBy": "user", "reason": "user_requested", "refundedToBalance": true, "newAvailableBalance": "700.00" }
+  "withdrawal.created": { "withdrawalId": "wd_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e", "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "80.00", "currency": "USDC", "destinationAddress": "GABCMX76J6XFMH67QJ5J4K2VXZ4QW6A6Y..." },
+  "withdrawal.committed": { "withdrawalId": "wd_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e", "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "80.00", "currency": "USDC" },
+  "withdrawal.completed": { "withdrawalId": "wd_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e", "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "80.00", "currency": "USDC", "completedAt": "2026-02-19T15:00:00.000Z" },
+  "withdrawal.failed": { "withdrawalId": "wd_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e", "userId": "usr_9f2c1a7e5b3d8f6041c2a9e7b5d3f1a0", "amount": "80.00", "reason": "Destination account missing USDC trustline", "errorCode": "TRUSTLINE_MISSING" }
 }
 ```
 
@@ -381,9 +367,6 @@ eventSource.addEventListener('order.escrow_funded', (message) => {
 
 ## Related documentation
 
-- [Troubleshooting & FAQ](/docs/guide/troubleshooting) — stream drops, replay gaps, and provider timeouts with causes and fixes
-- [API Reference](/docs/api-reference/overview) — REST endpoints and authentication
-- [Inbound Webhooks](/docs/api-reference/webhooks) — AirTM and Trustless Work receivers
-- [Orders Guide](/docs/guide/orders) — Order lifecycle and order-event examples
-- [Deposits Guide](/docs/guide/deposits) — Balance credit events for deposits
-- [SDK Quick Start](/docs/sdk/quick-start) — TypeScript SDK setup
+- [API Reference Overview](/docs/api-reference/overview) - REST endpoints, headers, and authentication
+- [Config and Health](/docs/api-reference/config-and-health) - Platform configuration and basic health check
+- [Auth Endpoints](/docs/api-reference/auth) - API key management and token generation
