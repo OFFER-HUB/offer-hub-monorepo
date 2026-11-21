@@ -32,6 +32,15 @@ const nextConfig: NextConfig = {
       { source: "/api/:path*", headers: [...securityHeaders, ...corsHeaders] },
     ];
   },
+  async redirects() {
+    // Legacy documentation paths that were linked from older articles but never
+    // existed as pages. They are permanent so external links keep resolving.
+    return [
+      { source: "/docs/sdk/resources", destination: "/docs/sdk/quick-start", permanent: true },
+      { source: "/docs/guide/events", destination: "/docs/api-reference/events", permanent: true },
+      { source: "/docs/guide/errors", destination: "/docs/sdk/errors", permanent: true },
+    ];
+  },
   async rewrites() {
     // `[...slug]` is a catch-all and Next.js requires catch-all segments to be
     // the last part of a route, so `/docs/[...slug]/raw/route.ts` cannot exist

@@ -5,6 +5,10 @@ order: 24
 section: Guides
 ---
 
+The `@offerhub/cli` package provides a command-line interface for managing a self-hosted OFFER-HUB Orchestrator. Use it to create and revoke API keys, mint short-lived tokens, and toggle maintenance mode without writing `curl` calls.
+
+<Callout type="tip">
+  Bootstrap an instance in seconds: install the CLI, point it at your Orchestrator, and run `offerhub keys create`.
 The `@offerhub/cli` package provides a command-line interface for managing the OFFER-HUB Orchestrator. It offers rapid configuration inspection and API key creation from the terminal without writing raw `curl` commands.
 
 <Callout type="tip">
@@ -37,6 +41,9 @@ The CLI resolves its connection settings from three sources, evaluated in strict
 
 ### Setting Environment Variables
 
+Run the interactive setup wizard — it prompts for your API URL and API key, then saves everything to `~/.offerhub/config.json`:
+
+<CommandLine>offerhub config set</CommandLine>
 ```bash
 export OFFERHUB_API_URL=http://localhost:4000
 export OFFERHUB_API_KEY=ohk_live_your_api_key
@@ -65,6 +72,7 @@ You can save default connection settings to `~/.offerhub/config.json` so you do 
 Configure connection settings interactively or non-interactively via flags.
 
 ```bash
+# Interactive — prompts for URL and key
 # Interactive setup (prompts for API URL, API key, and payment provider)
 offerhub config set
 
@@ -81,6 +89,7 @@ When run interactively in `crypto` mode, the wizard also generates and displays 
 
 #### `offerhub config show`
 
+Display the current configuration (API URL and masked key).
 Displays the active configuration (API URL, masked key, payment provider, and file path of `~/.offerhub/config.json`).
 
 <CommandLine>offerhub config show</CommandLine>

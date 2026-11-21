@@ -1,5 +1,17 @@
 ---
 title: Withdrawals Guide
+description: How sellers move funds out of OFFER-HUB — Stellar withdrawals and BlindPay off-ramp payouts.
+order: 7
+section: Guides
+---
+
+Sellers can move funds out in two ways: a withdrawal to an external Stellar address, or an off-ramp payout to a local bank account through BlindPay.
+
+<Callout type="note">
+  Both paths move funds the seller already owns. Escrowed funds cannot be withdrawn until the order resolves.
+</Callout>
+
+## Withdrawal to a Stellar address
 description: Reference for crypto and AirTM withdrawals in the OFFER-HUB Orchestrator.
 order: 19
 section: Guides
@@ -41,9 +53,94 @@ Creates a withdrawal. The request body is `CreateWithdrawalDto`:
 curl -X POST http://localhost:4000/api/v1/withdrawals \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
+  -H "Idempotency-Key: your-withdrawal-reference" \
   -d '{
-    "userId": "usr_abc123",
+    "userId": "usr_your_user_id",
     "amount": "50.00",
+    "destination": {
+      "type": "stellar",
+      "address": "your-destination-stellar-address"
+    }
+  }'
+```
+
+```json
+{
+  "data": {
+    "id": "wd_...",
+    "userId": "usr_...",
+    "amount": "50.00",
+    "currency": "USDC",
+    "status": "PENDING"
+  }
+}
+```
+
+The withdrawal debits `available` immediately. If the transaction fails, the funds return to the balance.
+
+## Off-ramp with BlindPay
+
+BlindPay converts USDC into local currency in four corridors:
+
+| Country | Corridor |
+|---|---|
+| Brazil | BRL |
+| Mexico | MXN |
+| Argentina | ARS |
+| Colombia | COP |
+
+A payout needs a completed bank account and the KYC checks for that corridor. Submit it against the order:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/orders/ord_your_order_id/payout/submit \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Idempotency-Key: your-payout-reference"
+```
+
+<Callout type="note">
+  Corridor availability, payout limits and FX are set by BlindPay for your account. The Orchestrator adds no fee of its own to the off-ramp.
+</Callout>
+
+## Using the SDK
+
+```typescript
+// Stellar withdrawal
+const withdrawal = await sdk.withdrawals.create({
+  userId: sellerId,
+  amount: "50.00",
+  destination: { type: "stellar", address: "your-destination-stellar-address" },
+});
+
+// BlindPay payout, prepared with bankAccounts and kyc
+const payout = await sdk
+  .withIdempotencyKey("your-payout-reference")
+  .payouts.submit(orderId);
+```
+
+`bankAccounts` manages the destination account and `kyc` reports onboarding state for the corridor.
+
+## Status and events
+
+Watch `GET /api/v1/events` for withdrawal and payout events. Treat an event as a notification and re-read the withdrawal or payout record before showing a final state.
+
+## Idempotency
+
+`POST /orders/:orderId/payout/submit` requires an `Idempotency-Key`. Retry with the same key and body. Withdrawals also accept an idempotency key; use one per withdrawal request.
+
+## Common problems
+
+| Error | Cause |
+|---|---|
+| `INSUFFICIENT_FUNDS` | Available balance is too low, or funds are still reserved |
+| `INVALID_DESTINATION` | Malformed Stellar address |
+| `INSUFFICIENT_SCOPE` | Key lacks `write` |
+| Payout rejected | Bank account incomplete, KYC missing, or corridor unsupported |
+
+## Related reading
+
+- [Deposits](/docs/guide/deposits) — funding accounts
+- [Orders Guide](/docs/guide/orders) — order lifecycle
+- [Troubleshooting](/docs/guide/troubleshooting) — payout diagnostics
     "currency": "USD",
     "destinationType": "crypto",
     "destinationRef": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"

@@ -369,6 +369,7 @@ Returns a Stellar deposit address and asset for the user. This endpoint passes `
 
 ## Real-Time Events
 
+The Orchestrator receives inbound webhooks from Trustless Work to keep escrow state current, and exposes domain events over SSE for integrators. See the [Webhooks documentation](/docs/api-reference/webhooks) for payload structures, signature verification, and the event stream.
 Subscribers consume real-time domain events over the [SSE event stream](/docs/api-reference/events) at `GET /api/v1/events`. Separately, the Orchestrator receives inbound webhooks from external providers (Airtm, Trustless Work) to process payment and escrow lifecycle events — see the [Inbound Webhooks](/docs/api-reference/webhooks) reference for signature verification and deduplication behavior.
 
 ---
@@ -562,6 +563,11 @@ request.
 
 ## Rate Limiting
 
+| Endpoint | Limit |
+|----------|-------|
+| General | 100 req/min per API key |
+| POST /withdrawals | 5 req/min per user |
+| GET /events | 1 SSE connection per user |
 The API applies one global limit of 100 requests per 60-second window. The
 counter is keyed by API key when authenticated, or by client IP when no API key
 is available. There are no additional per-endpoint limits documented here.
@@ -625,7 +631,6 @@ Every entry below was verified against the real controllers in `apps/api/src/mod
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/users` | <Badge variant="primary">POST</Badge> | Create user |
-| `/users/{id}/airtm/link` | <Badge variant="primary">POST</Badge> | Link Airtm account |
 
 ### Balance
 
@@ -708,6 +713,10 @@ The order lifecycle up to funding, plus milestone bookkeeping, is documented end
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
+| `/withdrawals` | <Badge variant="primary">POST</Badge> | Create withdrawal |
+| `/withdrawals` | <Badge variant="success">GET</Badge> | List withdrawals |
+| `/withdrawals/{id}` | <Badge variant="success">GET</Badge> | Get withdrawal |
+| `/withdrawals/{id}/commit` | <Badge variant="primary">POST</Badge> | Commit withdrawal |
 | [`/withdrawals`](/docs/api-reference/withdrawals) | <Badge variant="primary">POST</Badge> | Create withdrawal |
 | [`/withdrawals`](/docs/api-reference/withdrawals) | <Badge variant="success">GET</Badge> | List withdrawals |
 | [`/withdrawals/&#123;id&#125;`](/docs/api-reference/withdrawals) | <Badge variant="success">GET</Badge> | Get withdrawal |
@@ -724,7 +733,6 @@ The order lifecycle up to funding, plus milestone bookkeeping, is documented end
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/webhooks/airtm` | <Badge variant="primary">POST</Badge> | Receive Airtm webhooks |
 | `/webhooks/trustless-work` | <Badge variant="primary">POST</Badge> | Receive Trustless Work webhooks |
 
 ### Audit Logs
