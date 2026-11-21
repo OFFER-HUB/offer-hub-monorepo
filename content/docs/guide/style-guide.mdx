@@ -214,18 +214,23 @@ font-family: var(--font-inter), Roboto, Outfit, sans-serif;
 #### Primary Button (Neumorphic)
 
 ```jsx
-<button className="btn-neumorphic-primary px-6 py-2 rounded-full text-sm font-semibold">
-  Button Text
-</button>
+import { Button } from "@/components/ui/Button";
+
+<Button variant="primary">Button text</Button>
 ```
 
-#### Secondary Button (Neumorphic)
+#### Secondary, ghost, and danger buttons
 
 ```jsx
-<button className="btn-neumorphic-secondary px-6 py-2 rounded-full text-sm font-semibold">
-  Button Text
-</button>
+<Button variant="secondary">Cancel</Button>
+<Button variant="ghost">Learn more</Button>
+<Button variant="danger">Delete my data</Button>
 ```
+
+Use `size="sm"`, `size="md"` (the default), or `size="lg"` for the shared
+36px, 44px, and 48px control heights. Pass `href` to render a Next.js link,
+and use `leadingIcon`, `trailingIcon`, or `loading` for the corresponding
+button affordances.
 
 ### Cards
 

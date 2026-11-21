@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { COOKIE_CONSENT_KEY } from "@/constants/storage";
 import { COOKIE_PREFERENCES_EVENT } from "@/constants/events";
+import { Button } from "@/components/ui/Button";
 
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
@@ -67,21 +68,22 @@ export function CookieConsentBanner() {
         </p>
 
         <div className="flex flex-wrap gap-3">
-          <button
+          <Button
             type="button"
             onClick={accept}
-            className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-theme-primary text-white text-xs font-black uppercase tracking-wider shadow-lg hover:bg-theme-primary-hover transition-colors"
+            className="min-w-0 flex-1"
           >
             Accept all
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={reject}
-            className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 py-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle text-content-secondary text-xs font-black uppercase tracking-wider hover:text-content-primary transition-colors"
+            variant="secondary"
+            className="min-w-0 flex-1"
           >
             Necessary only
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -56,17 +56,15 @@ export function DataRightsForm({
           error={errors.email}
           disabled={loading}
         />
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className={`inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50 ${
-            destructive
-              ? "bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] text-theme-error hover:bg-[color-mix(in_srgb,var(--color-error)_20%,transparent)]"
-              : "bg-theme-primary text-bg-base hover:bg-theme-primary-hover"
-          }`}
+          loading={loading}
+          variant={destructive ? "danger" : "primary"}
+          className="w-full"
         >
           {loading ? "Processing…" : buttonLabel}
-        </button>
+        </Button>
         {status && (
           <Callout
             tone={status.ok ? "tip" : "danger"}

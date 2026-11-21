@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LegalLayout } from "@/components/legal/LegalLayout";
+import { Button } from "@/components/ui/Button";
 
 type Outcome =
   | { ok: true; message: string; data?: Record<string, unknown> }
@@ -54,14 +55,14 @@ export function ConfirmDataRequest() {
               <p className="text-sm font-medium leading-relaxed text-content-secondary">
                 Confirm that you own the email address this link was sent to. The link works once.
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={confirm}
                 disabled={loading}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-theme-primary px-5 text-sm font-semibold text-bg-base transition-colors duration-200 hover:bg-theme-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50"
+                loading={loading}
               >
                 {loading ? "Processing…" : "Confirm request"}
-              </button>
+              </Button>
             </>
           )}
           {outcome && (
