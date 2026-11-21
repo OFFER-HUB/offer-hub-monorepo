@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 import type { Heading, SidebarSection } from "@/lib/mdx";
@@ -11,6 +12,7 @@ import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Navbar } from "@/components/layout/Navbar";
 import { Breadcrumb } from "@/components/docs/Breadcrumb";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface DocsLayoutShellProps {
   nav: SidebarSection[];
@@ -36,10 +38,15 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
+  const [year, setYear] = useState<number | null>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const isHub = pathname === "/docs" || pathname === "/docs/";
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   useEffect(() => {
     setIsDrawerOpen(false);
@@ -68,74 +75,117 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
     return () => observer.disconnect();
   }, [pathname, isHub]);
 
-  // No early return for isHub to allow sidebar on the hub page
-
   return (
-    <div className="min-h-screen bg-bg-base">
-      <Navbar />
+    <div className="min-h-screen bg-bg-base flex flex-col justify-between">
+      <div>
+        <Navbar />
 
-      <div className="pt-40 pb-10">
+        <div className="pt-40 pb-10">
+          {/* SECTION 1: DOCS HEADER (Width matches Navbar) */}
+          <div className="max-w-6xl xl:max-w-7xl mx-auto px-6 lg:px-8 mb-16">
+            <div className="relative z-40 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              {/* Breadcrumb navigation */}
+              <nav aria-label="Breadcrumb" className="flex items-center gap-2 overflow-hidden flex-1">
+                <button
+                  ref={menuButtonRef}
+                  type="button"
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
+                  aria-label="Open docs navigation"
+                  aria-expanded={isDrawerOpen}
+                  aria-controls="docs-mobile-drawer"
+                >
+                  <Menu size={20} aria-hidden="true" />
+                </button>
 
-        {/* SECTION 1: DOCS HEADER (Width matches Navbar) */}
-        <div className="max-w-6xl xl:max-w-7xl mx-auto px-6 lg:px-8 mb-16">
-          <div className="relative z-40 flex flex-col md:flex-row md:items-center justify-between gap-6">
-
-            {/* Breadcrumb navigation */}
-            <nav aria-label="Breadcrumb" className="flex items-center gap-2 overflow-hidden flex-1">
-              <button
-                ref={menuButtonRef}
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
-                aria-label="Open docs navigation"
-                aria-expanded={isDrawerOpen}
-                aria-controls="docs-mobile-drawer"
-              >
-                <Menu size={20} aria-hidden="true" />
-              </button>
-
-              {isHub ? (
-                <span className="text-content-primary font-bold tracking-tight opacity-70 italic text-[14px]">Documentation Index</span>
-              ) : (
-                <Breadcrumb />
-              )}
-            </nav>
+                {isHub ? (
+                  <span className="text-content-primary font-bold tracking-tight opacity-70 italic text-[14px]">Documentation Index</span>
+                ) : (
+                  <Breadcrumb />
+                )}
+              </nav>
+            </div>
           </div>
-        </div>
 
-        {/* SECTION 2: DOCS CONTENT GRID (Wider width as before) */}
-        <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_280px] gap-12 lg:gap-12 xl:gap-20 min-h-[calc(100vh-8rem)]">
-            <aside className="hidden lg:block print:hidden">
-              <div className="sticky top-40 max-h-[calc(100vh-12rem)] flex flex-col">
-                <DocsSidebar nav={nav} className="overflow-y-auto" />
-              </div>
-            </aside>
-
-            <main className="min-w-0">
-              <div className="px-1 md:px-4">
-                <div id="doc-page-export-content">
-                  {children}
+          {/* SECTION 2: DOCS CONTENT GRID */}
+          <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_280px] gap-12 lg:gap-12 xl:gap-20 min-h-[calc(100vh-8rem)]">
+              <aside className="hidden lg:block print:hidden">
+                <div className="sticky top-40 max-h-[calc(100vh-12rem)] flex flex-col">
+                  <DocsSidebar nav={nav} className="overflow-y-auto" />
                 </div>
+              </aside>
 
+              <main className="min-w-0">
+                <div className="px-1 md:px-4">
+                  <div id="doc-page-export-content">
+                    {children}
+                  </div>
+
+                  {headings.length > 0 && (
+                    <div className="xl:hidden mt-20 pt-10 border-t border-theme-border/20 print:hidden">
+                      <TableOfContents headings={headings} />
+                    </div>
+                  )}
+                </div>
+              </main>
+
+              <aside className="hidden xl:block print:hidden">
                 {headings.length > 0 && (
-                  <div className="xl:hidden mt-20 pt-10 border-t border-theme-border/20 print:hidden">
+                  <div className="sticky top-40 max-h-[calc(100vh-12rem)] overflow-y-auto scrollbar-thin">
                     <TableOfContents headings={headings} />
                   </div>
                 )}
-              </div>
-            </main>
-
-            <aside className="hidden xl:block print:hidden">
-              {headings.length > 0 && (
-                <div className="sticky top-40 max-h-[calc(100vh-12rem)] overflow-y-auto scrollbar-thin">
-                  <TableOfContents headings={headings} />
-                </div>
-              )}
-            </aside>
+              </aside>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* ── Compact Docs Footer ── */}
+      <footer className="mt-16 border-t border-theme-border/20 bg-bg-base print:hidden">
+        <div className="max-w-[1800px] mx-auto px-6 lg:px-12 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <p className="text-xs text-content-muted">
+            © {year ?? ""} OFFER-HUB. All rights reserved.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            <Link
+              href="/docs"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
+            >
+              Docs
+            </Link>
+            <Link
+              href="/docs/api-reference/overview"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
+            >
+              API
+            </Link>
+            <Link
+              href="/docs/sdk/quick-start"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
+            >
+              SDK
+            </Link>
+            <Link
+              href="/terms"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-sm text-content-secondary hover:text-content-primary transition-colors min-h-11 px-2.5 inline-flex items-center justify-center"
+            >
+              Privacy
+            </Link>
+            <div className="inline-flex items-center">
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </footer>
 
       <BackToTopButton />
 
