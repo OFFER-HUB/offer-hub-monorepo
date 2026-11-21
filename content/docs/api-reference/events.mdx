@@ -108,7 +108,6 @@ The catalog below is derived from `apps/api/src/modules/events/event-catalog.ts`
 | Event | Payload |
 | --- | --- |
 | `user.created` | `{ userId, externalUserId, type }` |
-| `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
 | `user.stellar_linked` | `{ userId, stellarAddress }` |
 
 ### Wallet events
@@ -123,17 +122,6 @@ There are currently no `wallet.*` entries in the Orchestrator event catalog. Wal
 | `balance.debited` | `{ userId, amount, destination, newBalance }` |
 | `balance.reserved` | `{ userId, amount, orderId, reservedBalance }` |
 | `balance.released` | `{ userId, amount, orderId, availableBalance }` |
-
-### Top-up events
-
-| Event | Payload |
-| --- | --- |
-| `topup.created` | `{ userId, amount, currency }` |
-| `topup.confirmation_required` | `{ topupId, confirmationUri }` |
-| `topup.processing` | `{ topupId, airtmPayinId }` |
-| `topup.succeeded` | `{ topupId, userId, amount, newBalance }` |
-| `topup.failed` | `{ topupId, reason, errorCode }` |
-| `topup.canceled` | `{ topupId, canceledBy }` |
 
 ### Order events
 
@@ -178,7 +166,7 @@ There are currently no `wallet.*` entries in the Orchestrator event catalog. Wal
 | --- | --- |
 | `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
 | `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, airtmPayoutId }` |
+| `withdrawal.pending` | `{ withdrawalId, payoutId }` |
 | `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
 | `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
 | `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |

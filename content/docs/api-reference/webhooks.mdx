@@ -6,12 +6,12 @@ section: API Reference
 ---
 
 <Callout type="warning">
-  OFFER-HUB does **not** provide an outbound webhook subscription API. There is **no** `POST /api/v1/webhooks` endpoint to register a URL, an event list, or a signing secret. The only real-time mechanism for integrators is the **SSE event stream** (`GET /api/v1/events`). The two `/webhooks` endpoints that exist are **inbound** receivers used by external providers (AirTM, Trustless Work) to notify your Orchestrator — you never call them as an integrator.
+  OFFER-HUB does **not** provide an outbound webhook subscription API. There is **no** `POST /api/v1/webhooks` endpoint to register a URL, an event list, or a signing secret. The only real-time mechanism for integrators is the **SSE event stream** (`GET /api/v1/events`). The `/webhooks` endpoint that exists is an **inbound** receiver used by external providers (Trustless Work) to notify your Orchestrator — you never call it as an integrator.
 </Callout>
 
 ## Real-Time Events via SSE
 
-The event stream is the supported way to receive real-time notifications about users, orders, escrows, balances, disputes, top-ups, and withdrawals.
+The event stream is the supported way to receive real-time notifications about users, orders, escrows, balances, disputes, payouts, and withdrawals.
 
 <Badge variant="success">GET</Badge> `/api/v1/events`
 
@@ -146,7 +146,6 @@ These are the event types you can subscribe to. Wildcard subscriptions are suppo
 | Event | Payload |
 |-------|---------|
 | `user.created` | `{ userId, externalUserId, type, status }` |
-| `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
 | `user.stellar_linked` | `{ userId, stellarAddress, linkedAt }` |
 
 ### Wallet Events
@@ -163,17 +162,6 @@ These are the event types you can subscribe to. Wildcard subscriptions are suppo
 | `balance.debited` | `{ userId, amount, destination, newBalance }` |
 | `balance.reserved` | `{ userId, amount, orderId, reservedBalance }` |
 | `balance.released` | `{ userId, amount, orderId, reason }` |
-
-### Top-Up Events
-
-| Event | Payload |
-|-------|---------|
-| `topup.created` | `{ userId, amount, currency }` |
-| `topup.confirmation_required` | `{ topupId, confirmationUri }` |
-| `topup.processing` | `{ topupId, airtmPayinId }` |
-| `topup.succeeded` | `{ topupId, userId, amount, newBalance }` |
-| `topup.failed` | `{ topupId, reason, errorCode }` |
-| `topup.canceled` | `{ topupId, canceledBy }` |
 
 ### Order Events
 
@@ -218,7 +206,7 @@ These are the event types you can subscribe to. Wildcard subscriptions are suppo
 |-------|---------|
 | `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
 | `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, airtmPayoutId }` |
+| `withdrawal.pending` | `{ withdrawalId, payoutId }` |
 | `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
 | `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
 | `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |
@@ -226,21 +214,17 @@ These are the event types you can subscribe to. Wildcard subscriptions are suppo
 
 ## Inbound Provider Webhooks (Self-Hosting)
 
-The Orchestrator exposes **two inbound webhook receivers** that external providers call to notify it about events. These are endpoints **your Orchestrator receives** — integrators never register or call them.
+The Orchestrator exposes an **inbound webhook receiver** that external providers call to notify it about events. This is an endpoint **your Orchestrator receives** — integrators never register or call it.
 
 <Callout type="note">
-  Because of the global `/api/v1` prefix, the full paths are `POST /api/v1/webhooks/airtm` and `POST /api/v1/webhooks/trustless-work`. Signature verification and deduplication are handled internally by the Orchestrator — no outbound configuration is needed.
+  Because of the global `/api/v1` prefix, the full path is `POST /api/v1/webhooks/trustless-work`. Signature verification and deduplication are handled internally by the Orchestrator — no outbound configuration is needed.
 </Callout>
-
-### AirTM — `POST /api/v1/webhooks/airtm`
-
-Receives pay-in/pay-out events from AirTM. The Orchestrator verifies the request using the standard Svix headers (`svix-id`, `svix-timestamp`, `svix-signature`) and the `AIRTM_WEBHOOK_SECRET` environment variable, then processes the event (deduplicating repeats).
 
 ### Trustless Work — `POST /api/v1/webhooks/trustless-work`
 
 Receives escrow lifecycle events from Trustless Work. The Orchestrator verifies the HMAC-SHA256 signature in the `x-tw-signature` header using the `TRUSTLESS_WEBHOOK_SECRET` environment variable, then updates the escrow and emits the corresponding domain events on the SSE stream.
 
-Both endpoints respond with `{ "status": "ok" }` and are covered by the `AIRTM_WEBHOOK_SECRET` / `TRUSTLESS_WEBHOOK_SECRET` environment variables documented in the [Configuration guide](/docs/configuration).
+The endpoint responds with `{ "status": "ok" }` and is covered by the `TRUSTLESS_WEBHOOK_SECRET` variable documented in the [Configuration guide](/docs/configuration).
 
 ## Next Steps
 

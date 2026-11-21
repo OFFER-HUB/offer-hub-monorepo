@@ -1,86 +1,67 @@
 ---
 title: Self-Hosting
-description: Complete instructions for deploying OFFER-HUB Orchestrator on your own infrastructure using Docker.
+description: Deploy and operate the OFFER-HUB Orchestrator on your own infrastructure.
 order: 8
 section: Guides
 ---
 
-Run OFFER-HUB Orchestrator on your own server with full control over data, uptime, and configuration. This guide covers everything from initial setup to ongoing maintenance using Docker.
+Running the Orchestrator yourself gives you control over data, uptime and configuration. This guide covers infrastructure, environment, bootstrap, upgrades and operations.
 
 <Callout type="tip">
-  If you haven't configured your environment variables yet, review the [Configuration](/docs/configuration) page first.
+  Configure the variables on the [Configuration](/docs/configuration) page before you start. Every value in this guide is a placeholder.
 </Callout>
 
-## Prerequisites
+## What you are running
 
-Before you begin, make sure your host machine meets the following requirements:
-
-- **Docker** v20.10 or later
-- **Docker Compose** v2.0 or later
-- **PostgreSQL** 15+ (or managed service like Supabase, Neon, Railway)
-- **Redis** 7+ (or managed service like Upstash, Railway)
-- A registered domain name (recommended for production)
-- At least **2 GB of RAM** and **20 GB of disk space**
-
-Verify that Docker is installed and running:
-
-<CommandLine>docker --version && docker compose version</CommandLine>
-
-<Callout type="note">
-  On older installations you may need to use `docker-compose` (with a hyphen) instead of `docker compose`.
-</Callout>
-
-## Architecture Overview
-
-The repository's root Compose file starts only the infrastructure dependencies. The API is built and
-run from the repository separately:
+A self-hosted deployment has four moving parts:
 
 ```mermaid
 flowchart LR
-    API[apps/api NestJS]
-    Postgres[PostgreSQL]
-    Redis[Redis BullMQ]
-    Stellar[Stellar Network]
+    API["Orchestrator API<br/>REST + SSE + jobs"]
+    PG[(PostgreSQL)]
+    RD[(Redis)]
+    RPC[Stellar RPC]
+    TW[Trustless Work]
+    BP[BlindPay]
 
-    API --> Postgres
-    API --> Redis
-    API --> Stellar
+    API --> PG
+    API --> RD
+    API --> RPC
+    API --> TW
+    API --> BP
 ```
 
-## Docker Setup
+- **API** — serves the REST API, the SSE event stream and the background job workers.
+- **PostgreSQL** — users, balances, orders, escrows, disputes and audit records.
+- **Redis** — job queues, idempotency records and rate limiting.
+- **External providers** — Stellar RPC, Trustless Work for escrow, BlindPay for off-ramp.
 
-### Project Structure
+You do not run a second worker process. The API process consumes the queues.
 
-Create a deployment directory:
+## Prerequisites
 
-<CommandLine>mkdir offer-hub-deploy && cd offer-hub-deploy</CommandLine>
+- Docker 20.10+ and Docker Compose 2.0+
+- PostgreSQL 14+ (local or managed)
+- Redis 6+ (local or managed, with TLS in production)
+- A domain name and TLS certificate for the API origin
+- At least 1 GB RAM and 10 GB disk for the API host, plus your database's requirements
 
-Your directory will contain:
-
+```bash
+docker --version && docker compose version
 ```
-offer-hub-deploy/
-├── docker-compose.yml
-├── .env
-├── nginx.conf (optional)
-└── certs/ (optional, for TLS)
-```
 
-### docker-compose.yml
+## Infrastructure with Docker Compose
 
-Create a `docker-compose.yml` file:
+Create a deployment directory and a Compose file for the dependencies:
 
 ```yaml
-version: "3.9"
-
 services:
   postgres:
-    image: postgres:15-alpine
-    ports:
-      - "5432:5432"
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: offerhub
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-offerhub_secret}
-      POSTGRES_DB: offerhub_db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: offerhub
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -89,13 +70,10 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      - offerhub
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
     healthcheck:
@@ -104,382 +82,186 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
 ```
 
-<Callout type="warning">
-  This Compose file provides PostgreSQL and Redis only. Run the API from the repository with the
-  commands below, or deploy it with a build-based platform configuration.
-</Callout>
-
-### Using External Services
-
-If you prefer managed databases, remove `postgres` and `redis` services and update the environment:
-
-```yaml
-services:
-  postgres:
-    image: postgres:15-alpine
-  redis:
-    image: redis:7-alpine
+```env
+POSTGRES_PASSWORD=your-database-password
 ```
 
-### Building and running the API from source
-
-Clone the source repository, install its dependencies, and run the API directly. No published
-application images are required.
-
-<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB</CommandLine>
-
-<CommandLine>npm ci && npm run build && npm start -w @offerhub/api</CommandLine>
-
-## Environment Variables
-
-Create a `.env` file in the same directory as your `docker-compose.yml`.
-
-### Required Variables
-
-| Variable | Description |
-|----------|-------------|
-| `NODE_ENV` | Runtime environment: `development`, `staging`, `production` |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection string |
-| `OFFERHUB_MASTER_KEY` | Master key for creating API keys |
-| `WALLET_ENCRYPTION_KEY` | 64 hex chars - AES-256-GCM key for wallet encryption |
-| `TRUSTLESS_API_KEY` | Trustless Work API key for escrow |
-| `PLATFORM_USER_ID` | Platform user ID for escrow operations |
-| `PUBLIC_BASE_URL` | Your Orchestrator's public URL |
-
-### Optional Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `4000` | HTTP server port |
-| `LOG_LEVEL` | `info` | Logging level: `debug`, `info`, `warn`, `error` |
-| `PAYMENT_PROVIDER` | `crypto` | Payment mode: `crypto` or `airtm` |
-| `STELLAR_NETWORK` | `testnet` | Stellar network: `testnet` or `mainnet` |
-| `STELLAR_USDC_ISSUER` | Testnet issuer | USDC asset issuer address |
-
-<Callout type="danger">
-  Never commit your `.env` file to version control. Treat every value as a secret.
+<Callout type="warning">
+  This Compose file provides PostgreSQL and Redis only. The API is built and run from the application repository, or deployed with a build-based platform configuration.
 </Callout>
 
-### Example .env File
+Managed services work too. Point `DATABASE_URL` and `REDIS_URL` at them and drop the corresponding Compose service.
+
+## Build and run the API
+
+Clone the starter shell and build it:
 
 ```bash
-# Server
+git clone https://github.com/OFFER-HUB/OFFER-HUB.git
+cd OFFER-HUB
+npm ci
+npm run build
+```
+
+Run the API with the environment from your secret store:
+
+<CommandLine>npm start</CommandLine>
+
+### Environment
+
+```env
 NODE_ENV=production
 PORT=4000
-LOG_LEVEL=info
+PUBLIC_BASE_URL=https://api.yourdomain.example
 
-# Database (PostgreSQL)
-DATABASE_URL=postgresql://offerhub:your_password@postgres:5432/offerhub_db
-POSTGRES_PASSWORD=your_password
+DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
+REDIS_URL=rediss://host:6379
 
-# Redis
-REDIS_URL=redis://redis:6379
+OFFERHUB_MASTER_KEY=your-master-key
 
-# Authentication
-OFFERHUB_MASTER_KEY=your-secure-master-key-at-least-32-chars
+TRUSTLESS_API_KEY=your-trustless-api-key
+TRUSTLESS_WEBHOOK_SECRET=your-trustless-webhook-secret
 
-# Payment Provider
-PAYMENT_PROVIDER=crypto
-WALLET_ENCRYPTION_KEY=your-64-character-hex-key-here-generate-with-crypto-randomBytes
-
-# Trustless Work (Escrow)
-TRUSTLESS_API_KEY=your_trustless_api_key
-TRUSTLESS_WEBHOOK_SECRET=your_webhook_secret
-
-# Platform Identity
-PLATFORM_USER_ID=usr_platform
-
-# Stellar
 STELLAR_NETWORK=mainnet
-STELLAR_USDC_ISSUER=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
-
-# Public URL
-PUBLIC_BASE_URL=https://api.yourdomain.com
-
-# Frontend (if running frontend in same compose)
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com
-NEXT_PUBLIC_STELLAR_NETWORK=mainnet
+STELLAR_RPC_URL=https://your-stellar-rpc-endpoint
+STELLAR_USDC_ASSET_CODE=USDC
+STELLAR_USDC_ISSUER=your-usdc-issuer
 ```
 
-### Generating Secure Keys
-
-```bash
-# Generate OFFERHUB_MASTER_KEY
-openssl rand -base64 32
-
-# Generate WALLET_ENCRYPTION_KEY (64 hex characters)
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-## Running in Production
-
-### Starting the Stack
-
-Once your `.env` file is ready, bring everything up in detached mode:
-
-<CommandLine>docker compose up -d</CommandLine>
-
-Watch the logs to confirm all services start cleanly:
-
-<CommandLine>docker compose logs -f</CommandLine>
-
-### Running Database Migrations
-
-Apply Prisma migrations before the first launch (or after pulling a new source revision):
-
-<CommandLine>npm run prisma:generate && npx prisma migrate deploy --schema packages/database/prisma/schema.prisma</CommandLine>
-
-<Callout type="tip">
-  To understand exactly what gets created — every table, field, and relationship — see the [Data Model](/docs/guide/data-model) reference.
+<Callout type="danger">
+  Never commit this file. Rotate `OFFERHUB_MASTER_KEY` out of runtime use once the operator and backend keys exist.
 </Callout>
 
-<Callout type="warning">
-  Always back up your database before running migrations in production.
+## Bootstrap an instance
+
+A fresh instance has no API keys. Bootstrap in this order:
+
+1. **Set the master key.** Put `OFFERHUB_MASTER_KEY=your-master-key` in the environment.
+2. **Apply migrations.**
+   ```bash
+   npx prisma migrate deploy
+   ```
+3. **Create the operator key** with `support` scope:
+   ```bash
+   curl -X POST https://api.yourdomain.example/api/v1/auth/api-keys \
+     -H "Authorization: Bearer your-master-key" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Operator", "scopes": ["support"]}'
+   ```
+4. **Create the marketplace keys** with `read` and `write` scopes, using the operator key.
+5. **Store the keys** in your marketplace backend's secret store. Remove the master key from the running service if your deployment allows it.
+
+<Callout type="note">
+  The master key is a bootstrap credential, not a daily-use one. Give it the shortest possible life in your runtime environment.
 </Callout>
 
-### Setting NODE_ENV
+## Network and signing
 
-Make sure `NODE_ENV=production` is set in your `.env` file. This enables:
+| Concern | Production | Sandbox |
+|---|---|---|
+| Network | `STELLAR_NETWORK=mainnet` | `STELLAR_NETWORK=testnet` |
+| RPC | A mainnet Stellar RPC endpoint | A testnet Stellar RPC endpoint |
+| Signing | User wallet via Stellar Wallets Kit | User wallet, or the sandbox's invisible wallets |
+| User keys | Never held by the Orchestrator | Sandbox wallets exist for demos |
 
-- Optimised builds and minification
-- Stricter error handling
-- Disabled development-only logging
-- Production-level security defaults
+In production the Orchestrator returns unsigned transactions. The user's wallet (Freighter/Varial, Lobstr or xBull) signs and submits them. If your deployment logs request bodies, make sure signed transaction payloads are not captured in full.
 
-### TLS / HTTPS
+## TLS
 
-For production deployments you should terminate TLS at your hosting platform or an external reverse proxy. The dependency Compose file does not include an application or proxy service.
+Terminate TLS at your load balancer or reverse proxy. Minimum requirements:
 
-Example `nginx.conf`:
+- HTTPS only; redirect HTTP.
+- `PUBLIC_BASE_URL` matches the public origin exactly, so provider callbacks reach the instance.
+- WebSocket upgrades are not required; the SSE stream is plain HTTPS.
+
+Example Nginx location:
 
 ```nginx
-events {
-    worker_connections 1024;
-}
-
-http {
-    upstream orchestrator {
-        server orchestrator:4000;
-    }
-
-    upstream frontend {
-        server frontend:3000;
-    }
-
-    server {
-        listen 80;
-        server_name yourdomain.com;
-        return 301 https://$server_name$request_uri;
-    }
-
-    server {
-        listen 443 ssl;
-        server_name yourdomain.com;
-
-        ssl_certificate /etc/nginx/certs/fullchain.pem;
-        ssl_certificate_key /etc/nginx/certs/privkey.pem;
-
-        # API routes
-        location /api {
-            proxy_pass http://orchestrator;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Frontend routes
-        location / {
-            proxy_pass http://frontend;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-        }
-    }
+location /api/ {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_buffering off; # keep the SSE stream flowing
 }
 ```
 
-<Callout type="tip">
-  [Let's Encrypt](https://letsencrypt.org) with [Certbot](https://certbot.eff.org) is the easiest way to obtain free TLS certificates.
-</Callout>
+`proxy_buffering off` matters for `GET /api/v1/events`; buffering delays events until the buffer fills.
 
-## Health Checks
+## Health and monitoring
 
-The Orchestrator exposes a `/health` endpoint that returns the current service status. The Docker Compose file already configures a health check against it.
-
-### Manual Check
-
-<CommandLine>curl http://localhost:4000/health</CommandLine>
-
-Expected response:
+```bash
+curl https://api.yourdomain.example/api/v1/health
+```
 
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-02-25T12:00:00.000Z",
+  "status": "healthy",
   "services": {
-    "database": "healthy",
-    "redis": "healthy",
-    "stellar": "connected"
+    "database": "connected",
+    "redis": "connected"
   }
 }
 ```
 
-### Container Health Status
+Operational checks worth alerting on:
 
-Docker reports health status directly:
+- Health endpoint non-200 for more than two minutes.
+- Queue depth growing without draining.
+- Stellar RPC error rate rising.
+- Provider webhook failures in the dead-letter queue.
 
-<CommandLine>docker compose ps</CommandLine>
+## Upgrades
 
-A healthy deployment shows `(healthy)` next to each service. If a service is `(unhealthy)`, inspect its logs:
-
-<CommandLine>docker compose logs orchestrator --tail 50</CommandLine>
-
-### Monitoring Tips
-
-- Point an uptime monitor (e.g. UptimeRobot, Betterstack) at `/health`.
-- Set up alerts for non-`200` responses or response times above **2 seconds**.
-- Monitor disk usage — logs, database, and Docker images can accumulate over time.
-- Track Redis memory usage — BullMQ jobs can grow if not cleaned up.
-
-## Background Jobs
-
-The Orchestrator uses BullMQ for background job processing:
-
-| Queue | Purpose |
-|-------|---------|
-| `webhooks` | Process **inbound** provider webhooks (AirTM, Trustless Work) |
-| `reconciliation` | Periodic sync jobs with external providers |
-| `notifications` | Send notifications (email, push, etc.) |
-| `dead-letter-queue` | Jobs that exhausted all retry attempts |
-
-Monitor job queues:
+1. Back up the database.
+2. Pull the new source revision.
+3. Install dependencies and build.
+4. Apply migrations.
+5. Restart the API.
+6. Verify health and one read-only API call.
 
 ```bash
-# View Redis keys
-docker compose exec redis redis-cli keys "bull:*"
-
-# Check queue length
-docker compose exec redis redis-cli llen "bull:webhooks:wait"
-```
-
-## Updating
-
-### Updating the source and infrastructure
-
-<CommandLine>git pull --ff-only</CommandLine>
-
-### Applying the Update
-
-<CommandLine>docker compose up -d</CommandLine>
-
-This starts or updates the PostgreSQL and Redis dependencies. Rebuild and restart the API separately.
-
-### Full Update Workflow
-
-The recommended update procedure:
-
-1. **Back up your database** before any update.
-2. Pull the latest source.
-3. Run migrations.
-4. Rebuild and restart the API.
-
-```bash
-# 1. Backup database
-docker compose exec postgres pg_dump -U offerhub offerhub_db > backup-$(date +%Y%m%d).sql
-
-# 2. Pull the latest source
+# 1. Backup
+pg_dump "$DATABASE_URL" > backup-$(date +%Y%m%d).sql
+# 2. Update source
 git pull --ff-only
-
-# 3. Rebuild the API
+# 3. Build
 npm ci && npm run build
-
-# 4. Run any new migrations
-npx prisma migrate deploy --schema packages/database/prisma/schema.prisma
-
-# 5. Verify health
-curl http://localhost:4000/api/v1/health
+# 4. Migrate
+npx prisma migrate deploy
+# 5. Restart your service manager, then:
+curl -fsS https://api.yourdomain.example/api/v1/health
 ```
 
-### Rolling Back
+If a release misbehaves, check out the previous known-good commit, rebuild and restart. Migrations are not automatically reversible; restore the backup if a migration must be undone.
 
-If something goes wrong, roll back the source checkout to a known-good commit:
+## Background jobs
 
-```bash
-git log --oneline -10
-git checkout <known-good-commit>
-npm ci && npm run build
-```
+The API process runs BullMQ queues for provider webhooks, reconciliation and notifications. See [Background Jobs](/docs/guide/background-jobs) for queue names, retry behaviour and how to inspect them.
 
-Then restart the API:
+## Security checklist
 
-<CommandLine>npm start -w @offerhub/api</CommandLine>
+- [ ] `NODE_ENV=production`
+- [ ] Master key removed from runtime use after bootstrap
+- [ ] `read` and `write` keys separated from the `support` key
+- [ ] Database and Redis reachable only from the private network
+- [ ] `DATABASE_URL` and `REDIS_URL` use TLS
+- [ ] `TRUSTLESS_WEBHOOK_SECRET` configured
+- [ ] HTTPS enforced for `PUBLIC_BASE_URL`
+- [ ] Logs exclude secrets and full signed transaction payloads
+- [ ] Backups scheduled and restore tested
 
-## Security Checklist
+## Next steps
 
-Before going to production, verify:
-
-- [ ] `NODE_ENV=production` is set
-- [ ] `OFFERHUB_MASTER_KEY` is a strong, unique value
-- [ ] `WALLET_ENCRYPTION_KEY` is backed up securely
-- [ ] Database uses SSL (`?sslmode=require`)
-- [ ] Redis uses TLS (`rediss://`)
-- [ ] HTTPS is enabled with valid certificates
-- [ ] Firewall only exposes ports 80/443
-- [ ] Database is not publicly accessible
-- [ ] Redis is not publicly accessible
-- [ ] Inbound webhook secrets are configured (`AIRTM_WEBHOOK_SECRET` / `TRUSTLESS_WEBHOOK_SECRET`)
-
-## Troubleshooting
-
-### API won't start
-
-```bash
-# Check logs
-npm start -w @offerhub/api
-
-# Common issues:
-# - DATABASE_URL invalid
-# - WALLET_ENCRYPTION_KEY wrong length
-# - Redis not reachable
-```
-
-### Database connection errors
-
-```bash
-# Test PostgreSQL connection
-npx prisma db pull --schema packages/database/prisma/schema.prisma
-
-# Check if migrations are applied
-npx prisma migrate status --schema packages/database/prisma/schema.prisma
-```
-
-### Inbound provider webhooks not being processed
-
-```bash
-# Check the inbound webhook queue
-docker compose exec redis redis-cli lrange "bull:webhooks:failed" 0 10
-
-# Common issues:
-# - AIRTM_WEBHOOK_SECRET / TRUSTLESS_WEBHOOK_SECRET don't match the provider's configured secret
-# - The provider can't reach POST /api/v1/webhooks/airtm or /api/v1/webhooks/trustless-work
-#   (PUBLIC_BASE_URL wrong, firewall, or TLS misconfiguration)
-```
-
-## Next Steps
-
-- [Configuration](/docs/configuration) — Full environment variable reference
-- [Quick Start](/docs/guide/quick-start) — Make your first API call
-- [Data Model](/docs/guide/data-model) — Every database table and relationship
-- [API Reference](/docs/api-reference/overview) — Explore all endpoints
-- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — SSE event stream and event catalog
+- [Configuration](/docs/configuration) — variable reference
+- [Data Model](/docs/guide/data-model) — tables, fields and relationships
+- [Background Jobs](/docs/guide/background-jobs) — queues and reconciliation
+- [Troubleshooting](/docs/guide/troubleshooting) — symptom-to-fix reference
+- [API Reference](/docs/api-reference/overview) — endpoint surface

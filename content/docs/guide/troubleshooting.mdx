@@ -1,0 +1,130 @@
+---
+title: Troubleshooting
+description: Symptom-to-fix reference for self-hosted OFFER-HUB Orchestrator deployments.
+order: 13
+section: Guides
+---
+
+Use this page when something is not working. Each entry names the symptom, the likely cause and the check that confirms it.
+
+## Startup and connectivity
+
+### The API exits immediately
+
+| Check | Expected |
+|---|---|
+| `DATABASE_URL` reachable | `psql "$DATABASE_URL" -c "select 1"` succeeds |
+| `REDIS_URL` reachable | `redis-cli -u "$REDIS_URL" ping` returns `PONG` |
+| Migrations applied | `npx prisma migrate status` reports up to date |
+| Port free | Nothing else listening on `PORT` |
+
+### Health returns 503
+
+```bash
+curl -i https://api.yourdomain.example/api/v1/health
+```
+
+Read the `services` block in the body. `database: disconnected` points at PostgreSQL; `redis: disconnected` points at Redis or TLS (`rediss://`).
+
+### The SSE stream connects but shows nothing
+
+- Check the reverse proxy: `proxy_buffering` must be off for `/api/`.
+- Confirm the request is authenticated; an unauthenticated stream closes early.
+- Events only appear when something changes. Create a test order and watch.
+
+## Authentication
+
+### 401 on every request
+
+- Confirm the header is `Authorization: Bearer <credential>`.
+- An API key and a one-hour token are different credentials. A token stops working after an hour.
+- A revoked key fails immediately.
+
+### 403 with `INSUFFICIENT_SCOPE`
+
+The key is valid but lacks the scope for that route:
+
+| Operation | Scope |
+|---|---|
+| Read orders and balances | `read` |
+| Create orders, submit escrow, submit payouts | `write` |
+| Resolve disputes | `support` |
+
+### I lost the master key
+
+The master key is not recoverable from the database; it is only used to create API keys. If an operator key with `support` scope still exists, use it to issue new keys. If no usable key remains, restore the instance from backup or re-bootstrap a new deployment.
+
+<Callout type="danger">
+  Never send a key, a database URL or a seed phrase in a support request. Describe the symptom instead.
+</Callout>
+
+## Orders and escrow
+
+### `INSUFFICIENT_FUNDS` when creating an order
+
+The buyer's `available` balance is below the order amount. Check it before checkout:
+
+```bash
+curl https://api.yourdomain.example/api/v1/users/usr_your_user_id/balance \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+### The order is stuck in `ESCROW_FUNDING`
+
+The funding transaction was prepared but not confirmed. Check:
+
+1. the buyer signed and submitted it in their wallet;
+2. `STELLAR_NETWORK` and `STELLAR_RPC_URL` refer to the same network;
+3. the Stellar RPC endpoint is healthy.
+
+Do not resubmit escrow with a new idempotency key. Use the original key.
+
+### `INVALID_STATE` on release
+
+Release requires the order to be `DELIVERED` before `RELEASE_REQUESTED`. Read the order, confirm delivery was recorded, then retry the same request.
+
+### A wallet rejects the signature
+
+The unsigned transaction has a time bound. If the user waited too long, prepare a fresh transaction and sign again. Confirm the wallet is on the network the Orchestrator is configured for.
+
+## Payouts and off-ramp
+
+### A BlindPay payout is rejected
+
+Check the bank account and KYC resources first: corridor support is limited to Brazil, Mexico, Argentina and Colombia, and the destination account must be complete for the corridor. Provider limits are set by BlindPay for your account, not by the Orchestrator.
+
+### A payout stays pending
+
+Payouts settle on the provider's schedule. Reconcile against BlindPay status and the payout record; a UI state is not settlement. See [Background Jobs](/docs/guide/background-jobs).
+
+## Webhooks and queues
+
+### A provider callback is not processed
+
+```bash
+redis-cli lrange "bull:webhooks:failed" 0 10
+```
+
+Common causes:
+
+- the webhook secret does not match the provider's configured secret;
+- `PUBLIC_BASE_URL` is wrong, so the provider cannot reach the instance;
+- TLS is invalid or the firewall blocks the provider's network.
+
+### Queues grow and never drain
+
+The API process is the consumer. If it is down or unhealthy, queues grow. Restart it, then confirm `bull:webhooks:wait` decreases.
+
+## Performance
+
+### Slow list endpoints
+
+Use pagination and filters rather than fetching everything. Check the database for missing indexes only after measuring; report slow queries with their plan.
+
+### High Stellar RPC error rate
+
+RPC endpoints rate-limit. Back off and retry, and point `STELLAR_RPC_URL` at a dedicated endpoint for production traffic.
+
+## Getting help
+
+Open an issue on [GitHub](https://github.com/OFFER-HUB/offer-hub-monorepo/issues) with the symptom, the request path, the error code and the approximate time. Redact credentials, addresses and user data.

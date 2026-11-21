@@ -1,203 +1,194 @@
 ---
 title: SDK Quick Start
-description: Get started with the OFFER-HUB TypeScript SDK in minutes.
+description: Use @offerhub/sdk 3.0.0 to build marketplace payment flows.
 order: 1
 section: SDK
 ---
 
-The OFFER-HUB SDK provides a type-safe TypeScript client for integrating with the Orchestrator API. It handles authentication, retries, and provides typed errors for better error handling.
+`@offerhub/sdk` is the TypeScript client for the Orchestrator API. It handles authentication, retries, idempotency and typed errors.
+
+<Callout type="note">
+  This page targets **`@offerhub/sdk` 3.0.0**. Earlier releases had a different resource surface — no `topups` resource, and escrow, resolution and payouts are first-class.
+</Callout>
 
 ## Installation
 
-<CommandLine>npm install @offerhub/sdk</CommandLine>
-
-Or with yarn:
-
-<CommandLine>yarn add @offerhub/sdk</CommandLine>
+```bash
+npm install @offerhub/sdk
+```
 
 ## Configuration
 
-### Initialize the SDK
-
 ```typescript
-import { OfferHubSDK } from '@offerhub/sdk';
+import { OfferHubSDK } from "@offerhub/sdk";
 
 const sdk = new OfferHubSDK({
-  apiUrl: process.env.OFFERHUB_API_URL,    // e.g., http://localhost:4000
-  apiKey: process.env.OFFERHUB_API_KEY,    // e.g., ohk_live_xxx
-  timeout: 30000,                           // Optional: request timeout (default: 30s)
-  retryAttempts: 3,                         // Optional: retry count (default: 3)
+  apiUrl: process.env.OFFERHUB_API_URL!, // e.g. https://your-orchestrator.example.com
+  apiKey: process.env.OFFERHUB_API_KEY!, // e.g. ohk_live_...
 });
 ```
 
-### Environment Variables
+### Two credential kinds
 
-Add to your `.env` file:
+| Credential | Prefix | Lifetime | Use it for |
+|---|---|---|---|
+| API key | `ohk_live_...` | Until revoked | Server-to-server calls from your marketplace backend |
+| Scoped token | `ohk_tok_...` | 1 hour | Browser or per-user work, after exchanging an API key |
 
-```env
-OFFERHUB_API_URL=http://localhost:4000
-OFFERHUB_API_KEY=ohk_live_your_api_key_here
+```typescript
+// Server-side integration: the API key stays on the server.
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL!,
+  apiKey: process.env.OFFERHUB_API_KEY!,
+});
+
+// Acting as a signed-in marketplace user with a one-hour token.
+const userSdk = sdk.asUser(userToken);
 ```
 
 <Callout type="danger">
-  Never expose your API key in client-side code. The SDK is designed for server-to-server communication only.
+  An API key must never reach a browser bundle. Exchange it for a short-lived token on your server, or create the user session there, and use `sdk.asUser(token)` for user-scoped work.
 </Callout>
 
-## Basic Usage
+## Resources
 
-### Create a User
+| Resource | Purpose |
+|---|---|
+| `sdk.auth` | Credential exchange and session handling |
+| `sdk.users` | Create and read marketplace users |
+| `sdk.balance` | Available and reserved balances |
+| `sdk.orders` | Order lifecycle |
+| `sdk.escrow` | Trustless Work escrow operations and transaction submission |
+| `sdk.resolution` | Release, refund and resolution requests |
+| `sdk.disputes` | Open, review and resolve disputes |
+| `sdk.wallet` | Wallet details and deposits |
+| `sdk.withdrawals` | Withdrawals to an external Stellar address |
+| `sdk.payouts` | BlindPay off-ramp payouts |
+| `sdk.bankAccounts` | Payout bank accounts |
+| `sdk.kyc` | Payout onboarding checks |
+
+## Creating a user
 
 ```typescript
-const user = await sdk.users.create({
-  externalUserId: 'your-user-123',
-  email: 'buyer@example.com',
-  type: 'BUYER'   // or 'SELLER', 'BOTH'
+const buyer = await sdk.users.create({
+  externalUserId: "your-buyer-123",
+  email: "buyer@example.com",
+  type: "BUYER", // BUYER | SELLER | BOTH
 });
 
-console.log('User ID:', user.id);  // usr_abc123
+console.log(buyer.id); // usr_ + 32 random characters
 ```
 
-### Get User Balance
+`externalUserId` maps the Orchestrator user to your own user record. Keep it stable and unique.
+
+## Creating an order
+
+`orders.create` requires an idempotency key. Set one per logical order so retries are safe:
 
 ```typescript
-const balance = await sdk.balance.get(user.id);
+const sdkForOrder = sdk.withIdempotencyKey("your-order-reference-001");
 
-console.log('Available:', balance.available);  // "100.00"
-console.log('Reserved:', balance.reserved);    // "0.00"
-```
-
-### Create an Order
-
-```typescript
-const order = await sdk.orders.create({
-  buyer_id: 'usr_buyer123',
-  seller_id: 'usr_seller456',
-  amount: '100.00',
-  currency: 'USD',
-  title: 'Logo Design',
-  description: 'Design a logo for my startup'
+const order = await sdkForOrder.orders.create({
+  buyerId: buyer.id,
+  sellerId: seller.id,
+  amount: "75.00",
+  currency: "USDC",
+  title: "Logo design",
+  description: "Three concepts, two revision rounds",
 });
 
-console.log('Order ID:', order.id);      // ord_xyz789
-console.log('Status:', order.status);    // ORDER_CREATED
+console.log(order.status); // ORDER_CREATED
 ```
 
-### Complete a Milestone
+## Escrow and signing
 
-Milestones are part of one order. List them with `sdk.orders.getMilestones()` and complete one by its `milestone_ref` using `sdk.orders.completeMilestone()` after the order reaches `IN_PROGRESS`:
+Escrow operations produce **unsigned Stellar transactions**. Your frontend hands them to Stellar Wallets Kit; the user signs; the signed transaction is submitted. The SDK never signs on behalf of a user.
 
 ```typescript
-const milestones = await sdk.orders.getMilestones(order.id);
+const submission = await sdk.escrow.submit(order.id, {
+  idempotencyKey: "your-order-reference-001-escrow",
+});
 
-const completedMilestone = await sdk.orders.completeMilestone(order.id, 'design');
-console.log('Milestone status:', completedMilestone.status); // COMPLETED
+// submission.transaction is an unsigned transaction for the buyer's wallet.
+// Sign it with Freighter/Varial, Lobstr or xBull, then submit the signed result.
 ```
 
-### Complete Order Flow
+Escrow states follow the order lifecycle: `ESCROW_CREATING`, `ESCROW_FUNDING`, `ESCROW_FUNDED`, then `IN_PROGRESS`.
+
+## Release, refund and payouts
 
 ```typescript
-// 1. Reserve funds
-await sdk.orders.reserve(order.id);
+// Buyer requests release after delivery
+await sdk.resolution.release(order.id, {
+  requestedBy: buyer.id,
+});
 
-// 2. Create escrow on blockchain
-await sdk.orders.createEscrow(order.id);
-
-// 3. Fund the escrow
-await sdk.orders.fundEscrow(order.id);
-
-// 4. Release to seller when work is done
-await sdk.orders.release(order.id, 'Work completed');
+// A seller's payout: Stellar address, or a BlindPay corridor
+await sdk.payouts.submit(order.id, {
+  idempotencyKey: "your-order-reference-001-payout",
+});
 ```
 
-## Available Resources
+BlindPay covers four corridors: Brazil, Mexico, Argentina and Colombia. Bank account and KYC resources prepare the payout destination.
 
-The SDK provides access to all Orchestrator resources:
+## Disputes
 
-| Resource | Description |
-|----------|-------------|
-| `sdk.users` | Create and manage users |
-| `sdk.balance` | Check user balances |
-| `sdk.orders` | Create and manage orders, escrows, and resolutions |
-| `sdk.disputes` | Manage disputes |
-| `sdk.wallet` | Wallet operations (deposit addresses) |
-| `sdk.withdrawals` | Create withdrawals |
-| `sdk.topups` | Top-up operations (AirTM mode) |
+```typescript
+await sdk.disputes.open(order.id, {
+  openedBy: "BUYER", // BUYER | SELLER
+  reason: "QUALITY_ISSUE", // NOT_DELIVERED | QUALITY_ISSUE | OTHER
+});
+
+// Resolution needs the `support` scope
+await sdk.disputes.resolve(disputeId, {
+  decision: "SPLIT", // FULL_RELEASE | FULL_REFUND | SPLIT
+  releaseAmount: "45.00",
+  refundAmount: "30.00",
+  note: "Partial delivery accepted by both parties",
+});
+```
+
+Dispute statuses are `OPEN`, `UNDER_REVIEW` and `RESOLVED`.
 
 ## Idempotency
 
-For safe retries, use idempotency keys:
+Three endpoints require an `Idempotency-Key`:
+
+| Operation | SDK call |
+|---|---|
+| Create order | `sdk.orders.create` |
+| Submit escrow | `sdk.escrow.submit` |
+| Submit payout | `sdk.payouts.submit` |
+
+Retrying with the same key returns the original response. Retrying with a new key is a new operation.
+
+<Callout type="warning">
+  Never regenerate the key when retrying a failed request. Derive it from your own order reference.
+</Callout>
+
+## Error handling
+
+Errors follow the API envelope and are exposed as typed errors by the SDK:
 
 ```typescript
-// Create SDK instance with idempotency key
-const idempotentSdk = sdk.withIdempotencyKey('unique-operation-key');
-
-// This request can be safely retried
-const order = await idempotentSdk.orders.create({
-  buyerId: 'usr_buyer',
-  sellerId: 'usr_seller',
-  amount: '100.00',
-  title: 'Service'
-});
-```
-
-If you retry with the same idempotency key, you get the same response without creating a duplicate.
-
-## Error Handling
-
-The SDK provides typed errors for precise error handling:
-
-```typescript
-import {
-  InsufficientFundsError,
-  NotFoundError,
-  ValidationError,
-  InvalidTransitionError,
-  OfferHubError
-} from '@offerhub/sdk';
+import { OfferHubError, ValidationError } from "@offerhub/sdk";
 
 try {
-  await sdk.orders.reserve('ord_123');
+  await sdk.orders.create(payload);
 } catch (error) {
-  if (error instanceof InsufficientFundsError) {
-    console.error(`Need ${error.required}, have ${error.available}`);
-  } else if (error instanceof NotFoundError) {
-    console.error(`${error.resourceType} not found`);
-  } else if (error instanceof ValidationError) {
-    console.error('Validation errors:', error.errors);
-  } else if (error instanceof InvalidTransitionError) {
-    console.error(`Cannot transition from ${error.currentState}`);
+  if (error instanceof ValidationError) {
+    console.error("Invalid request", error.details);
   } else if (error instanceof OfferHubError) {
-    console.error('API error:', error.message);
+    console.error(error.code, error.message);
   }
 }
 ```
 
-## TypeScript Support
+The full envelope and error code list is in [SDK Errors](/docs/sdk/errors).
 
-The SDK is fully typed. You get autocomplete and type checking:
+## Next steps
 
-```typescript
-import type { User, Order, Balance } from '@offerhub/sdk';
-
-async function processOrder(user: User): Promise<Order> {
-  const balance: Balance = await sdk.balance.get(user.id);
-
-  if (parseFloat(balance.available) < 100) {
-    throw new Error('Insufficient funds');
-  }
-
-  return sdk.orders.create({
-    buyerId: user.id,
-    sellerId: 'usr_seller',
-    amount: '100.00',
-    title: 'Service'
-  });
-}
-```
-
-## Next Steps
-
-- [SDK Resources](/docs/sdk/resources) - All available methods
-- [Error Handling](/docs/sdk/errors) - Complete error reference
-- [Quick Start Guide](/docs/guide/quick-start) - Full integration example
-- [API Reference](/docs/api-reference/overview) - REST API documentation
+- [Errors](/docs/sdk/errors) — envelope and codes
+- [Quick Start](/docs/guide/quick-start) — the same flow with `curl`
+- [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) — end-to-end tutorial
+- [API Reference](/docs/api-reference/overview) — endpoint surface

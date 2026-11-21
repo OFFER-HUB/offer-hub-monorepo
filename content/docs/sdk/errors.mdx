@@ -1,0 +1,104 @@
+---
+title: Errors
+description: Error envelopes and codes returned by the OFFER-HUB Orchestrator and the TypeScript SDK.
+order: 2
+section: SDK
+---
+
+Every Orchestrator error uses the same envelope, whatever the endpoint:
+
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_FUNDS",
+    "message": "Available balance is less than the requested amount",
+    "details": {
+      "available": "25.00",
+      "requested": "75.00"
+    }
+  }
+}
+```
+
+`details` is optional and its shape depends on `code`. Treat `code` as the stable contract; `message` is for humans and may change.
+
+Successful responses use the matching success envelope:
+
+```json
+{ "data": { "...": "..." }, "meta": { "...": "..." } }
+```
+
+`meta` is optional and carries pagination or request context.
+
+## Codes
+
+| Code | HTTP | Meaning | What to do |
+|---|---|---|---|
+| `VALIDATION_ERROR` | 400 | A field is missing or invalid | Fix the request body |
+| `UNAUTHORIZED` | 401 | Credential missing, malformed or expired | Send a valid key or token |
+| `INSUFFICIENT_SCOPE` | 403 | Credential lacks the route's scope | Use a key with `read`, `write` or `support` as needed |
+| `USER_NOT_FOUND` | 404 | Unknown user ID | Create the user first |
+| `ORDER_NOT_FOUND` | 404 | Unknown order ID | Check the ID, then list orders |
+| `INVALID_STATE` | 409 | Transition not allowed from the current status | Read the resource and follow the state machine |
+| `IDEMPOTENCY_KEY_REUSED` | 409 | Same key sent with a different body | Use a new key for a new request |
+| `INSUFFICIENT_FUNDS` | 422 | Available balance is too low | Fund the account before retrying |
+| `RATE_LIMITED` | 429 | Too many requests | Back off, then retry with the same idempotency key |
+| `PROVIDER_TIMEOUT` | 504 | Stellar or a provider did not answer in time | Retry with the same idempotency key |
+
+## Typed errors in the SDK
+
+The SDK maps responses to error classes, so you can branch on type instead of parsing strings:
+
+```typescript
+import {
+  InsufficientFundsError,
+  NotFoundError,
+  ValidationError,
+  InvalidTransitionError,
+  OfferHubError,
+} from "@offerhub/sdk";
+
+try {
+  await sdk.orders.create(payload);
+} catch (error) {
+  if (error instanceof InsufficientFundsError) {
+    // Show a "add funds" state to the buyer
+  } else if (error instanceof ValidationError) {
+    console.error(error.details);
+  } else if (error instanceof NotFoundError) {
+    console.error("Unknown resource");
+  } else if (error instanceof InvalidTransitionError) {
+    // Re-read the resource before retrying
+  } else if (error instanceof OfferHubError) {
+    console.error(error.code, error.message);
+  } else {
+    throw error;
+  }
+}
+```
+
+## Retrying safely
+
+Only three operations require an `Idempotency-Key`:
+
+| Operation | Field |
+|---|---|
+| Create an order | `POST /orders` |
+| Submit an escrow transaction | `POST /orders/:id/escrow/submit` |
+| Submit a payout | `POST /orders/:orderId/payout/submit` |
+
+Retry those with the **same** key and the same body. A new key is a new operation and can move funds twice.
+
+<Callout type="warning">
+  For any other request, read the current state before retrying. A blind retry on a non-idempotent route can duplicate work.
+</Callout>
+
+## What not to log
+
+Error `details` can contain amounts or identifiers. Never log credentials, signed transactions, bank details or KYC data. Redact before sending an error to an external logger.
+
+## Related reading
+
+- [SDK Quick Start](/docs/sdk/quick-start) — client setup
+- [Orchestrator](/docs/guide/orchestrator#errors-and-retries) — state machine and errors
+- [API Reference](/docs/api-reference/overview) — endpoint surface

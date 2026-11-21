@@ -5,10 +5,10 @@ order: 2
 section: Guides
 ---
 
-The `@offerhub/cli` package provides a command-line interface for managing the OFFER-HUB Orchestrator. It is the fastest way to create API keys, manage configuration, and toggle maintenance mode — no `curl` required.
+The `@offerhub/cli` package provides a command-line interface for managing a self-hosted OFFER-HUB Orchestrator. Use it to create and revoke API keys, mint short-lived tokens, and toggle maintenance mode without writing `curl` calls.
 
 <Callout type="tip">
-  For hackathon participants, the CLI is significantly faster than the raw `curl` + master-key flow shown in most "first API key" guides. Install it, run `offerhub keys create`, and you have an API key in seconds.
+  Bootstrap an instance in seconds: install the CLI, point it at your Orchestrator, and run `offerhub keys create`.
 </Callout>
 
 ## Installation
@@ -41,7 +41,7 @@ The CLI resolves configuration from three sources, checked in order:
 
 ### Option 2: Interactive Setup
 
-Run the interactive setup wizard — it prompts for your API URL, API key, and payment provider, then saves everything to `~/.offerhub/config.json`:
+Run the interactive setup wizard — it prompts for your API URL and API key, then saves everything to `~/.offerhub/config.json`:
 
 <CommandLine>offerhub config set</CommandLine>
 
@@ -64,7 +64,7 @@ Manage CLI configuration.
 Set API configuration interactively or via flags.
 
 ```bash
-# Interactive — prompts for URL, key, and payment provider
+# Interactive — prompts for URL and key
 offerhub config set
 
 # Non-interactive — pass all values as flags
@@ -73,7 +73,7 @@ offerhub config set --api-url http://localhost:4000 --api-key ohk_live_xxx
 
 #### `offerhub config show`
 
-Display the current configuration (API URL, masked key, payment provider).
+Display the current configuration (API URL and masked key).
 
 ```bash
 offerhub config show

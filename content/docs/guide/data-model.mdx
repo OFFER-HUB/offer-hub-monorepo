@@ -23,7 +23,6 @@ The following ER diagram shows every table and how they reference each other. Cu
 erDiagram
     users ||--o| balances : "has one"
     users ||--o{ wallets : "owns"
-    users ||--o{ topups : "initiates"
     users ||--o{ withdrawals : "requests"
     users ||--o{ orders : "as buyer"
     users ||--o{ orders : "as seller"
@@ -40,7 +39,7 @@ Each section lists the model's table name, the purpose it serves, and its key fi
 
 <Badge variant="primary">users</Badge>
 
-A marketplace participant (buyer, seller, or both). `User` is the root of the identity graph — balances, wallets, top-ups, withdrawals, and orders all hang off it.
+A marketplace participant (buyer, seller, or both). `User` is the root of the identity graph — balances, wallets, withdrawals, payouts, and orders all hang off it.
 
 | Field | Column | Type | Description |
 |-------|--------|------|-------------|
@@ -49,8 +48,6 @@ A marketplace participant (buyer, seller, or both). `User` is the root of the id
 | `email` | `email` | String? | Optional contact email |
 | `type` | `type` | `UserType` | `BUYER` \| `SELLER` \| `BOTH` |
 | `status` | `status` | `UserStatus` | `ACTIVE` \| `SUSPENDED` \| `PENDING_VERIFICATION` |
-| `airtmUserId` | `airtm_user_id` | String? | Linked Airtm account (Airtm mode) |
-| `airtmLinkedAt` | `airtm_linked_at` | DateTime? | When the Airtm link was established |
 | `createdAt` / `updatedAt` | `created_at` / `updated_at` | DateTime | Timestamps |
 
 ### Balance
@@ -103,23 +100,6 @@ Invisible Stellar wallet whose secret keypair is encrypted at rest with AES-256-
 | `isPrimary` | `is_primary` | Boolean | Whether this is the primary wallet |
 | `isActive` | `is_active` | Boolean | Whether the wallet is active |
 | `lastSyncAt` | `last_sync_at` | DateTime? | Last on-chain sync |
-
-### TopUp
-
-<Badge variant="primary">topups</Badge>
-
-Fiat on-ramp record (Airtm mode). Async flow driven by Airtm webhooks — see [Deposits Guide](/docs/guide/deposits).
-
-| Field | Column | Type | Description |
-|-------|--------|------|-------------|
-| `id` | `id` | String | Prefixed ID: `topup_` |
-| `userId` | `user_id` | String | Beneficiary user |
-| `amount` | `amount` | String | Decimal string |
-| `currency` | `currency` | String | Default `"USD"` |
-| `status` | `status` | `TopUpStatus` | `TOPUP_CREATED` → `TOPUP_SUCCEEDED` etc. |
-| `confirmationUri` | `confirmation_uri` | String? | Airtm hosted confirmation URL |
-| `airtmPayinId` | `airtm_payin_id` | String? | Airtm payin reference |
-| `metadata` | `metadata` | Json? | Free-form metadata |
 
 ### Order
 
@@ -176,7 +156,7 @@ Optional sub-deliverables of an order, used when escrow terms require milestones
 
 <Badge variant="primary">withdrawals</Badge>
 
-Outbound funds transfer — either an Airtm payout or a direct Stellar payment. See [Withdrawals Guide](/docs/guide/withdrawals).
+Outbound funds transfer to an external Stellar address. See [Withdrawals Guide](/docs/guide/withdrawals).
 
 | Field | Column | Type | Description |
 |-------|--------|------|-------------|
@@ -186,8 +166,7 @@ Outbound funds transfer — either an Airtm payout or a direct Stellar payment. 
 | `currency` | `currency` | String | Default `"USD"` |
 | `status` | `status` | `WithdrawalStatus` | `WITHDRAWAL_CREATED` → `WITHDRAWAL_COMPLETED` etc. |
 | `destinationType` | `destination_type` | String | `bank` \| `crypto` |
-| `destinationRef` | `destination_ref` | String | Airtm email or Stellar address |
-| `airtmPayoutId` | `airtm_payout_id` | String? | Airtm payout reference |
+| `destinationRef` | `destination_ref` | String | Stellar address |
 
 ### Dispute
 
@@ -230,12 +209,12 @@ Immutable, append-only record of state-changing actions for traceability and com
 
 <Badge variant="primary">webhook_events</Badge>
 
-Deduplicates inbound webhooks from external providers (Airtm, Trustless Work, Stellar) via a unique `(provider, providerEventId)` constraint.
+Deduplicates inbound webhooks from external providers (Trustless Work, Stellar) via a unique `(provider, providerEventId)` constraint.
 
 | Field | Column | Type | Description |
 |-------|--------|------|-------------|
 | `id` | `id` | String | CUID ID |
-| `provider` | `provider` | `Provider` | `AIRTM` \| `TRUSTLESS_WORK` \| `STELLAR` |
+| `provider` | `provider` | `Provider` | `TRUSTLESS_WORK` \| `STELLAR` |
 | `providerEventId` | `provider_event_id` | String | Provider-side event ID |
 | `status` | `status` | `WebhookStatus` | `RECEIVED` → `PROCESSED` / `FAILED` / `IGNORED` |
 | `processedAt` | `processed_at` | DateTime? | When processed |
@@ -281,8 +260,7 @@ The schema defines these enums. Request bodies and webhook payloads use `UPPER_S
 |------|--------|
 | `UserType` | `BUYER`, `SELLER`, `BOTH` |
 | `UserStatus` | `ACTIVE`, `SUSPENDED`, `PENDING_VERIFICATION` |
-| `TopUpStatus` | `TOPUP_CREATED`, `TOPUP_AWAITING_USER_CONFIRMATION`, `TOPUP_PROCESSING`, `TOPUP_SUCCEEDED`, `TOPUP_FAILED`, `TOPUP_CANCELED` |
-| `OrderStatus` | `ORDER_CREATED`, `FUNDS_RESERVED`, `ESCROW_CREATING`, `ESCROW_FUNDING`, `ESCROW_FUNDED`, `IN_PROGRESS`, `RELEASE_REQUESTED`, `RELEASED`, `REFUND_REQUESTED`, `REFUNDED`, `DISPUTED`, `CLOSED` |
+| `OrderStatus` | `ORDER_CREATED`, `FUNDS_RESERVED`, `ESCROW_CREATING`, `ESCROW_FUNDING`, `ESCROW_FUNDED`, `IN_PROGRESS`, `DELIVERED`, `RELEASE_REQUESTED`, `RELEASED`, `REFUND_REQUESTED`, `REFUNDED`, `DISPUTED`, `CLOSED` |
 | `WithdrawalStatus` | `WITHDRAWAL_CREATED`, `WITHDRAWAL_COMMITTED`, `WITHDRAWAL_PENDING`, `WITHDRAWAL_PENDING_USER_ACTION`, `WITHDRAWAL_COMPLETED`, `WITHDRAWAL_FAILED`, `WITHDRAWAL_CANCELED` |
 | `EscrowStatus` | `CREATING`, `CREATED`, `FUNDING`, `FUNDED`, `RELEASING`, `RELEASED`, `REFUNDING`, `REFUNDED`, `DISPUTED` |
 | `MilestoneStatus` | `OPEN`, `COMPLETED` |
@@ -290,7 +268,7 @@ The schema defines these enums. Request bodies and webhook payloads use `UPPER_S
 | `ResolutionDecision` | `FULL_RELEASE`, `FULL_REFUND`, `SPLIT` |
 | `DisputeReason` | `NOT_DELIVERED`, `QUALITY_ISSUE`, `OTHER` |
 | `DisputeOpenedBy` | `BUYER`, `SELLER` |
-| `Provider` | `AIRTM`, `TRUSTLESS_WORK`, `STELLAR` |
+| `Provider` | `TRUSTLESS_WORK`, `STELLAR` |
 | `WalletType` | `INVISIBLE`, `EXTERNAL` |
 | `WalletProvider` | `STELLAR` |
 | `WebhookStatus` | `RECEIVED`, `PROCESSED`, `FAILED`, `IGNORED` |
@@ -328,6 +306,6 @@ WHERE u.id = 'usr_...';
 - [Orchestrator](/docs/guide/orchestrator) — how the models drive the payment engine
 - [Orders Guide](/docs/guide/orders) — the order lifecycle across `Order`, `Escrow`, and `Milestone`
 - [Wallets Guide](/docs/guide/wallets) — wallet encryption and Stellar keypairs
-- [Deposits Guide](/docs/guide/deposits) — `TopUp` and `ProcessedTransaction` flows
+- [Deposits Guide](/docs/guide/deposits) — `ProcessedTransaction` and balance crediting
 - [Withdrawals Guide](/docs/guide/withdrawals) — `Withdrawal` flows
 - [Security Best Practices](/docs/guide/security) — protecting balances, wallets, and API keys

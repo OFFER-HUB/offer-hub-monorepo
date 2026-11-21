@@ -271,7 +271,7 @@ Returns a deposit address for the user to fund their account.
 
 ## Real-Time Events
 
-The Orchestrator receives inbound webhooks from external providers (Airtm, Trustless Work) to process payment and escrow lifecycle events. See the [Webhooks documentation](/docs/api-reference/webhooks) for full payload structures, signature verification, and retry logic.
+The Orchestrator receives inbound webhooks from Trustless Work to keep escrow state current, and exposes domain events over SSE for integrators. See the [Webhooks documentation](/docs/api-reference/webhooks) for payload structures, signature verification, and the event stream.
 
 ---
 
@@ -388,7 +388,6 @@ Content-Type: application/json
 | Endpoint | Limit |
 |----------|-------|
 | General | 100 req/min per API key |
-| POST /topups | 10 req/min per user |
 | POST /withdrawals | 5 req/min per user |
 | GET /events | 1 SSE connection per user |
 
@@ -440,7 +439,6 @@ Every entry below was verified against the real controllers in `apps/api/src/mod
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/users` | <Badge variant="primary">POST</Badge> | Create user |
-| `/users/{id}/airtm/link` | <Badge variant="primary">POST</Badge> | Link Airtm account |
 
 ### Balance
 
@@ -467,17 +465,6 @@ Wallet endpoints are scoped to a user: `/users/{userId}/wallet`.
 | `/users/{userId}/wallet` | <Badge variant="success">GET</Badge> | Get wallet info |
 | `/users/{userId}/wallet/deposit` | <Badge variant="success">GET</Badge> | Get deposit address |
 | `/users/{userId}/wallet/transactions` | <Badge variant="success">GET</Badge> | Transaction history |
-
-### Top-ups
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/topups` | <Badge variant="primary">POST</Badge> | Create top-up |
-| `/topups` | <Badge variant="success">GET</Badge> | List top-ups |
-| `/topups/{id}` | <Badge variant="success">GET</Badge> | Get top-up |
-| `/topups/{id}/refresh` | <Badge variant="primary">POST</Badge> | Refresh status from Airtm |
-| `/topups/{id}/cancel` | <Badge variant="primary">POST</Badge> | Cancel top-up |
-| `/topups/{id}/callback` | <Badge variant="success">GET</Badge> | Airtm callback (public) |
 
 ### Orders
 
@@ -523,7 +510,6 @@ Wallet endpoints are scoped to a user: `/users/{userId}/wallet`.
 | `/withdrawals` | <Badge variant="success">GET</Badge> | List withdrawals |
 | `/withdrawals/{id}` | <Badge variant="success">GET</Badge> | Get withdrawal |
 | `/withdrawals/{id}/commit` | <Badge variant="primary">POST</Badge> | Commit withdrawal |
-| `/withdrawals/{id}/refresh` | <Badge variant="primary">POST</Badge> | Refresh status from Airtm |
 
 ### Events
 
@@ -535,7 +521,6 @@ Wallet endpoints are scoped to a user: `/users/{userId}/wallet`.
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/webhooks/airtm` | <Badge variant="primary">POST</Badge> | Receive Airtm webhooks |
 | `/webhooks/trustless-work` | <Badge variant="primary">POST</Badge> | Receive Trustless Work webhooks |
 
 ### Audit Logs

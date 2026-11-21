@@ -84,7 +84,7 @@ OFFER-HUB does **not** send outbound webhooks, so there is no webhook signature 
 1. **Authenticate every connection** — SSE requires a valid API key (`events.read` scope) in the `Authorization` header. Never expose the stream unauthenticated.
 2. **Reconnect with `Last-Event-ID`** — Replay missed events after a dropped connection instead of polling; a gap could hide a critical settlement event.
 3. **Never trust an event alone** — A client-side event is a hint, not proof. Before releasing funds, changing balances, or triggering payouts, re-verify order and escrow state from the API (see [Escrow Integration Security](#escrow-integration-security)).
-4. **Treat webhook secrets as server-side only** — The `AIRTM_WEBHOOK_SECRET` and `TRUSTLESS_WEBHOOK_SECRET` environment variables protect the Orchestrator's **inbound** provider webhook receivers. They belong in your Orchestrator's environment, never in client code.
+4. **Treat webhook secrets as server-side only** — The `TRUSTLESS_WEBHOOK_SECRET` environment variable protects the Orchestrator's **inbound** provider webhook receiver. It belongs in your Orchestrator's environment, never in client code.
 
 <Callout type="warning">
   An attacker cannot forge events from your Orchestrator: the SSE stream requires your API key and travels over TLS. The risk is trusting an event without confirming state — always cross-check with the API before acting on it.

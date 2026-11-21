@@ -12,7 +12,7 @@ section: Guides
 OFFER-HUB uses "invisible wallets" to give users blockchain capabilities without the complexity of managing private keys. Every user gets a Stellar wallet automatically, but they interact with it like a simple account balance.
 
 <Callout type="tip">
-  Invisible wallets only apply when using `PAYMENT_PROVIDER=crypto`. AirTM mode uses traditional fiat accounts instead.
+  Invisible wallets and the 90-day "Claim your wallet" flow exist only in the testnet sandbox. On mainnet, users bring their own wallet and sign for themselves.
 </Callout>
 
 ## What Are Invisible Wallets?
@@ -223,7 +223,7 @@ When the user performs an action that requires on-chain activity (funding escrow
 2. **Decrypt in memory** — Use `WALLET_ENCRYPTION_KEY`
 3. **Build transaction** — Create Stellar transaction
 4. **Sign transaction** — Sign with decrypted private key
-5. **Submit to network** — Send to Stellar Horizon
+5. **Submit to network** — Send to Stellar RPC
 6. **Clear memory** — Wipe decrypted key from memory
 
 <Callout type="note">

@@ -1,0 +1,57 @@
+---
+title: Scaffolder
+description: Start a marketplace from the OFFER-HUB Orchestrator starter shell with create-offer-hub-orchestrator.
+order: 12
+section: Guides
+---
+
+`create-offer-hub-orchestrator` is the interactive installer for a self-hosted instance. It does not generate your marketplace application; it prepares the Orchestrator so you can build on it.
+
+## What it does
+
+| Step | Result |
+|---|---|
+| Collects connection settings | API port, PostgreSQL URL, Redis URL, Stellar network and RPC URL |
+| Collects provider credentials | Trustless Work API key and webhook secret |
+| Generates an operator credential | `OFFERHUB_MASTER_KEY` written to `.env` |
+| Applies migrations | Database schema at the current release |
+| Bootstraps platform records | The rows a fresh instance needs to operate |
+
+## Run it
+
+```bash
+git clone https://github.com/OFFER-HUB/OFFER-HUB.git
+cd OFFER-HUB
+npm install
+npx create-offer-hub-orchestrator
+```
+
+Then start the API:
+
+```bash
+npm run dev
+```
+
+<Callout type="tip">
+  The installer is safe to re-run. It asks before overwriting an existing `.env`, and it does not rotate your master key without confirmation.
+</Callout>
+
+## After scaffolding
+
+1. Create the operator API key with `support` scope, then `read` and `write` keys for your backend. See [Installation](/docs/installation#creating-your-first-api-key).
+2. Build your marketplace application separately. The Orchestrator is a backend you call, not a UI you theme.
+3. Work through [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) to wire signup, checkout and escrow.
+
+## The starter shell
+
+The repository you clone is the starter shell: a working base a team adapts. Your marketplace keeps its own users, listings, checkout UI and branding; the Orchestrator keeps escrow, balances and payouts.
+
+<Callout type="note">
+  The installer is published as `create-offer-hub-orchestrator` on npm. Other package names you may see in older material are not published.
+</Callout>
+
+## Related reading
+
+- [Installation](/docs/installation) — installer and manual paths
+- [Configuration](/docs/configuration) — variable reference
+- [Self-Hosting](/docs/guide/self-hosting) — production deployment

@@ -1,88 +1,117 @@
 ---
 title: Getting Started
-description: Learn how OFFER-HUB works and how to integrate it into your marketplace in minutes.
+description: Understand what the OFFER-HUB Orchestrator is today, who it is for, and where to go next.
 order: 1
 section: Getting Started
 ---
 
-OFFER-HUB Orchestrator is a **self-hosted payments and escrow backend** for service marketplaces. It handles the financial plumbing — escrow, balance management, dispute resolution, and USDC transactions on Stellar — so you can focus on building your marketplace product.
+The OFFER-HUB Orchestrator is a **non-custodial escrow and payments backend for marketplaces**, built on Stellar. Your marketplace keeps its own users, listings, messaging and interface; the Orchestrator handles checkout, escrow, balances, disputes and payouts.
 
-> **New to OFFER-HUB?** Read the [Architecture Overview](/docs/guide/architecture) first to understand the self-hosted, per-marketplace, non-custodial design before diving into integration.
-
-## Overview
-
-OFFER-HUB solves the hardest problems in marketplace payments:
-
-| Challenge | Orchestrator Solution |
-|-----------|----------------------|
-| Holding buyer funds securely | Non-custodial escrow via Trustless Work smart contracts |
-| Preventing double-spending | Atomic balance operations + idempotency keys |
-| Handling "seller didn't deliver" | Built-in dispute workflow with SPLIT resolution |
-| Managing crypto wallets for non-crypto users | Invisible Stellar wallets (Web2 UX) |
-| Tracking payment state | State machine with full audit log |
-| Real-time notifications | SSE event stream |
+It is built for teams that want escrow-protected payments without becoming a payments company — and without taking custody of anyone's funds.
 
 <Callout type="tip">
-  Without the Orchestrator, building all of this could take 6-12 months. With it, you can integrate in a few days.
+  **Building your own marketplace?** Start with the [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) tutorial. It walks from a running instance to a completed escrow in one sitting.
 </Callout>
 
-## Prerequisites
+## What exists today
 
-Before you begin, ensure you have the following installed:
+| Area | What it does |
+|---|---|
+| **Network** | Mainnet is live. A public testnet sandbox is available for development. |
+| **Escrow** | Trustless Work Soroban escrows in USDC. Funds are held by the contract, not by the Orchestrator. |
+| **Signing** | The Orchestrator prepares unsigned Stellar transactions. Users sign with their own wallet through Stellar Wallets Kit (Freighter/Varial, Lobstr, xBull). The server never signs for a user. |
+| **Connectivity** | Stellar RPC, with the network selected by the operator. |
+| **Off-ramp** | BlindPay payouts to four corridors: Brazil, Mexico, Argentina and Colombia. |
+| **Authentication** | API keys for your backend, plus user sessions from wallet or email sign-in. |
+| **Orders** | A single state machine from creation to close, including funding, delivery, release, refund and disputes. |
+| **Disputes** | Opened by buyer or seller, reviewed, then resolved by full release, full refund or split. |
+| **Real time** | An authenticated SSE stream for order, balance and dispute events. |
 
-| Requirement | Version | Purpose |
-|-------------|---------|---------|
-| Node.js | 20+ | Runtime environment |
-| npm or pnpm | Latest | Package management |
-| PostgreSQL | 14+ | Database |
-| Redis | 6+ | Caching and queues |
-| Git | Latest | Version control |
+## How the pieces fit
 
-You'll also need:
+```mermaid
+flowchart LR
+    subgraph Marketplace["Your marketplace"]
+        UI[Frontend]
+        API[Backend]
+        UI --> API
+    end
 
-- A Stellar testnet account (for development)
-- Basic familiarity with REST APIs
-- A marketplace application to integrate with
+    WALLET["User wallet<br/>Stellar Wallets Kit"]
+    subgraph OH["Orchestrator"]
+        AUTH["Auth + sessions"]
+        ORDERS["Orders + escrow"]
+        LEDGER["Balances"]
+        EVENTS["SSE events"]
+    end
+    RPC[Stellar RPC]
+    TW["Trustless Work escrow<br/>USDC"]
+    BP["BlindPay off-ramp"]
+
+    API --> AUTH
+    AUTH --> ORDERS
+    ORDERS --> LEDGER
+    ORDERS --> RPC
+    RPC --> TW
+    ORDERS --> BP
+    UI --> WALLET
+    WALLET -->|signs unsigned transaction| RPC
+    ORDERS --> EVENTS
+```
+
+Two rules shape the whole design:
+
+1. **Your backend holds an API key; your users hold their keys.** The Orchestrator never stores a mainnet user's private key and never signs on their behalf.
+2. **Escrow is on-chain.** Once an order is funded, neither party — and not the Orchestrator — can move the funds outside the contract's rules.
+
+## Authentication in one minute
+
+The Orchestrator accepts two credential kinds:
+
+| Credential | Who uses it | Lifetime |
+|---|---|---|
+| API key `ohk_live_...` | Your marketplace backend | Until revoked |
+| Scoped token `ohk_tok_...` | Your frontend, after exchanging an API key | 1 hour |
+| User session JWT | A signed-in buyer or seller | 7 days |
+
+API keys carry `read`, `write` or `support` scopes. User JWTs come from either wallet sign-in or email/password sign-in and are the same JWT in both cases.
+
+<Callout type="warning">
+  Never ship an API key to the browser. Exchange it for a one-hour token server-side, or create the user session on your backend.
+</Callout>
+
+## Bootstrapping a self-hosted instance
+
+The operator sets a master key once, uses it to create the first API key with `support` scope, then creates `read` and `write` keys for the marketplace backend:
+
+```env
+OFFERHUB_MASTER_KEY=your-master-key
+```
+
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/api-keys \
+  -H "Authorization: Bearer your-master-key" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Operator", "scopes": ["support"]}'
+```
+
+The full sequence is documented in [Installation](/docs/installation#creating-your-first-api-key).
+
+## The starter shell
+
+The public Orchestrator repository, [github.com/OFFER-HUB/OFFER-HUB](https://github.com/OFFER-HUB/OFFER-HUB), is the starter shell: the base a team clones to build its own marketplace on top of the Orchestrator. It shows how the API, database and providers are wired; adapt it to your product rather than treating it as the full source of the hosted service.
+
+## Where to go next
+
+- [Installation](/docs/installation) — installer, manual setup, or SDK only.
+- [Configuration](/docs/configuration) — environment variables for self-hosting.
+- [Self-Hosting](/docs/guide/self-hosting) — production deployment and upgrades.
+- [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) — end-to-end tutorial.
+- [Orchestrator](/docs/guide/orchestrator) — how the payment engine works.
+- [Architecture](/docs/guide/architecture) — trust boundaries and isolation.
+- [SDK Quick Start](/docs/sdk/quick-start) — the TypeScript client.
+- [API Reference](/docs/api-reference/overview) — endpoints and envelopes.
 
 <Callout type="note">
-  For production, you'll need a Stellar mainnet account with USDC trustline and a Trustless Work API key.
-</Callout>
-
-## Installation
-
-Follow the [Installation guide](/docs/installation) to get a running Orchestrator. The fastest path is the one-command setup wizard:
-
-<CommandLine>npx create-offer-hub-orchestrator</CommandLine>
-
-It configures your `.env`, runs migrations, and bootstraps the platform user automatically. A manual Docker-based setup is also available for custom environments.
-
-<Callout type="tip">
-  The setup wizard takes about 2 minutes. You'll have a running API at `http://localhost:4000` when you're done.
-</Callout>
-
-## Creating an API Key
-
-After installation, you need an API key to make API calls. The fastest way is with the CLI:
-
-<CommandLine>npm install -g @offerhub/cli && offerhub keys create</CommandLine>
-
-You can also create keys with `curl` — see the [Installation guide](/docs/installation#creating-your-first-api-key) for both methods.
-
-## Next Steps
-
-Once the Orchestrator is running, explore these guides:
-
-- [Architecture Overview](/docs/guide/architecture) — Self-hosted, per-marketplace, non-custodial design
-- [CLI Guide](/docs/guide/cli) — Manage API keys and maintenance from the command line
-- [Quick Start](/docs/guide/quick-start) — Create your first user and order in 5 minutes
-- [Orchestrator Guide](/docs/guide/orchestrator) — Deep dive into the Orchestrator architecture
-- [Escrow Flows](/docs/guide/escrow) — Learn about escrow states and transitions
-- [Orders Guide](/docs/guide/orders) — Complete order lifecycle documentation
-- [Disputes](/docs/guide/disputes) — Handle disputes and resolutions
-- [API Reference](/docs/api-reference/overview) — Full REST API documentation
-- [Events Reference](/docs/api-reference/events) — SSE event envelope, subscriptions, and catalog
-- [SDK Quick Start](/docs/sdk/quick-start) — Use the TypeScript SDK
-
-<Callout type="note">
-  Need help? Join our [Discord community](https://discord.gg/offerhub) or open an issue on [GitHub](https://github.com/OFFER-HUB/offer-hub-monorepo/issues).
+  Need help? Open an issue on [GitHub](https://github.com/OFFER-HUB/offer-hub-monorepo/issues) or join the [Discord community](https://discord.gg/offerhub).
 </Callout>

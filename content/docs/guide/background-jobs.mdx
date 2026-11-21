@@ -1,0 +1,64 @@
+---
+title: Background Jobs
+description: Queues, retries and reconciliation in a self-hosted OFFER-HUB Orchestrator.
+order: 11
+section: Guides
+---
+
+The Orchestrator runs its background work inside the API process. There is no second worker process to deploy.
+
+## Queues
+
+BullMQ on Redis drives four queues:
+
+| Queue | Purpose |
+|---|---|
+| `webhooks` | Processes inbound provider callbacks and updates escrow state |
+| `reconciliation` | Re-checks on-chain and provider state against the ledger |
+| `notifications` | Sends operator and user notifications produced by domain events |
+| `dead-letter-queue` | Jobs that exhausted their retries, kept for inspection |
+
+## Retries and ordering
+
+- Jobs retry with exponential backoff. A provider timeout does not fail the original request.
+- Job processing is idempotent: a repeated provider callback does not credit a balance twice.
+- Money-moving API requests are protected separately by `Idempotency-Key`, so a client retry is safe even while a job is still running.
+
+<Callout type="note">
+  A job succeeding is not the same as a payment settling. The ledger and the order record are the source of truth; treat job state as operational telemetry.
+</Callout>
+
+## Inspecting queues
+
+With Redis reachable from your host:
+
+```bash
+redis-cli keys "bull:*"
+redis-cli llen "bull:webhooks:wait"
+redis-cli lrange "bull:webhooks:failed" 0 10
+redis-cli llen "bull:dead-letter-queue:wait"
+```
+
+Watch for:
+
+- a `wait` count that only grows — the API is not consuming, or the process is unhealthy;
+- repeated entries in `failed` for the same provider — usually a credential or signature mismatch;
+- dead-letter growth after a provider change — inspect one payload before replaying.
+
+## Reconciliation
+
+Reconciliation exists because an on-chain or provider state can move without a callback. It:
+
+1. compares escrow state reported over Stellar RPC with the stored escrow record;
+2. compares payout records with the provider's status;
+3. logs discrepancies and emits an event for the operator.
+
+<Callout type="warning">
+  Do not patch balances or escrow rows in SQL to clear a discrepancy. Investigate the source and let reconciliation converge; direct edits break the audit trail and can double-credit funds.
+</Callout>
+
+## Related reading
+
+- [Self-Hosting](/docs/guide/self-hosting) — deploy and monitor the API
+- [Troubleshooting](/docs/guide/troubleshooting) — symptom-to-fix reference
+- [Architecture](/docs/guide/architecture) — trust boundaries

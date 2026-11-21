@@ -1,73 +1,72 @@
 ---
 title: Installation
-description: Set up OFFER-HUB Orchestrator locally — fast path with the setup wizard or manual Docker setup.
+description: Set up OFFER-HUB Orchestrator with the installer, a manual local setup, or the SDK alone.
 order: 2
 section: Getting Started
 ---
 
-Choose the setup path that fits your workflow:
+Choose the path that fits your workflow:
 
 | Option | Best for | Time |
-|--------|----------|------|
-| [**Option 1 — Setup wizard**](#option-1-setup-wizard-recommended) | Hackathons, first-time setup, staging/production | ~2 min |
-| [Option 2 — Full local setup](#option-2-full-local-setup) | Custom environments, CI/CD pipelines, advanced control | ~10 min |
-| [Option 3 — SDK only](#option-3-using-the-sdk-only) | Integrating with an existing Orchestrator instance | ~1 min |
+|---|---|---|
+| [Option 1 — Installer](#option-1-installer) | First-time self-hosting, staging and production | ~2 min |
+| [Option 2 — Manual setup](#option-2-manual-setup) | Custom environments and CI/CD | ~10 min |
+| [Option 3 — SDK only](#option-3-sdk-only) | Connecting to an Orchestrator someone else runs | ~1 min |
+
+<Callout type="note">
+  Every value on this page is a placeholder. Never commit a real key, database URL or provider credential to a repository.
+</Callout>
 
 ---
 
-## Option 1: Setup Wizard <Badge variant="success">Recommended</Badge>
+## Option 1: Installer
 
-`create-offer-hub-orchestrator` is a one-command interactive setup wizard. It configures your `.env`, runs database migrations, and bootstraps the platform user — so you can skip the manual steps entirely.
+`create-offer-hub-orchestrator` is an interactive setup wizard. It writes your `.env`, applies database migrations and bootstraps the platform records a fresh instance needs.
 
-<Callout type="tip">
-  This is the fastest way to get a working Orchestrator. Run the wizard, answer the prompts, and you'll have a running API in under 2 minutes.
-</Callout>
+### Step 1 — Clone the starter shell
 
-### Step 1 — Clone and install
+```bash
+git clone https://github.com/OFFER-HUB/OFFER-HUB.git
+cd OFFER-HUB
+npm install
+```
 
-<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB && npm install</CommandLine>
-
-### Step 2 — Run the setup wizard
+### Step 2 — Run the installer
 
 <CommandLine>npx create-offer-hub-orchestrator</CommandLine>
 
 The wizard prompts for:
 
-| Prompt | Description |
-|--------|-------------|
-| API Port | Default: `4000` |
-| PostgreSQL URL | Use the **pooler** URL (port `6543`) for Supabase |
-| Redis URL | `redis://` or `rediss://` for TLS connections |
-| Payment provider | `crypto` (Stellar/USDC, default) or `airtm` |
-| Stellar network | `testnet` for development, `mainnet` for production |
-| Trustless Work API key | From [dapp.trustlesswork.com](https://dapp.trustlesswork.com) |
-| Trustless Work Webhook Secret | From your TW dashboard |
-| Public URL | Your server's HTTPS URL (used for webhook callbacks) |
-| Run migrations? | Yes — applies all pending DB migrations |
-| Generate API key? | Optional — requires the server to be running |
+| Prompt | What to enter |
+|---|---|
+| API port | `4000` unless you need another port |
+| PostgreSQL URL | Your database connection string |
+| Redis URL | `redis://` or `rediss://` for TLS |
+| Stellar network | `testnet` to start, `mainnet` when you are ready |
+| Stellar RPC URL | Your Stellar RPC endpoint |
+| Trustless Work API key | From your Trustless Work dashboard |
+| Trustless Work webhook secret | From your Trustless Work dashboard |
+| Public URL | The HTTPS URL your instance will serve |
 
-The wizard then automatically:
+The wizard then generates `OFFERHUB_MASTER_KEY` and writes it into `.env`, applies migrations, and creates the platform records.
 
-1. Generates a secure `OFFERHUB_MASTER_KEY`
-2. Generates a secure `WALLET_ENCRYPTION_KEY` (crypto mode)
-3. Writes `.env` with all values filled in
-4. Runs `prisma migrate deploy`
-5. Runs `npm run bootstrap` — creates the platform Stellar wallet and writes `PLATFORM_USER_ID` into `.env`
+<Callout type="warning">
+  **Back up `OFFERHUB_MASTER_KEY`.** It is the only credential that can create the first API key on the instance. Store it in a secrets manager, not in chat or a ticket.
+</Callout>
 
 ### Step 3 — Start the API
 
 <CommandLine>npm run dev</CommandLine>
 
-The API starts on `http://localhost:4000`.
+The API listens on `http://localhost:4000` by default.
 
-### Step 4 — Verify installation
+### Step 4 — Verify
 
 <CommandLine>curl http://localhost:4000/api/v1/health</CommandLine>
 
 ```json
 {
   "status": "healthy",
-  "timestamp": "2026-02-25T12:00:00.000Z",
   "services": {
     "database": "connected",
     "redis": "connected"
@@ -75,233 +74,218 @@ The API starts on `http://localhost:4000`.
 }
 ```
 
-<Callout type="warning">
-  **Back up `WALLET_ENCRYPTION_KEY` immediately.** If you lose it, all user wallets become unrecoverable. Store it in a secrets manager (Railway Variables, AWS Secrets Manager, or 1Password). Do not commit `.env` to git.
-</Callout>
-
-<Callout type="note">
-  The wizard is **idempotent for bootstrap** — safe to re-run. It will ask before overwriting an existing `.env`. Run with `testnet` first; switch to `mainnet` only when ready for production.
-</Callout>
-
 ---
 
-## Option 2: Full Local Setup
+## Option 2: Manual setup
 
-Use this path when you need full manual control — custom Docker networks, CI/CD pipelines, or environments where running an interactive wizard isn't appropriate.
+Use this path when you need full control over the infrastructure.
 
 ### Prerequisites
 
-- **Node.js** v20 or later ([nodejs.org](https://nodejs.org))
-- **npm** v10 or later
-- **Docker** and **Docker Compose** (for PostgreSQL and Redis)
-- A [Trustless Work](https://trustlesswork.com) API key (for escrow)
+- **Node.js** 20 or later
+- **npm** 10 or later
+- **PostgreSQL** 14 or later
+- **Redis** 6 or later
+- A **Trustless Work** API key for escrow
+- A **BlindPay** account if you want the off-ramp corridors
 
-<Callout type="note">
-  You can also use managed services like [Supabase](https://supabase.com) for PostgreSQL and [Upstash](https://upstash.com) for Redis instead of Docker.
-</Callout>
+### Step 1 — Clone the starter shell
 
-### Step 1 — Clone the Repository
+```bash
+git clone https://github.com/OFFER-HUB/OFFER-HUB.git
+cd OFFER-HUB
+```
 
-<CommandLine>git clone https://github.com/OFFER-HUB/OFFER-HUB.git && cd OFFER-HUB</CommandLine>
-
-### Step 2 — Install Dependencies
+### Step 2 — Install dependencies
 
 <CommandLine>npm install</CommandLine>
 
-### Step 3 — Start Infrastructure
+### Step 3 — Start infrastructure
 
-Start PostgreSQL and Redis using Docker Compose:
+With Docker Compose, from the repository root:
 
 <CommandLine>docker compose up -d</CommandLine>
 
-This starts:
-- PostgreSQL on port `5432`
-- Redis on port `6379`
+This starts PostgreSQL on `5432` and Redis on `6379`.
 
-### Step 4 — Configure Environment
+### Step 4 — Configure the environment
 
-Copy the example environment file:
+```bash
+cp .env.example .env
+```
 
-<CommandLine>cp .env.example .env</CommandLine>
-
-Edit `.env` with your values. The minimum required variables for local development:
+Minimum variables for a local instance:
 
 ```env
 # Server
 NODE_ENV=development
 PORT=4000
 
-# Database (Docker defaults)
-DATABASE_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
-DIRECT_URL=postgresql://offerhub:offerhub_password@localhost:5432/offerhub_db
-
-# Redis (Docker default)
+# Database and queue
+DATABASE_URL=postgresql://user:password@localhost:5432/database
 REDIS_URL=redis://localhost:6379
 
-# Payment Provider
-PAYMENT_PROVIDER=crypto
-WALLET_ENCRYPTION_KEY=your-32-byte-hex-key
+# Operator credential
+OFFERHUB_MASTER_KEY=your-master-key
 
-# Master Key (for creating API keys)
-OFFERHUB_MASTER_KEY=your-secure-master-key
+# Escrow provider
+TRUSTLESS_API_KEY=your-trustless-api-key
+TRUSTLESS_WEBHOOK_SECRET=your-trustless-webhook-secret
 
-# Trustless Work (get from trustlesswork.com)
-TRUSTLESS_API_KEY=your_trustless_api_key
-TRUSTLESS_API_URL=https://dev.api.trustlesswork.com
-
-# Stellar (testnet defaults)
+# Stellar
 STELLAR_NETWORK=testnet
-STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_RPC_URL=https://your-stellar-rpc-endpoint
 STELLAR_USDC_ASSET_CODE=USDC
-STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+STELLAR_USDC_ISSUER=your-usdc-issuer
+
+# Public URL used for callbacks
+PUBLIC_BASE_URL=http://localhost:4000
 ```
 
-<Callout type="warning">
-  Generate your `WALLET_ENCRYPTION_KEY` with: `openssl rand -hex 32`
+The full variable reference is on the [Configuration](/docs/configuration) page.
 
-  Store this key securely — losing it makes wallet private keys unrecoverable.
-</Callout>
+### Step 5 — Apply migrations
 
-### Step 5 — Run Database Migrations
+<CommandLine>npm run prisma:generate && npx prisma migrate deploy</CommandLine>
 
-Generate the Prisma client and apply migrations:
-
-<CommandLine>npm run prisma:generate && npm run prisma:migrate</CommandLine>
-
-### Step 6 — Bootstrap Platform User
-
-Create the internal platform user required for escrow operations:
-
-<CommandLine>npm run bootstrap</CommandLine>
-
-### Step 7 — Start the API
+### Step 6 — Start the API
 
 <CommandLine>npm run dev</CommandLine>
 
-The API starts on `http://localhost:4000`.
-
-### Step 8 — Verify Installation
-
-Test that everything is working:
+### Step 7 — Verify
 
 <CommandLine>curl http://localhost:4000/api/v1/health</CommandLine>
 
-You should see:
-
-```json
-{
-  "status": "healthy",
-  "timestamp": "2026-02-25T12:00:00.000Z",
-  "services": {
-    "database": "connected",
-    "redis": "connected"
-  }
-}
-```
-
 ---
 
-## Option 3: Using the SDK Only
+## Option 3: SDK only
 
-If you want to integrate with an existing OFFER-HUB Orchestrator instance (hosted by you or a partner), you only need the SDK:
+If an Orchestrator instance already exists, install the client and point it at that instance:
 
 <CommandLine>npm install @offerhub/sdk</CommandLine>
 
-Then configure it in your code:
-
 ```typescript
-import { OfferHubSDK } from '@offerhub/sdk';
+import { OfferHubSDK } from "@offerhub/sdk";
 
 const sdk = new OfferHubSDK({
-  apiUrl: 'https://your-orchestrator-url.com',
-  apiKey: 'ohk_live_your_api_key'
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: process.env.OFFERHUB_API_KEY!,
 });
 
-// Create a user
 const user = await sdk.users.create({
-  externalUserId: 'user-123',
-  email: 'buyer@example.com'
+  externalUserId: "your-user-123",
+  email: "buyer@example.com",
+  type: "BUYER",
 });
 ```
 
-See the [SDK Guide](/docs/sdk/quick-start) for complete documentation.
+<Callout type="danger">
+  The SDK is server-side only. An API key in browser code is a leaked key. To act on behalf of a signed-in user in a browser, use a one-hour token and `sdk.asUser(token)`.
+</Callout>
+
+See the [SDK Quick Start](/docs/sdk/quick-start) for the full resource list.
 
 ---
 
-## Creating Your First API Key
+## Creating your first API key
 
-Once the server is running, create an API key using your master key.
+Every request to the Orchestrator is authenticated. The first key is created with the operator master key.
 
-### Option A: Using the CLI (Recommended)
+### Step 1 — Create a support-scoped key
 
-The `@offerhub/cli` is the fastest way to create an API key:
-
-<CommandLine>npm install -g @offerhub/cli</CommandLine>
-
-<CommandLine>offerhub keys create</CommandLine>
-
-This runs an interactive wizard that prompts for user ID, scopes, and key name. See the [CLI Guide](/docs/guide/cli) for all available commands.
-
-### Option B: Using curl
+Use the master key **once**, to create an operator key with `support` scope:
 
 ```bash
 curl -X POST http://localhost:4000/api/v1/auth/api-keys \
-  -H "Authorization: Bearer YOUR_OFFERHUB_MASTER_KEY" \
+  -H "Authorization: Bearer your-master-key" \
   -H "Content-Type: application/json" \
-  -d '{"name": "My Marketplace", "scopes": ["read", "write"]}'
+  -d '{"name": "Operator", "scopes": ["support"]}'
 ```
-
-Response:
 
 ```json
 {
   "data": {
-    "id": "key_abc123",
-    "key": "ohk_live_xxxxxxxxxxxx",
-    "name": "My Marketplace",
-    "scopes": ["read", "write"]
+    "id": "key_...",
+    "key": "ohk_live_...",
+    "name": "Operator",
+    "scopes": ["support"]
   }
 }
 ```
 
 <Callout type="danger">
-  Save the `key` value immediately — it's only shown once. Use this key for all subsequent API calls.
+  The `key` value is shown once. Store it in your secrets manager immediately.
 </Callout>
+
+### Step 2 — Create scoped keys for your backend
+
+With the support key, create the keys your marketplace actually uses:
+
+```bash
+# Read-only key for dashboards and reporting
+curl -X POST http://localhost:4000/api/v1/auth/api-keys \
+  -H "Authorization: Bearer ohk_live_your_support_key" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Marketplace read", "scopes": ["read"]}'
+
+# Read/write key for order and payout endpoints
+curl -X POST http://localhost:4000/api/v1/auth/api-keys \
+  -H "Authorization: Bearer ohk_live_your_support_key" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Marketplace backend", "scopes": ["read", "write"]}'
+```
+
+| Scope | Grants |
+|---|---|
+| `read` | Read endpoints |
+| `write` | Create and update orders, escrows and payouts |
+| `support` | Dispute resolution and support operations |
+
+Keep `support` off the key your web request handlers use. Give it only to the service or operator that resolves disputes.
+
+### Step 3 — Exchange a key for a short-lived token
+
+Browser code should never see an API key. Exchange a key for a one-hour token on your server:
+
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/api-keys/key_your_key_id/token \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+The response contains an `ohk_tok_...` token valid for one hour. The CLI exposes the same operation as `offerhub keys token`.
 
 ---
 
-## Troubleshooting
+## Troubleshooting the install
 
-### Database Connection Failed
+### Database connection failed
 
-Make sure Docker is running and the containers are up:
+```bash
+docker compose ps
+docker compose up -d
+```
 
-<CommandLine>docker compose ps</CommandLine>
+### Migration errors
 
-If containers aren't running, start them:
+Confirm `DATABASE_URL` points at the database you expect, then:
 
-<CommandLine>docker compose up -d</CommandLine>
-
-### Prisma Migration Errors
-
-If you see migration errors, try resetting the database:
-
-<CommandLine>npm run prisma:migrate reset</CommandLine>
+<CommandLine>npx prisma migrate status</CommandLine>
 
 <Callout type="warning">
-  This deletes all data. Only use in development.
+  `prisma migrate reset` deletes all data. Use it in development only.
 </Callout>
 
-### Port Already in Use
+### Port already in use
 
-If port 4000 is already in use, change the `PORT` in your `.env` file or stop the conflicting service.
+Change `PORT` in `.env`, or stop the process using `4000`.
 
----
+### API starts but returns 502 from Stellar
 
-## Next Steps
+Check `STELLAR_NETWORK` and `STELLAR_RPC_URL`. A testnet URL paired with a mainnet network setting fails on every on-chain call.
 
-- [Configuration](/docs/configuration) — Learn about all environment variables
-- [Quick Start](/docs/guide/quick-start) — Create your first user and order
-- [API Reference](/docs/api-reference/overview) — Explore all endpoints
-- [SDK Guide](/docs/sdk/quick-start) — Integrate using TypeScript
-- [npm Packages](/docs/guide/cli) — Overview of all published packages
+## Next steps
+
+- [Configuration](/docs/configuration) — every environment variable
+- [Self-Hosting](/docs/guide/self-hosting) — production deployment
+- [Quick Start](/docs/guide/quick-start) — your first order
+- [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) — the full tutorial
