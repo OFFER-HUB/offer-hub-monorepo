@@ -11,7 +11,7 @@ The Resolution API handles the end-of-order escrow settlement flows: releasing f
 
 Every endpoint requires a valid JWT (user session token) in the `Authorization` header.
 
-<Callout type="info">
+<Callout type="note">
   All `/prepare` endpoints return an **unsigned XDR transaction**. You must sign this transaction client-side (using the Stellar SDK or a compatible wallet) before submitting it. The server never holds or uses your private key.
 </Callout>
 

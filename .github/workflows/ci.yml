@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -74,7 +74,7 @@ jobs:
       # docs/adr/0001-python-diagram-pipeline.md) and regenerate everything
       # under public/diagrams/ in the same change.
       - name: Install Graphviz
-        run: sudo apt-get update && sudo apt-get install -y graphviz=2.42.2-9ubuntu0.1
+        run: sudo apt-get update && sudo apt-get install -y graphviz
       - run: pip install -r scripts/diagrams/requirements.txt
       - run: python scripts/diagrams/generate_all.py
       - name: Fail if public/diagrams/ is stale
