@@ -137,7 +137,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full flex items-center gap-3 px-5 py-4 text-left transition-[background-color,box-shadow] duration-200",
-          isOpen ? "bg-bg-sunken shadow-neu-sunken-subtle" : "bg-bg-base hover:bg-bg-sunken/50",
+          isOpen ? "bg-bg-sunken shadow-neu-sunken-subtle" : "bg-bg-base hover:bg-[color-mix(in_srgb,var(--color-bg-sunken)_50%,transparent)]",
         )}
       >
         <MethodBadge method={operation.method} />
@@ -159,7 +159,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
         className="overflow-hidden transition-[height,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{ height: isOpen ? contentHeight : 0, opacity: isOpen ? 1 : 0 }}
       >
-        <div ref={contentRef} className="px-5 pb-6 pt-4 space-y-5 border-t border-theme-border/20">
+        <div ref={contentRef} className="px-5 pb-6 pt-4 space-y-5 border-t border-[color-mix(in_srgb,var(--color-border)_20%,transparent)]">
           <p className="text-sm text-content-secondary leading-relaxed">{operation.description}</p>
 
           {operation.security.length > 0 && (
@@ -167,7 +167,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
               {operation.security.map((s) => (
                 <span
                   key={s.scheme}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide text-theme-primary bg-theme-primary/10"
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide text-theme-primary bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]"
                 >
                   {s.scopes.length > 0 ? `${s.scopes.join(" / ")} scope` : "Authenticated"}
                 </span>
@@ -302,7 +302,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
               <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">Live Response</h4>
               {liveResult.ok ? (
                 <div className="rounded-2xl overflow-hidden shadow-neu-sunken bg-bg-sunken">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-theme-border/20">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-[color-mix(in_srgb,var(--color-border)_20%,transparent)]">
                     <span
                       className={cn(
                         "text-xs font-mono font-semibold",
@@ -318,7 +318,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
                   </pre>
                 </div>
               ) : (
-                <div className="rounded-xl px-4 py-3 text-sm bg-theme-error/10 text-theme-error flex items-start gap-2">
+                <div className="rounded-xl px-4 py-3 text-sm bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] text-theme-error flex items-start gap-2">
                   <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
                   <span>{liveResult.error}</span>
                 </div>

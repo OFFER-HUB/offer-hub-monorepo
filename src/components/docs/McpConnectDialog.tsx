@@ -48,7 +48,7 @@ export function McpConnectDialog({ onClose }: McpConnectDialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="mcp-connect-title"
-        className="relative w-full max-w-lg rounded-2xl bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 p-6 animate-fadeIn"
+        className="relative w-full max-w-lg rounded-2xl bg-bg-elevated border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] shadow-2xl shadow-black/10 p-6 animate-fadeIn"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>

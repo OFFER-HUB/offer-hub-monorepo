@@ -140,7 +140,7 @@ function GrowthBadge({ label, value }: { label: string; value: string }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4, duration: 0.4 }}
-      className="flex items-center gap-1.5 bg-theme-success/10 rounded-full px-3 py-1 w-fit"
+      className="flex items-center gap-1.5 bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] rounded-full px-3 py-1 w-fit"
     >
       
       <motion.div
@@ -268,7 +268,7 @@ function SummaryBarDetailed({
       className="bg-bg-elevated shadow-neu-raised rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 min-w-0 max-w-full overflow-hidden"
     >
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-theme-success/10 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] flex items-center justify-center">
           <Icon size={16} className="text-theme-success" />
         </div>
         <p className="text-sm font-bold text-content-primary">
@@ -479,8 +479,8 @@ function SimpleMetricCardComponent({
           className={cn(
             "text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow-neu-raised-sm",
             isGood
-              ? "bg-theme-primary/12 text-theme-primary"
-              : "bg-content-muted/12 text-content-secondary",
+              ? "bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-theme-primary"
+              : "bg-[color-mix(in_srgb,var(--color-text-muted)_12%,transparent)] text-content-secondary",
           )}
         >
           {metric.savingsValue}

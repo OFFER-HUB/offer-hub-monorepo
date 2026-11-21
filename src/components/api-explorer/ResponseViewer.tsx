@@ -29,7 +29,7 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
   return (
     <div className="rounded-2xl shadow-neu-sunken overflow-hidden bg-bg-sunken">
       {/* Tab bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-theme-border/20">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[color-mix(in_srgb,var(--color-border)_20%,transparent)]">
         <div className="flex flex-wrap gap-1">
           {responses.map((res, i) => {
             const isActive = i === activeTab;
@@ -41,8 +41,8 @@ export function ResponseViewer({ responses }: ResponseViewerProps) {
                 onClick={() => setActiveTab(i)}
                 className={cn(
                   "px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors duration-200",
-                  isActive && isSuccess && "text-theme-success bg-theme-success/10",
-                  isActive && !isSuccess && "text-theme-error bg-theme-error/10",
+                  isActive && isSuccess && "text-theme-success bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]",
+                  isActive && !isSuccess && "text-theme-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]",
                   !isActive && "text-content-muted hover:text-content-secondary",
                 )}
               >

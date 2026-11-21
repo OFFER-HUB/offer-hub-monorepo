@@ -41,7 +41,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
         </div>
 
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-base shadow-neu-sunken-subtle text-[10px] font-bold uppercase tracking-wider text-content-secondary">
-          <GitCommit size={14} className="text-theme-primary/60" />
+          <GitCommit size={14} className="text-[color-mix(in_srgb,var(--color-primary)_60%,transparent)]" />
           <span>{person.commits} commits</span>
         </div>
 

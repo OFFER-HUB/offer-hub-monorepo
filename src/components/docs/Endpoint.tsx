@@ -34,7 +34,7 @@ export function Endpoint({
           </span>
         )}
         {idempotent && (
-          <span className="rounded-full bg-theme-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-theme-primary shadow-neu-sunken-subtle">
+          <span className="rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-theme-primary shadow-neu-sunken-subtle">
             Idempotent
           </span>
         )}

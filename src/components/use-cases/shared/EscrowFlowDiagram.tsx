@@ -21,10 +21,10 @@ export interface EscrowFlowDiagramProps {
 }
 
 const STATUS_STYLES: Record<EscrowStep["status"], string> = {
-  CREATED: "bg-content-muted/12 text-content-secondary",
-  FUNDED: "bg-theme-primary/12 text-theme-primary",
-  AWAITING_RELEASE: "bg-theme-warning/12 text-theme-warning",
-  SUCCEEDED: "bg-theme-success/12 text-theme-success",
+  CREATED: "bg-[color-mix(in_srgb,var(--color-text-muted)_12%,transparent)] text-content-secondary",
+  FUNDED: "bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-theme-primary",
+  AWAITING_RELEASE: "bg-[color-mix(in_srgb,var(--color-warning)_12%,transparent)] text-theme-warning",
+  SUCCEEDED: "bg-[color-mix(in_srgb,var(--color-success)_12%,transparent)] text-theme-success",
 };
 
 function HoverDetailPanel({ step }: { step: EscrowStep }) {

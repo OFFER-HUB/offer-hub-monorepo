@@ -93,13 +93,13 @@ export function CommandLine({
 
       {/* Terminal header bar */}
       <div
-        className="flex items-center gap-2 px-4 py-2.5 border-b border-theme-border/20 bg-bg-sunken shadow-neu-sunken-subtle"
+        className="flex items-center gap-2 px-4 py-2.5 border-b border-[color-mix(in_srgb,var(--color-border)_20%,transparent)] bg-bg-sunken shadow-neu-sunken-subtle"
       >
-        <span className="w-2.5 h-2.5 rounded-full bg-theme-error/80" />
-        <span className="w-2.5 h-2.5 rounded-full bg-theme-warning/80" />
-        <span className="w-2.5 h-2.5 rounded-full bg-theme-success/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-error)_80%,transparent)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-warning)_80%,transparent)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-success)_80%,transparent)]" />
         {displayTitle && (
-          <span className="ml-2 text-xs font-bold uppercase tracking-widest text-content-secondary/70 font-mono">
+          <span className="ml-2 text-xs font-bold uppercase tracking-widest text-[color-mix(in_srgb,var(--color-text-secondary)_70%,transparent)] font-mono">
             {displayTitle}
           </span>
         )}
@@ -134,7 +134,7 @@ export function CommandLine({
           tabIndex={0}
           role="region"
           aria-label="Command line, scrollable horizontally"
-          className="relative flex-1 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50 rounded-md"
+          className="relative flex-1 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--color-primary)_50%,transparent)] rounded-md"
         >
           <code className="block whitespace-nowrap text-sm text-content-primary font-mono pr-2">
             {trimmed}

@@ -37,7 +37,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
 
 const MENU_ITEM_CLASS =
   "w-full flex items-center gap-2 px-4 py-2 text-sm text-content-primary " +
-  "hover:text-theme-primary hover:bg-theme-primary/5 text-left " +
+  "hover:text-theme-primary hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] text-left " +
   "focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-[-2px]";
 
 interface PageActionsMenuProps {
@@ -339,7 +339,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
           role="menu"
           aria-label="Page actions"
           onKeyDown={handleMenuKeyDown}
-          className="absolute right-0 top-full mt-2 w-64 rounded-xl z-[100] bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 py-2 animate-dropdownIn"
+          className="absolute right-0 top-full mt-2 w-64 rounded-xl z-[100] bg-bg-elevated border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] shadow-2xl shadow-black/10 py-2 animate-dropdownIn"
         >
           {items.map((item, index) => {
             const Icon = item.icon;
@@ -347,7 +347,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
 
             return (
               <Fragment key={item.id}>
-                {showsDivider && <div role="separator" className="my-1 h-px bg-theme-border/40" />}
+                {showsDivider && <div role="separator" className="my-1 h-px bg-[color-mix(in_srgb,var(--color-border)_40%,transparent)]" />}
                 {item.kind === "button" ? (
                   <button
                     ref={(el) => {

@@ -177,7 +177,7 @@ export function CodeBlock({
         )}
       >
         <div className="flex items-center gap-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-base shadow-neu-raised-sm transition-colors duration-300 group-hover:bg-theme-primary/10">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-base shadow-neu-raised-sm transition-colors duration-300 group-hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
             <Code2 size={16} className="text-content-secondary group-hover:text-theme-primary" />
           </div>
           <div className="flex items-center gap-2.5">
@@ -189,7 +189,7 @@ export function CodeBlock({
             <span
               className={cn(
                 "text-xs font-black uppercase tracking-[0.18em] font-mono",
-                displayTitle ? "text-content-secondary/60 text-[11px]" : "text-content-secondary/70",
+                displayTitle ? "text-[color-mix(in_srgb,var(--color-text-secondary)_60%,transparent)] text-[11px]" : "text-[color-mix(in_srgb,var(--color-text-secondary)_70%,transparent)]",
               )}
             >
               {language}
@@ -205,7 +205,7 @@ export function CodeBlock({
             "relative flex items-center gap-2.5 px-4 py-2 min-h-11 rounded-xl text-xs font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
             copied
               ? "text-white bg-theme-primary shadow-neu-raised-sm"
-              : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",
+              : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] active:scale-95",
           )}
         >
           <span className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export function CodeBlock({
         tabIndex={0}
         role="region"
         aria-label={`${displayTitle ? `${displayTitle} (${language})` : `${language}`} code sample, scrollable horizontally`}
-        className="p-8 overflow-x-auto text-[14px] leading-[1.8] min-h-[5rem] text-content-primary scrollbar-thin scrollbar-track-transparent selection:bg-theme-primary/20 selection:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50"
+        className="p-8 overflow-x-auto text-[14px] leading-[1.8] min-h-[5rem] text-content-primary scrollbar-thin scrollbar-track-transparent selection:bg-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] selection:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
       >
         {highlightedCode ? (
           <div
@@ -231,7 +231,7 @@ export function CodeBlock({
             )}
           />
         ) : (
-          <pre className="text-content-secondary/70 font-mono font-medium">
+          <pre className="text-[color-mix(in_srgb,var(--color-text-secondary)_70%,transparent)] font-mono font-medium">
             <code>
               {rawCode.split("\n").map((lineText, idx) => {
                 const lineNum = idx + 1;
@@ -244,7 +244,7 @@ export function CodeBlock({
                       "block min-h-[1.5rem] px-4 -mx-4 transition-colors",
                       isHighlighted && "bg-bg-sunken shadow-neu-sunken-subtle rounded-md",
                       hasLineNumbers &&
-                        "before:inline-block before:w-9 before:text-right before:mr-5 before:text-content-muted/60 before:select-none before:tabular-nums before:content-[attr(data-line)]",
+                        "before:inline-block before:w-9 before:text-right before:mr-5 before:text-[color-mix(in_srgb,var(--color-text-muted)_60%,transparent)] before:select-none before:tabular-nums before:content-[attr(data-line)]",
                     )}
                   >
                     {lineText || " "}
