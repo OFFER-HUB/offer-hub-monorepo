@@ -1,571 +1,91 @@
----
+﻿---
 title: Escrow Flows
-description: Complete guide to all escrow lifecycle flows — creation, funding, release, dispute, and refund.
-order: 17
+description: Sequence diagrams for create/fund, release, refund and dispute escrow operations.
+order: 18
 section: Guides
 ---
 
-This guide walks through every escrow flow in OFFER-HUB: from creating and funding a contract to releasing, disputing, and refunding. Each flow includes step-by-step diagrams and code examples.
-
-<Callout type="note">
-  OFFER-HUB uses [Trustless Work](https://trustlesswork.com) smart contracts on Stellar for non-custodial escrow. All flows ultimately resolve on-chain.
-</Callout>
-
-## State Machines
-
-Escrow and order lifecycles are governed by two canonical state machines, generated from the transition tables in the orchestrator's `packages/shared/src/enums/order-status.enum.ts` (`ORDER_TRANSITIONS`) and `packages/shared/src/enums/escrow-status.enum.ts` (`ESCROW_TRANSITIONS`). The **Order state machine** tracks the order lifecycle, while the internal **Escrow state machine** tracks the smart contract itself. The flows below map onto these two machines.
-
-<MermaidDiagram
-  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
-  chart={`
-stateDiagram-v2
-    [*] --> ORDER_CREATED: POST /orders
-
-    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
-    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
-
-    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
-    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
-
-    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
-    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
-    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
-
-    ESCROW_FUNDED --> IN_PROGRESS: Work starts
-
-    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
-    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
-    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
-
-    RELEASE_REQUESTED --> RELEASED: TW confirms release
-    REFUND_REQUESTED --> REFUNDED: TW confirms refund
-
-    DISPUTED --> RELEASE_REQUESTED: Re-request release
-    DISPUTED --> REFUND_REQUESTED: Re-request refund
-    DISPUTED --> RELEASED: Resolve to release
-    DISPUTED --> REFUNDED: Resolve to refund
-
-    RELEASED --> CLOSED: Cleanup
-    REFUNDED --> CLOSED: Cleanup
-
-    CLOSED --> [*]
-`}
-/>
-
-<MermaidDiagram
-  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
-  chart={`
-stateDiagram-v2
-    [*] --> CREATING: Call TW API
-
-    CREATING --> CREATED: TW confirms creation
-    CREATED --> FUNDING: Starting funding
-
-    FUNDING --> FUNDED: TW confirms funds
-
-    FUNDED --> RELEASING: Release requested
-    FUNDED --> REFUNDING: Refund requested
-    FUNDED --> DISPUTED: Dispute opened
-
-    RELEASING --> RELEASED: TW confirms
-    REFUNDING --> REFUNDED: TW confirms
-
-    DISPUTED --> RELEASED: Release resolution
-    DISPUTED --> REFUNDED: Refund resolution
-
-    RELEASED --> [*]
-    REFUNDED --> [*]
-`}
-/>
-
-<Callout type="note">
-  `CANCELLABLE_ORDER_STATES` (`order-status.enum.ts`) lists only `ORDER_CREATED` and `FUNDS_RESERVED`, so the two `→ CLOSED` cancel edges above are the only states from which `POST /orders/{id}/cancel` succeeds.
-</Callout>
-
----
-
-## Creating an Escrow
-
-An escrow contract is created after an order is placed and the buyer's funds are reserved off-chain.
-
-### Steps
-
-1. **Create the order** — Buyer's balance is reserved (`ORDER_CREATED` → `FUNDS_RESERVED`)
-2. **Call the escrow creation endpoint** — Deploys a Trustless Work contract on Stellar (`ESCROW_CREATING`)
-3. **Wait for confirmation** — Contract becomes `CREATED`; the order advances to `ESCROW_FUNDING`
-
-<MermaidDiagram
-  caption="Create escrow — Order lane (ORDER_TRANSITIONS) with the contract it drives"
-  chart={`
-flowchart LR
-    A["ORDER_CREATED"] --> B["FUNDS_RESERVED"]
-    B --> C["ESCROW_CREATING"]
-    C --> D["ESCROW_FUNDING"]
-    C -. creates .- E["Escrow: CREATING → CREATED"]
-`}
-/>
-
-### REST
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json"
-```
-
-Response:
-
-```json
-{
-  "data": {
-    "id": "ord_xyz789",
-    "status": "ESCROW_CREATING",
-    "escrow": {
-      "contractId": "CDLZFC3SYJYD...",
-      "status": "creating"
-    }
-  }
-}
-```
-
-### TypeScript SDK
-
-```ts
-import { OfferHubSDK } from '@offerhub/sdk';
-
-const sdk = new OfferHubSDK({
-  apiUrl: 'http://localhost:4000',
-  apiKey: 'ohk_live_your_api_key',
-});
-
-// Create escrow contract
-await sdk.orders.createEscrow('ord_xyz789');
-
-// Wait until the contract is deployed (order advances to ESCROW_FUNDING)
-await sdk.orders.waitForStatus('ord_xyz789', 'ESCROW_FUNDING');
-```
-
-<Callout type="tip">
-  Contract deployment is asynchronous. Use `waitForStatus` or subscribe to the `order.escrow_creating` event rather than polling manually.
-</Callout>
-
----
-
-## Funding the Escrow
-
-Once the contract is deployed, the buyer's reserved USDC is transferred on-chain into the smart contract.
-
-### Steps
-
-1. **Call the fund endpoint** — Triggers an on-chain USDC transfer
-2. **Platform signs** — The buyer's encrypted key authorizes the transaction
-3. **Stellar confirms** — Transaction lands on-chain (5–10 seconds)
-4. **Status updates** — Order advances to `IN_PROGRESS`
-
-<MermaidDiagram
-  caption="Funding — Escrow lane (ESCROW_TRANSITIONS) and the Order lane it advances"
-  chart={`
-flowchart LR
-    subgraph ESCROW["Escrow contract lane"]
-        direction LR
-        A["CREATED"] --> B["FUNDING"]
-        B --> C["FUNDED"]
-    end
-    subgraph ORDER["Order lane"]
-        direction LR
-        D["ESCROW_FUNDING"] --> E["ESCROW_FUNDED"]
-        E --> F["IN_PROGRESS"]
-    end
-    C -. confirms .- E
-`}
-/>
-
-### REST
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/escrow/fund \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440001"
-```
-
-### TypeScript SDK
-
-```ts
-await sdk.orders.fundEscrow('ord_xyz789');
-
-await sdk.orders.waitForStatus('ord_xyz789', 'IN_PROGRESS');
-```
 
 <Callout type="warning">
-  Always include an `Idempotency-Key` when funding. If the request times out, retrying with the same key is safe and prevents double-funding.
+  The server never signs on behalf of the user. Every on-chain transaction must be signed client-side before submission.
 </Callout>
 
-### Balance changes during funding
+## 1. Create Escrow
 
-| Stage | Available | Reserved | On-Chain (Wallet) | In Contract |
-|-------|-----------|----------|--------------------|-------------|
-| After reserve | 50.00 | 50.00 | 100.00 | 0.00 |
-| After funding | 50.00 | 0.00 | 50.00 | 50.00 |
+The client prepares, signs, and submits the escrow creation transaction.
 
----
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
 
-## Release Conditions
-
-Funds can be released in two ways depending on how the order is configured.
-
-### Time-Based Release
-
-The buyer approves release after a deadline or after delivery confirmation within a time window.
-
-<MermaidDiagram
-  caption="Time-based release — the Order lane moves to RELEASE_REQUESTED first, then the three signed calls run"
-  chart={`
-flowchart LR
-    A["IN_PROGRESS"] --> B["RELEASE_REQUESTED<br/>assertTransition runs before any contract call"]
-    B --> C["RELEASED<br/>TW confirms release-funds"]
-    C --> D["CLOSED"]
-    B -.-> E["1. seller signs changeMilestoneStatus (serviceProvider)"]
-    B -.-> F["2. buyer signs approveMilestone (approver)"]
-    B -.-> G["3. buyer signs releaseFunds (releaseSigner)"]
-`}
-/>
-
-1. Seller marks work as complete
-2. Buyer has a review window (e.g., 72 hours)
-3. If the buyer approves — or the window expires without a dispute — release is triggered
-
-### Milestone-Based Release
-
-For larger projects, create one order with multiple milestones. The milestones are tracked within the same order and share its escrow. Complete each milestone as work is delivered, then use the order resolution flow to release, refund, or dispute the order.
-
-<MermaidDiagram
-  caption="Milestones live inside one order — the order and escrow states never change per milestone"
-  chart={`
-flowchart LR
-    subgraph O["One order — status stays ESCROW_FUNDED / IN_PROGRESS"]
-      direction LR
-      A1["Escrow FUNDED"] --> B1["Milestone 0 delivered<br/>changeMilestoneStatus(index 0)"]
-      B1 --> C1["Milestone 0 completed"]
-      C1 --> D1["Milestone 1 delivered<br/>changeMilestoneStatus(index 1)"]
-      D1 --> E1["Order resolution releases the shared escrow"]
-    end
-`}
-/>
-
-<Callout type="tip">
-    Milestones do not have separate order lifecycles or escrow contracts. Use `GET /orders/{id}/milestones` to list them and `POST /orders/{id}/milestones/{ref}/complete` to mark one complete within the parent order.
-</Callout>
-
----
-
-## Releasing Funds
-
-When the buyer approves the delivered work, funds are released to the seller in three on-chain transactions.
-
-### Steps
-
-| Step | Contract call | Signer | Role in contract |
-|------|---------------|--------|------------------|
-| 1 | `changeMilestoneStatus` | **Seller** | `serviceProvider` |
-| 2 | `approveMilestone` | **Buyer** | `approver` |
-| 3 | `releaseFunds` | **Buyer** | `releaseSigner` |
-
-<MermaidDiagram
-  caption="Release: three sequential contract calls, each signed by the role the contract expects"
-  chart={`
-flowchart LR
-    A["Seller signs<br/>changeMilestoneStatus<br/>(serviceProvider)"] --> B["Buyer signs<br/>approveMilestone<br/>(approver)"]
-    B --> C["Buyer signs<br/>releaseFunds<br/>(releaseSigner)"]
-    C --> D["USDC sent to seller<br/>Order: RELEASE_REQUESTED → RELEASED → CLOSED"]
-`}
-/>
-
-Source: `apps/api/src/modules/resolution/resolution.service.ts` (`requestRelease`) signs with `order.sellerId` then `order.buyerId`; `apps/api/src/providers/trustless-work/clients/escrow.client.ts` maps those calls to the `change-milestone-status`, `approve-milestone` and `release-funds` contract functions.
-
-### REST
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/release \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440002" \
-  -d '{"requestedBy": "usr_buyer123"}'
+  Client->>API: POST /orders/:id/escrow/prepare
+  API-->>Client: { xdr: "<unsigned XDR>" }
+  Note over Client: Sign XDR with Stellar Wallets Kit
+  Client->>API: POST /orders/:id/escrow/submit { signedXdr }
+  API-->>Client: { data: { status: "ESCROW_CREATING" } }
 ```
 
-Response:
+## 2. Fund Escrow
 
-```json
-{
-  "data": {
-    "id": "ord_xyz789",
-    "status": "CLOSED",
-    "resolution": {
-      "type": "released",
-      "amount": "50.00",
-      "recipient": "usr_seller456",
-      "completedAt": "2026-03-01T14:00:00.000Z"
-    }
-  }
-}
+Once the contract is deployed, the buyer funds it with USDC.
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
+
+  Client->>API: POST /orders/:id/escrow/fund/prepare
+  API-->>Client: { xdr: "<unsigned XDR>" }
+  Note over Client: Sign XDR with Stellar Wallets Kit
+  Client->>API: POST /orders/:id/escrow/fund/submit { signedXdr }
+  API-->>Client: { data: { status: "ESCROW_FUNDED" } }
 ```
 
-### TypeScript SDK
+## 3. Release Funds
 
-```ts
-await sdk.orders.release('ord_xyz789', 'Buyer approved release');
+The buyer approves delivery and releases funds to the seller.
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
+
+  Client->>API: POST /orders/:orderId/resolution/release/prepare
+  API-->>Client: { xdr: "<unsigned XDR>" }
+  Note over Client: Sign XDR with Stellar Wallets Kit
+  Client->>API: POST /orders/:orderId/resolution/release/submit { signedXdr }
+  API-->>Client: { data: { status: "RELEASED" } }
 ```
 
-<Callout type="note">
-  After release, the seller's internal balance is credited. They can withdraw to their external wallet at any time via the [Withdrawals](/docs/guide/withdrawals) flow.
-</Callout>
+## 4. Refund
 
----
+Either party requests a refund; the USDC is returned to the buyer.
 
-## Raising a Dispute
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
 
-Either party can raise a dispute while the order is `IN_PROGRESS` — `openedBy` accepts `BUYER` or `SELLER` (`packages/shared/src/enums/dispute-status.enum.ts`, `DisputeOpenedBy`).
-
-### Steps
-
-1. **Buyer or seller opens dispute** — Provides a reason
-2. **Status changes** — Order moves to `DISPUTED` (funds stay locked in the contract)
-3. **Funds remain locked** — Neither party can access the escrow
-4. **Platform reviews** — Manual or automated resolution begins
-
-<MermaidDiagram
-  caption="Opening a dispute is off-chain only — no Stellar transaction is submitted yet"
-  chart={`
-flowchart LR
-    A["IN_PROGRESS"] -->|"openDispute — BUYER or SELLER"| B["DISPUTED<br/>order status written by resolution.service.ts<br/>escrow record marked DISPUTED"]
-    B --> C["No contract call yet — funds stay locked"]
-`}
-/>
-
-### REST
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "openedBy": "BUYER",
-    "reason": "QUALITY_ISSUE"
-  }'
+  Client->>API: POST /orders/:orderId/resolution/refund/prepare
+  API-->>Client: { xdr: "<unsigned XDR>" }
+  Note over Client: Sign XDR with Stellar Wallets Kit
+  Client->>API: POST /orders/:orderId/resolution/refund/submit { signedXdr }
+  API-->>Client: { data: { status: "REFUNDED" } }
 ```
 
-Response:
+## 5. Dispute
 
-```json
-{
-  "data": {
-    "id": "ord_xyz789",
-    "status": "DISPUTED",
-    "dispute": {
-      "id": "dsp_abc123",
-      "reason": "QUALITY_ISSUE",
-      "openedAt": "2026-03-01T10:00:00.000Z",
-      "openedBy": "BUYER"
-    }
-  }
-}
+Either party opens a dispute. The prepare/sign flow stages the on-chain transaction; the final POST opens the dispute record.
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
+
+  Client->>API: POST /orders/:orderId/resolution/dispute/prepare
+  API-->>Client: { xdr: "<unsigned XDR>" }
+  Note over Client: Sign XDR with Stellar Wallets Kit
+  Client->>API: POST /orders/:orderId/resolution/dispute { signedXdr, reason }
+  API-->>Client: { data: { status: "DISPUTED", disputeId: "dsp_<32chars>" } }
 ```
-
-### TypeScript SDK
-
-```ts
-await sdk.disputes.open('ord_xyz789', {
-  reason: 'Work delivered does not match agreed specifications',
-});
-```
-
-<Callout type="warning">
-  Disputes can only be opened while the order is `IN_PROGRESS`. Once released or refunded, the order is final.
-</Callout>
-
----
-
-## Dispute Resolution
-
-After a dispute is opened, the platform reviews evidence and resolves with a **release** (seller wins) or **refund** (buyer wins).
-
-### Resolution Options
-
-| Decision | Outcome | On-Chain Transaction |
-|------------|---------|----------------------|
-| `FULL_RELEASE` | Funds go to seller | `resolve_dispute` → release |
-| `FULL_REFUND` | Funds return to buyer | `resolve_dispute` → refund |
-| `SPLIT` | Custom split between parties | `resolve_dispute` → split |
-
-### REST — Resolve with Refund
-
-```bash
-curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "decision": "FULL_REFUND",
-    "note": "Seller did not deliver agreed deliverables"
-  }'
-```
-
-### REST — Resolve with Release
-
-```bash
-curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/resolve \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "decision": "FULL_RELEASE",
-    "note": "Evidence confirms work was delivered as agreed"
-  }'
-```
-
-### TypeScript SDK
-
-```ts
-// Resolve in favor of buyer (refund)
-await sdk.disputes.resolve('dsp_abc123', {
-  decision: 'FULL_REFUND',
-  note: 'Seller did not deliver agreed deliverables',
-});
-
-// Resolve in favor of seller (release)
-await sdk.disputes.resolve('dsp_abc123', {
-  decision: 'FULL_RELEASE',
-  note: 'Evidence confirms work was delivered as agreed',
-});
-```
-
-<Callout type="note">
-  Only the platform (using the master API key) can resolve disputes. This requires a co-signature from the Trustless Work smart contract arbiter.
-</Callout>
-
-Signer source for this page: `apps/api/src/modules/resolution/resolution.service.ts` (`requestRelease`, `requestRefund`) and `apps/api/src/providers/trustless-work/clients/escrow.client.ts`; the contract role fields (`approver`, `serviceProvider`, `releaseSigner`, `disputeResolver`, `receiver`, `platformAddress`) are declared in `apps/api/src/providers/trustless-work/types/trustless-work.types.ts`.
-
----
-
-## Refund Flow
-
-A refund can result from dispute resolution or, in some configurations, from a direct cancellation before work begins.
-
-### Refund Requests
-
-<MermaidDiagram
-  caption="Refund lane — the same two signed calls run whether the refund was requested directly or resolved from a dispute"
-  chart={`
-flowchart LR
-    A["IN_PROGRESS"] -->|"requestRefund"| B["REFUND_REQUESTED"]
-    Z["DISPUTED"] -->|"resolve as FULL_REFUND"| B
-    B --> C["REFUNDED"]
-    C --> D["CLOSED"]
-    C -.-> E["Buyer balance credited"]
-`}
-/>
-
-Two on-chain transactions are required:
-
-| Step | Contract call | Signer | Role in contract |
-|------|---------------|--------|------------------|
-| 1 | `disputeEscrow` | **Buyer** | `approver` (the disputer) |
-| 2 | `resolveDispute` (100% to buyer) | **Platform** | `disputeResolver` |
-
-Source: `resolution.service.ts` (`requestRefund`) signs step 1 with the buyer's wallet and step 2 with the platform wallet (`disputeResolver`); the contract functions are `dispute-escrow` and `resolve-dispute` in `apps/api/src/providers/trustless-work/clients/escrow.client.ts`. Resolving an open dispute with `FULL_REFUND` ends in the same `REFUNDED` state.
-
-<Callout type="danger">
-  **Role separation is enforced by the smart contract.** The `disputeResolver` must be a different party from the disputer. Because the buyer signs step 1, the platform wallet is the only valid signer for step 2. Neither the buyer nor the seller can unilaterally resolve a dispute to reclaim funds.
-</Callout>
-
-### Cancellation Before Funding
-
-Cancellation is only accepted in `CANCELLABLE_ORDER_STATES` — `ORDER_CREATED` and `FUNDS_RESERVED`. The off-chain reservation is released with no blockchain transaction:
-
-```bash
-curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/cancel \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{"requestedBy": "usr_seller456", "reason": "Unable to fulfill order"}'
-```
-
-<Callout type="note">
-  Cancellations before escrow funding are instant — no Stellar transaction required. The buyer's reserved balance is immediately returned to available.
-</Callout>
-
-### TypeScript SDK — Full Dispute-to-Refund Flow
-
-```ts
-// Step 1: Buyer raises dispute
-await sdk.disputes.open('ord_xyz789', {
-  reason: 'Work not delivered',
-});
-
-// Step 2: Platform fetches the dispute
-const disputes = await sdk.disputes.list({ orderId: 'ord_xyz789' });
-const dispute = disputes[0];
-
-// Step 3: Platform resolves with refund
-await sdk.disputes.resolve(dispute.id, {
-  decision: 'FULL_REFUND',
-  note: 'Verified: seller did not deliver',
-});
-
-// Buyer's balance is now credited
-const buyer = await sdk.users.get('usr_buyer123');
-console.log('Buyer available balance:', buyer.balance.available);
-```
-
----
-
-## Listening to Escrow Events
-
-Lifecycle events are delivered over the [SSE event stream](/docs/api-reference/events) at `GET /api/v1/events` — there is no outbound webhook API. Subscribe to keep your application in sync:
-
-```ts
-const events = sdk.events.subscribe();
-
-events.on('order.escrow_creating', (data) => {
-  console.log('Contract deploying:', data.contractId);
-});
-
-events.on('order.escrow_funded', (data) => {
-  console.log('Funds locked:', data.amount, 'USDC');
-});
-
-events.on('order.released', (data) => {
-  console.log('Released to seller:', data.recipient);
-});
-
-events.on('order.disputed', (data) => {
-  console.log('Dispute opened:', data.dispute.id);
-});
-
-events.on('order.refunded', (data) => {
-  console.log('Refunded to buyer:', data.amount, 'USDC');
-});
-```
-
----
-
-## Error Reference
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `ESCROW_ALREADY_EXISTS` | Contract already created for this order | Check status before calling create |
-| `ESCROW_NOT_FUNDED` | Release attempted before funding | Fund the escrow first |
-| `INVALID_STATE` | Action not valid in current status | Follow the state machine |
-| `INSUFFICIENT_FUNDS` | Buyer wallet has insufficient USDC | Check balance before funding |
-| `DISPUTE_ALREADY_OPEN` | Duplicate dispute on same order | Resolve existing dispute first |
-| `FUNDING_TIMEOUT` | Stellar transaction not confirmed | Check order status — do not retry blindly |
-
-<Callout type="tip">
-  Use idempotency keys on all mutating requests (fund, release, dispute). This allows safe retries without risk of duplicate transactions.
-</Callout>
-
----
-
-## Next Steps
-
-- [Escrow Guide](/docs/guide/escrow) — State machine reference and balance mechanics
-- [Disputes Guide](/docs/guide/disputes) — Full dispute management documentation
-- [Withdrawals Guide](/docs/guide/withdrawals) — Move funds off-platform after release
-- [SDK Quick Start](/docs/sdk/quick-start) — TypeScript SDK setup and usage
-- [API Reference](/docs/api-reference/overview) — Full REST API documentation
