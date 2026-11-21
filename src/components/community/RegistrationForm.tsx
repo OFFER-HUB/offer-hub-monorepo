@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { Send, User, Mail, MessageSquare, CheckCircle2, AlertCircle, Timer } from "lucide-react";
 import { FormField } from "@/components/forms/FormField";
+import { Button } from "@/components/ui/Button";
 import { useWaitlistForm } from "@/hooks/use-waitlist-form";
 
 export function RegistrationForm() {
@@ -141,18 +142,19 @@ export function RegistrationForm() {
                         <div ref={turnstileContainerRef} className="mx-auto" />
                     )}
 
-                    <button
+                    <Button
                         type="submit"
                         disabled={!canSubmit}
-                        className="btn-neumorphic-primary mt-4 w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
+                        loading={isLoading}
+                        className="mt-4 w-full group"
                     >
                         {isLoading
                             ? "Submitting..."
                             : cooldownSeconds > 0
                             ? `Wait ${cooldownSeconds}s`
                             : "Submit Application"}
-                        <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </button>
+                        <Send size={14} />
+                    </Button>
                 </form>
             </div>
         </section>

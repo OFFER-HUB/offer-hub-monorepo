@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { useLiquidTextAnimation } from "@/hooks/useLiquidTextAnimation";
 
@@ -94,24 +94,15 @@ export function HeroSection() {
           style={{ animationDelay: "500ms" }}
         >
           {/* Primary — neumorphic raised, teal */}
-          <a
-            href="#waitlist-form"
-            className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-primary"
-          >
+          <Button href="#waitlist-form" size="lg" className="group">
             Get Started
-            <ArrowRight
-              size={15}
-              className="group-hover:translate-x-0.5 transition-transform duration-[200ms]"
-            />
-          </a>
+            <ArrowRight size={15} />
+          </Button>
 
           {/* Secondary — neumorphic raised, same base color as page */}
-          <Link
-            href="/docs"
-            className="px-7 py-3.5 rounded-xl text-sm font-medium btn-neumorphic-secondary"
-          >
+          <Button href="/docs" variant="secondary" size="lg">
             View Docs
-          </Link>
+          </Button>
         </div>
       </div>
 

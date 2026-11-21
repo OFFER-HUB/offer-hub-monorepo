@@ -20,6 +20,7 @@ import { usePillIndicator } from "@/hooks/usePillIndicator";
 import { USE_CASES, PAGE_SECTIONS, SCROLL_OFFSET } from "./constants";
 import type { UseCaseId } from "./constants";
 import { SectionLoading } from "./shared/SectionLayout";
+import { Button } from "@/components/ui/Button";
 
 // ── Lazily-loaded use-case sections (code-split per tab) ──
 type SectionProps = { stickyNav?: ReactNode };
@@ -153,7 +154,7 @@ export function UseCasesClient() {
           >
             {pillStyle && (
               <span
-                className="absolute top-0 h-full rounded-xl btn-neumorphic-primary pointer-events-none"
+                className="absolute top-0 h-full rounded-xl bg-action pointer-events-none"
                 aria-hidden="true"
                 style={{
                   left: pillStyle.left,
@@ -229,22 +230,18 @@ export function UseCasesClient() {
               const isActive = activeUseCase === uc.id;
               const UCIcon = uc.icon;
               return (
-                <button
+                <Button
                   key={uc.id}
+                  type="button"
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => handleUseCaseSwitch(uc.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold min-h-11",
-                    "transition-[color,box-shadow] duration-300 select-none touch-manipulation",
-                    isActive
-                      ? "btn-neumorphic-primary text-white shadow-neu-sunken"
-                      : "bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover text-content-secondary hover:text-content-primary",
-                  )}
+                  variant={isActive ? "primary" : "secondary"}
+                  className="select-none touch-manipulation"
                 >
                   <UCIcon size={15} className="flex-shrink-0" />
                   {uc.label}
-                </button>
+                </Button>
               );
             })}
           </div>

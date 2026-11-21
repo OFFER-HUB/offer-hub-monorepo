@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Terminal, Layers, Wallet, Clock, TrendingUp, Package } from "lucide-react";
 import { BlueprintMotionSection } from "@/components/shared/BlueprintMotionSection";
 import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/Button";
 
 type View = "freelancer" | "business";
 
@@ -219,15 +220,15 @@ export function MarketplaceTemplate() {
               <p className="text-xs text-content-secondary leading-relaxed mb-5">
                 The <span className="font-mono text-content-primary">@offerhub/sdk</span> bridges the Marketplace Template and the Orchestrator. It exposes typed hooks for escrow lifecycle management, real-time payout tracking, and asset resolution — so your frontend stays synced with the payment engine without writing a single REST call by hand.
               </p>
-              <a
+              <Button
                 href="https://docs.offerhub.io/sdk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold btn-neumorphic-primary transition-[background-color,box-shadow,transform]"
+                size="sm"
               >
                 SDK Documentation
                 <ArrowUpRight size={14} />
-              </a>
+              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { X, ArrowRight } from "lucide-react";
 import { CTA_DISMISSED_KEY } from "@/constants/storage";
+import { Button } from "@/components/ui/Button";
 
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -91,13 +92,9 @@ export function FloatingCTA() {
           </button>
 
           {/* Animated border wrapper */}
-          <div className="animated-border-wrapper shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-300 group-hover:translate-y-0.5">
+          <div className="animated-border-wrapper shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-300">
             {/* CTA Card */}
-            <button
-              type="button"
-              onClick={handleClick}
-              className="animated-border-inner appearance-none border-0 text-left cursor-pointer px-4 py-3 md:px-6 md:py-5 max-w-[240px] md:max-w-[280px] w-full"
-            >
+            <div className="animated-border-inner px-4 py-3 md:px-6 md:py-5 max-w-[240px] md:max-w-[280px] w-full">
               <div className="flex flex-col">
                 {/* Content */}
                 <div>
@@ -113,16 +110,15 @@ export function FloatingCTA() {
                 </div>
               </div>
 
-              {/* CTA Button */}
-              <div className="mt-3 md:mt-4 w-full py-2 md:py-2.5 rounded-xl bg-theme-primary text-white text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-theme-primary-hover transition-colors group/btn">
+              <Button
+                type="button"
+                onClick={handleClick}
+                trailingIcon={<ArrowRight size={14} aria-hidden="true" />}
+                className="mt-3 w-full md:mt-4"
+              >
                 Get Started
-                <ArrowRight
-                  size={14}
-                  aria-hidden="true"
-                  className="group-hover/btn:translate-x-0.5 transition-transform"
-                />
-              </div>
-            </button>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

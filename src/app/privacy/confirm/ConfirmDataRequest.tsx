@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 type Outcome =
   | { ok: true; message: string; data?: Record<string, unknown> }
@@ -55,14 +56,14 @@ export function ConfirmDataRequest() {
               <p className="text-sm font-medium leading-relaxed text-content-secondary">
                 Confirm that you own the email address this link was sent to. The link works once.
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={confirm}
                 disabled={loading}
-                className="py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-theme-primary text-white hover:bg-theme-primary-hover shadow-lg transition-colors disabled:opacity-50"
+                loading={loading}
               >
                 {loading ? "Processing…" : "Confirm request"}
-              </button>
+              </Button>
             </>
           )}
           {outcome && (

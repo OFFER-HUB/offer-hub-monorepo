@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Copy, Check, Code2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { logger } from "@/utils/logger";
 import { highlightCache, escapeHtml, parseLineHighlightRange } from "@/utils/shiki-highlight";
@@ -197,22 +198,14 @@ export function CodeBlock({
           </div>
         </div>
 
-        <button
-          type="button"
+        <Button
           onClick={handleCopy}
           aria-label={copied ? "Copied" : "Copy code"}
-          className={cn(
-            "relative flex items-center gap-2.5 px-4 py-2 min-h-11 rounded-xl text-xs font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
-            copied
-              ? "text-white bg-theme-primary shadow-neu-raised-sm"
-              : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",
-          )}
+          variant={copied ? "primary" : "secondary"}
+          leadingIcon={copied ? <Check size={14} /> : <Copy size={14} />}
         >
-          <span className="flex items-center gap-2">
-            {copied ? <Check size={14} className="stroke-[3.5]" /> : <Copy size={14} className="stroke-[2.5]" />}
-            <span>{copied ? "Copied" : "Copy"}</span>
-          </span>
-        </button>
+          {copied ? "Copied" : "Copy"}
+        </Button>
       </div>
 
       {/* Code Area */}
