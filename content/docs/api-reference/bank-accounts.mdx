@@ -1,0 +1,51 @@
+---
+title: Bank Account Endpoints
+description: Manage the current user's local bank accounts for BlindPay payouts.
+order: 56
+section: API Reference
+---
+
+Bank accounts are managed by the authenticated user and used for BlindPay payouts. All endpoints require the user's session JWT. Accounts must match the payout corridor selected from the seller's country.
+
+## Endpoints
+
+| Method | Path | Auth | Idempotency | Request fields |
+| --- | --- | --- | --- | --- |
+| `GET` | `/users/me/bank-accounts` | User session JWT | Not applicable | No query fields or request body |
+| `POST` | `/users/me/bank-accounts` | User session JWT | Not specified by the verified contract | Request body fields are not specified by the verified contract |
+| `PATCH` | `/users/me/bank-accounts/:id/default` | User session JWT | Not specified by the verified contract | `id` path parameter; body fields are not specified by the verified contract |
+| `DELETE` | `/users/me/bank-accounts/:id` | User session JWT | Not applicable | `id` path parameter; no request body |
+
+<Callout type="warning">
+  The verified public contract does not provide bank-account DTO property names or response fields. Use the `bankAccounts` resource types from `@offerhub/sdk` 3.0.0; do not infer local bank-field requirements.
+</Callout>
+
+## GET /users/me/bank-accounts
+
+<Endpoint method="GET" path="/api/v1/users/me/bank-accounts" />
+
+Lists bank accounts belonging to the authenticated user. The verified contract specifies no query parameters or request body.
+
+## POST /users/me/bank-accounts
+
+<Endpoint method="POST" path="/api/v1/users/me/bank-accounts" />
+
+Creates a bank account for the authenticated user. The verified public contract does not specify request-body fields or the response schema.
+
+## PATCH /users/me/bank-accounts/:id/default
+
+<Endpoint method="PATCH" path="/api/v1/users/me/bank-accounts/:id/default" />
+
+Sets the account identified by `id` as the user's default bank account. The request body is not specified by the verified public contract.
+
+## DELETE /users/me/bank-accounts/:id
+
+<Endpoint method="DELETE" path="/api/v1/users/me/bank-accounts/:id" />
+
+Deletes the account identified by `id`. The request has no body.
+
+## Related
+
+- [Seller Bank Payouts guide](/docs/guide/withdrawals) — complete seller payout flow.
+- [KYC endpoints](/docs/api-reference/kyc) — receiver and terms-of-service operations.
+- [Payouts endpoints](/docs/api-reference/payouts) — order payout lifecycle.

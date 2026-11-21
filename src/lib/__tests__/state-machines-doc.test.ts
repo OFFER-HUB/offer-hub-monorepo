@@ -40,11 +40,9 @@ const EXPECTED_EDGES: Record<string, string[]> = {
 const CROSS_LINKS: Record<string, string> = {
   "api-reference/disputes.mdx": "#dispute",
   "api-reference/resolution.mdx": "#dispute",
-  "api-reference/wallet-topups.mdx": "#top-up",
   "guide/withdrawals.mdx": "#withdrawal",
   "sdk/withdrawals.mdx": "#withdrawal",
   "api-reference/orders.mdx": "#milestone",
-  "sdk/topups.mdx": "#top-up",
   "guide/disputes.mdx": "#dispute",
 };
 

@@ -1,0 +1,51 @@
+---
+title: KYC Endpoints
+description: KYC receiver and terms-of-service endpoints for BlindPay bank payouts.
+order: 55
+section: API Reference
+---
+
+These endpoints manage the current user's BlindPay receiver and terms-of-service consent. All require the user's session JWT. A user session JWT is valid for seven days.
+
+## Endpoints
+
+| Method | Path | Auth | Idempotency | Request fields |
+| --- | --- | --- | --- | --- |
+| `GET` | `/users/me/kyc` | User session JWT | Not applicable | No query fields or request body |
+| `POST` | `/users/me/kyc` | User session JWT | Not specified by the verified contract | Request body fields are not specified by the verified contract |
+| `POST` | `/users/me/kyc/tos-url` | User session JWT | Not specified by the verified contract | No body fields are specified by the verified contract |
+| `POST` | `/users/me/kyc/tos-accept` | User session JWT | Not specified by the verified contract | Request body fields are not specified by the verified contract |
+
+<Callout type="warning">
+  The verified public contract does not provide the KYC DTO property names or response schema. Use the `kyc` resource types from `@offerhub/sdk` 3.0.0; do not infer receiver fields.
+</Callout>
+
+## GET /users/me/kyc
+
+<Endpoint method="GET" path="/api/v1/users/me/kyc" />
+
+Retrieves the authenticated user's KYC/receiver information. It takes no query parameters or request body.
+
+## POST /users/me/kyc
+
+<Endpoint method="POST" path="/api/v1/users/me/kyc" />
+
+Creates or updates the authenticated user's KYC/receiver information. The request body is required by the operation, but its field names and response fields are not specified by the verified public contract.
+
+## POST /users/me/kyc/tos-url
+
+<Endpoint method="POST" path="/api/v1/users/me/kyc/tos-url" />
+
+Requests a terms-of-service URL for the authenticated user. No request fields are specified by the verified public contract.
+
+## POST /users/me/kyc/tos-accept
+
+<Endpoint method="POST" path="/api/v1/users/me/kyc/tos-accept" />
+
+Records the authenticated user's acceptance of the terms. The verified public contract does not specify request-body or response fields.
+
+## Related
+
+- [Seller Bank Payouts guide](/docs/guide/withdrawals) — KYC, bank accounts, and payout steps.
+- [Bank accounts endpoints](/docs/api-reference/bank-accounts) — manage seller payout accounts.
+- [Payouts endpoints](/docs/api-reference/payouts) — prepare, submit, track, and retry payouts.

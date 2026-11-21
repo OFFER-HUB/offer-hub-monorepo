@@ -25,6 +25,25 @@ const corsHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/docs/guide/deposits",
+        destination: "/docs/guide/withdrawals",
+        permanent: true,
+      },
+      {
+        source: "/docs/api-reference/wallet-topups",
+        destination: "/docs/api-reference/payouts",
+        permanent: true,
+      },
+      {
+        source: "/docs/sdk/topups",
+        destination: "/docs/sdk/payouts",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     const securityHeaders = getSecurityHeaders();
     return [

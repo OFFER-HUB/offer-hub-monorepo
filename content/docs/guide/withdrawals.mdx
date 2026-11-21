@@ -1,121 +1,56 @@
 ---
-title: Withdrawals Guide
-description: Reference for crypto and AirTM withdrawals in the OFFER-HUB Orchestrator.
+title: Seller Bank Payouts (BlindPay)
+description: KYC, local bank accounts, and USDC payouts for released orders.
 order: 19
 section: Guides
 ---
 
-This page documents the withdrawal controller and DTOs in the [OFFER-HUB Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB): `apps/api/src/modules/withdrawals/withdrawals.controller.ts`, `apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts`, and `apps/api/src/modules/withdrawals/withdrawals.service.ts`.
+OFFER-HUB pays a seller's released order in USDC to a local bank account through BlindPay. The payout corridor follows the seller's country. The supported corridors are exactly Brazil (`BR`), Mexico (`MX`), Argentina (`AR`), and Colombia (`CO`). A seller in an unsupported country, or without a bank account for their corridor, cannot prepare a payout.
 
-Every request uses `Authorization: Bearer <api-key>`. Write endpoints require the `write` scope; read endpoints require `read`.
+## Payout flow
 
-## Destination types and lifecycle
+<Steps
+  items={[
+    "Complete KYC and accept the terms with the user's session JWT.",
+    "Add a local bank account for the seller's payout corridor.",
+    "Release the order; payout preparation is available for released orders.",
+    "Prepare the payout and return its unsigned transaction to the seller to sign in their wallet.",
+    "Submit the signed transaction with the required Idempotency-Key.",
+    "Read payout status from the payout endpoint or event feed; retry a failed payout, including with another bank account in the same corridor."
+  ]}
+/>
 
-| `destinationType` | Provider path | Behaviour |
-|---|---|---|
-| `crypto` | Stellar | Synchronous payment; the response is completed after the payment provider confirms it. |
-| `bank` | AirTM | Asynchronous payout; create first, then commit unless `commit: true` is supplied. |
-| `airtm_balance` | AirTM | Asynchronous payout; follows the same create/commit flow as `bank`. |
+See the [KYC API reference](/docs/api-reference/kyc) and [bank accounts API](/docs/api-reference/bank-accounts) for setup operations. The exact prepare and submit request fields are defined by the installed `@offerhub/sdk` 3.0.0 types; the verified public issue contract does not publish their property names. The server does not sign for the user.
 
-The statuses used by the service are `WITHDRAWAL_CREATED`, `WITHDRAWAL_COMMITTED`, `WITHDRAWAL_PENDING`, `WITHDRAWAL_PENDING_USER_ACTION`, `WITHDRAWAL_COMPLETED`, `WITHDRAWAL_FAILED`, and `WITHDRAWAL_CANCELED`.
+## Payout statuses
 
-<StaticDiagram name="withdrawal-lifecycle" caption="Withdrawal lifecycle. Solid edges are the AirTM path (WITHDRAWAL_TRANSITIONS); dashed edges are the crypto path, which completes or fails inside the create request." />
+| Status | Meaning |
+| --- | --- |
+| `PENDING` | Payout has been created and is waiting to be processed. |
+| `PROCESSING` | BlindPay is processing the payout. |
+| `COMPLETED` | Payout completed. |
+| `FAILED` | Payout failed; funds are returned and the payout can be retried. |
+| `REFUNDED` | Funds have been returned. |
+| `ON_HOLD` | Payout is on hold. |
+| `AWAITING_SIGNATURE` | The unsigned transaction is awaiting the seller's signature. |
 
-Every edge above is an entry in `WITHDRAWAL_TRANSITIONS`. Crypto withdrawals skip it: they are created as `WITHDRAWAL_CREATED` and set straight to `WITHDRAWAL_COMPLETED` or `WITHDRAWAL_FAILED` in the same request. The [Withdrawal state machine](/docs/guide/state-machines#withdrawal) lists the trigger for each transition and the `WITHDRAWAL_NOT_COMMITTABLE` guard on commit.
+BlindPay events handled by the Orchestrator are `payout.new`, `payout.update`, `payout.complete`, `payout.completed`, `payout.failed`, `payout.on_hold`, and `payout.refunded`. These events update the payout status. Integrators can read the latest status from the payout endpoint or the event feed.
 
-## POST `/withdrawals`
+<Callout type="note">
+  If you self-host the Orchestrator, register its BlindPay webhook in your BlindPay dashboard. Use the webhook configuration provided for your own deployment; this guide does not prescribe a hostname.
+</Callout>
 
-Creates a withdrawal. The request body is `CreateWithdrawalDto`:
+## Limits and fees
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `userId` | string | yes | Internal user ID. |
-| `amount` | string | yes | Decimal string with exactly two decimal places, such as `"5.00"`. |
-| `currency` | string | no | Defaults to `USD`. |
-| `destinationType` | `"bank" \| "crypto" \| "airtm_balance"` | yes | Selects the provider flow. |
-| `destinationRef` | string | yes | Bank/AirTM reference or Stellar destination address. |
-| `commit` | boolean | no | AirTM only; defaults to `false`. |
-| `description` | string | no | Optional description. |
+BlindPay bank-account quotes have a minimum of **5.00 USD**. Some payment rails have a higher minimum; BlindPay rejects payouts below that rail's minimum with `PAYOUTS_AMOUNT_BELOW_MINIMUM`. Each receiver also has a transaction volume limit. When the limit is exceeded, BlindPay returns `LIMITS_VOLUME_EXCEEDED`; operators can request a higher limit through BlindPay's limit-increase process.
 
-```bash
-curl -X POST http://localhost:4000/api/v1/withdrawals \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "usr_abc123",
-    "amount": "50.00",
-    "currency": "USD",
-    "destinationType": "crypto",
-    "destinationRef": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"
-  }'
-```
+Current limits can change. Check [BlindPay's API documentation](https://docs.blindpay.com/) for current values. BlindPay fees are set by the operator's BlindPay agreement; no fee amounts are listed here. See [BlindPay pricing and documentation](https://docs.blindpay.com/).
 
-```typescript
-const withdrawal = await sdk.withdrawals.create({
-  userId: "usr_abc123",
-  amount: "50.00",
-  currency: "USD",
-  destinationType: "crypto",
-  destinationRef: stellarAddress,
-});
-```
+## Related references
 
-The response contains `id`, `amount`, `currency`, `status`, `destinationType`, `committed`, and `createdAt`. Crypto withdrawals complete synchronously. AirTM withdrawals reserve funds and normally return `WITHDRAWAL_CREATED`; call `commit` next.
-
-Errors include `USER_NOT_FOUND` (404), `INSUFFICIENT_FUNDS` (422), `AIRTM_USER_NOT_LINKED` (422), `AIRTM_USER_INVALID` (422), and validation errors (400).
-
-## GET `/withdrawals`
-
-Lists a user's withdrawals. The controller accepts only these query parameters:
-
-| Parameter | Type | Required |
-|---|---|---|
-| `userId` | string | yes |
-| `limit` | number | no |
-| `cursor` | string | no |
-
-```bash
-curl "http://localhost:4000/api/v1/withdrawals?userId=usr_abc123&limit=20&cursor=wd_previous" \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
-
-The response is `{ "data": WithdrawalResponse[], "hasMore": boolean, "nextCursor"?: string }`.
-
-## GET `/withdrawals/:id`
-
-Fetches one withdrawal. `userId` is required as a query parameter because the controller passes it to the service for ownership scoping.
-
-```bash
-curl "http://localhost:4000/api/v1/withdrawals/wd_abc123?userId=usr_abc123" \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
-
-An individual `WithdrawalResponse` includes `id`, `userId`, `amount`, `fee?`, `currency`, `status`, `destinationType`, `destinationRef`, `airtmPayoutId?`, `failureReason?`, `createdAt`, and `updatedAt`.
-
-## POST `/withdrawals/:id/commit`
-
-Commits an AirTM withdrawal created with `commit: false`. It accepts no body and requires `userId` in the query string.
-
-```bash
-curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/commit?userId=usr_abc123" \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
-
-This endpoint returns the updated `WithdrawalResponse`. It is not applicable to crypto withdrawals, which complete during creation. A non-committable state returns `WITHDRAWAL_NOT_COMMITTABLE` (409); a missing provider payout returns `PROVIDER_ERROR` (422).
-
-## POST `/withdrawals/:id/refresh`
-
-Refreshes an AirTM payout when a webhook may have been missed. It accepts no body and requires `userId` in the query string.
-
-```bash
-curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/refresh?userId=usr_abc123" \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
-
-The response is the current `WithdrawalResponse`. Crypto withdrawals do not need provider refreshes.
-
-## Idempotency and integration notes
-
-The withdrawal controller does not declare an idempotency header or an idempotency DTO field. Do not describe `Idempotency-Key` as a withdrawal-specific guarantee until the controller and guard expose one. Clients should use their own request deduplication and treat the returned withdrawal ID as the operation identifier.
-
-For provider-specific status and webhook events, see [Webhooks](/docs/api-reference/webhooks), [Balance Reference](/docs/sdk/balance), and the upstream [withdrawal endpoint source](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/withdrawals.controller.ts).
+- [Payouts API](/docs/api-reference/payouts) — prepare, submit, read, and retry an order payout.
+- [KYC API](/docs/api-reference/kyc) — receiver and terms-of-service endpoints.
+- [Bank accounts API](/docs/api-reference/bank-accounts) — seller bank-account management.
+- [Withdrawals history API](/docs/api-reference/withdrawals) — API-key history endpoints.
+- [Withdrawal history state machine](/docs/guide/state-machines#withdrawal) — lifecycle of withdrawal history records.
+- [Payouts SDK](/docs/sdk/payouts) — `@offerhub/sdk` 3.0.0 resources.
