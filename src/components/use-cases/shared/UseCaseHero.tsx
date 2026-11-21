@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, FileText, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 /* ── Types ── */
 
@@ -211,16 +212,15 @@ export function UseCaseHero({
                 </p>
 
                 <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <a
+                  <Button
                     href={docsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold btn-neumorphic-primary"
                   >
                     <FileText size={16} />
                     {ctaLabel}
                     <ArrowUpRight size={15} />
-                  </a>
+                  </Button>
 
                   <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2 rounded-xl bg-bg-base px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary shadow-neu-sunken-subtle">
                     <FooterIcon size={14} className="text-theme-primary shrink-0" />

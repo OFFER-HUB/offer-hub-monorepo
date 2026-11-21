@@ -2,6 +2,7 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { Button } from "@/components/ui/Button";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, MessageSquare } from "lucide-react";
 import { SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
@@ -342,13 +343,13 @@ export default function AccessibilityPage() {
                          <p className="text-lg text-content-secondary font-medium mb-8 max-w-2xl mx-auto">
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.
                          </p>
-                         <a
+                         <Button
                               href="mailto:support@offerhub.io?subject=Accessibility%20Question"
-                              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-theme-primary text-white font-bold text-sm uppercase tracking-wider hover:bg-theme-primary-hover transition-colors shadow-lg"
+                              size="lg"
+                              leadingIcon={<Mail size={18} />}
                          >
-                              <Mail size={18} />
                               Email Support
-                         </a>
+                         </Button>
                     </div>
                </main>
 

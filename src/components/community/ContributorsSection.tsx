@@ -2,6 +2,7 @@
 
 import { useState, memo } from "react";
 import { Users, GitCommit, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/community/SectionHeading";
 import Image from "next/image";
 import type { ContributorData } from "@/types/community";
@@ -103,13 +104,13 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
 
         {hasMore && (
           <div className="mt-16 text-center">
-            <button
+            <Button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-[background-color,box-shadow,transform] duration-300 btn-neumorphic-primary group"
+              size="lg"
             >
               Show more creators
-              <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />
-            </button>
+              <ChevronDown size={14} />
+            </Button>
             <p className="mt-6 text-[10px] font-bold uppercase tracking-widest text-content-muted">
               Displaying {displayCount} of {totalContributors} contributors
             </p>
@@ -119,5 +120,4 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
     </section>
   );
 };
-
 

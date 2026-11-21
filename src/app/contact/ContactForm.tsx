@@ -3,6 +3,7 @@
 import { Send, User, Mail, MessageSquare, Building2, CheckCircle2, AlertCircle } from "lucide-react";
 import { FormField } from "@/components/forms/FormField";
 import { useContactForm } from "@/hooks/use-contact-form";
+import { Button } from "@/components/ui/Button";
 
 export function ContactForm() {
   const {
@@ -91,10 +92,10 @@ export function ContactForm() {
         icon={MessageSquare}
       />
 
-      <button type="submit" disabled={isLoading} className="btn-neumorphic-primary mt-2 w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed">
-        {isLoading ? 'Submitting...' : 'Contact Sales'}
-        <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-      </button>
+      <Button type="submit" disabled={isLoading} loading={isLoading} className="mt-2 w-full">
+        {isLoading ? "Submitting..." : "Contact Sales"}
+        <Send size={14} />
+      </Button>
     </form>
   );
 }

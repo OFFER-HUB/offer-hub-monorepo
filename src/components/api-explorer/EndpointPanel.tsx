@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, Play, Loader2, AlertTriangle } from "lucide-react";
+import { ChevronDown, Play, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { OpenApiOperationSpec, OpenApiMediaType } from "@/lib/openapi";
 import { MethodBadge } from "./MethodBadge";
@@ -9,6 +9,7 @@ import { ParameterInput } from "./ParameterInput";
 import { ResponseViewer, type ResponseTab } from "./ResponseViewer";
 import { Textarea } from "@/components/ui/Textarea";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 interface EndpointPanelProps {
   operation: OpenApiOperationSpec;
@@ -282,18 +283,15 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
               </pre>
             </div>
           ) : (
-            <button
+            <Button
               onClick={handleTryIt}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-neumorphic-primary disabled:opacity-60 disabled:cursor-not-allowed transition-[background-color,box-shadow,transform,opacity] duration-200"
+              loading={loading}
+              size="sm"
             >
-              {loading ? (
-                <Loader2 size={16} aria-hidden="true" className="animate-spin" />
-              ) : (
-                <Play size={16} aria-hidden="true" />
-              )}
+              <Play size={16} aria-hidden="true" />
               {loading ? "Sending..." : "Try it"}
-            </button>
+            </Button>
           )}
 
           {/* Live result */}

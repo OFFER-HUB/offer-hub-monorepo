@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { buildPageMetadata } from "@/lib/seo";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
@@ -115,10 +116,6 @@ export default function PricingPage() {
           <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tiers.map((tier) => {
               const Icon = tier.icon;
-              const ctaClassName =
-                tier.ctaStyle === "primary"
-                  ? "btn-neumorphic-primary"
-                  : "bg-bg-base shadow-neu-raised text-theme-primary";
 
               return (
                 <article
@@ -144,15 +141,16 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <Link
+                  <Button
                     href={tier.ctaHref}
                     target={tier.external ? "_blank" : undefined}
                     rel={tier.external ? "noopener noreferrer" : undefined}
-                    className={`mt-8 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold ${ctaClassName}`}
+                    variant={tier.ctaStyle === "primary" ? "primary" : "secondary"}
+                    className="mt-8 w-full"
                   >
                     <span>{tier.ctaLabel}</span>
                     <ArrowUpRight className="w-4 h-4" />
-                  </Link>
+                  </Button>
                 </article>
               );
             })}
