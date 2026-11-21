@@ -1,364 +1,132 @@
 ---
 title: Wallets Guide
-description: Understanding invisible wallets in OFFER-HUB — automatic Stellar wallet creation and management.
+description: Connect a user-owned Stellar wallet and use JWT-authenticated wallet resources in the OFFER-HUB Orchestrator.
 order: 23
 section: Guides
 ---
 
-<Callout type="note">
-  This is the public API/SDK guide for integrators. For internal implementation detail (Orchestrator state machine, signer roles), see [`docs/guides/wallets.md`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/docs/guides/wallets.md) in the repo.
+OFFER-HUB is an orchestration API for marketplaces. On mainnet, users connect their own Stellar wallet. The server prepares transactions, but the user signs client-side and submits the signed transaction.
+
+## Supported wallets
+
+Connect Stellar wallets through Stellar Wallets Kit:
+
+- Freighter (now branded Varial)
+- Lobstr
+- xBull
+
+## Credential required
+
+Wallet resources require a signed-in user's 7-day JWT:
+
+```http
+Authorization: Bearer <user-session-jwt>
+```
+
+API-key credentials are for marketplace backend operations and creating/minting credentials. They are not a substitute for the user session JWT on wallet routes.
+
+## Wallet endpoints
+
+| Method | Path | Auth | Request fields | Response fields |
+|---|---|---|---|---|
+| `GET` | `/api/v1/wallet` | JWT | None | Wallet overview |
+| `GET` | `/api/v1/wallet/readiness` | JWT | None | Readiness status and required setup |
+| `GET` | `/api/v1/wallet/wallets` | JWT | None | Connected wallet list |
+| `GET` | `/api/v1/wallet/dashboard` | JWT | None | Aggregated wallet/dashboard status |
+| `GET` | `/api/v1/wallet/transactions` | JWT | Query fields supported by the SDK | Transaction list and pagination |
+| `POST` | `/api/v1/wallet/connect` | JWT | SDK-published wallet connection fields | Connected wallet result |
+| `POST` | `/api/v1/wallet/disconnect` | JWT | SDK-published wallet identity fields | Disconnect result |
+| `POST` | `/api/v1/wallet/reconnect` | JWT | SDK-published wallet identity fields | Reconnected wallet result |
+| `POST` | `/api/v1/wallet/set-primary` | JWT | SDK-published wallet identity fields | Primary-wallet result |
+| `POST` | `/api/v1/wallet/claim` | JWT | Testnet sandbox only; SDK-published claim fields | Claim result |
+
+<Callout type="warning">
+The only platform signer is the server's platform key, used for platform-authorized operations. The Orchestrator never signs external-user transactions with a user private key.
 </Callout>
 
-OFFER-HUB uses "invisible wallets" to give users blockchain capabilities without the complexity of managing private keys. Every user gets a Stellar wallet automatically, but they interact with it like a simple account balance.
+## Wallet types
 
-<Callout type="tip">
-  Invisible wallets only apply when using `PAYMENT_PROVIDER=crypto`. AirTM mode uses traditional fiat accounts instead.
-</Callout>
+| Type | Use |
+|---|---|
+| `EXTERNAL` | User-owned wallet connected through Stellar Wallets Kit. This is the mainnet model. |
+| `INVISIBLE` | Custodial wallet used only in the testnet sandbox. It is not a mainnet wallet model. |
 
-## What Are Invisible Wallets?
+## Testnet sandbox only
 
-Traditional crypto requires users to:
-- Install wallet software
-- Secure a seed phrase
-- Understand gas fees
-- Sign transactions manually
+Invisible wallets existed only on testnet. On testnet, `POST /api/v1/wallet/claim` may let a sandbox user claim a wallet. A 90-day claim window applies to this sandbox feature.
 
-OFFER-HUB eliminates all of this. Users see a simple USD balance while the system manages Stellar wallets behind the scenes.
+These sandbox rules do not apply to mainnet:
 
-### How It Works
+- Mainnet uses `EXTERNAL`, user-owned wallets only.
+- Mainnet has no sandbox invisible-wallet claim flow.
+- Mainnet has no 90-day claim window.
 
-<StaticDiagram name="wallet-model" caption="The user sees one balance; OFFER-HUB keeps a Stellar wallet record with an encrypted secret and reads the USDC balance from Horizon." />
+## Signing flow
 
-Source: `wallet.service.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
+The server prepares unsigned transaction XDR. It does not sign for a user.
 
-### Benefits
+```mermaid
+sequenceDiagram
+    participant M as Marketplace
+    participant S as OFFER-HUB
+    participant W as Wallet Kit
+    participant U as User wallet
+    participant N as Stellar network
 
-| Benefit | Description |
-|---------|-------------|
-| **No wallet setup** | Users register with email, wallet created automatically |
-| **No seed phrases** | Private keys secured server-side |
-| **No gas management** | Platform handles Stellar transaction fees |
-| **Familiar UX** | Users see USD, not crypto amounts |
-| **Full custody** | Users can still withdraw to external wallets |
-
-## Wallet Creation
-
-When a user is created, a Stellar keypair is generated automatically:
-
-```bash
-curl -X POST http://localhost:4000/api/v1/users \
-  -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "externalUserId": "your-user-123",
-    "email": "user@example.com",
-    "type": "BUYER"
-  }'
+    M->>S: Request operation
+    S-->>M: Unsigned transaction XDR
+    M->>W: Pass XDR to Stellar Wallets Kit
+    W->>U: Request approval
+    U-->>W: Sign XDR
+    W-->>M: Signed XDR
+    M->>S: Submit signed XDR
+    S-->>N: Submit to Stellar
+    N-->>S: Result
+    S-->>M: Operation status
 ```
 
-Behind the scenes:
+The platform signer is separate and signs only platform-authorized transactions with the platform key.
 
-1. **Generate keypair** — New Stellar Ed25519 keypair created
-2. **Encrypt private key** — AES-256-GCM with `WALLET_ENCRYPTION_KEY`
-3. **Store in database** — Encrypted key saved with user record
-4. **Fund account** — Platform funds the account with minimum XLM for trustlines
-5. **Add USDC trustline** — Account configured to hold USDC
+## Wallet sign-in
 
-<StaticDiagram name="wallet-provisioning" caption="Wallet provisioning in crypto mode. On testnet the Orchestrator also funds the account and adds the USDC trustline." />
+To authenticate a user with a wallet:
 
-Source: `users.service.ts`, `crypto-native.provider.ts` and `wallet.service.ts` (`createWallet`) in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
+1. Call `POST /api/v1/auth/wallet/challenge` (public).
+2. Present the returned message to the user.
+3. Sign the message in Freighter/Varial, Lobstr, or xBull through Stellar Wallets Kit.
+4. Call `POST /api/v1/auth/wallet/verify` (public).
+5. Store the returned 7-day JWT and use it for wallet endpoints.
 
-### Response
+Email/password is an alternative sign-in method that creates the same session-JWT shape.
 
-```json
-{
-  "data": {
-    "id": "usr_abc123def456",
-    "externalUserId": "your-user-123",
-    "email": "user@example.com",
-    "type": "BUYER",
-    "status": "ACTIVE",
-    "created_at": "2026-02-25T12:00:00.000Z"
-  }
-}
-```
-
-<Callout type="note">
-  The Stellar address is not included in the user response. Retrieve it separately via the deposit endpoint.
-</Callout>
-
-## Getting the Deposit Address
-
-Retrieve the user's Stellar address for receiving USDC:
-
-```bash
-curl http://localhost:4000/api/v1/users/usr_abc123def456/wallet/deposit \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "provider": "crypto",
-    "method": "stellar_address",
-    "address": "GCV24WNJYXPG3QFNP6ZQMLVEMHQX5S6J2OWKGVF5U3XC6HF4QQHG7WMD",
-    "asset": {
-      "code": "USDC",
-      "issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
-    },
-    "network": "testnet",
-    "instructions": "Send USDC to this Stellar address. Deposits are detected automatically within seconds."
-  }
-}
-```
-
-### Display to Users
-
-Show users their deposit address with clear instructions:
-
-```
-📥 Deposit USDC
-
-Send USDC to your personal Stellar address:
-
-GCV24WNJYXPG3QFNP6ZQMLVEMHQX5S6J2OWKGVF5U3XC6HF4QQHG7WMD
-
-Network: Stellar Testnet
-Asset: USDC (Circle)
-
-Deposits are credited automatically within seconds.
-```
-
-## Checking Balance
-
-Get the user's current balance:
-
-```bash
-curl http://localhost:4000/api/v1/users/usr_abc123def456/balance \
-  -H "Authorization: Bearer ohk_live_your_api_key"
-```
-
-### Response
-
-```json
-{
-  "data": {
-    "userId": "usr_abc123def456",
-    "available": "100.00",
-    "reserved": "0.00",
-    "currency": "USD"
-  }
-}
-```
-
-### Balance Types
-
-| Field | Description |
-|-------|-------------|
-| `available` | Can be used for orders or withdrawn |
-| `reserved` | Locked for pending orders (before escrow funding) |
-
-### Balance States During Order
-
-| Stage | Available | Reserved |
-|-------|-----------|----------|
-| Initial deposit | 100.00 | 0.00 |
-| After order reserve | 50.00 | 50.00 |
-| After escrow funding | 50.00 | 0.00 |
-| After release (seller) | 50.00 + payment | 0.00 |
-
-## Wallet Security
-
-### Encryption
-
-Private keys are encrypted using AES-256-GCM:
-
-```
-WALLET_ENCRYPTION_KEY=64-character-hex-key
-```
-
-The encryption process:
-
-1. Generate random 12-byte IV
-2. Encrypt private key with AES-256-GCM
-3. Store: `IV || ciphertext || authTag`
-4. Decrypt only when signing transactions
-
-### Key Management
-
-<Callout type="danger">
-  The `WALLET_ENCRYPTION_KEY` protects ALL user private keys. If lost, wallet access is permanently lost. Back up this key securely and never commit it to version control.
-</Callout>
-
-Best practices:
-
-1. **Generate securely** — Use cryptographically secure random bytes
-2. **Store in vault** — Use HashiCorp Vault, AWS KMS, or platform secrets
-3. **Rotate periodically** — Plan for key rotation (re-encrypt all wallets)
-4. **Separate environments** — Use different keys for dev/staging/production
-5. **Backup offline** — Store encrypted backup in secure physical location
-
-### Generating the Encryption Key
-
-```bash
-# Using Node.js
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-
-# Using OpenSSL
-openssl rand -hex 32
-```
-
-## Transaction Signing
-
-When the user performs an action that requires on-chain activity (funding escrow, withdrawing), the system:
-
-1. **Load encrypted key** — Retrieve from database
-2. **Decrypt in memory** — Use `WALLET_ENCRYPTION_KEY`
-3. **Build transaction** — Create Stellar transaction
-4. **Sign transaction** — Sign with decrypted private key
-5. **Submit to network** — Send to Stellar Horizon
-6. **Clear memory** — Wipe decrypted key from memory
-
-<Callout type="note">
-  Decrypted private keys exist only in memory during transaction signing and are immediately cleared. They are never logged or written to disk.
-</Callout>
-
-## Using the SDK
+## SDK 3.0.0
 
 ```typescript
 import { OfferHubSDK } from '@offerhub/sdk';
 
 const sdk = new OfferHubSDK({
-  apiUrl: 'http://localhost:4000',
-  apiKey: 'ohk_live_your_api_key'
+  apiUrl: process.env.OFFERHUB_API_URL!,
+  apiKey: process.env.OFFERHUB_API_KEY!,
 });
 
-// Create a user (wallet created automatically)
-const user = await sdk.users.create({
-  externalUserId: 'my-user-123',
-  email: 'user@example.com',
-  type: 'BUYER'
-});
+const userSdk = sdk.asUser(userSessionJwt);
 
-// Get deposit address
-const deposit = await sdk.wallet.getDepositAddress(user.id);
-console.log('Send USDC to:', deposit.address);
-
-// Check balance
-const balance = await sdk.users.getBalance(user.id);
-console.log('Available:', balance.available);
-console.log('Reserved:', balance.reserved);
+const readiness = await userSdk.wallet.getReadiness();
+const wallets = await userSdk.wallet.getWallets();
 ```
 
-### Listening for Balance Changes
+Use `sdk.auth.walletChallenge` and `sdk.auth.walletVerify` with Stellar Wallets Kit for wallet sign-in. The maintainer is publishing `@offerhub/sdk` 3.0.0; until then, use only SDK signatures confirmed in the issue thread rather than assuming method names or DTO fields.
 
-Balance events are delivered over the [SSE event stream](/docs/api-reference/events) at `GET /api/v1/events` — there is no outbound webhook API:
+## User types
 
-```typescript
-const events = sdk.events.subscribe();
+Marketplace users may be:
 
-events.on('balance.credited', (data) => {
-  console.log(`${data.userId} received ${data.amount} ${data.currency}`);
-  // Update UI
-  updateUserBalance(data.userId, data.newBalance);
-});
+- `BUYER`
+- `SELLER`
+- `BOTH`
 
-events.on('balance.debited', (data) => {
-  console.log(`${data.userId} spent ${data.amount} ${data.currency}`);
-  // Update UI
-  updateUserBalance(data.userId, data.newBalance);
-});
-```
+## Related resources
 
-## On-Chain vs Off-Chain
-
-OFFER-HUB maintains both on-chain (Stellar) and off-chain (database) balances:
-
-### On-Chain (Stellar)
-
-- Actual USDC in the Stellar wallet
-- Updated when deposits received or withdrawals sent
-- Source of truth for blockchain state
-- Can be verified on any Stellar explorer
-
-### Off-Chain (Database)
-
-- Fast read/write for operations
-- Tracks `available` vs `reserved` split
-- Used for reservations and internal transfers
-- Synced with on-chain balance
-
-### Reconciliation
-
-The system automatically reconciles on-chain and off-chain balances:
-
-```
-Stellar Balance = Off-chain Available + Off-chain Reserved + In Escrow
-```
-
-If discrepancies are detected, the system:
-1. Logs the discrepancy
-2. Syncs off-chain to match on-chain
-3. Alerts operators for review
-
-## Testnet vs Mainnet
-
-### Testnet (Development)
-
-```env
-STELLAR_NETWORK=testnet
-STELLAR_USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
-```
-
-- Use Stellar testnet friendbot for XLM
-- Test USDC from Circle's testnet faucet
-- No real value at stake
-
-### Mainnet (Production)
-
-```env
-STELLAR_NETWORK=mainnet
-STELLAR_USDC_ISSUER=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
-```
-
-- Real USDC from Circle
-- Real XLM for transaction fees
-- Production security required
-
-<Callout type="warning">
-  Always test thoroughly on testnet before deploying to mainnet. On-chain transactions are irreversible.
-</Callout>
-
-## Platform Wallet
-
-The platform also has a wallet used for:
-
-1. **Funding new accounts** — Provides minimum XLM for trustlines
-2. **Collecting fees** — Receives platform fees from orders
-3. **Co-signing escrow** — Signs release/refund transactions
-
-Configure in environment:
-
-```env
-PLATFORM_USER_ID=usr_platform
-```
-
-Ensure the platform wallet is funded with sufficient XLM for operations.
-
-## Error Handling
-
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `WALLET_NOT_FOUND` | User doesn't have a wallet | Ensure user was created in crypto mode |
-| `INSUFFICIENT_BALANCE` | Not enough USDC | User needs to deposit more |
-| `TRUSTLINE_MISSING` | Account can't hold USDC | Platform needs to add trustline |
-| `DECRYPTION_FAILED` | Invalid encryption key | Check `WALLET_ENCRYPTION_KEY` |
-
-## Next Steps
-
-- [Crypto-Native Provider Guide](/docs/guide/crypto-native) — Deep dive into Stellar setup, Horizon monitoring, and production deployment
-- [Deposits Guide](/docs/guide/deposits) — How deposits work
-- [Withdrawals Guide](/docs/guide/withdrawals) — Moving funds off-platform
-- [Escrow Guide](/docs/guide/escrow) — Smart contract escrow flow
+- [Authentication & Credentials](/docs/api-reference/authentication)
+- [Auth Endpoints](/docs/api-reference/auth)
+- [SDK `wallet`](/docs/sdk/wallet)

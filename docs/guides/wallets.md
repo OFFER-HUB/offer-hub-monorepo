@@ -1,256 +1,121 @@
 # Wallets Guide
 
-> How OFFER-HUB manages Stellar wallets: invisible keypairs, deposits, signing, and security.
+> How the OFFER-HUB Orchestrator connects users to Stellar wallets and separates user signing from platform signing.
 
-> **Looking for the public API guide?** This is the internal engineering reference (Orchestrator implementation detail). For the external API/SDK guide aimed at integrators, see [`content/docs/guide/wallets.mdx`](../../content/docs/guide/wallets.mdx).
+> **Audience:** This is the internal engineering reference for teams operating the Orchestrator. For public integration docs, see [`content/docs/guide/wallets.mdx`](../../content/docs/guide/wallets.mdx).
 
----
+## Overview
 
-## Table of Contents
+The Orchestrator supports two wallet classes:
 
-- [What Are Invisible Wallets?](#what-are-invisible-wallets)
-- [Why Server-Side Wallets?](#why-server-side-wallets)
-- [How It Works](#how-it-works)
-- [Wallet Lifecycle](#wallet-lifecycle)
-- [Getting a Deposit Address](#getting-a-deposit-address)
-- [Security Model](#security-model)
-- [Custodial Responsibility](#custodial-responsibility)
-- [Key Management](#key-management)
-- [The Platform Wallet](#the-platform-wallet)
-- [Future: Non-Custodial Option](#future-non-custodial-option)
+| Wallet type | Environment | Custody and signing |
+|---|---|---|
+| `EXTERNAL` | Mainnet and testnet | User-owned Stellar wallet; user signs client-side |
+| `INVISIBLE` | Testnet sandbox only | Legacy sandbox custody model; not used on mainnet |
 
----
+On mainnet, every supported user wallet is `EXTERNAL`. The user owns and controls the wallet through Stellar Wallets Kit. The server never receives the user's private key and never signs external-user transactions on the user's behalf.
 
-## What Are Invisible Wallets?
+## Supported wallet integrations
 
-In crypto-native mode (`PAYMENT_PROVIDER=crypto`), every user registered in the Orchestrator automatically gets a **Stellar keypair** — a public key and a private key.
+Users connect through Stellar Wallets Kit:
 
-From the user's perspective, there are no wallets, no seed phrases, no browser extensions. They see a familiar Web2 interface: "Your balance: $50.00 USDC." Under the hood, their USDC lives on the Stellar blockchain.
+- Freighter (now branded Varial)
+- Lobstr
+- xBull
 
-This design is called **invisible wallets** (also: server-side wallets or custodial wallets).
+## Authentication
 
----
+Wallet endpoints require a 7-day user-session JWT:
 
-## Why Server-Side Wallets?
-
-The Orchestrator must sign blockchain transactions **automatically** — without waiting for user interaction:
-
-| Scenario | Why automatic signing is required |
-|----------|-----------------------------------|
-| Funding an escrow contract | Buyer's wallet must sign the funding transaction |
-| Releasing escrow to seller | Seller's wallet signs `changeMilestoneStatus` |
-| Approving + releasing funds | Buyer's wallet signs `approveMilestone` and `releaseFunds` |
-| Refunding via dispute | Buyer's wallet disputes; platform wallet resolves |
-| Webhook-triggered releases | No user is online to approve |
-
-Browser wallets (like Freighter) require the user to manually approve every transaction. This breaks automated flows.
-
----
-
-## How It Works
-
-```
-1. User registered via POST /users
-       ↓
-2. Orchestrator generates Stellar Keypair
-   - publicKey:  G... (stored in DB in plaintext)
-   - secretKey:  S... (encrypted with AES-256-GCM, stored in DB)
-       ↓
-3. User receives no wallet info — just their user ID
-       ↓
-4. To deposit: User calls GET /wallet/deposit-address
-   - Orchestrator returns publicKey as deposit address
-   - User sends USDC to that address from any Stellar wallet/exchange
-       ↓
-5. BlockchainMonitorService detects the payment via Horizon SSE stream
-   - Automatically credits user's internal balance
-       ↓
-6. For escrow/release/refund:
-   - Orchestrator decrypts secretKey (in memory, never persisted decrypted)
-   - Signs the Stellar transaction
-   - Submits to Stellar network via Trustless Work
-   - Decrypted key is garbage-collected immediately
+```http
+Authorization: Bearer <user-session-jwt>
 ```
 
----
+The JWT is produced by wallet challenge/verify, email/password authentication, or OAuth callback. It is independent from marketplace API-key tokens.
 
-## Wallet Lifecycle
+## Endpoint inventory
 
-| Step | Trigger | What Happens |
-|------|---------|--------------|
-| Creation | `POST /users` | Stellar keypair generated, secret encrypted, stored in DB |
-| First use | `GET /wallet/deposit-address` | Returns publicKey as deposit address |
-| Deposit detection | Stellar payment arrives on-chain | `BlockchainMonitorService` credits balance |
-| Escrow signing | Any escrow operation | Secret decrypted in memory, used to sign, cleared |
-| Withdrawal | `POST /withdrawals` | Orchestrator signs outgoing Stellar payment |
+| Method | Path | Auth | Request | Response |
+|---|---|---|---|---|
+| `GET` | `/api/v1/wallet` | JWT | No body or path parameters | Wallet overview |
+| `GET` | `/api/v1/wallet/readiness` | JWT | No body or path parameters | Readiness status |
+| `GET` | `/api/v1/wallet/wallets` | JWT | No body or path parameters | Connected-wallet list |
+| `GET` | `/api/v1/wallet/dashboard` | JWT | No body or path parameters | Dashboard summary |
+| `GET` | `/api/v1/wallet/transactions` | JWT | SDK-published pagination/query fields | Transaction list and pagination |
+| `POST` | `/api/v1/wallet/connect` | JWT | SDK-published connection fields | Connected wallet |
+| `POST` | `/api/v1/wallet/disconnect` | JWT | SDK-published wallet identity fields | Disconnection result |
+| `POST` | `/api/v1/wallet/reconnect` | JWT | SDK-published wallet identity fields | Reconnection result |
+| `POST` | `/api/v1/wallet/set-primary` | JWT | SDK-published wallet identity fields | Primary-wallet result |
+| `POST` | `/api/v1/wallet/claim` | JWT | Testnet sandbox only; SDK-published claim fields | Sandbox claim result |
 
----
+## Signing model
 
-## Getting a Deposit Address
+The server prepares unsigned Stellar transactions as XDR. The marketplace passes the XDR to the user's Stellar wallet, and the user approves the transaction. The marketplace submits the signed XDR back to the Orchestrator/network.
 
-```bash
-GET /api/v1/wallet/deposit-address
-Authorization: Bearer ohk_live_...
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant M as Marketplace
+    participant O as Orchestrator
+    participant W as Stellar Wallet Kit
+
+    U->>M: Initiates action
+    M->>O: Requests unsigned XDR
+    O-->>M: Unsigned transaction XDR
+    M->>W: Pass XDR to wallet
+    W->>U: Approval prompt
+    U-->>W: Approves and signs
+    W-->>M: Signed XDR
+    M->>O: Submits signed XDR
 ```
 
-Response:
-```json
-{
-  "success": true,
-  "data": {
-    "address": "GBXF...STELLAR...PUBLIC...KEY",
-    "network": "stellar",
-    "asset": "USDC",
-    "memo": null,
-    "instructions": "Send USDC (Stellar) to this address. Deposits are credited automatically within 30 seconds."
-  }
-}
-```
+Server-side user-signing routes are removed. No route decrypts or loads a user private key to sign on that user's behalf.
 
-**Important:** The address is permanent — it never changes for a given user. You can cache it.
+### Platform signing
 
-### Testnet Funding
+Only the platform signer signs with the platform key. Platform signing is limited to platform-authorized operations such as neutral dispute resolution and other orchestrator-managed platform actions. It does not sign for an external user's general wallet operations.
 
-On testnet, users can receive test USDC from Stellar's Friendbot or from any testnet faucet. On mainnet, they must send real USDC from an exchange or another Stellar wallet.
+## Wallet connection lifecycle
 
----
+1. The user selects Freighter/Varial, Lobstr, or xBull in Stellar Wallets Kit.
+2. The marketplace sends the wallet connection request with the user's JWT.
+3. The Orchestrator stores the wallet association and public Stellar account data.
+4. The wallet readiness and dashboard endpoints report connection and network readiness.
+5. Transactions are prepared as unsigned XDR and signed client-side.
 
-## Security Model
+## Testnet sandbox: invisible wallets
 
-Private keys are protected by multiple layers:
+Invisible wallets existed only on the testnet sandbox. They are not a mainnet feature.
 
-### 1. AES-256-GCM Encryption at Rest
+The sandbox-only `POST /api/v1/wallet/claim` route starts or completes the claim flow for a sandbox wallet. The claim window is 90 days.
 
-Every Stellar secret key is encrypted before being stored in the database:
+After the claim window or when migrating away from sandbox, users connect an external wallet rather than relying on a custodial wallet.
 
-```
-secretKey (plaintext)
-    + WALLET_ENCRYPTION_KEY (env var, 32 bytes hex)
-    + random IV (96-bit nonce, generated per encryption)
-    → AES-256-GCM ciphertext + auth tag
-    → stored in DB as: iv:ciphertext:tag
-```
+## SDK
 
-The `WALLET_ENCRYPTION_KEY` is **never stored in the database**. It lives only in the environment variable.
-
-### 2. Key Never Leaves Server Memory
-
-The decryption process only happens in memory, during transaction signing:
+The `@offerhub/sdk` 3.0.0 wallet resource is intended for user sessions:
 
 ```typescript
-// Pseudocode — simplified
-async signTransaction(userId: string, xdr: string): Promise<string> {
-  const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
-  const secretKey = decrypt(wallet.encryptedSecretKey, process.env.WALLET_ENCRYPTION_KEY);
-  const keypair = Keypair.fromSecret(secretKey);
-  const signedXdr = sign(xdr, keypair);
-  // secretKey and keypair are now eligible for GC
-  return signedXdr;
-}
+const userSdk = sdk.asUser(userSessionJwt);
+
+await userSdk.wallet.getReadiness();
+await userSdk.wallet.getWallets();
+await userSdk.wallet.getDashboard();
+await userSdk.wallet.getTransactions({ /* published SDK params */ });
 ```
 
-The decrypted key is never logged, never returned in API responses, and never written to disk.
+Use `sdk.auth.walletChallenge` and `sdk.auth.walletVerify` with Stellar Wallets Kit. The maintainer is publishing 3.0.0 to npm; until then, confirm any exact signature in the issue thread before implementation.
 
-### 3. Encryption Key Separation
+## User types
 
-| What | Where |
-|------|-------|
-| Encrypted private keys | PostgreSQL DB |
-| `WALLET_ENCRYPTION_KEY` | Environment variable (`.env`) |
-| Public keys | PostgreSQL DB (plaintext — safe) |
+| Type | Meaning |
+|---|---|
+| `BUYER` | Buys marketplace services or goods |
+| `SELLER` | Sells marketplace services or goods |
+| `BOTH` | Performs both buyer and seller roles |
 
-An attacker who only has DB access cannot decrypt private keys without the encryption key. An attacker who only has the encryption key has nothing to decrypt.
+## Related guides
 
----
-
-## Custodial Responsibility
-
-Invisible wallets make the Orchestrator operator a **custodian**:
-
-| Responsibility | Description |
-|---------------|-------------|
-| Key security | You protect `WALLET_ENCRYPTION_KEY` — loss = loss of all wallets |
-| Backup | Back up both the DB (encrypted keys) and the encryption key separately |
-| Disaster recovery | Have a documented procedure for key recovery |
-| Insurance | Consider insurance for large USDC amounts |
-| Legal | Custodial status has regulatory implications — consult legal counsel |
-
-### WALLET_ENCRYPTION_KEY Recovery
-
-If `WALLET_ENCRYPTION_KEY` is lost:
-- All encrypted private keys in the DB become unrecoverable
-- Users lose access to their Stellar wallets permanently
-- Funds in escrow contracts cannot be released or refunded
-
-**Treat this key like your most critical secret.** Use a secrets manager (AWS Secrets Manager, HashiCorp Vault, Railway Variables) with automatic backup.
-
----
-
-## Key Management
-
-### Generating the Encryption Key
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-# Output: 64-character hex string (32 bytes)
-```
-
-Store in `.env`:
-```env
-WALLET_ENCRYPTION_KEY=a1b2c3d4e5f6...64hexchars...
-```
-
-### Production Checklist
-
-- [ ] `WALLET_ENCRYPTION_KEY` is a fresh 32-byte random value
-- [ ] Key is backed up in at least 2 secure locations (not the DB)
-- [ ] DB backup procedure includes encrypted wallet columns
-- [ ] Access to `WALLET_ENCRYPTION_KEY` is limited to minimum staff
-- [ ] Monitoring alerts on any unauthorized access to the `Wallet` table
-- [ ] Rotation plan documented (requires decrypting + re-encrypting all keys)
-
----
-
-## The Platform Wallet
-
-In addition to user wallets, the Orchestrator uses one special **platform wallet**. This wallet serves as:
-
-| Role | Purpose |
-|------|---------|
-| `platformAddress` | Receives a copy of the escrow contract reference |
-| `disputeResolver` | The only signer who can resolve on-chain disputes |
-
-The platform wallet is identified by `PLATFORM_USER_ID` in your environment:
-
-```env
-PLATFORM_USER_ID=usr_abc123  # User whose wallet acts as platform wallet
-```
-
-This user must be created first via `POST /users`, and their wallet is managed the same way as any other user wallet.
-
-### Why a Separate Platform Wallet?
-
-Trustless Work's dispute resolution requires the `disputeResolver` to be a different party from the disputer. When a buyer disputes, they sign the `dispute-escrow` transaction. The platform wallet then signs `resolve-dispute` — this separation ensures neither party can unilaterally steal funds.
-
----
-
-## Future: Non-Custodial Option
-
-A future phase will add support for users bringing their own Stellar wallet (e.g., Freighter). In that mode:
-
-- Users hold their own private keys
-- The Orchestrator uses their public key for contract setup
-- Transactions are presented for user approval via the browser
-- The Orchestrator does NOT hold their secret key
-
-This is an additive feature — it won't replace invisible wallets, just provide an optional advanced mode for users who prefer self-custody.
-
----
-
-## Related Guides
-
-- [Deposits](./deposits.md) — How USDC deposits work
-- [Withdrawals](./withdrawals.md) — How USDC withdrawals work
-- [Escrow](./escrow.md) — How signing relates to escrow operations
-- [Deployment](./deployment.md) — Production security checklist
-- [Core Concepts](./core-concepts.md) — Balance model overview
+- [Authentication & Credentials](../../content/docs/api-reference/authentication.mdx)
+- [Auth Endpoints](../../content/docs/api-reference/auth.mdx)
+- [Wallet SDK Reference](../../content/docs/sdk/wallet.mdx)
