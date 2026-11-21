@@ -60,7 +60,7 @@ jobs:
 
   diagrams:
     name: Generated diagrams up to date
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
@@ -70,11 +70,11 @@ jobs:
       # deterministic for a given version, but NOT stable across Graphviz
       # versions (confirmed - an unpinned install here produced a different
       # layout than this package version). Committed SVGs are only valid
-      # against this exact version; bump it deliberately (see
-      # docs/adr/0001-python-diagram-pipeline.md) and regenerate everything
-      # under public/diagrams/ in the same change.
+      # against this exact version; pin this job to Noble so the package
+      # remains available and bump it deliberately (see
+      # docs/adr/0001-python-diagram-pipeline.md).
       - name: Install Graphviz
-        run: sudo apt-get update && sudo apt-get install -y graphviz=2.42.2-9ubuntu0.1
+        run: sudo apt-get update && sudo apt-get install -y graphviz=2.42.2-9build1
       - run: pip install -r scripts/diagrams/requirements.txt
       - run: python scripts/diagrams/generate_all.py
       - name: Fail if public/diagrams/ is stale
