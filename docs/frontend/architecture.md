@@ -6,7 +6,7 @@ This document outlines the architecture, patterns, and structure of the OFFER-HU
 
 - **Framework:** Next.js 14+ (App Router)
 - **Language:** TypeScript
-- **Styling:** Tailwind CSS 4 (CSS variables)
+- **Styling:** Tailwind CSS 3.4 (`tailwind.config.ts` + CSS variables in `src/app/globals.css`)
 - **State Management:** React hooks, Context API
 - **HTTP Client:** Fetch API with custom wrapper
 - **UI Library:** Custom neumorphic components
@@ -280,43 +280,28 @@ const { data: orders, isLoading, error } = useFetchData<Order[]>('/api/orders');
 
 ## Styling
 
-### Tailwind CSS 4
+### Tailwind CSS 3.4
 
-**Configuration:**
+**Configuration (`tailwind.config.ts`):** theme tokens are CSS variables from `src/app/globals.css`, mapped to utilities — never hardcoded hex:
 ```typescript
-// tailwind.config.ts
-export default {
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
-  theme: {
-    extend: {
-      colors: {
-        primary: '#149A9B',
-        secondary: '#002333',
-        background: '#F1F3F7',
-        // ... more colors
-      },
-    },
-  },
-};
+// tailwind.config.ts — theme.extend.colors (excerpt)
+"theme-primary": "var(--color-primary)",
+"bg-base": "var(--color-bg-base)",
+"bg-elevated": "var(--color-bg-elevated)",
+"bg-sunken": "var(--color-bg-sunken)",
+"content-primary": "var(--color-text-primary)",
+"content-secondary": "var(--color-text-secondary)",
+"theme-success": "var(--color-success)",
+"theme-warning": "var(--color-warning)",
+"theme-error": "var(--color-error)",
+"theme-border": "var(--color-border)",
+// theme.extend.boxShadow
+"neu-raised": "6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)",
+"neu-raised-sm": "3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)",
+"neu-sunken": "inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)",
 ```
 
-**Global Styles:**
-```css
-/* styles/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer utilities {
-  .shadow-raised {
-    box-shadow: 6px 6px 12px #d1d5db, -6px -6px 12px #ffffff;
-  }
-  
-  .shadow-sunken {
-    box-shadow: inset 4px 4px 8px #d1d5db, inset -4px -4px 8px #ffffff;
-  }
-}
-```
+**Global Styles (`src/app/globals.css`):** `@tailwind base; @tailwind components; @tailwind utilities;` followed by the `:root` / `.dark` token blocks. Shadows come from the `boxShadow` tokens above (`shadow-neu-raised`, `shadow-neu-sunken`, …) — do not define plain `.shadow-raised` utilities.
 
 ### Class Name Utility
 
@@ -333,8 +318,8 @@ export function cn(...inputs: ClassValue[]) {
 **Usage:**
 ```tsx
 <div className={cn(
-  'bg-background rounded-2xl p-6',
-  isActive && 'shadow-raised',
+  'bg-bg-base rounded-2xl p-6',
+  isActive && 'shadow-neu-raised',
   className
 )} />
 ```
@@ -415,10 +400,10 @@ export class ErrorBoundary extends Component<Props, State> {
 export function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="text-center p-8">
-      <h2 className="text-error text-xl font-semibold mb-2">
+      <h2 className="text-theme-error text-xl font-semibold mb-2">
         Something went wrong
       </h2>
-      <p className="text-secondary mb-4">
+      <p className="text-content-secondary mb-4">
         We encountered an error. Please try again.
       </p>
       <Button onClick={onRetry}>Retry</Button>
@@ -490,7 +475,4 @@ describe('Button', () => {
 ---
 
 **Next Steps:**
-- Review [UI Standards](./ui-standards.md) for component behavior
-- See [State Management](./state-management.md) for advanced patterns
-- Check [Error Handling](./error-handling.md) for error patterns
 - Read [Visual DNA](../design/visual-dna.md) for styling guidelines

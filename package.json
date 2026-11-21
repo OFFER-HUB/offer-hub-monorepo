@@ -21,6 +21,7 @@
     "generate:openapi": "npx tsx scripts/generate-openapi.ts",
     "validate:openapi": "npx tsx scripts/generate-openapi.ts --check",
     "docs:index": "npx tsx scripts/generate-docs-index.ts",
+    "docs:tokens": "npx tsx scripts/generate-token-docs.ts",
     "diagrams": "python scripts/diagrams/generate_all.py"
   },
   "dependencies": {
