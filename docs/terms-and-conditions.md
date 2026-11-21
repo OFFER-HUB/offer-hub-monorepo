@@ -23,7 +23,7 @@ OFFER-HUB is a decentralized-friendly marketplace platform that connects **Clien
 
 - A discovery layer for posting and finding service opportunities.
 - Escrow-based payment protection powered by the Stellar blockchain network through Trustless Work.
-- Balance management and fund handling via Airtm integration.
+- Balance management and fund handling through Stellar wallets and BlindPay.
 - Messaging, contract management, and project tracking tools.
 - Analytics and reporting for marketplace activity.
 
@@ -126,7 +126,7 @@ OFFER-HUB charges service fees for facilitating transactions. Current fee struct
 
 ### 6.3 Currency and Conversion
 
-Transactions on OFFER-HUB may involve digital assets and fiat currencies. Conversion rates and associated costs are determined by integrated service providers (e.g., Airtm). OFFER-HUB is not responsible for exchange rate fluctuations or third-party conversion fees.
+Transactions on OFFER-HUB may involve digital assets and fiat currencies. Conversion rates and associated costs are determined by integrated service providers (e.g., BlindPay). OFFER-HUB is not responsible for exchange rate fluctuations or third-party conversion fees.
 
 ### 6.4 Taxes
 
@@ -287,7 +287,7 @@ The Platform integrates with third-party services to provide essential functiona
 - **Supabase:** For database storage, user authentication, and application infrastructure.
 - **ipapi.co:** For IP-based geolocation to provide regional content and security monitoring.
 - **GitHub:** via public APIs to integrate contributor and repository metadata.
-- **Airtm:** For fiat-to-crypto payment processing, currency conversion, and balance management.
+- **BlindPay:** For bank payouts and currency conversion.
 - **Trustless Work / Stellar:** For executing and settling blockchain-based escrow transactions on the Stellar network.
 
 Your use of these third-party services is subject to their respective terms of service and privacy policies. OFFER-HUB is not responsible for the practices, data handling, or content of any third-party service. For a detailed list of data shared and purposes, please refer to our [Privacy Policy](https://offer-hub.tech/privacy).

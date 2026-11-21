@@ -56,7 +56,6 @@ For crawlers and assistants that don't speak MCP, the public docs site also serv
 - [Security Best Practices](./guides/security.md) - API keys, webhooks, wallet security, and blockchain-specific threats
 - [Deployment](./guides/deployment.md) - Production deployment
 - [Scaling & Customization](./guides/scaling-customization.md) - Advanced configuration
-- [AirTM Integration](./guides/airtm.md) - AirTM payment provider
 - [NPM Packages](./guides/npm-packages.md) - SDK publishing
 
 ### Design System
