@@ -11,7 +11,7 @@ import {
 
 interface OpenApiParameter {
   name: string;
-  in: 'path' | 'query';
+  in: 'path' | 'query' | 'header';
   required: boolean;
   description: string;
   schema: { type: string; enum?: string[] };
@@ -97,11 +97,14 @@ function paramSchema(p: Parameter): { type: string; enum?: string[] } {
   return { type: p.type === 'number' ? 'number' : 'string' };
 }
 
-function toParameters(params: Parameter[] | undefined, location: 'path' | 'query'): OpenApiParameter[] {
+function toParameters(
+  params: Parameter[] | undefined,
+  location: 'path' | 'query' | 'header',
+): OpenApiParameter[] {
   return (params ?? []).map((p) => ({
     name: p.name,
     in: location,
-    required: location === 'path' ? true : p.required,
+    required: location === 'path' || location === 'header' ? (p.required ?? true) : p.required,
     description: p.description,
     schema: paramSchema(p),
   }));
@@ -153,6 +156,7 @@ function buildOperation(
   const parameters = [
     ...toParameters(endpoint.pathParams, 'path'),
     ...toParameters(endpoint.queryParams, 'query'),
+    ...toParameters(endpoint.headerParams, 'header'),
   ];
   if (parameters.length > 0) {
     operation.parameters = parameters;
@@ -304,7 +308,16 @@ function generateOpenApiSpec(): OpenApiSpec {
     components: {
       schemas,
       securitySchemes: {
-        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'API key or JWT' },
+        apiKeyAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'API key token (ohk_tok_...)',
+        },
+        userSessionAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
       },
     },
     security: [],
