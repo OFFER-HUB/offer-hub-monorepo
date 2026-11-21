@@ -162,7 +162,7 @@ export default async function ChangelogPage() {
               Platform <span className="text-theme-primary">Updates</span>
             </h1>
             <p className="text-lg text-content-secondary font-medium max-w-2xl mx-auto leading-relaxed">
-              Tracking the progress of the Offer Hub ecosystem as we build the foundations of trustless commerce.
+              Tracking the progress of the OFFER-HUB ecosystem as we build the foundations of trustless commerce.
             </p>
           </header>
 
@@ -254,7 +254,7 @@ export default async function ChangelogPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer hasReleases={changelogEntries.length > 0} />
     </div>
   );
 }

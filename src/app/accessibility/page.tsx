@@ -26,7 +26,7 @@ const features = [
           icon: Mail,
           title: "Report Accessibility Issues",
           description:
-               "Encountered an accessibility barrier? Email support@offerhub.io with details about the issue. We respond within 2 business days and work to resolve problems as quickly as possible.",
+               "Encountered an accessibility barrier? Email support@offer-hub.tech with details about the issue. We respond within 2 business days and work to resolve problems as quickly as possible.",
           iconColor: "var(--color-primary)",
      },
 ];
@@ -58,8 +58,8 @@ const contactMethods = [
      {
           method: "Email",
           description: "Primary method for detailed accessibility reports",
-          value: "support@offerhub.io",
-          href: "mailto:support@offerhub.io?subject=Accessibility%20Issue%20Report",
+          value: "support@offer-hub.tech",
+          href: "mailto:support@offer-hub.tech?subject=Accessibility%20Issue%20Report",
      },
      {
           method: "Telegram",
@@ -343,7 +343,7 @@ export default function AccessibilityPage() {
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.
                          </p>
                          <a
-                              href="mailto:support@offerhub.io?subject=Accessibility%20Question"
+                              href="mailto:support@offer-hub.tech?subject=Accessibility%20Question"
                               className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-theme-primary text-white font-bold text-sm uppercase tracking-wider hover:bg-theme-primary-hover transition-colors shadow-lg"
                          >
                               <Mail size={18} />

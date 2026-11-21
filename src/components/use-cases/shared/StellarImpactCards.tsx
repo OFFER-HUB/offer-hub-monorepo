@@ -235,7 +235,7 @@ function ModeToggleSimple({
             />
           )}
           <span className="relative">
-            {m === "offerhub" ? "Offer Hub" : "Traditional"}
+            {m === "offerhub" ? "OFFER-HUB" : "Traditional"}
           </span>
         </button>
       ))}

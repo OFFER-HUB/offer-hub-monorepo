@@ -105,7 +105,7 @@ export const stellarImpactSummary = {
   offerhub: {
     text: (
       <>
-        Offer Hub{" "}
+        OFFER-HUB{" "}
         <span className="text-content-primary font-bold">
           eliminates unpaid invoice risk entirely
         </span>{" "}

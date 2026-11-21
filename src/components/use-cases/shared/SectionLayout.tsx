@@ -83,7 +83,7 @@ export function ArchitectureSection({ children }: { children: ReactNode }) {
 
         <p className="text-lg font-medium max-w-2xl mx-auto mb-16 leading-relaxed text-content-secondary">
           A simplified view of the smart contract interactions orchestrated by
-          OFFER HUB APIs.
+          OFFER-HUB APIs.
         </p>
 
         {children}

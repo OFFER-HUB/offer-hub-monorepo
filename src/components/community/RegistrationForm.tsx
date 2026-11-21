@@ -28,7 +28,7 @@ export function RegistrationForm() {
                     <CheckCircle2 size={40} className="text-theme-primary" />
                 </div>
                 <h2 className="text-3xl font-black text-content-primary tracking-tight mb-4">You&apos;re on the list!</h2>
-                <p className="text-content-secondary max-w-sm font-medium">We&apos;ll reach out shortly to discuss your integration with Offer Hub.</p>
+                <p className="text-content-secondary max-w-sm font-medium">We&apos;ll reach out shortly to discuss your integration with OFFER-HUB.</p>
             </div>
         );
     }
@@ -109,7 +109,7 @@ export function RegistrationForm() {
                     <FormField
                         id="purpose"
                         name="purpose"
-                        label="For what would you use Offer Hub?"
+                        label="For what would you use OFFER-HUB?"
                         as="textarea"
                         rows={3}
                         value={formData.purpose}

@@ -155,11 +155,11 @@ export default function DocsPage() {
                 willChange: "background-image",
               }}
             >
-              OFFER HUB
+              OFFER-HUB
             </h1>
 
             <p className="text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed font-medium animate-fadeInUp text-content-secondary" style={{ animationDelay: "200ms" }}>
-              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the Offer Hub ecosystem.
+              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the OFFER-HUB ecosystem.
             </p>
 
             <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "400ms" }}>
