@@ -1,0 +1,235 @@
+---
+title: Config and Health Endpoints
+description: Per-endpoint reference for the OFFER-HUB public endpoints - platform configuration and the basic and detailed health checks - with real response shapes, the real healthy, degraded and unhealthy semantics, the hardcoded limits in /config, error behavior, and cURL plus TypeScript examples.
+order: 53
+section: API Reference
+---
+
+Three endpoints need no credential and exist for clients, load balancers and monitoring. `GET /config` lives in `ConfigController` (`apps/api/src/modules/config/config.controller.ts`). The two health routes live in `HealthController` (`apps/api/src/modules/health/health.controller.ts`) and `HealthService` (`health.service.ts`). With the global `/api/v1` prefix from `apps/api/src/main.ts`, the paths below are the full routes.
+
+| Method | Path | Scope | Success status | Controller handler |
+| --- | --- | --- | --- | --- |
+| <Badge variant="success">GET</Badge> | `/api/v1/config` | none (public) | `200 OK` | `ConfigController.getConfig` |
+| <Badge variant="success">GET</Badge> | `/api/v1/health` | none (public) | `200 OK` | `HealthController.getHealth` |
+| <Badge variant="success">GET</Badge> | `/api/v1/health/detailed` | none (public) | `200 OK` | `HealthController.getDetailedHealth` |
+
+<Callout type="note">
+  The TypeScript SDK (`packages/sdk`) has no resource for these routes, so the TypeScript examples use plain `fetch`. All three handlers are marked `@Public()`, which makes `ApiKeyGuard` skip them, so no `Authorization` header is needed.
+</Callout>
+
+## Common behavior
+
+- **No scope and no request body.** None of these routes reads a body or declares `@Scopes`.
+- **No idempotency.** All three are `GET` routes; the global idempotency guard only acts on `POST`, `PUT` and `PATCH`.
+- **Rate limiting still applies.** The global `RateLimitGuard` allows 100 requests per 60 seconds, counted per IP for requests without a key. Poll health sparingly; a load balancer probe every 10 seconds is well within the limit.
+- **Envelope differs per route.** `ResponseInterceptor` leaves a single-key `{ data: ... }` payload untouched and wraps everything else in `{ data, meta }`. So `GET /config` returns `{ "data": { ... } }` with **no `meta`**, while both health routes are wrapped as `{ "data": { ... }, "meta": { "requestId", "timestamp" } }`.
+- **Errors** use `{ "error": { "code", "message" } }`. The only error these routes can realistically return is `429 RATE_LIMITED`; see [Error Codes](/docs/api-reference/errors).
+
+## GET /api/v1/config
+
+Returns platform configuration for clients that want to show limits or check which features are on.
+
+<Callout type="warning">
+  **The limits, currencies and provider names are hardcoded in the controller.** They are string literals in `getConfig`, not read from the environment, the database or the services that enforce rules. Changing a limit elsewhere will not change this response, and this response is not proof of what another endpoint accepts. Treat it as documentation of intent, and confirm real limits on the endpoint you call.
+</Callout>
+
+What is fixed and what is computed:
+
+| Field | How it is produced |
+| --- | --- |
+| `currencies` | Fixed: `["USD"]` |
+| `limits.topup` | Fixed: min `1.00`, max `10000.00` |
+| `limits.withdrawal` | Fixed: min `10.00`, max `5000.00` |
+| `limits.order` | Fixed: min `1.00`, max `50000.00` |
+| `features.milestones`, `features.disputes` | Fixed: `true` |
+| `features.sse` | Fixed: `false`, with a code comment "Not yet implemented", even though `GET /events` exists. Do not use this flag to decide whether to open the [event stream](/docs/api-reference/events) |
+| `features.airtm` | Computed: `true` when the `AIRTM_API_KEY` environment variable is set |
+| `features.trustlessWork` | Computed: `true` when `TRUSTLESS_API_KEY` is set |
+| `providers.fiat`, `providers.escrow` | Fixed: `"airtm"` and `"trustless_work"`, regardless of the configured `PAYMENT_PROVIDER` |
+| `version` | `npm_package_version` when available, otherwise `"1.0.0"` |
+
+<ResponseSchema
+  label="Platform configuration response (200 OK)"
+  fields={[
+    { name: "data.currencies", type: "string[]", required: true, description: "Supported currency codes." },
+    { name: "data.limits.topup.min", type: "string", required: true, description: "Minimum top-up as a decimal string." },
+    { name: "data.limits.topup.max", type: "string", required: true, description: "Maximum top-up." },
+    { name: "data.limits.withdrawal.min", type: "string", required: true, description: "Minimum withdrawal." },
+    { name: "data.limits.withdrawal.max", type: "string", required: true, description: "Maximum withdrawal." },
+    { name: "data.limits.order.min", type: "string", required: true, description: "Minimum order amount." },
+    { name: "data.limits.order.max", type: "string", required: true, description: "Maximum order amount." },
+    { name: "data.features.milestones", type: "boolean", required: true, description: "Always true." },
+    { name: "data.features.disputes", type: "boolean", required: true, description: "Always true." },
+    { name: "data.features.sse", type: "boolean", required: true, description: "Always false (hardcoded)." },
+    { name: "data.features.airtm", type: "boolean", required: true, description: "True when AIRTM_API_KEY is set." },
+    { name: "data.features.trustlessWork", type: "boolean", required: true, description: "True when TRUSTLESS_API_KEY is set." },
+    { name: "data.providers.fiat", type: "string", required: true, description: "Always airtm (hardcoded)." },
+    { name: "data.providers.escrow", type: "string", required: true, description: "Always trustless_work (hardcoded)." },
+    { name: "data.version", type: "string", required: true, description: "Orchestrator version." }
+  ]}
+  example={{
+    data: {
+      currencies: ["USD"],
+      limits: {
+        topup: { min: "1.00", max: "10000.00" },
+        withdrawal: { min: "10.00", max: "5000.00" },
+        order: { min: "1.00", max: "50000.00" }
+      },
+      features: { milestones: true, disputes: true, sse: false, airtm: true, trustlessWork: true },
+      providers: { fiat: "airtm", escrow: "trustless_work" },
+      version: "1.0.0"
+    }
+  }}
+/>
+
+| Status | `error.code` | When |
+| --- | --- | --- |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+<CodeTabs
+  label="Get config examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl "http://localhost:4000/api/v1/config"`
+    },
+    {
+      id: "fetch",
+      label: "TypeScript (fetch)",
+      language: "typescript",
+      code: `const res = await fetch("http://localhost:4000/api/v1/config");
+const { data } = await res.json();
+
+console.log(data.limits.order.max, data.features.airtm);`
+    }
+  ]}
+/>
+
+## GET /api/v1/health
+
+The basic check. It does no I/O and answers immediately, so it tells you only that the API process is up. Use it for load balancer and container probes.
+
+<ResponseSchema
+  label="Basic health response (200 OK)"
+  fields={[
+    { name: "data.status", type: "string", required: true, description: "Always healthy when the process can answer.", enum: ["healthy"] },
+    { name: "data.version", type: "string", required: true, description: "npm_package_version when available, otherwise 1.0.0." },
+    { name: "data.timestamp", type: "string", required: true, description: "ISO 8601 time of the check." },
+    { name: "meta", type: "object", required: true, description: "requestId (when sent) and timestamp." }
+  ]}
+  example={{
+    data: { status: "healthy", version: "1.0.0", timestamp: "2026-09-30T10:00:00.000Z" },
+    meta: { requestId: "req_1ab90c", timestamp: "2026-09-30T10:00:00.002Z" }
+  }}
+/>
+
+<CodeTabs
+  label="Basic health examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -i "http://localhost:4000/api/v1/health" -H "X-Request-ID: my-debug-001"`
+    },
+    {
+      id: "fetch",
+      label: "TypeScript (fetch)",
+      language: "typescript",
+      code: `const res = await fetch("http://localhost:4000/api/v1/health");
+const { data } = await res.json();
+
+console.log(data.status); // "healthy"`
+    }
+  ]}
+/>
+
+## GET /api/v1/health/detailed
+
+The detailed check. It tests the database, Redis, the Airtm API and the Trustless Work API in parallel, each with a 5-second limit, so a slow dependency can make the call take up to about 5 seconds. Use it for monitoring and debugging, not for frequent probes.
+
+### Status semantics
+
+The HTTP status is `200 OK` **even when something is unhealthy**: the handler returns the result instead of throwing. Read `data.status` in the body, not the HTTP code.
+
+| Overall `status` | Rule in `HealthService.check` |
+| --- | --- |
+| `unhealthy` | At least one dependency is `unhealthy` |
+| `degraded` | No dependency is `unhealthy`, and at least one is `degraded` |
+| `healthy` | Every dependency is `healthy` |
+
+| Dependency | Can be | Why |
+| --- | --- | --- |
+| `database` | `healthy`, `unhealthy` | Query succeeds, or fails with the error message |
+| `redis` | `healthy`, `unhealthy` | Ping succeeds, or fails with the error message |
+| `airtm` | `healthy`, `degraded` | `degraded` with `error: "Not configured"` when `AIRTM_API_KEY` is unset; `degraded` when unreachable or the API answers with a 5xx; otherwise `healthy` |
+| `trustlessWork` | `healthy`, `degraded` | Same rules, using `TRUSTLESS_API_KEY` |
+
+So the two provider dependencies can only lower the overall status to `degraded`, never to `unhealthy`. A deployment that has not configured Airtm reports `degraded` permanently.
+
+<ResponseSchema
+  label="Detailed health response (200 OK)"
+  fields={[
+    { name: "data.status", type: "string", required: true, description: "Overall status computed from the dependencies.", enum: ["healthy", "degraded", "unhealthy"] },
+    { name: "data.version", type: "string", required: true, description: "Orchestrator version." },
+    { name: "data.dependencies", type: "object", required: true, description: "One entry per dependency: database, redis, airtm, trustlessWork." },
+    { name: "data.dependencies.{name}.status", type: "string", required: true, description: "healthy, degraded or unhealthy, following the table above." },
+    { name: "data.dependencies.{name}.latency", type: "number", required: false, description: "Milliseconds the check took. Absent when the dependency is not configured." },
+    { name: "data.dependencies.{name}.error", type: "string", required: false, description: "Failure message or Not configured. Absent when healthy." },
+    { name: "data.timestamp", type: "string", required: true, description: "ISO 8601 time of the check." },
+    { name: "meta", type: "object", required: true, description: "requestId (when sent) and timestamp." }
+  ]}
+  example={{
+    data: {
+      status: "degraded",
+      version: "1.0.0",
+      dependencies: {
+        database: { status: "healthy", latency: 4 },
+        redis: { status: "healthy", latency: 2 },
+        airtm: { status: "degraded", error: "Not configured" },
+        trustlessWork: { status: "healthy", latency: 180 }
+      },
+      timestamp: "2026-09-30T10:00:00.000Z"
+    },
+    meta: { requestId: "req_1ab90d", timestamp: "2026-09-30T10:00:00.190Z" }
+  }}
+/>
+
+| Status | `error.code` | When |
+| --- | --- | --- |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+
+<CodeTabs
+  label="Detailed health examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -s "http://localhost:4000/api/v1/health/detailed"`
+    },
+    {
+      id: "fetch",
+      label: "TypeScript (fetch)",
+      language: "typescript",
+      code: `const res = await fetch("http://localhost:4000/api/v1/health/detailed");
+const { data } = await res.json();
+
+// HTTP status is 200 even when unhealthy - check the body.
+if (data.status !== "healthy") {
+  for (const [name, dep] of Object.entries<any>(data.dependencies)) {
+    if (dep.status !== "healthy") console.warn(name, dep.status, dep.error);
+  }
+}`
+    }
+  ]}
+/>
+
+## Related documentation
+
+- [Auth Endpoints](/docs/api-reference/auth) - keys, tokens and scopes
+- [Users Endpoints](/docs/api-reference/users) - create users and link Airtm accounts
+- [Self-Hosting](/docs/guide/self-hosting) - environment variables that drive `features` and dependency status
+- [Events (SSE)](/docs/api-reference/events) - the event stream that `features.sse` does not reflect

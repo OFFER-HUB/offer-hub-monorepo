@@ -1,7 +1,7 @@
 ---
 title: Disputes Guide
 description: How to handle disputes in OFFER-HUB — opening, resolving, and managing disagreements between buyers and sellers.
-order: 4
+order: 21
 section: Guides
 ---
 
@@ -32,6 +32,8 @@ A dispute should be opened when:
 
 ### State Machine
 
+Two lifecycles move together during a dispute. The dispute record itself goes `OPEN` to `UNDER_REVIEW` to `RESOLVED`, as shown in the [Dispute state machine](/docs/guide/state-machines#dispute). The diagram below is the order's side of it: opening the dispute moves the order from `IN_PROGRESS` to `DISPUTED`, and resolving it settles the funds. The full order machine is in the [Orders Guide](/docs/guide/orders#order-lifecycle).
+
 ```
 IN_PROGRESS
       ↓
@@ -47,6 +49,8 @@ REFUNDED  RELEASED
 
 ### State Descriptions
 
+These are the **order** statuses you will see while a dispute is open and after it is resolved.
+
 | State | Description |
 |-------|-------------|
 | `DISPUTED` | Funds locked, awaiting platform resolution |
@@ -55,6 +59,31 @@ REFUNDED  RELEASED
 | `CLOSED` | Order completed after resolution |
 
 ## Opening a Dispute
+### Dispute Resolution Sequence
+
+```mermaid
+sequenceDiagram
+    accTitle: Dispute open and resolve
+    accDescr: Buyer opens dispute, escrow frozen, platform reviews, resolves on-chain with release or refund.
+    autonumber
+    participant Buyer
+    participant Orchestrator
+    participant Support as Platform Support
+    participant TW as Trustless Work Contract
+    Buyer->>Orchestrator: POST /orders/&#123;id&#125;/resolution/dispute
+    Orchestrator->>TW: disputeEscrow (buyer signs)
+    Orchestrator-->>Buyer: 200 DISPUTED
+    Support->>Orchestrator: GET /disputes/&#123;id&#125;
+    alt FULL_RELEASE
+        Support->>Orchestrator: POST /disputes/&#123;id&#125;/resolve
+        Orchestrator->>TW: resolveDispute(100% seller)
+    else FULL_REFUND
+        Support->>Orchestrator: POST /disputes/&#123;id&#125;/resolve
+        Orchestrator->>TW: resolveDispute(100% buyer)
+    end
+    Orchestrator-->>Buyer: SSE order.released or order.refunded
+`
+```
 
 Only the buyer can initiate a dispute on an `IN_PROGRESS` order:
 
@@ -226,40 +255,42 @@ curl -X POST http://localhost:4000/api/v1/disputes/dsp_abc123/comments \
 
 ## Listing Disputes
 
-Get all disputes with filtering:
+`GET /disputes` accepts three optional filters: `orderId`, `status` (`OPEN`, `UNDER_REVIEW`, `RESOLVED`) and `openedBy` (`BUYER`, `SELLER`). It is **not paginated**: it returns every match, newest first (`DisputesController.listDisputes`, `ResolutionService.listDisputes`).
 
 ```bash
 # All open disputes
-curl "http://localhost:4000/api/v1/disputes?status=open" \
+curl "http://localhost:4000/api/v1/disputes?status=OPEN" \
   -H "Authorization: Bearer ohk_live_your_api_key"
 
-# Disputes for a specific user
-curl "http://localhost:4000/api/v1/disputes?user_id=usr_buyer123" \
+# The dispute on one order
+curl "http://localhost:4000/api/v1/disputes?orderId=ord_xyz789" \
   -H "Authorization: Bearer ohk_live_your_api_key"
 
-# Disputes in date range
-curl "http://localhost:4000/api/v1/disputes?created_after=2026-02-01&created_before=2026-02-28" \
+# Disputes opened by buyers
+curl "http://localhost:4000/api/v1/disputes?openedBy=BUYER" \
   -H "Authorization: Bearer ohk_live_your_api_key"
 ```
 
 ### Response
 
+The controller returns `{ success, data }`, which the response interceptor wraps once more. See [Response Format](/docs/api-reference/overview#response-format).
+
 ```json
 {
-  "data": [
-    {
-      "id": "dsp_abc123",
-      "orderId": "ord_xyz789",
-      "openedBy": "usr_buyer123",
-      "reason": "Work not delivered",
-      "status": "open",
-      "openedAt": "2026-02-25T10:00:00.000Z"
-    }
-  ],
-  "pagination": {
-    "has_more": false,
-    "next_cursor": null
-  }
+  "data": {
+    "success": true,
+    "data": [
+      {
+        "id": "dsp_abc123",
+        "orderId": "ord_xyz789",
+        "openedBy": "BUYER",
+        "reason": "NOT_DELIVERED",
+        "status": "OPEN",
+        "createdAt": "2026-02-25T10:00:00.000Z"
+      }
+    ]
+  },
+  "meta": { "requestId": "3f2b8c1e-9d4a-4c7e-8a51-0b6e2d9f7a13", "timestamp": "2026-02-25T10:00:00.412Z" }
 }
 ```
 
@@ -350,7 +381,7 @@ events.on('dispute.resolved', (data) => {
 
 ## Real-Time Dispute Events (SSE)
 
-Dispute lifecycle events are delivered over the [SSE event stream](/docs/api-reference/webhooks) at `GET /api/v1/events` — there is no outbound webhook API:
+Dispute lifecycle events are delivered over the [SSE event stream](/docs/api-reference/events) at `GET /api/v1/events` — there is no outbound webhook API:
 
 ```bash
 curl -N "http://localhost:4000/api/v1/events?types=order.disputed,dispute.opened,dispute.resolved" \
@@ -375,16 +406,19 @@ The `order.disputed` event payload looks like this:
 
 ```json
 {
-  "id": "evt_abc123",
-  "type": "escrow.disputed",
-  "created_at": "2026-02-25T10:00:00.000Z",
-  "data": {
-    "escrow_id": "esc_xyz789",
-    "dispute_id": "dsp_abc123",
-    "opened_by": "BUYER",
+  "eventId": "evt_abc123",
+  "eventType": "order.disputed",
+  "occurredAt": "2026-02-25T10:00:00.000Z",
+  "aggregateId": "ord_xyz789",
+  "aggregateType": "Order",
+  "payload": {
+    "orderId": "ord_xyz789",
+    "disputeId": "dsp_abc123",
+    "openedBy": "BUYER",
     "reason": "NOT_DELIVERED",
-    "order_id": "ord_xyz789"
-  }
+    "openedAt": "2026-02-25T10:00:00.000Z"
+  },
+  "metadata": {}
 }
 ```
 
@@ -424,7 +458,7 @@ Dispute operations support idempotency keys:
 ```bash
 curl -X POST http://localhost:4000/api/v1/orders/ord_xyz789/resolution/dispute \
   -H "Authorization: Bearer ohk_live_your_api_key" \
-  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440012" \
   -H "Content-Type: application/json" \
   -d '{"openedBy": "BUYER", "reason": "NOT_DELIVERED"}'
 ```
@@ -434,5 +468,5 @@ Dispute idempotency keys are stored **forever** — you cannot open the same dis
 ## Next Steps
 
 - [Withdrawals Guide](/docs/guide/withdrawals) — Move funds off-platform
-- [Real-Time Events & Webhooks](/docs/api-reference/webhooks) — SSE event stream and event catalog
+- [Events (SSE)](/docs/api-reference/events) — SSE event stream and event catalog
 - [SDK Reference](/docs/sdk/quick-start) — Full SDK documentation

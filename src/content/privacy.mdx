@@ -72,23 +72,24 @@
       Your Data Rights
     </h2>
     <p className="mt-3 text-base font-medium max-w-xl mx-auto text-content-secondary leading-relaxed">
-      Under GDPR Articles 17 and 20, you may request deletion or export of your personal data at any time.
+      Under GDPR Articles 17 and 20, you may request deletion or export of your personal data at any time. To prove you own the email address, we send it a single-use confirmation link that expires in 30 minutes; nothing is exported or deleted until you open that link and confirm.
     </p>
   </div>
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
     <DataRightsForm
       title="Export My Data"
-      description="Receive a copy of all personal data we hold for your email address (GDPR Article 20 — data portability)."
+      description="Receive a copy of all personal data we hold for your email address (GDPR Article 20 — data portability). We email you a confirmation link first."
       iconName="Download"
       endpoint="/api/privacy/export"
-      successMessage="Your data has been returned below. Save this response for your records."
+      successMessage="Check your inbox: if we hold a record for that address, we sent a confirmation link that expires in 30 minutes."
       buttonLabel="Export my data"
     />
     <DataRightsForm
       title="Delete My Data"
-      description="Permanently remove all personal data associated with your email address (GDPR Article 17 — right to erasure)."
+      description="Permanently remove all personal data associated with your email address (GDPR Article 17 — right to erasure). Deletion happens only after you confirm via an emailed link."
       iconName="Trash2"
       endpoint="/api/privacy/delete"
+      successMessage="Check your inbox: if we hold a record for that address, we sent a confirmation link that expires in 30 minutes."
       buttonLabel="Delete my data"
       destructive
     />

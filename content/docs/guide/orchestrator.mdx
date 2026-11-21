@@ -2,6 +2,8 @@
 title: Orchestrator
 description: How the OFFER-HUB payment engine coordinates orders, escrow and payouts.
 order: 1
+description: Understand OFFER-HUB's core payment orchestration architecture and how it processes transactions.
+order: 12
 section: Guides
 ---
 
@@ -26,10 +28,16 @@ It does not own your listings, messaging, accounts or reviews. It also does not 
 ## Core components
 
 **Balance ledger** — `available` and `reserved` amounts per user. Reservations are atomic, so two concurrent checkouts cannot spend the same funds twice.
+The API in `apps/api` serves the REST API and processes BullMQ background jobs in the same service. See [Background Jobs and Reconciliation](/docs/guide/background-jobs) for queue names, schedules, retries, and failed-job recovery.
 
 **Order and escrow state machine** — one order moves through the full lifecycle below. Invalid transitions are rejected with `409`.
 
 **Escrow bridge** — builds Trustless Work contract operations and returns unsigned Stellar transactions. It can prepare a transaction; it cannot sign one for a user.
+Marketplace requests enter the Orchestrator, which coordinates ledger, escrow, events, and idempotency work.
+
+This view is verified against `apps/api/src/modules/orders/orders.controller.ts`, its `dto/create-order.dto.ts`, and `apps/api/src/modules/events/event-catalog.ts` in the Orchestrator repository; those files define the REST boundary, order input, and emitted domain events represented here.
+
+### Key Components
 
 **Payout records** — withdrawals to an external Stellar address, and BlindPay payout submissions for local bank rails in Brazil, Mexico, Argentina and Colombia.
 
@@ -81,6 +89,13 @@ curl -X POST https://your-orchestrator.example.com/api/v1/orders \
     "description": "Three concepts, two revision rounds"
   }'
 ```
+const order = await client.orders.create({
+  buyer_id: "usr_123",
+  seller_id: "usr_456",
+  amount: "75.00",
+  idempotency_key: "550e8400-e29b-41d4-a716-446655440004",
+})
+```
 
 The buyer's funds move from `available` to `reserved`.
 
@@ -103,6 +118,7 @@ The buyer requests release. The order moves to `RELEASE_REQUESTED`, and the Orch
 ### 5. Payout
 
 A seller can withdraw to an external Stellar address, or submit a BlindPay payout for a local bank account. `POST /orders/:orderId/payout/submit` records the payout against the order and requires an `Idempotency-Key`.
+The Orchestrator runs two distinct state machines: an **Order state machine** that tracks the order lifecycle, and an internal **Escrow state machine** that tracks the on-chain escrow contract. Invalid transitions are rejected with a `409 Conflict` error (`OrderStateMachine.assertTransition` in `packages/shared/src/utils/state-machine.ts`). Both diagrams below are generated from `ORDER_TRANSITIONS` and `ESCROW_TRANSITIONS` in `packages/shared/src/enums`.
 
 ## Order statuses
 
@@ -116,6 +132,52 @@ A seller can withdraw to an external Stellar address, or submit a BlindPay payou
 | `IN_PROGRESS` | Work underway |
 | `DELIVERED` | Seller marked the work delivered |
 | `RELEASE_REQUESTED` | Buyer requested release |
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
+
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
+
+| State | Description |
+|-------|-------------|
+| `ORDER_CREATED` | Order created off-chain, no funds reserved |
+| `FUNDS_RESERVED` | Buyer balance reserved (logical hold) |
+| `ESCROW_CREATING` | Creating escrow contract in Trustless Work |
+| `ESCROW_FUNDING` | Funding escrow with reserved balance |
+| `ESCROW_FUNDED` | Escrow funded, funds locked on-chain |
+| `IN_PROGRESS` | Work in progress |
+| `RELEASE_REQUESTED` | Release requested for the seller |
 | `RELEASED` | Funds released to the seller |
 | `REFUND_REQUESTED` | Buyer or operator requested a refund |
 | `REFUNDED` | Funds returned to the buyer |
@@ -132,6 +194,31 @@ There is no `CANCELLED` order status. An order that does not proceed either refu
 | Reason | `NOT_DELIVERED`, `QUALITY_ISSUE`, `OTHER` |
 | Lifecycle | `OPEN` → `UNDER_REVIEW` → `RESOLVED` |
 | Outcome | `FULL_RELEASE`, `FULL_REFUND`, `SPLIT` |
+<MermaidDiagram
+  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
 
 Resolution needs the `support` scope. Opening a dispute freezes release; the escrow contract only moves funds when the resolution is signed according to its rules.
 
@@ -142,6 +229,19 @@ Responses use one of two envelopes:
 ```json
 { "data": { "...": "..." }, "meta": { "...": "..." } }
 ```
+The Orchestrator uses standard HTTP status codes and structured error responses.
+
+| Code | HTTP | Description |
+|------|------|-------------|
+| `INSUFFICIENT_BALANCE` | 422 | Buyer's available balance is too low |
+| `INVALID_STATE` | 400 / 409 | Action not allowed in the resource's current state (see [State Machines](/docs/guide/state-machines)) |
+| `DUPLICATE_IDEMPOTENCY_KEY` | 200 | Already processed — cached response returned |
+| `STELLAR_TX_FAILED` | 502 | On-chain transaction rejected by Stellar |
+| `ESCROW_NOT_FOUND` | 404 | No escrow found with the given ID |
+
+### Retrying Failed Requests
+
+Always include an `Idempotency-Key` header on state-changing requests. Retrying with the same key is safe — the Orchestrator returns the cached result instead of processing twice.
 
 ```json
 { "error": { "code": "INVALID_STATE", "message": "Transition not allowed", "details": {} } }
@@ -169,6 +269,7 @@ const response = await fetch(`${apiUrl}/api/v1/orders`, {
     "Content-Type": "application/json",
     Authorization: `Bearer ${apiKey}`,
     "Idempotency-Key": "your-order-reference",
+    "Idempotency-Key": "550e8400-e29b-41d4-a716-446655440004",
   },
   body: JSON.stringify(orderPayload),
 });
@@ -192,3 +293,6 @@ The Orchestrator talks to Stellar over RPC. The network and the RPC URL must mat
 - [Disputes](/docs/guide/disputes) — resolution flow
 - [Architecture](/docs/guide/architecture) — trust boundaries
 - [API Reference](/docs/api-reference/overview) — full endpoint surface
+<Callout type="warning">
+  AirTM requires users to complete KYC on their platform. Crypto mode has no KYC requirement. For complete architecture and deployment details on the default crypto rail, see the [Crypto-Native (Stellar) Provider Guide](/docs/guide/crypto-native).
+</Callout>

@@ -40,7 +40,7 @@ const docSections = [
     title: "API Reference",
     description: "Complete REST API documentation with authentication, endpoints, and real-time events.",
     link: "/docs/api-reference/overview",
-    count: "3 articles",
+    count: "7 articles",
     highlight: false,
     externalLink: { href: "/openapi.json", label: "View OpenAPI Spec" },
   },
@@ -140,7 +140,7 @@ export default function DocsPage() {
           />
 
           <div className="relative z-10 text-center px-4">
-            <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-6 animate-fadeIn text-theme-primary opacity-80">
+            <p className="text-xs font-black uppercase tracking-[0.4em] mb-6 animate-fadeIn text-theme-primary opacity-80">
               Documentation Center
             </p>
 
@@ -177,7 +177,7 @@ export default function DocsPage() {
                   href={section.link}
                   className={cn(
                     "block p-8 rounded-3xl transition-[border-color,box-shadow,transform] duration-500 hover:-translate-y-2 border border-black/[0.03] dark:border-white/[0.03] bg-bg-base/50 backdrop-blur-sm",
-                    "hover:border-theme-primary/20 hover:shadow-neu-raised"
+                    "hover:border-theme-border/40 hover:shadow-neu-raised"
                   )}
                 >
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-[background-color,color,transform] duration-500 group-hover:scale-110 group-hover:bg-theme-primary group-hover:text-white bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
@@ -196,7 +196,7 @@ export default function DocsPage() {
                   <p className="text-[15px] leading-relaxed mb-8 font-medium text-content-secondary">
                     {section.description}
                   </p>
-                  <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-content-secondary/40">
+                  <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-content-secondary/40">
                     <span>{section.count}</span>
                     <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
                       Explore <ChevronRight size={14} />

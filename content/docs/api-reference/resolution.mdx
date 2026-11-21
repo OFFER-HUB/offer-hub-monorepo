@@ -1,0 +1,646 @@
+---
+title: Resolution Endpoints
+description: Per-endpoint reference for the OFFER-HUB order resolution API — release, refund, and dispute — with real DTO fields, Trustless Work signer roles, valid state transitions, error codes, and cURL plus TypeScript SDK examples.
+order: 46
+section: API Reference
+---
+
+The three **resolution endpoints** decide how escrowed funds leave a funded order: released to the seller, refunded to the buyer, or frozen while a dispute is resolved. All three live in a single controller, `ResolutionController` (`apps/api/src/modules/resolution/resolution.controller.ts`), mounted at `@Controller('orders/:orderId/resolution')`. Combined with the global `/api/v1` prefix set in `apps/api/src/main.ts`, the full paths are:
+
+| Method | Path | Success status | Controller handler |
+| --- | --- | --- | --- |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{orderId}/resolution/release` | `200 OK` | `ResolutionController.requestRelease` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{orderId}/resolution/refund` | `200 OK` | `ResolutionController.requestRefund` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{orderId}/resolution/dispute` | `201 Created` | `ResolutionController.openDispute` |
+
+<Callout type="note">
+  This page is written from the Orchestrator source, not from the API contract: `apps/api/src/modules/resolution/{resolution.controller.ts,resolution.service.ts,dto/*.ts,exceptions/resolution.exceptions.ts}` and `apps/api/src/modules/orders/orders.service.ts`. Escrow creation and funding are documented separately in [Escrow Endpoints](/docs/api-reference/escrow). The follow-up endpoints that close a dispute — `POST /api/v1/disputes/{disputeId}/assign` and `POST /api/v1/disputes/{disputeId}/resolve` — live in `DisputesController` (`apps/api/src/modules/disputes/disputes.controller.ts`) and are covered in [Disputes Guide](/docs/guide/disputes).
+</Callout>
+
+## Common behavior
+
+### Authentication and scope
+
+`ResolutionController` declares **no guards and no scopes** — there is no `@UseGuards(ApiKeyGuard, ScopeGuard)` and no `@Scopes(...)` decorator anywhere in `apps/api/src/modules/resolution/resolution.controller.ts` (compare `apps/api/src/modules/balance/balance.controller.ts`, which does declare both). These routes are therefore **not authenticated and not scope-gated in the current Orchestrator**.
+
+| Aspect | Value on these routes | Source |
+| --- | --- | --- |
+| Authentication | None enforced (no `ApiKeyGuard`) | `resolution.controller.ts` |
+| Required scope | None (no `ScopeGuard` / `@Scopes`) | `resolution.controller.ts` |
+| Rate limiting | Yes — global `RateLimitGuard` via `APP_GUARD` | `apps/api/src/app.module.ts` |
+| Correlation | `X-Request-ID` is always set on the response and in `meta.requestId`: your value, or a generated UUID v4. See [Request correlation](/docs/api-reference/overview#request-correlation-x-request-id) | `CorrelationIdMiddleware`, `ResponseInterceptor` |
+
+<Callout type="warning">
+  The examples below still send `Authorization: Bearer …` because that is how every other reference in these docs is written — and you should send it, since a future release may add `ApiKeyGuard` to this controller. Today the header is simply ignored by these three routes.
+</Callout>
+
+### Request validation
+
+A global `ValidationPipe` runs with `whitelist: true`, `forbidNonWhitelisted: true`, and `transform: true` (`apps/api/src/main.ts`). Two consequences apply to every DTO on this page:
+
+- Unknown body properties are **rejected** with `400 VALIDATION_ERROR` instead of being silently dropped.
+- `evidence` is validated as an array of any values (`@IsArray()` with no `@IsString({ each: true })` in `open-dispute.dto.ts`), so send an array of URL strings — that is what the schema, the docs, and the SDK types (`evidence?: string[]` in `packages/sdk/src/types/index.ts`) assume.
+
+### Response envelope
+
+For every endpoint group's envelope in one table, see [Envelope by endpoint group](/docs/api-reference/overview#envelope-by-endpoint-group).
+
+`ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps every handler result. Its `isAlreadyWrapped` check only skips wrapping when the payload already has a `meta` key **or** exactly one key, and the controller returns `{ success, data }` — two keys, no `meta` — so the payload is wrapped. Successful calls therefore look like this on the wire:
+
+```json
+{
+  "data": { "success": true, "data": { "...": "resource" } },
+  "meta": { "requestId": "req_7f3a", "timestamp": "2026-02-17T16:35:20.405Z" }
+}
+```
+
+Errors use the single-level envelope produced by `GlobalExceptionFilter` (`apps/api/src/common/filters/global-exception.filter.ts`): `{ "error": { "code", "message", "details?" } }`.
+
+### Idempotency
+
+<Callout type="danger">
+  These three endpoints do **not** support the `Idempotency-Key` header. The idempotency guard, interceptor, and TTL decorator exist (`apps/api/src/common/guards/idempotency.guard.ts`, `apps/api/src/common/interceptors/idempotency.interceptor.ts`, `apps/api/src/common/decorators/idempotency-ttl.decorator.ts`) but are never attached to `ResolutionController` or `OrdersController`, so a key sent here is ignored. Retries are made safe by the **state machine instead**: once an order leaves `IN_PROGRESS`, a replayed call fails with `400 INVALID_STATE` and moves no funds. See [Idempotency](/docs/api-reference/overview#idempotency) for the endpoints that do honor the header.
+</Callout>
+
+### Completion is synchronous
+
+Trustless Work sends no webhooks to these flows, so `ResolutionService` finishes each operation inline: `requestRelease` calls `confirmRelease` (`resolution.service.ts`) and `requestRefund` calls `confirmRefund` before returning. **The order you get back is already `CLOSED`** — there is no pending state to poll. If a provider call fails after the order was moved to `RELEASE_REQUESTED` / `REFUND_REQUESTED`, the service rolls the order back to `IN_PROGRESS` and rethrows, so a retry is safe.
+
+## Trustless Work signer roles
+
+Each contract is deployed with three Stellar roles (`apps/api/src/providers/trustless-work/types/trustless-work.types.ts`): `approver` (the buyer), `serviceProvider` (the seller), and `disputeResolver` (the platform wallet configured as `PLATFORM_USER_ID`). Every write to Trustless Work returns an **unsigned XDR** that the Orchestrator signs with the matching user's invisible wallet via `paymentProvider.signEscrowTransaction` before submitting it to Stellar.
+
+| Flow | Trustless Work call | Signer | Contract role |
+| --- | --- | --- | --- |
+| Release | `changeMilestoneStatus` (`/escrow/{type}/change-milestone-status`) | Seller | `serviceProvider` |
+| Release | `approveMilestone` | Buyer | `approver` |
+| Release | `releaseEscrow` (`/escrow/{type}/release-funds`) | Buyer | `approver` |
+| Refund | `disputeEscrow` (`/escrow/{type}/dispute-escrow`) | Buyer | `approver` (the disputer) |
+| Refund | `resolveDisputeForRefund` (`/escrow/{type}/resolve-dispute`) | Platform | `disputeResolver` |
+| Dispute | No on-chain call — the internal state machine moves only | — | — |
+
+<Callout type="note">
+  Refund and split resolution are **two-step** on purpose: the Trustless Work contracts forbid the `disputeResolver` from also being the disputer, so the buyer disputes and the platform wallet resolves (`resolution.service.ts`, `executeFullRefund` / `executeSplitResolution`).
+</Callout>
+
+## Valid state transitions
+
+Release, refund, and dispute all start from `IN_PROGRESS` on an order whose escrow is `FUNDED`, and each one ends at `CLOSED`:
+
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
+
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
+
+The escrow record follows its own machine — from `FUNDED` it may move to `RELEASING`, `REFUNDING`, or `DISPUTED`, and only `RELEASED` / `REFUNDED` are terminal (`packages/shared/src/enums/escrow-status.enum.ts`):
+
+<MermaidDiagram
+  caption="Internal Escrow state machine — every edge is an entry in ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
+
+| Endpoint | Order before | Order after | Escrow after |
+| --- | --- | --- | --- |
+| `release` | `IN_PROGRESS` | `RELEASE_REQUESTED` → `RELEASED` → `CLOSED` | `RELEASED` (+ `releasedAt`) |
+| `refund` | `IN_PROGRESS` | `REFUND_REQUESTED` → `REFUNDED` → `CLOSED` | `REFUNDED` (+ `refundedAt`) |
+| `dispute` | `IN_PROGRESS` | `DISPUTED` | `DISPUTED` |
+
+## POST /api/v1/orders/:orderId/resolution/release
+
+Releases the escrowed funds to the seller. `ResolutionService.requestRelease` validates the order, moves it to `RELEASE_REQUESTED`, then executes the three Trustless Work calls above before confirming the release and crediting the seller's internal balance (`BalanceService.release`).
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "orderId", type: "string", required: true, description: "Order ID with the ord_ prefix, e.g. ord_abc123. Read from the path, not the body." },
+  ]}
+/>
+
+### Request body
+
+The body is optional — `@Body() dto?: RequestReleaseDto` — but when present it must validate against `RequestReleaseDto` (`apps/api/src/modules/resolution/dto/request-release.dto.ts`).
+
+<ParamTable
+  label="Release request body"
+  fields={[
+    { name: "reason", type: "string", required: false, description: "Free-text reason recorded in the audit log as the after-payload of the RELEASE_REQUESTED entry. Omit the body entirely if you have no reason to record." },
+  ]}
+/>
+
+### Preconditions
+
+Checked in `ResolutionService.requestRelease` before any state change:
+
+1. The order exists, and has an escrow record — otherwise `400 INVALID_STATE` ("Order must have escrow").
+2. Order status is `IN_PROGRESS` — otherwise `400 INVALID_STATE`.
+3. No active dispute — see the note in [Known behavior](#known-behavior) below.
+4. Every milestone, if the order has any, is `COMPLETED` — otherwise `400 INVALID_STATE` naming the incomplete `milestoneRef` values.
+5. Escrow status is `FUNDED` — otherwise `400 INVALID_STATE`.
+6. `OrderStateMachine.assertTransition(IN_PROGRESS → RELEASE_REQUESTED)` (`packages/shared/src/utils`, transition table in `packages/shared/src/enums/order-status.enum.ts`).
+
+### Response
+
+<Badge variant="success">200</Badge> The updated order, already `CLOSED`, with its escrow set to `RELEASED`.
+
+<ResponseSchema
+  label="Release response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The order, including its escrow, dispute, and milestones relations (OrderWithRelations)." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.status", type: "string", required: true, description: "Order status after the release. CLOSED when the flow completes.", enum: ["RELEASE_REQUESTED", "RELEASED", "CLOSED"] },
+    { name: "data.data.amount", type: "string", required: true, description: "Order amount as a decimal string with two places." },
+    { name: "data.data.currency", type: "string", required: true, description: "Order currency, e.g. USD." },
+    { name: "data.data.buyerId", type: "string", required: true, description: "Buyer user ID — the approver and release signer." },
+    { name: "data.data.sellerId", type: "string", required: true, description: "Seller user ID — the credited party and milestone signer." },
+    { name: "data.data.escrow", type: "object", required: true, description: "Escrow record for the order.", nullable: true },
+    { name: "data.data.escrow.status", type: "string", required: true, description: "Escrow status; RELEASED once confirmRelease commits.", enum: ["CREATING", "CREATED", "FUNDING", "FUNDED", "RELEASED", "REFUNDED", "DISPUTED"] },
+    { name: "data.data.escrow.releasedAt", type: "string", required: false, description: "ISO 8601 timestamp of the release.", nullable: true },
+    { name: "data.data.milestones", type: "array", required: true, description: "Milestones included in the response; all must be COMPLETED before release." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+    { name: "meta.requestId", type: "string", required: true, description: "Your X-Request-ID, or the UUID v4 the server generated when you sent none." },
+    { name: "meta.timestamp", type: "string", required: false, description: "Server timestamp of the response." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_abc123",
+        clientOrderRef: null,
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "2500.00",
+        currency: "USD",
+        status: "CLOSED",
+        title: "Landing page build",
+        description: "Build a landing page",
+        metadata: null,
+        escrow: {
+          id: "esc_01JKL",
+          orderId: "ord_abc123",
+          trustlessContractId: "CCBSP2XK…",
+          status: "RELEASED",
+          amount: "2500.00",
+          terms: { milestones_required: true },
+          fundedAt: "2026-02-10T09:02:11.120Z",
+          releasedAt: "2026-02-17T16:40:02.881Z",
+          refundedAt: null,
+          createdAt: "2026-02-10T09:00:44.512Z",
+          updatedAt: "2026-02-17T16:40:02.881Z"
+        },
+        milestones: [
+          { id: "cm0design", orderId: "ord_abc123", milestoneRef: "design", title: "Design mockups", amount: "750.00", status: "COMPLETED" }
+        ],
+        createdAt: "2026-02-09T18:12:04.221Z",
+        updatedAt: "2026-02-17T16:40:02.900Z"
+      }
+    },
+    meta: { requestId: "req_7f3a1c", timestamp: "2026-02-17T16:40:03.004Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | Unknown or malformed body property (global `ValidationPipe`). |
+| `400` | `INVALID_STATE` | Order not `IN_PROGRESS`, escrow missing or not `FUNDED`, or a milestone is not `COMPLETED`. Raised as `InvalidResolutionStateException` (`exceptions/resolution.exceptions.ts`). |
+| `404` | `ORDER_NOT_FOUND` | No order with that ID (`OrderNotFoundException`, `apps/api/src/modules/orders/exceptions/orders.exceptions.ts`). |
+| `409` | `DISPUTE_ALREADY_OPEN` | A dispute that is not `RESOLVED` blocks the release (`ActiveDisputeException`). |
+| `500` | `INTERNAL_ERROR` | A Trustless Work call failed. The order is rolled back to `IN_PROGRESS` first. |
+
+```json
+{
+  "error": {
+    "code": "INVALID_STATE",
+    "message": "Order ord_abc123 is in state ORDER_CREATED, but IN_PROGRESS is required for this operation"
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Release examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/orders/ord_abc123/resolution/release" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -H "X-Request-ID: req_7f3a1c" \\
+  -d '{
+    "reason": "All milestones delivered and approved"
+  }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// reason is optional; sdk.orders.release(orderId, reason?)
+const result = await sdk.orders.release("ord_abc123", "All milestones delivered");
+
+// The HTTP client returns the parsed JSON body typed as the resource. With the
+// current ResponseInterceptor envelope that body is { data: { success, data }, meta },
+// so the order object sits one level down.
+const order = (result as any).data?.data ?? result;
+console.log(order.status); // "CLOSED"`
+    }
+  ]}
+/>
+
+## POST /api/v1/orders/:orderId/resolution/refund
+
+Returns the escrowed funds to the buyer. Because Trustless Work has no refund endpoint, `ResolutionService.requestRefund` disputes the contract and then resolves it with a 100% distribution to the buyer (`disputeEscrow` → `resolveDisputeForRefund`), before crediting the buyer's available balance (`BalanceService.creditAvailable`).
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "orderId", type: "string", required: true, description: "Order ID with the ord_ prefix, e.g. ord_abc123." },
+  ]}
+/>
+
+### Request body
+
+The body is **required** here — `@Body() dto: RequestRefundDto` (no `?`), validated against `apps/api/src/modules/resolution/dto/request-refund.dto.ts`.
+
+<ParamTable
+  label="Refund request body"
+  fields={[
+    { name: "reason", type: "string", required: true, description: "Non-empty reason for the refund, stored in the audit log. Validation is @IsString() + @IsNotEmpty(), so an empty string is rejected." },
+  ]}
+/>
+
+### Preconditions
+
+Identical to release, minus the milestone check: order exists, has an escrow, is `IN_PROGRESS`, has no active dispute, escrow is `FUNDED`, and `REFUND_REQUESTED` is reachable from `IN_PROGRESS`.
+
+### Response
+
+<Badge variant="success">200</Badge> The updated order, already `CLOSED`, with escrow `REFUNDED`.
+
+<ResponseSchema
+  label="Refund response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The order, including its escrow, dispute, and milestones relations." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.status", type: "string", required: true, description: "Order status after the refund. CLOSED when the flow completes.", enum: ["REFUND_REQUESTED", "REFUNDED", "CLOSED"] },
+    { name: "data.data.escrow.status", type: "string", required: true, description: "Escrow status; REFUNDED once confirmRefund commits.", enum: ["FUNDED", "REFUNDED"] },
+    { name: "data.data.escrow.refundedAt", type: "string", required: false, description: "ISO 8601 timestamp of the refund.", nullable: true },
+    { name: "data.data.milestones", type: "array", required: true, description: "Milestones included in the response. Refund does not require them to be COMPLETED." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_abc123",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "2500.00",
+        currency: "USD",
+        status: "CLOSED",
+        title: "Landing page build",
+        escrow: {
+          id: "esc_01JKL",
+          orderId: "ord_abc123",
+          trustlessContractId: "CCBSP2XK…",
+          status: "REFUNDED",
+          amount: "2500.00",
+          fundedAt: "2026-02-10T09:02:11.120Z",
+          releasedAt: null,
+          refundedAt: "2026-02-17T17:02:55.140Z",
+          createdAt: "2026-02-10T09:00:44.512Z",
+          updatedAt: "2026-02-17T17:02:55.140Z"
+        },
+        milestones: [],
+        createdAt: "2026-02-09T18:12:04.221Z",
+        updatedAt: "2026-02-17T17:02:55.402Z"
+      }
+    },
+    meta: { requestId: "req_91b2de", timestamp: "2026-02-17T17:02:55.510Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | `reason` missing, not a string, empty, or an unknown body property. |
+| `400` | `INVALID_STATE` | Order not `IN_PROGRESS`, escrow missing or not `FUNDED`. |
+| `404` | `ORDER_NOT_FOUND` | No order with that ID. |
+| `409` | `DISPUTE_ALREADY_OPEN` | A dispute that is not `RESOLVED` blocks the refund. |
+| `500` | `INTERNAL_ERROR` | A Trustless Work call failed; the order is rolled back to `IN_PROGRESS`. |
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "General validation error",
+    "details": {
+      "validationErrors": ["reason should not be empty"]
+    }
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Refund examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/orders/ord_abc123/resolution/refund" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "reason": "Seller never delivered the agreed scope"
+  }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// reason is required by RequestRefundDto
+const result = await sdk.orders.refund(
+  "ord_abc123",
+  "Seller never delivered the agreed scope",
+);
+
+const order = (result as any).data?.data ?? result;
+console.log(order.status, order.escrow?.status); // "CLOSED" "REFUNDED"`
+    }
+  ]}
+/>
+
+## POST /api/v1/orders/:orderId/resolution/dispute
+
+Freezes the escrow and opens a dispute. `ResolutionService.openDispute` creates the `Dispute` row, moves the order to `DISPUTED`, and marks the escrow `DISPUTED` in one serializable transaction. No on-chain transaction is sent — the Trustless Work contract is only touched later, when the dispute is resolved.
+
+The new dispute starts `OPEN` and then follows its own lifecycle through `/disputes/{id}/assign` and `/disputes/{id}/resolve`. See the [Dispute state machine](/docs/guide/state-machines#dispute).
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "orderId", type: "string", required: true, description: "Order ID with the ord_ prefix. The service reads the order from this path value; the body's orderId is only validated." },
+  ]}
+/>
+
+### Request body
+
+Validated against `OpenDisputeDto` (`apps/api/src/modules/resolution/dto/open-dispute.dto.ts`).
+
+<ParamTable
+  label="Dispute request body"
+  fields={[
+    { name: "orderId", type: "string", required: true, description: "Required by the DTO (@IsString + @IsNotEmpty) even though the service uses the path parameter. Send the same value as in the path — a mismatched body value is accepted by validation but ignored, because the transaction writes the path orderId." },
+    { name: "openedBy", type: "string", required: true, description: "Which party opened the dispute. Enum DisputeOpenedBy.", enum: ["BUYER", "SELLER"] },
+    { name: "reason", type: "string", required: true, description: "Dispute category. Enum DisputeReason.", enum: ["NOT_DELIVERED", "QUALITY_ISSUE", "OTHER"] },
+    { name: "evidence", type: "string[]", required: false, description: "Evidence references, typically URLs. Stored as JSON on the dispute record. Defaults to JSON null when omitted." },
+  ]}
+/>
+
+<Callout type="warning">
+  `orderId` in the body is mandatory: the global `ValidationPipe` runs with `whitelist: true` and the DTO field is not optional, so omitting it fails with `400 VALIDATION_ERROR` before the handler runs. The TypeScript SDK's `disputes.open(orderId, data)` sends only `{ openedBy, reason, evidence }` (`packages/sdk/src/resources/disputes.ts`) and therefore does not include it — with a stock SDK client this request returns `400 VALIDATION_ERROR`. Add `orderId` to the body object you pass in.
+</Callout>
+
+### Preconditions
+
+Checked in `ResolutionService.openDispute`: the order exists, its status is `IN_PROGRESS`, and no unresolved dispute exists for it (`validateCanOpenDispute` → `DisputeAlreadyExistsException`). Note that `resolveDispute` requires the dispute to be `UNDER_REVIEW`, so an `OPEN` dispute must be assigned via `POST /api/v1/disputes/{disputeId}/assign` before it can be resolved.
+
+### Response
+
+<Badge variant="success">201</Badge> The created dispute, with its `order` relation (the relation `include` in the create transaction), `status: "OPEN"`, and the order moved to `DISPUTED`.
+
+<ResponseSchema
+  label="Dispute response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The created dispute (DisputeWithRelations)." },
+    { name: "data.data.id", type: "string", required: true, description: "Dispute ID with the dsp_ prefix, generated by generateDisputeId()." },
+    { name: "data.data.orderId", type: "string", required: true, description: "Order the dispute belongs to." },
+    { name: "data.data.openedBy", type: "string", required: true, description: "Who opened the dispute.", enum: ["BUYER", "SELLER"] },
+    { name: "data.data.reason", type: "string", required: true, description: "Dispute category.", enum: ["NOT_DELIVERED", "QUALITY_ISSUE", "OTHER"] },
+    { name: "data.data.evidence", type: "string[]", required: false, description: "Evidence references as stored, or null when none were sent.", nullable: true },
+    { name: "data.data.status", type: "string", required: true, description: "Dispute status — OPEN right after creation.", enum: ["OPEN", "UNDER_REVIEW", "RESOLVED"] },
+    { name: "data.data.resolutionDecision", type: "string", required: false, description: "Set when the dispute is resolved: FULL_RELEASE, FULL_REFUND, or SPLIT.", enum: ["FULL_RELEASE", "FULL_REFUND", "SPLIT"], nullable: true },
+    { name: "data.data.decisionNote", type: "string", required: false, description: "Resolver note; null until the dispute is resolved.", nullable: true },
+    { name: "data.data.order", type: "object", required: false, description: "The order with its escrow, dispute, and milestones relations." },
+    { name: "data.data.order.status", type: "string", required: true, description: "DISPUTED — set in the same transaction as the dispute row.", enum: ["DISPUTED"] },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "dsp_01JKQ7",
+        orderId: "ord_abc123",
+        openedBy: "BUYER",
+        reason: "QUALITY_ISSUE",
+        evidence: ["https://files.example.com/revision-3.png"],
+        status: "OPEN",
+        resolutionDecision: null,
+        decisionNote: null,
+        order: {
+          id: "ord_abc123",
+          buyerId: "usr_buyer123",
+          sellerId: "usr_seller456",
+          amount: "2500.00",
+          currency: "USD",
+          status: "DISPUTED",
+          title: "Landing page build",
+          escrow: {
+            id: "esc_01JKL",
+            orderId: "ord_abc123",
+            trustlessContractId: "CCBSP2XK…",
+            status: "DISPUTED",
+            amount: "2500.00",
+            fundedAt: "2026-02-10T09:02:11.120Z"
+          },
+          milestones: []
+        },
+        createdAt: "2026-02-16T11:20:09.004Z",
+        updatedAt: "2026-02-16T11:20:09.004Z"
+      }
+    },
+    meta: { requestId: "req_4d0f81", timestamp: "2026-02-16T11:20:09.180Z" }
+  }}
+/>
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | Missing `orderId` / `openedBy` / `reason`, an unknown enum value, a non-array `evidence`, or an unknown body property. |
+| `400` | `INVALID_STATE` | Order not `IN_PROGRESS` (`InvalidResolutionStateException`). |
+| `404` | `ORDER_NOT_FOUND` | No order with that ID. |
+| `409` | `DISPUTE_ALREADY_OPEN` | A dispute for this order exists and is not `RESOLVED` (`DisputeAlreadyExistsException`). |
+
+```json
+{
+  "error": {
+    "code": "DISPUTE_ALREADY_OPEN",
+    "message": "Order ord_abc123: Dispute already exists for this order"
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Dispute examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST "http://localhost:4000/api/v1/orders/ord_abc123/resolution/dispute" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "orderId": "ord_abc123",
+    "openedBy": "BUYER",
+    "reason": "QUALITY_ISSUE",
+    "evidence": ["https://files.example.com/revision-3.png"]
+  }'`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// OpenDisputeDto marks orderId as required, so include it in the body object
+// even though the endpoint reads the order from the path.
+const result = await sdk.disputes.open("ord_abc123", {
+  orderId: "ord_abc123",
+  openedBy: "BUYER",
+  reason: "QUALITY_ISSUE",
+  evidence: ["https://files.example.com/revision-3.png"],
+});
+
+const dispute = (result as any).data?.data ?? result;
+console.log(dispute.id, dispute.status); // "dsp_01JKQ7" "OPEN"
+
+// The dispute must be assigned before it can be resolved.
+await sdk.disputes.assign(dispute.id, { assignedTo: "agent_support01" });`
+    }
+  ]}
+/>
+
+## Error codes for this group
+
+Every code below is defined once in `packages/shared/src/constants/error-codes.ts` and rendered by `GlobalExceptionFilter`.
+
+| Code | HTTP | Endpoints | Meaning |
+| --- | --- | --- | --- |
+| `VALIDATION_ERROR` | `400` | all | DTO validation failed; `details.validationErrors` lists the messages. |
+| `INVALID_STATE` | `400` | all | Order status, escrow status, or dispute state does not allow the operation. |
+| `ORDER_NOT_FOUND` | `404` | all | Unknown `orderId`. |
+| `DISPUTE_ALREADY_OPEN` | `409` | `release`, `refund`, `dispute` | A dispute that is not `RESOLVED` blocks the operation. |
+| `INTERNAL_ERROR` | `500` | all | Provider or database failure; provider-driven rollbacks are described per endpoint. |
+
+<Callout type="note">
+  `INVALID_STATE` is raised as a `BadRequestException` (HTTP `400`) by `InvalidResolutionStateException` and `InvalidDisputeStateException`, even though the shared catalog's `ERROR_HTTP_STATUS` table maps `INVALID_STATE` to `409`. Trust the HTTP status you receive, not the catalog table, and branch on `error.code`.
+</Callout>
+
+## Known behavior
+
+<Callout type="warning">
+  The "no active dispute" precondition on **release** and **refund** does not currently trigger. `ResolutionService.validateNoActiveDispute` inspects `order.dispute`, but `OrdersService.getOrder` loads only `escrow` and `milestones` (`apps/api/src/modules/orders/orders.service.ts`), so the field is always `undefined` and `ActiveDisputeException` is never raised from those two endpoints. A dispute opened on an order still blocks both operations in practice, because `openDispute` moves the order to `DISPUTED` and the `IN_PROGRESS` check then rejects the call with `400 INVALID_STATE`.
+</Callout>
+
+## Related
+
+- [Escrow Endpoints](/docs/api-reference/escrow) — `POST /api/v1/orders/{id}/escrow` and `POST /api/v1/orders/{id}/escrow/fund`, the flows that must run before any resolution call
+- [API Reference overview](/docs/api-reference/overview) — base URL, headers, error envelope, idempotency, and pagination
+- [Events (SSE)](/docs/api-reference/events) — `order.release_requested`, `order.released`, `order.refund_requested`, `order.refunded`, `order.closed`, `dispute.opened`, and `dispute.resolved`
+- [Disputes Guide](/docs/guide/disputes) — assign, review, and resolve with `FULL_RELEASE`, `FULL_REFUND`, or `SPLIT`
+- [Escrow Guide](/docs/guide/escrow) and [Escrow Flows](/docs/guide/escrow-flows) — contract roles and the full money movement

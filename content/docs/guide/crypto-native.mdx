@@ -1,0 +1,346 @@
+---
+title: Crypto-Native (Stellar) Provider
+description: Comprehensive architecture, security model, and operations guide for OFFER-HUB's default crypto-native payment provider using invisible Stellar wallets and Trustless Work escrow.
+order: 28
+section: Guides
+---
+
+<Callout type="note">
+  This guide covers the default `PAYMENT_PROVIDER=crypto` architecture in the OFFER-HUB Orchestrator. Every workflow, controller, DTO, and database model described below is verified directly against the production implementation in [`apps/api`](https://github.com/OFFER-HUB/OFFER-HUB/tree/main/apps/api) and [`packages/database`](https://github.com/OFFER-HUB/OFFER-HUB/tree/main/packages/database).
+</Callout>
+
+## Overview
+
+OFFER-HUB is built around a provider-agnostic core governed by the `PaymentProvider` interface (Strategy Pattern). While traditional fiat rails often demand complex underwriting or enterprise volume commitments, OFFER-HUB ships with **Crypto-Native (`PAYMENT_PROVIDER=crypto`)** as its default implemented payment rail.
+
+The architecture combines **server-managed invisible Stellar wallets** (while exposing a familiar USD-denominated balance experience to users) with **decentralized smart contracts on the Stellar Network** via [Trustless Work](https://trustlesswork.com) (for non-custodial escrow settlement).
+
+---
+
+## Provider Comparison: AirTM vs. Crypto-Native
+
+OFFER-HUB abstracts payment provider mechanics through the `PaymentProvider` strategy interface. Below is an architectural comparison between the default crypto-native provider and the AirTM fiat integration:
+
+| Feature / Dimension | Crypto-Native | AirTM |
+|:--------------------|:-------------:|:-----:|
+| **Status** | Default `PaymentProvider`; `PAYMENT_PROVIDER=crypto` | AirTM modules and endpoints are implemented independently; `PAYMENT_PROVIDER=airtm` is not currently supported |
+| **Settlement Currency** | **USDC** (Circle-backed stablecoin on Stellar) | Fiat USD (Local currency converted) |
+| **Wallet Custody** | Server-managed (AES-256-GCM encrypted in DB; Orchestrator signs on user behalf) | User-linked external AirTM account |
+| **Escrow Layer** | Non-custodial Soroban smart contracts via **Trustless Work** | Same Trustless Work escrow layer; AirTM provides fiat funding and payout rails |
+| **Prerequisites** | Self-hosted Orchestrator and Stellar infrastructure | AirTM Enterprise partner agreement and corporate credentials |
+| **Settlement** | On-chain Stellar transaction, observed through Horizon | AirTM cashier and payout rails |
+| **Network Fees** | Stellar transaction fee paid in XLM | Variable fee margins per cashier and payout rail |
+| **User Onboarding** | Invisible Stellar wallet generated on registration | External AirTM account registration and fiat KYC |
+| **Dispute Execution** | Trustless Work dispute, refund, and split-resolution operations on-chain | Same Trustless Work escrow dispute flow; AirTM handles fiat-rail payment issues separately |
+
+<Callout type="tip">
+  **`PAYMENT_PROVIDER=crypto`** is the currently implemented `PaymentProvider` strategy and the default when `PAYMENT_PROVIDER` is unset.
+</Callout>
+
+---
+
+## Invisible Stellar Wallets
+
+A primary design challenge of decentralized marketplace payments is user experience. Traditional Web3 workflows often require users to install wallet software, manage recovery credentials, hold native gas tokens (XLM), and manually approve transaction signatures.
+
+OFFER-HUB addresses this with **Invisible Wallets** managed server-side by [`WalletService`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/wallet/wallet.service.ts).
+
+### Why Server-Side Wallets Instead of Browser Extensions?
+
+Marketplace workflows require programmatic and asynchronous transaction signing that client-side browser wallets cannot accommodate:
+
+1. **Automated Escrow Operations:** Marketplace workflows can require transaction signatures during server-side order, escrow, and dispute-resolution flows without an active browser session.
+2. **Dispute Resolution:** The platform wallet acts as the `disputeResolver` for refund and split-resolution operations.
+3. **Background Processing:** Server-side services process blockchain, reconciliation, and payment events independently of the user's browser session.
+4. **Familiar User Experience:** Buyers and sellers interact with numerical USD balances, deposit addresses, and withdrawal buttons without having to understand blockchain mechanics.
+
+### Custodial Model Distinction
+
+It is important to distinguish between the two layers of the system:
+
+* **Wallet Layer (Custodial):** User keypairs are generated and held server-side by the marketplace Orchestrator. Private keys are encrypted at rest with AES-256-GCM. The platform acts as a custodian for these keys to sign on the user's behalf.
+* **Escrow Layer (Non-Custodial):** Once funds are committed to an order, they leave the user's balance and are locked directly into a Soroban smart contract operated by Trustless Work. Neither the marketplace operator nor the buyer/seller can unilaterally drain escrowed funds outside contract rules.
+
+### Wallet Lifecycle
+
+```
+POST /api/v1/users
+       │
+       ▼
+UsersService.createUser()
+       │
+       ▼
+WalletService.createWallet(userId)
+       │
+       ├─► Generates Stellar Keypair (Keypair.random())
+       │   ├─ PublicKey: Stored plaintext (e.g., GCV24...)
+       │   └─ SecretKey: Encrypted via AES-256-GCM (SXXXX...)
+       │
+       ▼
+Wallet record saved to PostgreSQL (iv:authTag:ciphertext)
+```
+
+1. **Registration:** When a user is created via `POST /api/v1/users` ([`UsersController`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/users/users.controller.ts) validating with `CreateUserDto`), `UsersService.createUser()` delegates to `WalletService.createWallet()`.
+2. **Stellar Keypair Generation:** The service generates a fresh Stellar keypair using the official `stellar-sdk`.
+3. **Encryption at Rest:** The secret seed is encrypted immediately before hitting the database (`model Wallet` in Prisma, stored in the `secretEncrypted` field).
+4. **Permanent Deposit Address:** The user's public key becomes their permanent deposit address, queryable via `GET /api/v1/users/{userId}/wallet/deposit` ([`WalletController`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/wallet/wallet.controller.ts)).
+
+---
+
+## Security Model & AES-256-GCM Encryption
+
+The security of the crypto-native provider relies on strict separation between the persistent encrypted data in the database and the cryptographic encryption key stored in the runtime environment.
+
+### Encryption Architecture
+
+The encryption utility in [`apps/api/src/utils/crypto.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/utils/crypto.ts) implements:
+
+* **Algorithm:** Advanced Encryption Standard in Galois/Counter Mode (**AES-256-GCM**), providing authenticated encryption with associated data (AEAD).
+* **Key Length:** 256 bits (32 bytes, represented as a 64-character hexadecimal string).
+* **Initialization Vector (IV):** A 16-byte (128-bit) cryptographically random IV generated via `crypto.randomBytes(16)` for each encryption operation.
+* **Authentication Tag:** A 16-byte (128-bit) GCM authentication tag that verifies the integrity and authenticity of the ciphertext.
+* **Database Storage Format:** Serialized as three colon-separated hexadecimal strings: `iv:authTag:ciphertext`.
+
+```
+Plaintext Stellar Secret Key (S...)
+            +
+WALLET_ENCRYPTION_KEY (32-byte / 64-hex env var)
+            +
+Random 16-byte IV (crypto.randomBytes(16))
+            │
+            ▼
+    [ AES-256-GCM Cipher ]
+            │
+            ▼
+  IV (hex) : Auth Tag (hex) : Ciphertext (hex)
+            │
+            ▼
+Database format: "iv:authTag:ciphertext"
+```
+
+### In-Memory Decryption Lifecycle
+
+`WalletService` is designed to prevent persistent exposure of secret material: decrypted private keys are not stored in persistent database tables, returned in API response bodies, or printed in standard application loggers:
+
+1. When an operation requires a signature, `WalletService.signTransaction()` retrieves the encrypted record from the database.
+2. The service decrypts the secret key in memory using `WALLET_ENCRYPTION_KEY` from the environment.
+3. `stellar-sdk`'s `Keypair.fromSecret()` signs the transaction envelope XDR.
+4. The decrypted secret is used in memory to construct a Stellar keypair for signing via `Keypair.fromSecret()`. The current implementation does not explicitly zeroize sensitive key material in memory; it relies on standard runtime variable scoping and engine garbage collection.
+
+### Generating `WALLET_ENCRYPTION_KEY`
+
+To generate a cryptographically secure 32-byte hex key for your environment:
+
+<CommandLine>node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</CommandLine>
+
+Add the generated value to your environment configuration (each environment must generate its own unique key):
+
+```env
+# Replace with your newly generated 64-character hex key
+WALLET_ENCRYPTION_KEY=<your-64-character-hex-key>
+```
+
+<Callout type="danger">
+  Treat `WALLET_ENCRYPTION_KEY` with the highest sensitivity. If this key is lost, all user private keys in the database become cryptographically unrecoverable, preventing the Orchestrator from signing further transactions for those wallets. While smart contract escrow recovery depends on the specific contract rules, dispute resolver signers, and timeout clauses, available wallet balances become permanently inaccessible.
+</Callout>
+
+---
+
+## Horizon Monitoring & Deposit Detection
+
+OFFER-HUB automatically tracks incoming deposits without asking users to submit transaction hashes or proofs of payment.
+
+### `BlockchainMonitorService` Flow
+
+The orchestrator includes a background listener service ([`BlockchainMonitorService`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/wallet/blockchain-monitor.service.ts)) that subscribes to Stellar's Horizon Server to detect incoming deposits and credit user balances:
+
+1. **Horizon Stream:** During module initialization (`onModuleInit`), `BlockchainMonitorService` queries existing active wallets in the database and establishes a connection to the Horizon SSE payment stream endpoint (`/accounts/:publicKey/payments?cursor=now`) for each account.
+2. **Asset Validation:** The stream processor verifies that:
+   * The incoming asset code matches the configured `STELLAR_USDC_ASSET_CODE` (defaults to `USDC`).
+   * The asset issuer matches the configured `STELLAR_USDC_ISSUER`.
+   * The recipient account matches the user's public key.
+3. **Atomic Balance Update:** Upon verification, `BlockchainMonitorService` executes a `prisma.$transaction` that atomically credits the user's `available` balance and creates an immutable payment record containing the transaction hash.
+4. **Deduplication Semantics:** To prevent duplicate credits, the service maintains an in-memory set (`processedTxHashes`) for immediate stream filtering and queries the database for existing payment records before initiating the transaction. A unique database constraint on the transaction hash acts as the definitive lock, automatically aborting concurrent duplicate attempts.
+5. **Stream Operational Limits:** Because the stream initializes with `cursor('now')`, payments received while the monitoring service is offline, restarting, or disconnected are not replayed automatically by the Horizon stream. Furthermore, because streams are established on service startup, newly created user wallets are tracked upon service restart or monitor re-subscription rather than instant real-time registration.
+
+<Callout type="note">
+  **Multi-Operation Transaction Caveat:** Deposit deduplication currently operates at the transaction-hash level rather than the individual Stellar operation-ID level. Stellar transactions containing multiple relevant payment operations therefore require special operational handling to avoid incorrect accounting.
+</Callout>
+
+<Callout type="warning">
+  **Operational Balance Reconciliation:** Because Horizon SSE streams with `cursor('now')` do not automatically ingest historical missed deposits after process downtime, discrepancies between the Stellar on-chain account balance and the internal PostgreSQL available balance can arise if deposits occur while the service is down. Operators should maintain high service availability and implement periodic off-chain reconciliation scripts (comparing Horizon balance queries against internal balances) to detect and credit unrecorded deposits.
+</Callout>
+
+---
+
+## USDC Asset & Network Settings
+
+OFFER-HUB uses USDC issued on the Stellar network. Stellar uses specific account addresses to identify non-native asset issuers.
+
+### Network Configuration Matrix
+
+| Setting | Stellar Testnet (Development) | Stellar Mainnet (Production) |
+|:--------|:------------------------------|:-----------------------------|
+| `STELLAR_NETWORK` | `testnet` | `mainnet` |
+| **Horizon API URL** | `https://horizon-testnet.stellar.org` | `https://horizon.stellar.org` |
+| **Network Passphrase** | `Test SDF Network ; September 2015` | `Public Global Stellar Network ; September 2015` |
+| **USDC Asset Code** | `USDC` | `USDC` |
+| **Circle USDC Issuer** | `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5` | `GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN` |
+| **Funding Source** | Stellar Friendbot (automated in testnet) | Real XLM & Circle USDC deposit |
+
+### Account Trustlines
+
+Before any Stellar account can hold a custom token like USDC, it must establish a trustline with the token's issuing account using the `changeTrust` operation.
+
+* **Testnet Automation:** When a wallet is initialized or funded in testnet, `WalletService.createWallet()` invokes Friendbot and calls `setupTestTrustline()` from `testnet.utils.ts`, executing a `changeTrust` operation targeting the configured `STELLAR_USDC_ISSUER`.
+* **Mainnet Operational Procedure:** In production mainnet, `WalletService.setupTrustline(userId)` exists on `WalletService` as an independent helper containing the logic to sign and submit a `changeTrust` operation for an active user, but [`WalletController`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/wallet/wallet.controller.ts) intentionally does not expose an unauthenticated public route for trustlines. On Mainnet, operators have two execution options:
+  1. **Programmatic / Internal Script:** Invoke `WalletService.setupTrustline(userId)` within an internal onboarding worker or provisioning script using the Orchestrator's internal service container.
+  2. **External Transaction / Relayer:** Submit a Stellar transaction envelope containing a `ChangeTrustOperation` signed by the user's secret key (or funded via a sponsor account) using the `stellar-sdk`.
+
+---
+
+## Testnet to Mainnet Migration Guide
+
+Follow this step-by-step checklist when promoting your OFFER-HUB Orchestrator deployment from staging/testnet to production mainnet.
+
+<Callout type="warning">
+  **Network Isolation:** Switching from testnet to mainnet does not transfer testnet balances or automatically recreate accounts on the public ledger. Mainnet deployment should occur in an isolated production environment with a clean database and dedicated production keys.
+</Callout>
+
+### Step 1: Update Environment Variables
+
+Update your production `.env` or container orchestration secret manager:
+
+```env
+# Provider Selection
+PAYMENT_PROVIDER=crypto
+
+# Stellar Mainnet Configuration
+STELLAR_NETWORK=mainnet
+STELLAR_HORIZON_URL=https://horizon.stellar.org
+STELLAR_USDC_ASSET_CODE=USDC
+STELLAR_USDC_ISSUER=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+
+# Production Wallet Encryption Key (never reuse testnet keys! Generate a unique 64-hex key)
+WALLET_ENCRYPTION_KEY=<your-64-character-hex-key>
+
+# Trustless Work Mainnet API
+TRUSTLESS_API_URL=https://api.trustlesswork.com/v1
+TRUSTLESS_API_KEY=your_key_id.your_key_secret
+TRUSTLESS_WEBHOOK_SECRET=tw_whsec_your_actual_webhook_secret
+```
+
+### Step 2: Bootstrap the Platform Account
+
+Before the first API startup, run the Orchestrator bootstrap script:
+
+<CommandLine>npm run bootstrap</CommandLine>
+
+The bootstrap process creates the platform user and its Stellar wallet, then outputs the `PLATFORM_USER_ID` value that must be added to the production environment:
+
+```env
+PLATFORM_USER_ID=<generated-platform-user-id>
+```
+
+`BootstrapValidatorService` validates at application startup that the configured user exists in PostgreSQL and has an active Stellar wallet.
+
+Fund the account with sufficient native XLM to satisfy the Stellar account reserve, trustline subentry reserve, and transaction fees.
+
+<Callout type="warning">
+  **Mainnet Wallet Provisioning Prerequisite:** In testnet, `WalletService.createWallet()` invokes Friendbot to automatically fund accounts and establish the USDC trustline. On Mainnet, Friendbot does not exist. `createWallet()` only generates the keypair and stores `secretEncrypted` in the database. Before any Mainnet account can receive USDC, it must first be activated on-chain with sufficient native XLM to satisfy the Stellar account reserve, trustline subentry reserve, and transaction fees.
+</Callout>
+
+### Step 3: Run Validation Smoke Tests
+
+Before onboarding live buyers:
+
+1. **Bootstrap an API Key:** Generate a scoped API key using your master key:
+   ```bash
+   curl -X POST https://api.yourmarketplace.com/api/v1/auth/api-keys \
+     -H "Authorization: Bearer $OFFERHUB_MASTER_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "name": "Mainnet Smoke Test",
+       "scopes": ["read", "write"]
+     }'
+   ```
+   Save the returned key (e.g., `ohk_live_...`) to your shell environment:
+   ```bash
+   export API_KEY="ohk_live_..."
+   ```
+2. **Create Test Account:** Register a test user via `POST /api/v1/users`:
+   ```bash
+   curl -X POST https://api.yourmarketplace.com/api/v1/users \
+     -H "Authorization: Bearer $API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "externalUserId": "test-buyer-001",
+       "email": "test-buyer@yourmarketplace.com",
+       "type": "BUYER"
+     }'
+   ```
+3. **Retrieve Deposit Address:** Query `GET /api/v1/users/{userId}/wallet/deposit` to get their Stellar public address:
+   ```bash
+   curl https://api.yourmarketplace.com/api/v1/users/usr_test123/wallet/deposit \
+     -H "Authorization: Bearer $API_KEY"
+   ```
+4. **Provision the Account on Mainnet:**
+   * **Fund with Native XLM:** Transfer sufficient native XLM from your external funding wallet to the user's deposit address to satisfy the Stellar account reserve, trustline subentry reserve, and transaction fees.
+   * **Establish USDC Trustline:** Establish a trustline for `STELLAR_USDC_ASSET_CODE` with issuer `STELLAR_USDC_ISSUER`. Because `WalletController` does not expose an unauthenticated public route for trustlines, execute this operation using one of two approaches:
+     * **Internal Service Invocation:** Call `WalletService.setupTrustline(userId)` inside an administrative script or internal onboarding pipeline.
+     * **Stellar SDK Script:** Submit a `ChangeTrustOperation` targeting `STELLAR_USDC_ISSUER` signed with the account's keypair.
+5. **Verify Monitor Attachment & Deposit Test USDC:** Because `BlockchainMonitorService` establishes Horizon SSE stream connections during module initialization (`onModuleInit`), restart the Orchestrator (or trigger monitor re-subscription) to ensure the newly provisioned test wallet is actively streamed. Then transfer **$1.00 USDC** (Mainnet) from an external exchange or wallet to the deposit address. If USDC is transferred before the trustline is confirmed on-chain, the Stellar network will reject the transaction with `op_no_trust`.
+6. **Verify Deposit Detection:** Check that `BlockchainMonitorService` detects the payment and credits the user's available balance:
+   ```bash
+   curl https://api.yourmarketplace.com/api/v1/users/usr_test123/balance \
+     -H "Authorization: Bearer $API_KEY"
+   ```
+7. **Execute Test Withdrawal:** Submit a test withdrawal of **$0.50 USDC** via `POST /api/v1/withdrawals` ([`WithdrawalsController`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/withdrawals.controller.ts) validating with [`CreateWithdrawalDto`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts) under `ApiKeyGuard`). Ensure that the destination wallet address (`destinationRef`) is also an active account on Stellar Mainnet with an established USDC trustline (`STELLAR_USDC_ISSUER`); otherwise, the outbound transfer will fail on-chain with `op_no_trust`:
+   ```bash
+   curl -X POST https://api.yourmarketplace.com/api/v1/withdrawals \
+     -H "Authorization: Bearer $API_KEY" \
+     -H "Content-Type: application/json" \
+     -H "Idempotency-Key: $(uuidgen)" \
+     -d '{
+       "userId": "usr_test123",
+       "amount": "0.50",
+       "currency": "USD",
+       "destinationType": "crypto",
+       "destinationRef": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"
+     }'
+   ```
+   <Callout type="note">
+     `CreateWithdrawalDto` requires `destinationType: "crypto"` and `destinationRef` containing the destination Stellar address. Unlike the AirTM flow, crypto-native withdrawals are executed synchronously and do not require a separate commit step. The service deducts the available balance, submits the Stellar payment through the configured provider, and returns `WITHDRAWAL_COMPLETED` on success. If submission fails, it attempts to restore the available balance and marks the withdrawal as failed.
+   </Callout>
+
+---
+
+## Key Management, Backups & Disaster Recovery
+
+Operating an invisible wallet infrastructure places custodial responsibility on the marketplace host. Adhere to these industry best practices:
+
+### Backup Strategy
+
+* **Two-Location Rule:** Back up the PostgreSQL database and the `WALLET_ENCRYPTION_KEY` in completely separate security perimeters.
+* **Encrypted Backups:** Store encrypted PostgreSQL snapshots (containing the encrypted wallet ciphertext) on cloud storage with immutability/WORM policies.
+* **Secrets Management:** Store `WALLET_ENCRYPTION_KEY` in dedicated secrets infrastructure (such as AWS Secrets Manager, Google Cloud Secret Manager, or HashiCorp Vault), never inside repository git tracking or application containers.
+
+### Key Rotation Procedure
+
+Because the cryptographic functions in `crypto.ts` read `WALLET_ENCRYPTION_KEY` directly from `process.env`, rotating the encryption key cannot be done via an in-app runtime call. Key rotation requires an operational migration procedure using a dedicated script:
+
+1. **Backup & Verification:** Take an encrypted snapshot of the PostgreSQL database and verify backup restoration in an isolated staging environment before proceeding.
+2. **Maintenance Mode:** Temporarily place the Orchestrator into maintenance mode or pause inbound transaction handling to prevent concurrent writes.
+3. **Execute Re-encryption Migration:** Run a dedicated offline migration script that loads both `OLD_WALLET_ENCRYPTION_KEY` and `NEW_WALLET_ENCRYPTION_KEY`. The script iterates through `wallet.secretEncrypted`, decrypts each record with the old key, re-encrypts the secret seed with the new key (generating a fresh 16-byte IV and auth tag in `iv:authTag:ciphertext` format), and commits the updates in batches inside `prisma.$transaction`.
+4. **Update Runtime Secret:** Update the production environment variable to `WALLET_ENCRYPTION_KEY=new_key`.
+5. **Verification & Restart:** Perform a smoke test decryption check, restart the Orchestrator, and securely archive or destroy the obsolete key only after verifying operational stability.
+
+---
+
+## Next Steps
+
+- [Wallets Guide](/docs/guide/wallets) — User-facing invisible wallet integration and balance overview
+- [Deposits Guide](/docs/guide/deposits) — Flow of funds for incoming USDC transactions
+- [Withdrawals Guide](/docs/guide/withdrawals) — Outbound payout pipeline to external Stellar addresses
+- [Escrow Lifecycle](/docs/guide/escrow) — Detailed Soroban escrow states and Trustless Work contract execution
+- [Configuration Reference](/docs/configuration) — Complete environment variables catalog

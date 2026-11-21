@@ -2,6 +2,8 @@
 title: Self-Hosting
 description: Deploy and operate the OFFER-HUB Orchestrator on your own infrastructure.
 order: 8
+description: Complete instructions for deploying OFFER-HUB Orchestrator on your own infrastructure using Docker.
+order: 25
 section: Guides
 ---
 
@@ -35,6 +37,13 @@ flowchart LR
 - **PostgreSQL** — users, balances, orders, escrows, disputes and audit records.
 - **Redis** — job queues, idempotency records and rate limiting.
 - **External providers** — Stellar RPC, Trustless Work for escrow, BlindPay for off-ramp.
+The API runs alongside PostgreSQL and Redis, and connects to the Stellar network.
+
+The topology is verified against the Orchestrator root `docker-compose.yml`, `apps/api/src/main.ts`, and `apps/api/src/modules/webhooks/webhooks.controller.ts`: Compose provides PostgreSQL and Redis while the API hosts both REST endpoints and inbound webhook handling.
+
+## Docker Setup
+
+### Project Structure
 
 You do not run a second worker process. The API process consumes the queues.
 
@@ -110,6 +119,13 @@ npm run build
 ```
 
 Run the API with the environment from your secret store:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4000` | HTTP server port |
+| `LOG_LEVEL` | `info` | Logging level: `debug`, `info`, `warn`, `error` |
+| `PAYMENT_PROVIDER` | `crypto` | Payment mode for the `PaymentProvider` strategy. Only `crypto` is implemented — `airtm` throws at startup |
+| `STELLAR_NETWORK` | `testnet` | Stellar network: `testnet` or `mainnet` |
+| `STELLAR_USDC_ISSUER` | Testnet issuer | USDC asset issuer address |
 
 <CommandLine>npm start</CommandLine>
 
@@ -265,3 +281,8 @@ The API process runs BullMQ queues for provider webhooks, reconciliation and not
 - [Background Jobs](/docs/guide/background-jobs) — queues and reconciliation
 - [Troubleshooting](/docs/guide/troubleshooting) — symptom-to-fix reference
 - [API Reference](/docs/api-reference/overview) — endpoint surface
+- [Configuration](/docs/configuration) — Full environment variable reference
+- [Quick Start](/docs/guide/quick-start) — Make your first API call
+- [Data Model](/docs/guide/data-model) — Every database table and relationship
+- [API Reference](/docs/api-reference/overview) — Explore all endpoints
+- [Events (SSE)](/docs/api-reference/events) — SSE event stream and event catalog

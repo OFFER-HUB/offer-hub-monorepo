@@ -1,7 +1,7 @@
 ---
 title: CLI Tool
-description: Install and use the @offerhub/cli to manage API keys, configuration, and maintenance from the command line.
-order: 2
+description: Install and use the @offerhub/cli to manage API keys, inspect configuration, and understand CLI capabilities and API availability.
+order: 24
 section: Guides
 ---
 
@@ -9,6 +9,10 @@ The `@offerhub/cli` package provides a command-line interface for managing a sel
 
 <Callout type="tip">
   Bootstrap an instance in seconds: install the CLI, point it at your Orchestrator, and run `offerhub keys create`.
+The `@offerhub/cli` package provides a command-line interface for managing the OFFER-HUB Orchestrator. It offers rapid configuration inspection and API key creation from the terminal without writing raw `curl` commands.
+
+<Callout type="tip">
+  For developers integrating marketplaces, the CLI is the fastest way to generate initial API keys after bootstrapping your Orchestrator instance. Install it, run `offerhub keys create`, and you have a usable API key in seconds.
 </Callout>
 
 ## Installation
@@ -17,85 +21,107 @@ The `@offerhub/cli` package provides a command-line interface for managing a sel
 # Global installation
 npm install -g @offerhub/cli
 
-# Or run directly with npx (no install required)
+# Or run directly via npx (no install required)
 npx @offerhub/cli
 ```
 
 The CLI registers a single binary: `offerhub`.
 
+---
+
 ## Configuration
 
-The CLI resolves configuration from three sources, checked in order:
+The CLI resolves its connection settings from three sources, evaluated in strict priority order (`packages/cli/src/utils/config.ts:loadConfig`):
 
 | Priority | Source | Details |
 |----------|--------|---------|
-| 1 | Environment variables | `OFFERHUB_API_URL` and `OFFERHUB_API_KEY` |
-| 2 | `.env` file | In the current working directory |
-| 3 | Global config file | `~/.offerhub/config.json` |
+| **1** | Environment variables | `OFFERHUB_API_URL` and `OFFERHUB_API_KEY` in the current shell environment |
+| **2** | `.env` file | `.env` file in the current working directory (loaded via `dotenv`) |
+| **3** | Global config file | `~/.offerhub/config.json` |
 
-### Option 1: Environment Variables
-
-<CommandLine>export OFFERHUB_API_URL=http://localhost:4000</CommandLine>
-
-<CommandLine>export OFFERHUB_API_KEY=ohk_live_your_api_key</CommandLine>
-
-### Option 2: Interactive Setup
+### Setting Environment Variables
 
 Run the interactive setup wizard — it prompts for your API URL and API key, then saves everything to `~/.offerhub/config.json`:
 
 <CommandLine>offerhub config set</CommandLine>
+```bash
+export OFFERHUB_API_URL=http://localhost:4000
+export OFFERHUB_API_KEY=ohk_live_your_api_key
+```
 
-You can also pass values directly:
+### Global Configuration (`~/.offerhub/config.json`)
 
-<CommandLine>offerhub config set --api-url http://localhost:4000 --api-key ohk_live_your_api_key</CommandLine>
+You can save default connection settings to `~/.offerhub/config.json` so you do not need to export environment variables in every shell session.
 
-### View Current Configuration
+```json
+{
+  "apiUrl": "http://localhost:4000",
+  "apiKey": "ohk_master_your_master_or_admin_key",
+  "paymentProvider": "crypto"
+}
+```
 
-<CommandLine>offerhub config show</CommandLine>
+---
 
 ## Commands
 
-### Config
-
-Manage CLI configuration.
+### Config Commands
 
 #### `offerhub config set`
 
-Set API configuration interactively or via flags.
+Configure connection settings interactively or non-interactively via flags.
 
 ```bash
 # Interactive — prompts for URL and key
+# Interactive setup (prompts for API URL, API key, and payment provider)
 offerhub config set
 
-# Non-interactive — pass all values as flags
-offerhub config set --api-url http://localhost:4000 --api-key ohk_live_xxx
+# Non-interactive setup via flags
+offerhub config set --api-url http://localhost:4000 --api-key ohk_master_xxx
 ```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `--api-url <url>` | String | Orchestrator API base URL (default: `http://localhost:3000` interactively) |
+| `--api-key <key>` | String | Master key or administrative API key |
+
+When run interactively in `crypto` mode, the wizard also generates and displays a random 32-byte hex `WALLET_ENCRYPTION_KEY` suitable for your Orchestrator `.env`.
 
 #### `offerhub config show`
 
 Display the current configuration (API URL and masked key).
+Displays the active configuration (API URL, masked key, payment provider, and file path of `~/.offerhub/config.json`).
 
-```bash
-offerhub config show
+<CommandLine>offerhub config show</CommandLine>
+
+Output:
+
 ```
+Current Configuration:
+
+API URL: http://localhost:4000
+API Key: ohk_master...
+Payment: crypto (default)
+
+Config file: /Users/username/.offerhub/config.json
+```
+
+---
 
 ### API Key Management
 
 #### `offerhub keys list`
 
-List all API keys. Optionally filter by user ID.
+List all API keys stored in the Orchestrator database.
 
 ```bash
-# List all keys
+# List all API keys
 offerhub keys list
-
-# Filter by user ID
-offerhub keys list --user-id usr_abc123
 ```
 
-| Flag | Description |
-|------|-------------|
-| `-u, --user-id <userId>` | Filter keys by user ID |
+| Option | Description | API Availability |
+|--------|-------------|------------------|
+| `-u, --user-id <userId>` | Filter keys by user ID | **Not supported in API**. `AuthController.listApiKeys` (`apps/api/src/modules/auth/auth.controller.ts:36-47`) only accepts pagination parameters (`limit`, `cursor`). API keys are platform/tenant-level credentials rather than per-user keys. The `--user-id` flag is ignored by the backend. |
 
 Output:
 
@@ -103,7 +129,7 @@ Output:
 ┌──────────┬─────────────┬──────────┬───────────────┬────────────┬───────────┐
 │ ID       │ Key         │ User ID  │ Scopes        │ Created    │ Last Used │
 ├──────────┼─────────────┼──────────┼───────────────┼────────────┼───────────┤
-│ key_abc  │ ohk_***xyz  │ usr_123  │ read, write   │ 1/1/2026   │ 1/5/2026  │
+│ key_abc  │ ohk_***xyz  │ —        │ read, write   │ 1/1/2026   │ 1/5/2026  │
 └──────────┴─────────────┴──────────┴───────────────┴────────────┴───────────┘
 ```
 
@@ -112,186 +138,108 @@ Output:
 Create a new API key. Runs interactively if flags are omitted.
 
 ```bash
-# Interactive — prompts for user ID, scopes, and name
+# Interactive — prompts for scopes and key name
 offerhub keys create
 
 # Non-interactive
 offerhub keys create \
-  --user-id usr_abc123 \
   --scopes read,write \
-  --name "Production API Key"
+  --name "Production Marketplace Key"
 ```
 
-| Flag | Description |
-|------|-------------|
-| `-u, --user-id <userId>` | User ID (required) |
-| `-s, --scopes <scopes>` | Comma-separated: `read`, `write`, `support` |
-| `-n, --name <name>` | Key name or description (optional) |
+| Option | Description | API Availability |
+|--------|-------------|------------------|
+| `-s, --scopes <scopes>` | Comma-separated scopes: `read`, `write`, `support` (or domain scopes: `orders`, `users`, `balance`) | **Supported**. Validated by `ScopeGuard` on the Orchestrator API (`apps/api/src/modules/auth/auth.controller.ts:27`). |
+| `-n, --name <name>` | Key name or descriptive label | **Supported**. Persisted in the `ApiKey` database model. |
+| `-u, --user-id <userId>` | User ID prompt / flag | **Not supported in API**. The backend endpoint `POST /auth/api-keys` binds only `name` and `scopes`. API keys belong to the marketplace integration, not to individual end users. |
 
 <Callout type="danger">
-  The full API key is shown only once at creation time. Copy it immediately — you cannot retrieve it later.
+  The plaintext API key (`ohk_...`) is returned only once at creation time. The Orchestrator stores a cryptographic hash (`bcrypt`) with salt in the database. Copy the key immediately — it cannot be recovered later.
 </Callout>
 
-#### `offerhub keys revoke <keyId>`
+#### `offerhub keys revoke <keyId>` <Badge variant="warning">Unavailable in API</Badge>
 
-Revoke an API key. Prompts for confirmation unless `--yes` is passed.
+The CLI provides a `revoke` command to revoke an API key by ID:
 
 ```bash
-# With confirmation prompt
-offerhub keys revoke key_abc123
-
-# Skip confirmation
 offerhub keys revoke key_abc123 --yes
 ```
 
-| Flag | Description |
-|------|-------------|
-| `-y, --yes` | Skip confirmation prompt |
+<Callout type="warning">
+  **Backend route not implemented**: `offerhub keys revoke` sends `DELETE /auth/api-keys/:id` (`packages/cli/src/commands/keys.ts:179`). However, `DELETE /auth/api-keys/:id` does not currently exist in the Orchestrator API (`apps/api/src/modules/auth/auth.controller.ts`). Running this command returns an HTTP 404 error.
+
+  To revoke an API key in current releases, delete or deactivate the corresponding row directly in the PostgreSQL `ApiKey` table or rotate credentials.
+</Callout>
 
 #### `offerhub keys token <keyId>`
 
-Generate a short-lived token from an existing API key.
+Generate a short-lived token (`ohk_tok_...`) from an existing API key for temporary frontend or delegate sessions (`POST /auth/api-keys/:id/token`).
 
 ```bash
-# Default TTL (1 hour)
+# Generate short-lived token
 offerhub keys token key_abc123
-
-# Custom TTL (2 hours)
-offerhub keys token key_abc123 --ttl 7200
 ```
 
-| Flag | Description |
-|------|-------------|
-| `-t, --ttl <seconds>` | Token TTL in seconds (default: `3600`) |
+| Option | Description | Behavior |
+|--------|-------------|----------|
+| `-t, --ttl <seconds>` | Requested token TTL in seconds | **Fixed at 1 hour (3600s)**. The Orchestrator backend (`apps/api/src/modules/auth/auth.service.ts:58-60`) hardcodes token expiration to `expiresIn: '1h'`. The `--ttl` flag has no effect on server-side token lifetime. |
 
 Output:
 
 ```
 ✓ Token generated successfully!
 
-Token: ohk_tok_xyz...
+Token: ohk_tok_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Expires: 1/5/2026, 2:00:00 PM
 
-⚠️  This token will expire. Save it now!
+⚠️  This token will expire in 1 hour. Save it now!
 ```
 
-### Maintenance Mode
+---
 
-Control the Orchestrator's maintenance mode. When enabled, the API becomes read-only.
+### Maintenance Commands <Badge variant="warning">Unavailable in API</Badge>
 
-#### `offerhub maintenance enable`
+The CLI exposes three commands intended for managing Orchestrator maintenance mode:
 
-Enable maintenance mode.
+- `offerhub maintenance enable`
+- `offerhub maintenance disable`
+- `offerhub maintenance status`
 
-```bash
-# Interactive — prompts for confirmation and message
-offerhub maintenance enable
+<Callout type="warning">
+  **Backend routes not implemented**: These commands dispatch requests to `admin/maintenance/enable`, `admin/maintenance/disable`, and `admin/maintenance/status` (`packages/cli/src/commands/maintenance.ts`). However, no maintenance controller or routes exist in the Orchestrator API (`apps/api/src/modules`). Executing any maintenance command will fail with an HTTP 404 route error.
+</Callout>
 
-# Non-interactive
-offerhub maintenance enable --message "Database upgrade" --yes
-```
-
-| Flag | Description |
-|------|-------------|
-| `-m, --message <message>` | Maintenance message |
-| `-y, --yes` | Skip confirmation prompt |
-
-#### `offerhub maintenance disable`
-
-Disable maintenance mode and restore normal operation.
-
-```bash
-# Interactive
-offerhub maintenance disable
-
-# Skip confirmation
-offerhub maintenance disable --yes
-```
-
-| Flag | Description |
-|------|-------------|
-| `-y, --yes` | Skip confirmation prompt |
-
-#### `offerhub maintenance status`
-
-Check whether maintenance mode is currently enabled.
-
-<CommandLine>offerhub maintenance status</CommandLine>
-
-When enabled:
-
-```
-Maintenance Mode Status:
-
-Status: ENABLED
-Message: Scheduled maintenance
-Enabled: 1/5/2026, 1:00:00 PM
-Enabled by: admin@example.com
-```
-
-When disabled:
-
-```
-Maintenance Mode Status:
-
-Status: NORMAL
-API is operating normally
-```
+---
 
 ## Common Workflows
 
-### Create Your First API Key (Fastest Path)
+### 1. Create Your First API Key (Fastest Path)
 
-After installing and starting the Orchestrator, this is the quickest way to get an API key:
-
-```bash
-# Install the CLI
-npm install -g @offerhub/cli
-
-# Point it at your local instance
-offerhub config set --api-url http://localhost:4000 --api-key YOUR_MASTER_KEY
-
-# Create a key
-offerhub keys create
-```
-
-### Manage Keys for Multiple Users
+After provisioning the Orchestrator using the [Scaffolder](/docs/guide/scaffolder), configure the CLI and create an API key:
 
 ```bash
-# Create a read-only key for a buyer
-offerhub keys create \
-  --user-id usr_buyer123 \
-  --scopes read \
-  --name "Mobile App (Read Only)"
+# 1. Point the CLI to your local Orchestrator using the master key from setup
+offerhub config set --api-url http://localhost:4000 --api-key YOUR_OFFERHUB_MASTER_KEY
 
-# Create a read-write key for a seller
-offerhub keys create \
-  --user-id usr_seller456 \
-  --scopes read,write \
-  --name "Seller Dashboard"
-
-# List all keys
-offerhub keys list
+# 2. Create an administrative API key
+offerhub keys create --name "Development Key" --scopes read,write,support
 ```
 
-### Perform Scheduled Maintenance
+### 2. Generate a Client Session Token
+
+To authenticate client requests without exposing the long-lived master or production API key, generate a short-lived 1-hour session token:
 
 ```bash
-# Check current status
-offerhub maintenance status
-
-# Enable maintenance mode
-offerhub maintenance enable --message "Database migration in progress" --yes
-
-# ... perform maintenance ...
-
-# Disable when done
-offerhub maintenance disable --yes
+offerhub keys token key_abc123
 ```
+
+Use the returned `ohk_tok_...` token in the `Authorization: Bearer ohk_tok_...` header for client requests.
+
+---
 
 ## Error Handling
 
-The CLI exits with a clear message when configuration is missing:
+If configuration is missing when running any command, the CLI provides clear instructions:
 
 ```
 ❌ Error: No configuration found.
@@ -309,17 +257,12 @@ Please configure the CLI using one of these methods:
 3. Run: offerhub config set
 ```
 
-## Platform Support
-
-| Platform | Status |
-|----------|--------|
-| macOS | Supported |
-| Linux | Supported |
-| Windows (WSL or Git Bash) | Supported |
+---
 
 ## Next Steps
 
-- [Quick Start](/docs/guide/quick-start) — Make your first API call
-- [Installation](/docs/installation) — Full Orchestrator setup guide
-- [Configuration](/docs/configuration) — All environment variables
-- [API Reference](/docs/api-reference/overview) — All REST endpoints
+- [Scaffolder Guide](/docs/guide/scaffolder) — One-command interactive setup wizard (`create-offer-hub-orchestrator`)
+- [Quick Start](/docs/guide/quick-start) — Make your first authenticated payment and escrow call
+- [Installation Guide](/docs/installation) — Complete setup instructions
+- [Configuration Reference](/docs/configuration) — All Orchestrator environment variables
+- [API Reference](/docs/api-reference/overview) — Full REST API documentation

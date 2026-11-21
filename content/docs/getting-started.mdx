@@ -87,6 +87,7 @@ The operator sets a master key once, uses it to create the first API key with `s
 ```env
 OFFERHUB_MASTER_KEY=your-master-key
 ```
+It configures your `.env`, runs migrations, and bootstraps the platform user automatically. For a complete walkthrough of every prompt and generated file, see the [Scaffolder Guide](/docs/guide/scaffolder). A manual Docker-based setup is also available for custom environments.
 
 ```bash
 curl -X POST http://localhost:4000/api/v1/auth/api-keys \
@@ -111,6 +112,21 @@ The public Orchestrator repository, [github.com/OFFER-HUB/OFFER-HUB](https://git
 - [Architecture](/docs/guide/architecture) — trust boundaries and isolation.
 - [SDK Quick Start](/docs/sdk/quick-start) — the TypeScript client.
 - [API Reference](/docs/api-reference/overview) — endpoints and envelopes.
+## Next Steps
+
+Once the Orchestrator is running, explore these guides:
+
+- [Architecture Overview](/docs/guide/architecture) — Self-hosted, per-marketplace, non-custodial design
+- [Scaffolder Guide](/docs/guide/scaffolder) — One-command interactive setup wizard (`create-offer-hub-orchestrator`)
+- [CLI Guide](/docs/guide/cli) — Manage API keys and configuration from the command line
+- [Quick Start](/docs/guide/quick-start) — Create your first user and order in 5 minutes
+- [Orchestrator Guide](/docs/guide/orchestrator) — Deep dive into the Orchestrator architecture
+- [Escrow Flows](/docs/guide/escrow) — Learn about escrow states and transitions
+- [Orders Guide](/docs/guide/orders) — Complete order lifecycle documentation
+- [Disputes](/docs/guide/disputes) — Handle disputes and resolutions
+- [API Reference](/docs/api-reference/overview) — Full REST API documentation
+- [Events Reference](/docs/api-reference/events) — SSE event envelope, subscriptions, and catalog
+- [SDK Quick Start](/docs/sdk/quick-start) — Use the TypeScript SDK
 
 <Callout type="note">
   Need help? Open an issue on [GitHub](https://github.com/OFFER-HUB/offer-hub-monorepo/issues) or join the [Discord community](https://discord.gg/offerhub).

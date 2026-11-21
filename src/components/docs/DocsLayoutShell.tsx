@@ -37,6 +37,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const drawerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const isHub = pathname === "/docs" || pathname === "/docs/";
 
@@ -48,6 +49,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
     containerRef: drawerRef,
     isActive: isDrawerOpen,
     onEscape: () => setIsDrawerOpen(false),
+    restoreFocusRef: menuButtonRef,
   });
 
   useEffect(() => {
@@ -81,10 +83,13 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
             {/* Breadcrumb navigation */}
             <nav aria-label="Breadcrumb" className="flex items-center gap-2 overflow-hidden flex-1">
               <button
+                ref={menuButtonRef}
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
                 className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
                 aria-label="Open docs navigation"
+                aria-expanded={isDrawerOpen}
+                aria-controls="docs-mobile-drawer"
               >
                 <Menu size={20} aria-hidden="true" />
               </button>
@@ -100,7 +105,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
 
         {/* SECTION 2: DOCS CONTENT GRID (Wider width as before) */}
         <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_280px] gap-12 lg:gap-20 min-h-[calc(100vh-8rem)]">
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_280px] gap-12 lg:gap-12 xl:gap-20 min-h-[calc(100vh-8rem)]">
             <aside className="hidden lg:block print:hidden">
               <div className="sticky top-40 max-h-[calc(100vh-12rem)] flex flex-col">
                 <DocsSidebar nav={nav} className="overflow-y-auto" />
@@ -144,6 +149,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
           />
           <aside
             ref={drawerRef}
+            id="docs-mobile-drawer"
             role="dialog"
             aria-modal="true"
             aria-label="Documentation navigation"

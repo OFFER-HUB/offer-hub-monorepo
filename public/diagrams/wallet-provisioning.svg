@@ -1,0 +1,45 @@
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg width="487pt" height="947pt" viewBox="0 0 487 947" xmlns="http://www.w3.org/2000/svg"><style>.oh-node path, .oh-node polygon, .oh-node ellipse {
+  fill: var(--color-bg-elevated);
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  filter: drop-shadow(3px 3px 4px var(--shadow-dark)) drop-shadow(-2px -2px 4px var(--shadow-light));
+}
+.oh-node text {
+  fill: var(--color-text-primary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+.oh-node--terminal ellipse {
+  fill: var(--color-primary);
+  stroke: var(--color-primary);
+  filter: none;
+}
+.oh-edge path {
+  stroke: var(--color-text-secondary);
+  fill: none;
+}
+.oh-edge polygon {
+  fill: var(--color-text-secondary);
+  stroke: var(--color-text-secondary);
+}
+.oh-edge--alt path {
+  stroke-dasharray: 5 4;
+}
+.oh-edge--alt polygon {
+  stroke-dasharray: none;
+}
+.oh-cluster path, .oh-cluster polygon {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+.oh-cluster text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-weight: 600;
+}
+.oh-edge text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}</style><g id="graph0" class="graph" transform="scale(1) translate(4 943)"><title>wallet-provisioning</title><g id="node1" class="node oh-node oh-node--terminal"><title>start</title><ellipse cx="117" cy="-933" rx="6" ry="6" fill="black" stroke="black"/></g><g id="node2" class="node oh-node"><title>user</title><path d="m160.5-882h-87c-6 0-12 6-12 12v12c0 6 6 12 12 12h87c6 0 12-6 12-12v-12c0-6-6-12-12-12" fill="white" stroke="black"/><text x="117" y="-860.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">POST /users</text></g><g id="edge1" class="edge oh-edge"><title>start-&gt;user</title><path d="m117-926.74v34.35" fill="none" stroke="black"/><polygon points="120.5 -892.07 117 -882.07 113.5 -892.07" fill="black" stroke="black"/></g><g id="node3" class="node oh-node"><title>init</title><path d="m222-801h-210c-6 0-12 6-12 12v24c0 6 6 12 12 12h210c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="117" y="-780.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">paymentProvider.initializeUser</text><text x="117" y="-766.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(crypto provider)</text></g><g id="edge2" class="edge oh-edge"><title>user-&gt;init</title><path d="m117-845.8v34.49" fill="none" stroke="black"/><polygon points="120.5 -811.3 117 -801.3 113.5 -811.3" fill="black" stroke="black"/></g><g id="node4" class="node oh-node"><title>exists</title><path d="m170.5-708h-107c-6 0-12 6-12 12v24c0 6 6 12 12 12h107c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="117" y="-687.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Active wallet</text><text x="117" y="-673.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">already exists?</text></g><g id="edge3" class="edge oh-edge"><title>init-&gt;exists</title><path d="m117-752.57v34.45" fill="none" stroke="black"/><polygon points="120.5 -718.04 117 -708.04 113.5 -718.04" fill="black" stroke="black"/></g><g id="node5" class="node oh-node"><title>reuse</title><path d="m141-534h-108c-6 0-12 6-12 12v24c0 6 6 12 12 12h108c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="87" y="-513.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Return existing</text><text x="87" y="-499.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">public key</text></g><g id="edge4" class="edge oh-edge"><title>exists-&gt;reuse</title><path d="m112.95-659.8c-5.2 29.83-14.27 81.83-20.19 115.78" fill="none" stroke="black"/><polygon points="96.2 -543.35 91.03 -534.1 89.3 -544.56" fill="black" stroke="black"/><text x="119" y="-629.2" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">yes</text></g><g id="node6" class="node oh-node"><title>keypair</title><path d="m268.5-604h-117c-6 0-12 6-12 12v24c0 6 6 12 12 12h117c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="210" y="-583.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Generate Stellar</text><text x="210" y="-569.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">keypair</text></g><g id="edge5" class="edge oh-edge"><title>exists-&gt;keypair</title><path d="m138.1-659.85c12.96 14.21 29.72 32.59 43.8 48.03" fill="none" stroke="black"/><polygon points="184.83 -613.8 188.98 -604.05 179.66 -609.09" fill="black" stroke="black"/><text x="174" y="-629.2" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">no</text></g><g id="node12" class="node oh-node oh-node--terminal"><title>end</title><ellipse cx="103" cy="-6" rx="6" ry="6" fill="black" stroke="black"/></g><g id="edge12" class="edge oh-edge"><title>reuse-&gt;end</title><path d="m86.03-485.66c-0.87 23.23-2.03 59.9-2.03 91.66v320c0 18.89 7.08 39.68 12.59 53.01" fill="none" stroke="black"/><polygon points="99.84 -22.31 100.67 -11.74 93.43 -19.48" fill="black" stroke="black"/></g><g id="node7" class="node oh-node"><title>encrypt</title><path d="m295.5-464h-131c-6 0-12 6-12 12v24c0 6 6 12 12 12h131c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="230" y="-443.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Encrypt the secret</text><text x="230" y="-429.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">key</text></g><g id="edge6" class="edge oh-edge"><title>keypair-&gt;encrypt</title><path d="m213.35-555.9c3.23 22.29 8.15 56.27 11.81 81.51" fill="none" stroke="black"/><polygon points="228.67 -474.57 226.64 -464.17 221.74 -473.57" fill="black" stroke="black"/></g><g id="node8" class="node oh-node"><title>store</title><path d="m354.5-371h-209c-6 0-12 6-12 12v24c0 6 6 12 12 12h209c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="250" y="-350.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Save wallet row</text><text x="250" y="-336.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">(INVISIBLE, STELLAR, primary)</text></g><g id="edge7" class="edge oh-edge"><title>encrypt-&gt;store</title><path d="m235.15-415.57c2.3 10.49 5.06 23.03 7.57 34.45" fill="none" stroke="black"/><polygon points="246.21 -381.56 244.94 -371.04 239.37 -380.06" fill="black" stroke="black"/></g><g id="node9" class="node oh-node"><title>testnet</title><path d="m281.5-278h-63c-6 0-12 6-12 12v12c0 6 6 12 12 12h63c6 0 12-6 12-12v-12c0-6-6-12-12-12" fill="white" stroke="black"/><text x="250" y="-256.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Testnet?</text></g><g id="edge8" class="edge oh-edge"><title>store-&gt;testnet</title><path d="m250-322.77v34.46" fill="none" stroke="black"/><polygon points="253.5 -288.26 250 -278.27 246.5 -288.27" fill="black" stroke="black"/></g><g id="node10" class="node oh-node"><title>fund</title><path d="m280.5-186h-135c-6 0-12 6-12 12v24c0 6 6 12 12 12h135c6 0 12-6 12-12v-24c0-6-6-12-12-12" fill="white" stroke="black"/><text x="213" y="-165.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Fund account</text><text x="213" y="-151.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Add USDC trustline</text></g><g id="edge9" class="edge oh-edge"><title>testnet-&gt;fund</title><path d="m243.39-241.84c-4.92 12.74-11.76 30.51-17.72 45.96" fill="none" stroke="black"/><polygon points="228.78 -194.22 221.92 -186.15 222.25 -196.74" fill="black" stroke="black"/><text x="244" y="-211.2" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">yes</text></g><g id="node11" class="node oh-node"><title>done</title><path d="m274.5-93h-123c-6 0-12 6-12 12v12c0 6 6 12 12 12h123c6 0 12-6 12-12v-12c0-6-6-12-12-12" fill="white" stroke="black"/><text x="213" y="-71.6" font-family="Inter, sans-serif" font-size="13" text-anchor="middle">Return public key</text></g><g id="edge11" class="edge oh-edge oh-edge--alt"><title>testnet-&gt;done</title><path d="m268.77-241.9c23.62 23.68 58.86 67.64 39.23 103.9-9.26 17.1-25.5 30.23-41.97 39.91" fill="none" stroke="black"/><polygon points="267.35 -94.82 256.9 -93.06 263.97 -100.95" fill="black" stroke="black"/><text x="396" y="-159.2" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">no (not done by createWallet)</text></g><g id="edge10" class="edge oh-edge"><title>fund-&gt;done</title><path d="m213-137.77v34.46" fill="none" stroke="black"/><polygon points="216.5 -103.26 213 -93.27 209.5 -103.27" fill="black" stroke="black"/></g><g id="edge13" class="edge oh-edge"><title>done-&gt;end</title><path d="m184.96-56.92c-21.93 13.36-51.45 31.34-68.43 41.68" fill="none" stroke="black"/><polygon points="118.13 -12.12 107.77 -9.91 114.49 -18.1" fill="black" stroke="black"/></g></g></svg>

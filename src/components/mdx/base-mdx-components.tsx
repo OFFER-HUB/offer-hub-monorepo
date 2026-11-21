@@ -16,10 +16,9 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
     return (
       <h2
         id={id}
-        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 flex items-center gap-3 tracking-tight text-content-primary"
+        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 tracking-tight text-content-primary"
         {...props}
       >
-        <span className="w-1 h-6 rounded-full bg-theme-primary" />
         {children}
       </h2>
     );
@@ -43,13 +42,13 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   ),
 
   code: ({ children }) => (
-    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-theme-primary/10 text-theme-primary border border-theme-primary/10">
+    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-theme-primary/10 text-theme-primary">
       {children}
     </code>
   ),
 
   blockquote: ({ children }) => (
-    <blockquote className="my-6 border-l-4 border-theme-primary/40 pl-4 text-content-secondary italic">
+    <blockquote className="my-6 rounded-xl bg-bg-sunken px-4 py-3 shadow-neu-sunken-subtle text-content-secondary italic">
       {children}
     </blockquote>
   ),
@@ -90,7 +89,12 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
 
   table: ({ children }) => (
     <div className="neu-table-wrap my-10 w-full">
-      <div className="overflow-x-auto">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Table, scrollable horizontally"
+        className="overflow-x-auto"
+      >
         <table className="w-full border-collapse text-left text-sm">{children}</table>
       </div>
     </div>
@@ -99,7 +103,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   tbody: ({ children }) => <tbody className="neu-table-body bg-bg-base">{children}</tbody>,
   tr: ({ children }) => <tr className="neu-table-row">{children}</tr>,
   th: ({ children }) => (
-    <th className="px-6 py-4 font-black uppercase tracking-[0.12em] text-[11px] text-theme-primary whitespace-nowrap">
+    <th className="px-6 py-4 font-black uppercase tracking-[0.12em] text-xs text-theme-primary whitespace-nowrap">
       {children}
     </th>
   ),

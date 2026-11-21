@@ -1,7 +1,7 @@
 ---
 title: Orders Guide
 description: Complete guide to the order lifecycle - from creation to settlement.
-order: 2
+order: 15
 section: Guides
 ---
 
@@ -13,15 +13,82 @@ Orders are the core of OFFER-HUB. They represent a transaction between a buyer a
 
 ## Order Lifecycle
 
-Every order follows a strict state machine — the same canonical diagram used across the docs, matching `docs/architecture/state-machines.md` in the orchestrator repository exactly:
+Every order follows a strict state machine, generated from `ORDER_TRANSITIONS` in `packages/shared/src/enums/order-status.enum.ts` in the orchestrator repository:
 
-<OrderStateMachineDiagram />
+<MermaidDiagram
+  caption="Order state machine — every edge is an entry in ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
+
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
 
 <Callout type="note">
   The escrow contract itself follows a separate internal [Escrow state machine](/docs/guide/escrow) while the order machine above advances in parallel.
 </Callout>
 
 ## Creating an Order
+### Full Lifecycle Sequence
+
+```mermaid
+sequenceDiagram
+    accTitle: Order create, escrow fund, milestone, and release
+    accDescr: Buyer creates an order, reserves funds, platform deploys escrow, buyer funds it, seller completes milestones, buyer releases funds on-chain.
+    autonumber
+    participant Buyer
+    participant Orchestrator
+    participant TW as Trustless Work Contract
+    participant Stellar as Stellar Network
+    participant Seller
+    Buyer->>Orchestrator: POST /orders
+    Orchestrator-->>Buyer: 201 ORDER_CREATED
+    Buyer->>Orchestrator: POST /orders/&#123;id&#125;/reserve
+    Orchestrator-->>Buyer: 200 FUNDS_RESERVED
+    Buyer->>Orchestrator: POST /orders/&#123;id&#125;/escrow
+    Orchestrator->>Stellar: Deploy escrow contract
+    Orchestrator-->>Buyer: 200 ESCROW_CREATING
+    Buyer->>Orchestrator: POST /orders/&#123;id&#125;/escrow/fund
+    Orchestrator->>TW: transfer USDC
+    TW->>Stellar: submit
+    Orchestrator-->>Buyer: 200 IN_PROGRESS
+    Seller->>Orchestrator: POST /orders/&#123;id&#125;/milestones/design/complete
+    Orchestrator-->>Seller: 200 milestone COMPLETED
+    Buyer->>Orchestrator: POST /orders/&#123;id&#125;/resolution/release
+    Orchestrator->>TW: changeMilestoneStatus / approveMilestone / releaseFunds
+    TW->>Stellar: settle
+    Orchestrator->>Orchestrator: Credit seller balance
+    Orchestrator-->>Buyer: 200 CLOSED
+`
+```
 
 ### Basic Order
 
@@ -29,7 +96,7 @@ Every order follows a strict state machine — the same canonical diagram used a
 curl -X POST http://localhost:4000/api/v1/orders \
   -H "Authorization: Bearer ohk_live_..." \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440006" \
   -d '{
     "buyerId": "usr_buyer123",
     "sellerId": "usr_seller456",
@@ -353,7 +420,9 @@ if (parseFloat(balance.available) < amount) {
 ### 2. Use Idempotency Keys
 
 ```typescript
-const idempotentSdk = sdk.withIdempotencyKey(generateUUID());
+const idempotentSdk = sdk.withIdempotencyKey(
+  '550e8400-e29b-41d4-a716-446655440007'
+);
 const order = await idempotentSdk.orders.create({ ... });
 ```
 
@@ -381,7 +450,8 @@ switch (order.status) {
 
 ## Next Steps
 
+- [Orders & Milestones Endpoints](/docs/api-reference/orders) - per-endpoint parameters, response schemas, and error codes
 - [Escrow Guide](/docs/guide/escrow) - How blockchain escrow works
 - [Disputes Guide](/docs/guide/disputes) - Handling disputes
-- [Events Reference](/docs/guide/events) - All order events
+- [Events Reference](/docs/api-reference/events) - All order events
 - [API Reference](/docs/api-reference/overview) - Full endpoint documentation

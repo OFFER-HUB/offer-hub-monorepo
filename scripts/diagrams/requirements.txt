@@ -1,0 +1,2 @@
+graphviz==0.21
+scour==0.38.2

@@ -1,0 +1,34 @@
+---
+title: Balance (sdk.balance)
+description: SDK entry points for the nine Balance operations, with current HTTP contract and compatibility guidance.
+order: 32
+section: SDK
+---
+
+The `sdk.balance` resource exposes all nine Balance operations. Use the [Balance endpoint reference](/docs/api-reference/balance) for the verified request fields, wire responses, scopes, errors, and side-by-side cURL / TypeScript SDK examples.
+
+<Callout type="warning">
+  The pinned SDK source declares older request and response types. Its HTTP client returns the response envelope unchanged. Review the [SDK compatibility guidance](/docs/api-reference/balance#examples-setup) before relying on those declarations; order-related requests require `orderId`, and release requires `sellerId`.
+</Callout>
+
+## Methods
+
+| Method | Scope | Contract and examples |
+| --- | --- | --- |
+| `sdk.balance.get(userId)` | `read` | [Get local balance](/docs/api-reference/balance#get) |
+| `sdk.balance.verify(userId)` | `read` | [Verify with provider](/docs/api-reference/balance#verify) |
+| `sdk.balance.credit(userId, request)` | `write` | [Credit available funds](/docs/api-reference/balance#credit) |
+| `sdk.balance.debit(userId, request)` | `write` | [Debit available funds](/docs/api-reference/balance#debit) |
+| `sdk.balance.reserve(userId, request)` | `write` | [Move available to reserved](/docs/api-reference/balance#reserve) |
+| `sdk.balance.release(userId, request)` | `write` | [Pay the seller from buyer reserves](/docs/api-reference/balance#release) |
+| `sdk.balance.cancelReservation(userId, request)` | `write` | [Return a specified reserved amount](/docs/api-reference/balance#cancel-reservation) |
+| `sdk.balance.deductReserved(userId, request)` | `write` | [Consume reserved funds](/docs/api-reference/balance#deduct-reserved) |
+| `sdk.balance.sync(userId)` | `write` | [Compare with provider without adjusting balances](/docs/api-reference/balance#sync) |
+
+## Retries
+
+For a mutation, call `sdk.withIdempotencyKey(key).balance` with a persisted UUID v4 for that operation. Reuse that key only for retries of the identical operation. Neither `reference` nor `orderId` deduplicates requests. See [idempotency behavior and errors](/docs/api-reference/balance#idempotency).
+
+## Sources
+
+The [source ledger](/docs/api-reference/balance#source-ledger) pins the controller, DTOs, service, middleware, and SDK files used to verify this reference. No SDK or backend implementation is changed by these documentation pages.

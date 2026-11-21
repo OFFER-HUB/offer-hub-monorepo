@@ -51,3 +51,8 @@ src/data/docs-index.json
 /test-results/
 /blob-report/
 /playwright/.cache/
+
+# Python (scripts/diagrams/)
+__pycache__/
+*.pyc
+.venv/

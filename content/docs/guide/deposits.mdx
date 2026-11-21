@@ -2,6 +2,8 @@
 title: Deposits Guide
 description: How buyers add USDC to their OFFER-HUB balance before checkout.
 order: 6
+description: How users add funds to their OFFER-HUB balance — crypto deposits and AirTM top-ups.
+order: 18
 section: Guides
 ---
 
@@ -46,14 +48,140 @@ sequenceDiagram
     Stellar-->>OH: payment observed over RPC
     OH->>OH: credit available balance
     OH->>OH: emit balance event
+<StaticDiagram name="deposit-crypto-flow" caption="Crypto deposit: the Horizon payment stream detects the USDC transfer, de-duplicates it by transaction hash, credits the available balance and emits balance.credited." />
+
+Source: `blockchain-monitor.service.ts` (`handlePayment`) and `wallet.controller.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
+
+## AirTM Deposits
+
+With AirTM credentials configured, users can fund their accounts through AirTM's payment network. AirTM is not selected through `PAYMENT_PROVIDER` — that variable must stay `crypto`.
+
+For the complete server-side flow — user linking, the create request, `confirmationUri`, statuses, and webhook delivery — see the [AirTM Provider Guide](/docs/guide/airtm).
+
+### Step 1: Create Top-up Request
+
+```bash
+curl -X POST http://localhost:4000/api/v1/topups \
+  -H "Authorization: Bearer ohk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440009" \
+  -d '{
+    "userId": "usr_abc123",
+    "amount": "100.00",
+    "currency": "USD"
+  }'
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "top_xyz789",
+    "userId": "usr_abc123",
+    "amount": "100.00",
+    "currency": "USD",
+    "status": "pending",
+    "airtm": {
+      "paymentUrl": "https://app.airtm.com/payment/abc123",
+      "expiresAt": "2026-02-25T13:00:00.000Z"
+    },
+    "created_at": "2026-02-25T12:00:00.000Z"
+  }
+}
 ```
 
 1. The user sends USDC from any Stellar wallet on the configured network.
 2. The Orchestrator observes the payment over Stellar RPC.
 3. The balance is credited, and an event is emitted on `GET /api/v1/events`.
 
+<StaticDiagram name="deposit-airtm-flow" caption="AirTM top-up: statuses follow TOPUP_TRANSITIONS; the provider webhook (or a manual refresh) moves the top-up forward and the balance is credited on success." />
+
+Source: `topup-status.enum.ts`, `topups.controller.ts`, `topups.service.ts` and `airtm-webhook.service.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
+
 <Callout type="warning">
   Testnet and mainnet are separate networks. USDC sent on the wrong network is not credited and cannot be recovered by the Orchestrator.
+  AirTM deposits can take 1-24 hours depending on the user's payment method. Set user expectations accordingly.
+</Callout>
+
+## Using the SDK
+
+### Crypto Deposits
+
+```typescript
+import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: 'http://localhost:4000',
+  apiKey: 'ohk_live_your_api_key'
+});
+
+// Get deposit address
+const deposit = await sdk.wallet.getDepositAddress('usr_abc123');
+
+// Display to user
+console.log(`Send USDC to: ${deposit.address}`);
+console.log(`Network: ${deposit.network}`);
+
+// Listen for deposit
+sdk.events.on('balance.credited', (event) => {
+  if (event.userId === 'usr_abc123') {
+    console.log(`Deposit received: ${event.amount}`);
+    // Update UI, notify user
+  }
+});
+```
+
+### AirTM Top-ups
+
+```typescript
+// Create top-up request
+const topup = await sdk.topups.create({
+  userId: 'usr_abc123',
+  amount: '100.00',
+  currency: 'USD'
+});
+
+// Redirect user to payment page
+window.location.href = topup.airtm.paymentUrl;
+
+// Or display in iframe/modal
+// <iframe src={topup.airtm.paymentUrl} />
+
+// Listen for completion
+sdk.events.on('topup.succeeded', (event) => {
+  if (event.topupId === topup.id) {
+    console.log('Payment received!');
+    // Update UI
+  }
+});
+```
+
+## Listening for Deposits
+
+### SSE Events
+
+Connect to the event stream:
+
+```typescript
+const events = new EventSource(
+  'http://localhost:4000/api/v1/events',
+  { headers: { Authorization: 'Bearer ohk_live_...' } }
+);
+
+events.onmessage = (e) => {
+  const event = JSON.parse(e.data);
+
+  if (event.eventType === 'balance.credited') {
+    console.log(`${event.payload.userId} received ${event.payload.amount}`);
+    // Update balance display
+    updateBalance(event.payload.userId, event.payload.newBalance);
+  }
+};
+```
+
+<Callout type="note">
+  SSE is the **only** real-time event mechanism — there is no outbound webhook subscription API. See [Events (SSE)](/docs/api-reference/events) for the full event catalog and connection details.
 </Callout>
 
 ## Check the balance
@@ -103,3 +231,8 @@ On testnet, fund a sandbox account from a testnet faucet, then send USDC to the 
 - [Wallets](/docs/guide/wallets) — addresses and signing
 - [Orders Guide](/docs/guide/orders) — spending the balance
 - [Withdrawals Guide](/docs/guide/withdrawals) — moving funds out
+- [Crypto-Native Provider Guide](/docs/guide/crypto-native) — Deep dive into Stellar setup, Horizon monitoring, and production deployment
+- [Wallets Guide](/docs/guide/wallets) — Understanding invisible wallets
+- [Withdrawals Guide](/docs/guide/withdrawals) — Moving funds off-platform
+- [Orders Guide](/docs/guide/orders) — Creating your first order
+- [Wallet & Top-ups Reference](/docs/api-reference/wallet-topups) — Per-endpoint API schemas for deposits and AirTM pay-ins

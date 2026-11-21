@@ -12,6 +12,42 @@ Sellers can move funds out in two ways: a withdrawal to an external Stellar addr
 </Callout>
 
 ## Withdrawal to a Stellar address
+description: Reference for crypto and AirTM withdrawals in the OFFER-HUB Orchestrator.
+order: 19
+section: Guides
+---
+
+This page documents the withdrawal controller and DTOs in the [OFFER-HUB Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB): `apps/api/src/modules/withdrawals/withdrawals.controller.ts`, `apps/api/src/modules/withdrawals/dto/create-withdrawal.dto.ts`, and `apps/api/src/modules/withdrawals/withdrawals.service.ts`.
+
+Every request uses `Authorization: Bearer <api-key>`. Write endpoints require the `write` scope; read endpoints require `read`.
+
+## Destination types and lifecycle
+
+| `destinationType` | Provider path | Behaviour |
+|---|---|---|
+| `crypto` | Stellar | Synchronous payment; the response is completed after the payment provider confirms it. |
+| `bank` | AirTM | Asynchronous payout; create first, then commit unless `commit: true` is supplied. |
+| `airtm_balance` | AirTM | Asynchronous payout; follows the same create/commit flow as `bank`. |
+
+The statuses used by the service are `WITHDRAWAL_CREATED`, `WITHDRAWAL_COMMITTED`, `WITHDRAWAL_PENDING`, `WITHDRAWAL_PENDING_USER_ACTION`, `WITHDRAWAL_COMPLETED`, `WITHDRAWAL_FAILED`, and `WITHDRAWAL_CANCELED`.
+
+<StaticDiagram name="withdrawal-lifecycle" caption="Withdrawal lifecycle. Solid edges are the AirTM path (WITHDRAWAL_TRANSITIONS); dashed edges are the crypto path, which completes or fails inside the create request." />
+
+Every edge above is an entry in `WITHDRAWAL_TRANSITIONS`. Crypto withdrawals skip it: they are created as `WITHDRAWAL_CREATED` and set straight to `WITHDRAWAL_COMPLETED` or `WITHDRAWAL_FAILED` in the same request. The [Withdrawal state machine](/docs/guide/state-machines#withdrawal) lists the trigger for each transition and the `WITHDRAWAL_NOT_COMMITTABLE` guard on commit.
+
+## POST `/withdrawals`
+
+Creates a withdrawal. The request body is `CreateWithdrawalDto`:
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `userId` | string | yes | Internal user ID. |
+| `amount` | string | yes | Decimal string with exactly two decimal places, such as `"5.00"`. |
+| `currency` | string | no | Defaults to `USD`. |
+| `destinationType` | `"bank" \| "crypto" \| "airtm_balance"` | yes | Selects the provider flow. |
+| `destinationRef` | string | yes | Bank/AirTM reference or Stellar destination address. |
+| `commit` | boolean | no | AirTM only; defaults to `false`. |
+| `description` | string | no | Optional description. |
 
 ```bash
 curl -X POST http://localhost:4000/api/v1/withdrawals \
@@ -105,3 +141,78 @@ Watch `GET /api/v1/events` for withdrawal and payout events. Treat an event as a
 - [Deposits](/docs/guide/deposits) — funding accounts
 - [Orders Guide](/docs/guide/orders) — order lifecycle
 - [Troubleshooting](/docs/guide/troubleshooting) — payout diagnostics
+    "currency": "USD",
+    "destinationType": "crypto",
+    "destinationRef": "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3EQRQGPGAVRQ"
+  }'
+```
+
+```typescript
+const withdrawal = await sdk.withdrawals.create({
+  userId: "usr_abc123",
+  amount: "50.00",
+  currency: "USD",
+  destinationType: "crypto",
+  destinationRef: stellarAddress,
+});
+```
+
+The response contains `id`, `amount`, `currency`, `status`, `destinationType`, `committed`, and `createdAt`. Crypto withdrawals complete synchronously. AirTM withdrawals reserve funds and normally return `WITHDRAWAL_CREATED`; call `commit` next.
+
+Errors include `USER_NOT_FOUND` (404), `INSUFFICIENT_FUNDS` (422), `AIRTM_USER_NOT_LINKED` (422), `AIRTM_USER_INVALID` (422), and validation errors (400).
+
+## GET `/withdrawals`
+
+Lists a user's withdrawals. The controller accepts only these query parameters:
+
+| Parameter | Type | Required |
+|---|---|---|
+| `userId` | string | yes |
+| `limit` | number | no |
+| `cursor` | string | no |
+
+```bash
+curl "http://localhost:4000/api/v1/withdrawals?userId=usr_abc123&limit=20&cursor=wd_previous" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+The response is `{ "data": WithdrawalResponse[], "hasMore": boolean, "nextCursor"?: string }`.
+
+## GET `/withdrawals/:id`
+
+Fetches one withdrawal. `userId` is required as a query parameter because the controller passes it to the service for ownership scoping.
+
+```bash
+curl "http://localhost:4000/api/v1/withdrawals/wd_abc123?userId=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+An individual `WithdrawalResponse` includes `id`, `userId`, `amount`, `fee?`, `currency`, `status`, `destinationType`, `destinationRef`, `airtmPayoutId?`, `failureReason?`, `createdAt`, and `updatedAt`.
+
+## POST `/withdrawals/:id/commit`
+
+Commits an AirTM withdrawal created with `commit: false`. It accepts no body and requires `userId` in the query string.
+
+```bash
+curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/commit?userId=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+This endpoint returns the updated `WithdrawalResponse`. It is not applicable to crypto withdrawals, which complete during creation. A non-committable state returns `WITHDRAWAL_NOT_COMMITTABLE` (409); a missing provider payout returns `PROVIDER_ERROR` (422).
+
+## POST `/withdrawals/:id/refresh`
+
+Refreshes an AirTM payout when a webhook may have been missed. It accepts no body and requires `userId` in the query string.
+
+```bash
+curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_abc123/refresh?userId=usr_abc123" \
+  -H "Authorization: Bearer ohk_live_your_api_key"
+```
+
+The response is the current `WithdrawalResponse`. Crypto withdrawals do not need provider refreshes.
+
+## Idempotency and integration notes
+
+The withdrawal controller does not declare an idempotency header or an idempotency DTO field. Do not describe `Idempotency-Key` as a withdrawal-specific guarantee until the controller and guard expose one. Clients should use their own request deduplication and treat the returned withdrawal ID as the operation identifier.
+
+For provider-specific status and webhook events, see [Webhooks](/docs/api-reference/webhooks), [Balance Reference](/docs/sdk/balance), and the upstream [withdrawal endpoint source](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/withdrawals.controller.ts).

@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 interface CommandLineProps {
   command?: string;
   label?: string;
+  title?: string;
   promptSymbol?: string;
   className?: string;
   children?: ReactNode;
@@ -50,38 +51,56 @@ function extractTextFromChildren(children: ReactNode): string {
 export function CommandLine({
   command,
   label,
+  title,
   promptSymbol = "$",
   className,
   children,
 }: CommandLineProps) {
   const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<string>("");
 
   const raw = command ?? extractTextFromChildren(children);
   const trimmed = raw.trim();
+  const displayTitle = title ?? label;
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(trimmed);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(trimmed);
+      setCopied(true);
+      setCopyStatus("Command copied to clipboard");
+      setTimeout(() => {
+        setCopied(false);
+        setCopyStatus("");
+      }, 2000);
+    } catch {
+      setCopied(false);
+      setCopyStatus("Failed to copy command to clipboard");
+      setTimeout(() => setCopyStatus(""), 2000);
+    }
   }
 
   return (
     <div
       className={cn(
-        "my-6 rounded-2xl overflow-hidden bg-bg-base shadow-neu-raised relative z-10",
+        "my-6 rounded-2xl overflow-hidden bg-bg-base shadow-neu-raised relative z-10 transition-colors duration-300",
         className,
       )}
     >
+      {/* Hidden aria-live live region announcing copy feedback */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {copyStatus}
+      </div>
+
       {/* Terminal header bar */}
       <div
         className="flex items-center gap-2 px-4 py-2.5 border-b border-theme-border/20 bg-bg-sunken shadow-neu-sunken-subtle"
       >
-        <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
-        <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
-        <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-        {label && (
-          <span className="ml-2 text-[11px] font-bold uppercase tracking-widest text-content-secondary/60">
-            {label}
+        <span className="w-2.5 h-2.5 rounded-full bg-theme-error/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-theme-warning/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-theme-success/80" />
+        {displayTitle && (
+          <span className="ml-2 text-xs font-bold uppercase tracking-widest text-content-secondary/70 font-mono">
+            {displayTitle}
           </span>
         )}
         <button
@@ -89,10 +108,10 @@ export function CommandLine({
           onClick={handleCopy}
           aria-label={copied ? "Command copied" : "Copy command"}
           className={cn(
-            "ml-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium",
+            "ml-auto inline-flex items-center gap-1.5 px-2 min-h-11 min-w-11 justify-center rounded-md text-xs font-medium",
             "transition-colors duration-200",
             copied
-              ? "text-green-500"
+              ? "text-theme-success"
               : "text-content-secondary hover:text-content-primary",
           )}
         >
@@ -111,7 +130,12 @@ export function CommandLine({
         <span className="text-sm text-theme-primary flex-shrink-0 font-mono font-bold">
           {promptSymbol}
         </span>
-        <div className="relative flex-1 overflow-x-auto">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Command line, scrollable horizontally"
+          className="relative flex-1 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50 rounded-md"
+        >
           <code className="block whitespace-nowrap text-sm text-content-primary font-mono pr-2">
             {trimmed}
           </code>

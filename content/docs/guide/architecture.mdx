@@ -1,7 +1,7 @@
 ---
 title: Architecture
 description: Self-hosted, per-marketplace, non-custodial architecture overview.
-order: 2
+order: 13
 section: Guides
 ---
 
@@ -107,3 +107,12 @@ Inbound webhooks are a different direction. The Orchestrator receives provider c
 - [Orchestrator](/docs/guide/orchestrator) — engine internals
 - [Self-Hosting](/docs/guide/self-hosting) — deployment topology
 - [Security Best Practices](/docs/guide/security) — integration hardening
+Each marketplace owns an isolated Orchestrator and database.
+
+This deployment boundary is verified against the Orchestrator's `apps/api/src/main.ts` bootstrap and `packages/database/prisma/schema.prisma`; each installation supplies its own service configuration and database connection.
+
+## Next Steps
+
+- [Quick Start](/docs/guide/quick-start)
+- [Orchestrator Guide](/docs/guide/orchestrator)
+- [Self-Hosting Guide](/docs/guide/self-hosting)

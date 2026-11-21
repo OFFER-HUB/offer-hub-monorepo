@@ -75,9 +75,18 @@ export default async function DocPage({ params }: PageProps) {
           source={doc.content}
           components={MDX_COMPONENTS}
           options={{
+            // Docs pages pass structured data to MDX components (ParamTable
+            // `fields`, ResponseSchema `example`, CodeTabs `tabs`). With the
+            // default `blockJS: true`, next-mdx-remote strips every JSX
+            // attribute expression, so those props never reached the
+            // components and they rendered empty. `blockDangerousJS: true`
+            // stays enabled, so dangerous globals (process, require, eval, …)
+            // and blocked member access are still rejected at compile time.
+            blockJS: false,
+            blockDangerousJS: true,
             mdxOptions: {
               remarkPlugins: [remarkGfm],
-            }
+            },
           }}
         />
       </div>

@@ -7,11 +7,23 @@ on:
     branches: [main]
 
 jobs:
+  dependency-audit:
+    name: Production Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+
   frontend:
     name: Frontend Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -25,17 +37,54 @@ jobs:
       - run: npm run test:coverage
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: coverage/
           retention-days: 7
 
+  openapi:
+    name: OpenAPI Spec Staleness Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      # Same guard pattern as the diagram pipeline: fails CI when the
+      # committed public/openapi.json drifts from scripts/openapi-source-data.ts,
+      # so the spec served from /docs can never silently go stale.
+      - run: npm run validate:openapi
+
+  diagrams:
+    name: Generated diagrams up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Pinned, not just "whatever's current": dot's layout algorithm is
+      # deterministic for a given version, but NOT stable across Graphviz
+      # versions (confirmed - an unpinned install here produced a different
+      # layout than this package version). Committed SVGs are only valid
+      # against this exact version; bump it deliberately (see
+      # docs/adr/0001-python-diagram-pipeline.md) and regenerate everything
+      # under public/diagrams/ in the same change.
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz=2.42.2-9ubuntu0.1
+      - run: pip install -r scripts/diagrams/requirements.txt
+      - run: python scripts/diagrams/generate_all.py
+      - name: Fail if public/diagrams/ is stale
+        run: git diff --exit-code -- public/diagrams
+
   e2e:
     name: Route-level a11y & keyboard-nav (Playwright)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -51,7 +100,7 @@ jobs:
           CI: true
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
@@ -64,7 +113,7 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

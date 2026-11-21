@@ -4,3 +4,4 @@ export const SESSION_ID_KEY = "session_id";
 export const GEO_CACHE_KEY = "geo_cache";
 export const THEME_STORAGE_KEY = "offer-hub-theme";
 export const CTA_DISMISSED_KEY = "offer-hub-cta-dismissed";
+export const CODE_TAB_STORAGE_KEY = "offer-hub-docs-code-tab";

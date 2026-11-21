@@ -20,6 +20,7 @@ Choose the path that fits your workflow:
 ---
 
 ## Option 1: Installer
+`create-offer-hub-orchestrator` is a one-command interactive setup wizard. It configures your `.env`, runs database migrations, and bootstraps the platform user — so you can skip the manual steps entirely. For a full breakdown of each prompt, generated environment files, and the platform bootstrap step, see the [Scaffolder Guide](/docs/guide/scaffolder).
 
 `create-offer-hub-orchestrator` is an interactive setup wizard. It writes your `.env`, applies database migrations and bootstraps the platform records a fresh instance needs.
 
@@ -192,6 +193,7 @@ See the [SDK Quick Start](/docs/sdk/quick-start) for the full resource list.
 Every request to the Orchestrator is authenticated. The first key is created with the operator master key.
 
 ### Step 1 — Create a support-scoped key
+This runs an interactive wizard that prompts for scopes and key name. See the [CLI Guide](/docs/guide/cli) for all available commands.
 
 Use the master key **once**, to create an operator key with `support` scope:
 
@@ -215,6 +217,7 @@ curl -X POST http://localhost:4000/api/v1/auth/api-keys \
 
 <Callout type="danger">
   The `key` value is shown once. Store it in your secrets manager immediately.
+  Save the `data.key` value immediately — it's only shown once. Use this key for all subsequent API calls.
 </Callout>
 
 ### Step 2 — Create scoped keys for your backend
@@ -289,3 +292,9 @@ Check `STELLAR_NETWORK` and `STELLAR_RPC_URL`. A testnet URL paired with a mainn
 - [Self-Hosting](/docs/guide/self-hosting) — production deployment
 - [Quick Start](/docs/guide/quick-start) — your first order
 - [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) — the full tutorial
+- [Scaffolder Guide](/docs/guide/scaffolder) — In-depth reference for `create-offer-hub-orchestrator`
+- [Configuration](/docs/configuration) — Learn about all environment variables
+- [Quick Start](/docs/guide/quick-start) — Create your first user and order
+- [CLI Guide](/docs/guide/cli) — Manage API keys and configuration
+- [API Reference](/docs/api-reference/overview) — Explore all endpoints
+- [SDK Guide](/docs/sdk/quick-start) — Integrate using TypeScript

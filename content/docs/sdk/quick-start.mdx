@@ -2,6 +2,8 @@
 title: SDK Quick Start
 description: Use @offerhub/sdk 3.0.0 to build marketplace payment flows.
 order: 1
+description: Get started with the OFFER-HUB TypeScript SDK in minutes.
+order: 30
 section: SDK
 ---
 
@@ -149,6 +151,15 @@ await sdk.disputes.resolve(disputeId, {
 ```
 
 Dispute statuses are `OPEN`, `UNDER_REVIEW` and `RESOLVED`.
+| Resource | Description | Reference |
+|----------|-------------|-----------|
+| `sdk.users` | Create and manage users | [Users Reference](/docs/sdk/users) |
+| `sdk.balance` | Check, reserve, release, and reconcile balances | [Balance Reference](/docs/sdk/balance) |
+| `sdk.orders` | Create and manage orders, escrows, and resolutions | [Orders Guide](/docs/guide/orders) |
+| `sdk.disputes` | Manage disputes | [Disputes Guide](/docs/guide/disputes) |
+| `sdk.wallet` | Wallet operations and deposit addresses | [Wallet Reference](/docs/sdk/wallet) |
+| `sdk.withdrawals` | Create withdrawals | [Withdrawals Guide](/docs/guide/withdrawals) |
+| `sdk.topups` | Top-up operations (AirTM mode) | [Top-ups Reference](/docs/sdk/topups) |
 
 ## Idempotency
 
@@ -165,6 +176,26 @@ Retrying with the same key returns the original response. Retrying with a new ke
 <Callout type="warning">
   Never regenerate the key when retrying a failed request. Derive it from your own order reference.
 </Callout>
+```typescript
+// Create SDK instance with idempotency key
+const idempotentSdk = sdk.withIdempotencyKey(
+  '550e8400-e29b-41d4-a716-446655440000'
+);
+
+// This request can be safely retried
+const order = await idempotentSdk.orders.create({
+  buyer_id: 'usr_buyer',
+  seller_id: 'usr_seller',
+  amount: '100.00',
+  title: 'Service'
+});
+```
+
+If you retry with the same idempotency key, you get the same response without creating a duplicate.
+The key must be a UUID v4. It is optional, applies to `POST`, `PUT`, and
+`PATCH` requests, and is scoped to the API key and request body. A replayed
+response includes `Idempotency-Replay: true`; a different body with the same
+key returns `409 IDEMPOTENCY_KEY_REUSED`.
 
 ## Error handling
 
@@ -192,3 +223,12 @@ The full envelope and error code list is in [SDK Errors](/docs/sdk/errors).
 - [Quick Start](/docs/guide/quick-start) — the same flow with `curl`
 - [Build Your First Marketplace](/docs/guide/build-your-first-marketplace) — end-to-end tutorial
 - [API Reference](/docs/api-reference/overview) — endpoint surface
+- [Users Reference](/docs/sdk/users) - User creation and AirTM linking (`sdk.users`)
+- [Balance Reference](/docs/sdk/balance) - 9 balance management methods (`sdk.balance`)
+- [Wallet Reference](/docs/sdk/wallet) - Stellar wallet and deposit addresses (`sdk.wallet`)
+- [Top-ups Reference](/docs/sdk/topups) - AirTM deposit workflows (`sdk.topups`)
+- [Orders SDK Reference](/docs/sdk/orders) - `sdk.orders` method-by-method reference
+- [Disputes SDK Reference](/docs/sdk/disputes) - `sdk.disputes` method-by-method reference
+- [Withdrawals SDK Reference](/docs/sdk/withdrawals) - `sdk.withdrawals` method-by-method reference
+- [Quick Start Guide](/docs/guide/quick-start) - Full integration example
+- [API Reference](/docs/api-reference/overview) - REST API documentation

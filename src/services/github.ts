@@ -1,6 +1,7 @@
 import type { RepoStats, ContributorData, IssueData, PullRequestData, CommunityData } from "@/types/community";
 import type { Contributor, GitHubRepo, GitHubPullRequest, GitHubIssue, GitHubRelease } from "@/types/github";
 import { GITHUB_RELEASES_API_URL } from "@/constants/github";
+import type { StatusTone } from "@/components/ui/status-colors";
 import { logger } from '@/utils/logger';
 
 export interface ChangelogEntry {
@@ -8,7 +9,7 @@ export interface ChangelogEntry {
   date: string;
   title: string;
   badge: string;
-  badgeColor: string;
+  badgeTone: StatusTone;
   description: string;
   changes: string[];
 }
@@ -203,24 +204,24 @@ function parseReleaseBody(body: string | null): Pick<ChangelogEntry, "descriptio
   };
 }
 
-function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): Pick<ChangelogEntry, "badge" | "badgeColor"> {
+function getReleaseBadge(release: Pick<GitHubRelease, "draft" | "prerelease">): Pick<ChangelogEntry, "badge" | "badgeTone"> {
   if (release.draft) {
     return {
       badge: "Draft",
-      badgeColor: "bg-content-secondary/10 text-content-secondary",
+      badgeTone: "default",
     };
   }
 
   if (release.prerelease) {
     return {
       badge: "Pre-release",
-      badgeColor: "bg-theme-warning/10 text-theme-warning",
+      badgeTone: "warning",
     };
   }
 
   return {
     badge: "Release",
-    badgeColor: "bg-theme-success/10 text-theme-success",
+    badgeTone: "success",
   };
 }
 

@@ -1,0 +1,217 @@
+---
+title: State Machines
+description: Every status lifecycle in the OFFER-HUB Orchestrator, with its valid transitions and the INVALID_STATE errors you get when a request arrives in the wrong state.
+order: 33
+section: Guides
+---
+
+Most resources in OFFER-HUB carry a `status` that only moves along a fixed set of edges. This page collects those lifecycles in one place: what each status means, which call or provider event moves it forward, and what the API returns when you call an endpoint while the resource is in the wrong state.
+
+<Callout type="note">
+  Everything here is taken from the [OFFER-HUB Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB): the status enums and transition maps in `packages/shared/src/enums/`, the generic `StateMachine` in `packages/shared/src/utils/state-machine.ts`, and the guards in each module's service (cited per section below).
+</Callout>
+
+## How transitions are enforced
+
+Each lifecycle with a transition map gets a `StateMachine` instance (`OrderStateMachine`, `EscrowStateMachine`, `DisputeStateMachine`, `TopUpStateMachine`, `WithdrawalStateMachine`). It exposes `canTransition`, `validateTransition` and `assertTransition`, and treats any status with no outgoing edges as terminal.
+
+What a client actually sees comes from the guard each service runs **before** it touches the database or a provider. Those guards throw NestJS exceptions with `error.code: "INVALID_STATE"`, and the HTTP status depends on the exception class:
+
+| Exception base | HTTP | Used by |
+| --- | --- | --- |
+| `BadRequestException` | `400` | Disputes, milestones, order resolution |
+| `ConflictException` | `409` | Top-up cancel |
+
+<Callout type="warning">
+  The shared `ERROR_HTTP_STATUS` catalog maps `INVALID_STATE` to `409`, but the exception class wins. Branch on `error.code`, not on the HTTP status, and read `error.message` (and `error.details` where present) to see the current state.
+</Callout>
+
+## At a glance
+
+| Lifecycle | Transition map | Diagram |
+| --- | --- | --- |
+| Order | `ORDER_TRANSITIONS` | [Orders Guide](/docs/guide/orders#order-lifecycle) |
+| Escrow | `ESCROW_TRANSITIONS` | [Escrow Guide](/docs/guide/escrow#state-machine) |
+| Dispute | `DISPUTE_TRANSITIONS` | [Dispute](#dispute) |
+| Top-up | `TOPUP_TRANSITIONS` | [Top-up](#top-up) |
+| Withdrawal | `WITHDRAWAL_TRANSITIONS` | [Withdrawal](#withdrawal) |
+| Milestone | None (guarded in `OrdersService`) | [Milestone](#milestone) |
+
+Each map lives next to its status enum (`OrderStatus`, `EscrowStatus`, and so on) in `packages/shared/src/enums/`.
+
+## Dispute
+
+Source: [`dispute-status.enum.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/packages/shared/src/enums/dispute-status.enum.ts), [`resolution.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/resolution/resolution.service.ts), [`disputes.controller.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/disputes/disputes.controller.ts).
+
+A dispute is created when either party calls the resolution endpoint on an `IN_PROGRESS` order. That call also moves the order to `DISPUTED`. From there the dispute only moves forward.
+
+<MermaidDiagram
+  caption="Dispute state machine: every edge is an entry in DISPUTE_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> OPEN: POST /orders/{id}/resolution/dispute
+    OPEN --> UNDER_REVIEW: POST /disputes/{id}/assign
+    UNDER_REVIEW --> RESOLVED: POST /disputes/{id}/resolve
+    RESOLVED --> [*]
+`}
+/>
+
+| Transition | Trigger |
+| --- | --- |
+| New → `OPEN` | `POST /orders/{orderId}/resolution/dispute`, handled by `openDispute` |
+| `OPEN` → `UNDER_REVIEW` | `POST /disputes/{id}/assign`, handled by `assignDispute` |
+| `UNDER_REVIEW` → `RESOLVED` | `POST /disputes/{id}/resolve` with `FULL_RELEASE`, `FULL_REFUND` or `SPLIT`, handled by `resolveDispute` |
+
+`RESOLVED` is terminal.
+
+### Errors
+
+| Endpoint | Rejected when | Response |
+| --- | --- | --- |
+| `POST /disputes/{id}/assign` | Status is not `OPEN` | `400 INVALID_STATE` |
+| `POST /disputes/{id}/resolve` | Status is not `UNDER_REVIEW` | `400 INVALID_STATE` |
+
+Both come from `InvalidDisputeStateException` in [`resolution.exceptions.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/resolution/exceptions/resolution.exceptions.ts). The message reads `Cannot assign dispute dsp_... in state UNDER_REVIEW`. Full request and response shapes are in the [Disputes API](/docs/api-reference/disputes).
+
+## Top-up
+
+Source: [`topup-status.enum.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/packages/shared/src/enums/topup-status.enum.ts), [`topups.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/topups/topups.service.ts), [`payin-status.mapper.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/providers/airtm/mappers/payin-status.mapper.ts).
+
+Top-ups are AirTM pay-ins. The orchestrator creates the record, then follows the AirTM pay-in status through refreshes and webhooks.
+
+<MermaidDiagram
+  caption="Top-up state machine: every edge is an entry in TOPUP_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> TOPUP_CREATED: POST /topups
+    TOPUP_CREATED --> TOPUP_AWAITING_USER_CONFIRMATION: pay-in created
+    TOPUP_AWAITING_USER_CONFIRMATION --> TOPUP_PROCESSING: user confirms
+    TOPUP_AWAITING_USER_CONFIRMATION --> TOPUP_CANCELED: cancel
+    TOPUP_PROCESSING --> TOPUP_SUCCEEDED: succeeded
+    TOPUP_PROCESSING --> TOPUP_FAILED: failed
+    TOPUP_SUCCEEDED --> [*]
+    TOPUP_FAILED --> [*]
+    TOPUP_CANCELED --> [*]
+`}
+/>
+
+| Transition | Trigger |
+| --- | --- |
+| New → `TOPUP_CREATED` | `POST /topups`, handled by `createTopUp` |
+| `TOPUP_CREATED` → `TOPUP_AWAITING_USER_CONFIRMATION` | AirTM pay-in created; the user is sent to `confirmationUri` |
+| `TOPUP_AWAITING_USER_CONFIRMATION` → `TOPUP_PROCESSING` | The user confirms in AirTM (webhook or `POST /topups/{id}/refresh`) |
+| `TOPUP_AWAITING_USER_CONFIRMATION` → `TOPUP_CANCELED` | `POST /topups/{id}/cancel`, or AirTM reports the pay-in canceled |
+| `TOPUP_PROCESSING` → `TOPUP_SUCCEEDED` | AirTM confirms; the user's balance is credited |
+| `TOPUP_PROCESSING` → `TOPUP_FAILED` | AirTM reports a failure |
+
+`TOPUP_SUCCEEDED`, `TOPUP_FAILED` and `TOPUP_CANCELED` are terminal.
+
+### Errors
+
+| Endpoint | Rejected when | Response |
+| --- | --- | --- |
+| `POST /topups/{id}/cancel` | Status is not `TOPUP_AWAITING_USER_CONFIRMATION` | `409 INVALID_STATE` |
+
+`cancelTopUp` raises it as a `ConflictException`. This is the only `INVALID_STATE` guard that returns `details`: `currentStatus` and `allowedStatuses`. See [Wallet & Top-ups](/docs/api-reference/wallet-topups#post-topupsidcancel) for the full response.
+
+<Callout type="note">
+  AirTM is the source of truth for pay-in status, so not every write goes through the map. `POST /topups` stores whatever status AirTM returns for the new pay-in, and marks the top-up `TOPUP_FAILED` if the AirTM call fails. `POST /topups/{id}/refresh` only saves a new status when the transition is valid and otherwise leaves the record as it was, without an error. The AirTM webhook ignores top-ups that are already terminal; otherwise it logs a warning on an invalid transition and applies the status anyway.
+</Callout>
+
+## Withdrawal
+
+Source: [`withdrawal-status.enum.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/packages/shared/src/enums/withdrawal-status.enum.ts), [`withdrawals.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/withdrawals/withdrawals.service.ts), [`payout-status.mapper.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/providers/airtm/mappers/payout-status.mapper.ts).
+
+The map below describes AirTM payouts (`destinationType` of `bank` or `airtm_balance`). Crypto withdrawals take a shortcut, described after the tables.
+
+<MermaidDiagram
+  caption="Withdrawal state machine: every edge is an entry in WITHDRAWAL_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> WITHDRAWAL_CREATED: POST /withdrawals
+    WITHDRAWAL_CREATED --> WITHDRAWAL_COMMITTED: commit
+    WITHDRAWAL_CREATED --> WITHDRAWAL_CANCELED: canceled
+    WITHDRAWAL_COMMITTED --> WITHDRAWAL_PENDING: processing
+    WITHDRAWAL_PENDING --> WITHDRAWAL_PENDING_USER_ACTION: needs action
+    WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_PENDING: action done
+    WITHDRAWAL_PENDING --> WITHDRAWAL_COMPLETED: completed
+    WITHDRAWAL_PENDING --> WITHDRAWAL_FAILED: failed
+    WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_FAILED: failed
+    WITHDRAWAL_COMPLETED --> [*]
+    WITHDRAWAL_FAILED --> [*]
+    WITHDRAWAL_CANCELED --> [*]
+`}
+/>
+
+| Transition | Trigger |
+| --- | --- |
+| New → `WITHDRAWAL_CREATED` | `POST /withdrawals`, handled by `createWithdrawal` |
+| `WITHDRAWAL_CREATED` → `WITHDRAWAL_COMMITTED` | `POST /withdrawals/{id}/commit`, or `commit: true` on create |
+| `WITHDRAWAL_CREATED` → `WITHDRAWAL_CANCELED` | AirTM reports the payout canceled (`payout.canceled`) |
+| `WITHDRAWAL_COMMITTED` → `WITHDRAWAL_PENDING` | AirTM starts processing the payout |
+| `WITHDRAWAL_PENDING` → `WITHDRAWAL_PENDING_USER_ACTION` | AirTM needs the user to act |
+| `WITHDRAWAL_PENDING_USER_ACTION` → `WITHDRAWAL_PENDING` | The user completes the action |
+| `WITHDRAWAL_PENDING` → `WITHDRAWAL_COMPLETED` | Payout completed |
+| `WITHDRAWAL_PENDING` → `WITHDRAWAL_FAILED` | Payout failed |
+| `WITHDRAWAL_PENDING_USER_ACTION` → `WITHDRAWAL_FAILED` | Payout failed |
+
+`WITHDRAWAL_COMPLETED`, `WITHDRAWAL_FAILED` and `WITHDRAWAL_CANCELED` are terminal.
+
+### Errors
+
+Withdrawals do **not** return `INVALID_STATE`. The only state guard on a public endpoint is the commit check:
+
+| Endpoint | Rejected when | Response |
+| --- | --- | --- |
+| `POST /withdrawals/{id}/commit` | Status is not `WITHDRAWAL_CREATED` | `409 WITHDRAWAL_NOT_COMMITTABLE` |
+
+`commitWithdrawal` checks `canCommitPayout` and raises a `ConflictException`. The response includes `details.currentStatus`. Endpoint details live in the [Withdrawals Guide](/docs/guide/withdrawals).
+
+<Callout type="note">
+  Crypto withdrawals (`destinationType: "crypto"`) are created as `WITHDRAWAL_CREATED` and moved straight to `WITHDRAWAL_COMPLETED` or `WITHDRAWAL_FAILED` inside the same request (`executeCryptoWithdrawal`), outside the map above. For AirTM payouts, create and commit both store the status AirTM returns for the payout, so a withdrawal can land directly in a later status such as `WITHDRAWAL_PENDING`, and a failed provider call on create marks it `WITHDRAWAL_FAILED`. Refresh and webhook updates behave like top-ups: refresh skips invalid transitions silently, and the webhook ignores terminal withdrawals but otherwise logs a warning and applies the AirTM status.
+</Callout>
+
+## Milestone
+
+Source: [`milestone-status.enum.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/packages/shared/src/enums/milestone-status.enum.ts), [`orders.service.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/orders/orders.service.ts), [`orders.exceptions.ts`](https://github.com/OFFER-HUB/OFFER-HUB/blob/main/apps/api/src/modules/orders/exceptions/orders.exceptions.ts).
+
+Milestones have no transition map and no `StateMachine` instance. A milestone is created `OPEN` with its order and can only be completed once. There is no endpoint that reopens it.
+
+<MermaidDiagram
+  caption="Milestone state machine: OPEN to COMPLETED, guarded in OrdersService.completeMilestone"
+  chart={`
+stateDiagram-v2
+    [*] --> OPEN: POST /orders
+    OPEN --> COMPLETED: complete
+    COMPLETED --> [*]
+`}
+/>
+
+| Transition | Trigger |
+| --- | --- |
+| New → `OPEN` | `POST /orders` with a `milestones` array |
+| `OPEN` → `COMPLETED` | `POST /orders/{id}/milestones/{milestoneRef}/complete`, handled by `completeMilestone` |
+
+`COMPLETED` is terminal.
+
+### Errors
+
+| Endpoint | Rejected when | Response |
+| --- | --- | --- |
+| `POST /orders/{id}/milestones/{milestoneRef}/complete` | The order is not `IN_PROGRESS` (`InvalidOrderStateException`) | `400 INVALID_STATE` |
+| `POST /orders/{id}/milestones/{milestoneRef}/complete` | The milestone is already `COMPLETED` (`MilestoneAlreadyCompletedException`) | `400 INVALID_STATE` |
+| `POST /orders/{orderId}/resolution/release` | Any milestone is still `OPEN` (`InvalidResolutionStateException` in `requestRelease`) | `400 INVALID_STATE` |
+
+Completing an already completed milestone is rejected before anything is written, so a retry after a timeout cannot complete it twice. It returns `400 INVALID_STATE`, which you can treat as confirmation that the first call went through. See [Orders & Milestones Endpoints](/docs/api-reference/orders#post-apiv1ordersidmilestonesmilestonerefcomplete) for request and response shapes.
+
+## Handling INVALID_STATE
+
+1. Fetch the resource again (`GET /disputes/{id}`, `GET /topups/{id}`, `GET /orders/{id}`) instead of trusting a cached status.
+2. Compare its status with the tables above to see which call is valid next, or whether the resource is already terminal.
+3. Don't retry the same request blindly. These errors describe the resource, not a transient failure, so the same call fails again until the state changes.
+
+## Related pages
+
+- [Data Model](/docs/guide/data-model): the Prisma models and enums behind these statuses
+- [Errors](/docs/api-reference/errors): the full error catalog and SDK exception mapping
+- [Webhooks](/docs/api-reference/webhooks): events emitted on each transition

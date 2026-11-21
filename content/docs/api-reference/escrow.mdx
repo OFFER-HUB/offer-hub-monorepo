@@ -1,0 +1,483 @@
+---
+title: Escrow Endpoints
+description: Per-endpoint reference for the OFFER-HUB escrow API — contract creation and funding — with request parameters, contract signer roles, valid state transitions, error codes, and cURL plus TypeScript SDK examples.
+order: 45
+section: API Reference
+---
+
+An OFFER-HUB escrow is a Stellar smart contract, deployed through Trustless Work, that holds a buyer's funds until the order is resolved. Two endpoints create that contract and move money into it; three more (`release`, `refund`, `dispute`) settle it — see [Resolution Endpoints](/docs/api-reference/resolution).
+
+| Method | Path | Success status | Controller handler |
+| --- | --- | --- | --- |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{id}/escrow` | `201 Created` | `OrdersController.createEscrow` |
+| <Badge variant="primary">POST</Badge> | `/api/v1/orders/{id}/escrow/fund` | `201 Created` | `OrdersController.fundEscrow` |
+
+Both handlers sit in `OrdersController` (`apps/api/src/modules/orders/orders.controller.ts`) and delegate to `OrdersService.createEscrow` / `OrdersService.fundEscrow` (`apps/api/src/modules/orders/orders.service.ts`). With the global `/api/v1` prefix from `apps/api/src/main.ts`, the full paths are `POST /api/v1/orders/{id}/escrow` and `POST /api/v1/orders/{id}/escrow/fund`.
+
+<Callout type="note">
+  This page is written from the Orchestrator source: `apps/api/src/modules/orders/{orders.controller.ts,orders.service.ts,exceptions/orders.exceptions.ts}`, `apps/api/src/providers/trustless-work/clients/escrow.client.ts`, and the enum tables in `packages/shared/src/enums/`. The `apps/api/src/modules/escrow` directory currently holds only a `dto/.gitkeep` — the escrow lifecycle is implemented in the orders, resolution, and trustless-work provider modules, which is where the citations above point.
+</Callout>
+
+## Common behavior
+
+### Authentication and scope
+
+`OrdersController` declares **no guards and no scopes** — no `@UseGuards(ApiKeyGuard, ScopeGuard)` and no `@Scopes(...)` in `apps/api/src/modules/orders/orders.controller.ts`. These routes are **not authenticated and not scope-gated in the current Orchestrator**. The examples still send `Authorization: Bearer …` because that is the convention across these docs, and because a future release may add the guard.
+
+| Aspect | Value on these routes | Source |
+| --- | --- | --- |
+| Authentication | None enforced (no `ApiKeyGuard`) | `orders.controller.ts` |
+| Required scope | None (no `ScopeGuard` / `@Scopes`) | `orders.controller.ts` |
+| Rate limiting | Yes — global `RateLimitGuard` via `APP_GUARD` | `apps/api/src/app.module.ts` |
+| Request body | None — neither handler declares `@Body()` | `orders.controller.ts` |
+
+<Callout type="tip">
+  Neither endpoint takes a body. The amount is always read from the order (`order.amount`), and the currency from `order.currency`, so a request body is ignored entirely. Because no DTO is bound, the global `ValidationPipe` has nothing to validate here.
+</Callout>
+
+### Success status codes
+
+Neither handler sets `@HttpCode`, so NestJS applies its default `201 Created` for `POST` routes. The resolution endpoints set `200 OK` explicitly (`@HttpCode(HttpStatus.OK)`) except `dispute`, which sets `201` — that is why a release returns `200` while escrow creation returns `201`.
+
+### Response envelope
+
+For every endpoint group's envelope in one table, see [Envelope by endpoint group](/docs/api-reference/overview#envelope-by-endpoint-group).
+
+`ResponseInterceptor` (`apps/api/src/common/interceptors/response.interceptor.ts`) wraps the handler's `{ success, data }` payload because `isAlreadyWrapped` only skips wrapping when a `meta` key is present or the payload has exactly one key:
+
+```json
+{
+  "data": { "success": true, "data": { "...": "order" } },
+  "meta": { "requestId": "req_2c8a10", "timestamp": "2026-02-10T09:00:44.512Z" }
+}
+```
+
+Errors use the single-level envelope from `GlobalExceptionFilter` (`apps/api/src/common/filters/global-exception.filter.ts`): `{ "error": { "code", "message", "details?" } }`.
+
+### Idempotency
+
+<Callout type="danger">
+  Neither endpoint supports the `Idempotency-Key` header. `IdempotencyGuard` and `IdempotencyInterceptor` exist (`apps/api/src/common/guards/idempotency.guard.ts`, `apps/api/src/common/interceptors/idempotency.interceptor.ts`) but are not attached to `OrdersController`, so a key sent to these routes is ignored. A replay is blocked by the **state machine** instead: once the order has moved to `ESCROW_FUNDING` or `IN_PROGRESS`, a repeated `create` or `fund` call fails with `400 INVALID_STATE` and touches neither balances nor the chain. See [Idempotency](/docs/api-reference/overview#idempotency) for the endpoints that do honor the header.
+</Callout>
+
+## Contract roles and signer identity
+
+`EscrowClient.createEscrow` (`apps/api/src/providers/trustless-work/clients/escrow.client.ts`) deploys to `/deployer/single-release` or `/deployer/multi-release` with a fixed role set:
+
+| Trustless Work role | Bound to | Meaning |
+| --- | --- | --- |
+| `signer` | Buyer's Stellar address | Wallet that signs the deployment transaction. |
+| `approver` | Buyer | Approves completed work. |
+| `releaseSigner` | Buyer | Releases funds to the receiver. |
+| `serviceProvider` | Seller | Marks milestones complete. |
+| `receiver` | Seller | Receives released funds. |
+| `disputeResolver` | Platform wallet (`PLATFORM_USER_ID`) | Resolves disputes — must differ from the disputer. |
+| `platformAddress` | Platform wallet | Receives the platform fee. |
+
+Every Trustless Work write returns an **unsigned XDR**; the Orchestrator signs it with the matching user's invisible wallet (`paymentProvider.signEscrowTransaction`) and submits it with `escrowClient.sendTransaction`. The platform fee defaults to `5%` when the order metadata does not set `platformFee`.
+
+### Deployment type
+
+`EscrowClient.createEscrow` selects `multi-release` only when the order has **more than one** milestone; zero or one milestone deploys a `single-release` contract. Milestone amounts are validated first — `validateMilestoneAmounts` throws when the milestone amounts do not sum exactly to the order amount, before any chain call is made.
+
+## Order and escrow state transitions
+
+<MermaidDiagram
+  caption="Internal Escrow state machine — generated from ESCROW_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> CREATING: Call TW API
+
+    CREATING --> CREATED: TW confirms creation
+    CREATED --> FUNDING: Starting funding
+
+    FUNDING --> FUNDED: TW confirms funds
+
+    FUNDED --> RELEASING: Release requested
+    FUNDED --> REFUNDING: Refund requested
+    FUNDED --> DISPUTED: Dispute opened
+
+    RELEASING --> RELEASED: TW confirms
+    REFUNDING --> REFUNDED: TW confirms
+
+    DISPUTED --> RELEASED: Release resolution
+    DISPUTED --> REFUNDED: Refund resolution
+
+    RELEASED --> [*]
+    REFUNDED --> [*]
+`}
+/>
+
+<MermaidDiagram
+  caption="Order state machine — generated from ORDER_TRANSITIONS"
+  chart={`
+stateDiagram-v2
+    [*] --> ORDER_CREATED: POST /orders
+
+    ORDER_CREATED --> FUNDS_RESERVED: POST /orders/{id}/reserve
+    ORDER_CREATED --> CLOSED: POST /orders/{id}/cancel
+
+    FUNDS_RESERVED --> ESCROW_CREATING: POST /orders/{id}/escrow
+    FUNDS_RESERVED --> CLOSED: POST /orders/{id}/cancel
+
+    ESCROW_CREATING --> ESCROW_FUNDING: Escrow created in TW
+    ESCROW_FUNDING --> ESCROW_FUNDED: POST /orders/{id}/escrow/fund
+    ESCROW_FUNDING --> IN_PROGRESS: Funding confirmed (fast path)
+
+    ESCROW_FUNDED --> IN_PROGRESS: Work starts
+
+    IN_PROGRESS --> RELEASE_REQUESTED: POST /orders/{id}/resolution/release
+    IN_PROGRESS --> REFUND_REQUESTED: POST /orders/{id}/resolution/refund
+    IN_PROGRESS --> DISPUTED: POST /orders/{id}/resolution/dispute
+
+    RELEASE_REQUESTED --> RELEASED: TW confirms release
+    REFUND_REQUESTED --> REFUNDED: TW confirms refund
+
+    DISPUTED --> RELEASE_REQUESTED: Re-request release
+    DISPUTED --> REFUND_REQUESTED: Re-request refund
+    DISPUTED --> RELEASED: Resolve to release
+    DISPUTED --> REFUNDED: Resolve to refund
+
+    RELEASED --> CLOSED: Cleanup
+    REFUNDED --> CLOSED: Cleanup
+
+    CLOSED --> [*]
+`}
+/>
+
+| Endpoint | Order before | Order after | Escrow after |
+| --- | --- | --- | --- |
+| `POST /orders/{id}/escrow` | `FUNDS_RESERVED` | `ESCROW_CREATING` → `ESCROW_FUNDING` | row created as `CREATED` (or `CREATING` without a contract ID) |
+| `POST /orders/{id}/escrow/fund` | `ESCROW_FUNDING` | `IN_PROGRESS` | `FUNDED` (+ `fundedAt`) |
+
+## POST /api/v1/orders/:id/escrow
+
+Deploys the escrow contract and links it to the order. `OrdersService.createEscrow` verifies that both parties are ready with the payment provider, resolves the buyer, seller, and platform Stellar addresses, moves the order to `ESCROW_CREATING`, deploys the contract, signs the returned XDR with the buyer's wallet, and stores the resulting `trustlessContractId` on a new `escrow` row.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix, e.g. ord_abc123. The handler reads it via @Param('id')." },
+  ]}
+/>
+
+### Preconditions
+
+1. The order exists — otherwise `404 ORDER_NOT_FOUND`.
+2. Order status is `FUNDS_RESERVED` — otherwise `400 INVALID_STATE` (`InvalidOrderStateException`, "Cannot create escrow order … in state …"). Funds must be reserved first with `POST /api/v1/orders/{id}/reserve`.
+3. The order has no escrow record — otherwise `409 ESCROW_ALREADY_EXISTS` (`EscrowAlreadyExistsException`).
+4. `OrderStateMachine.assertTransition(FUNDS_RESERVED → ESCROW_CREATING)` passes.
+5. Buyer and seller both have active payment accounts (`paymentProvider.isUserReady`) — otherwise a plain `Error` surfaces as `500 INTERNAL_ERROR` with the message "Both buyer and seller must have active payment accounts".
+6. Milestone amounts, when the order has milestones, sum to the order amount (`EscrowClient.validateMilestoneAmounts`).
+
+### What the order contributes
+
+The order is the only input — there is no body. The service maps it into `CreateEscrowDto` (`apps/api/src/providers/trustless-work/dto/escrow.dto.ts`) as follows:
+
+| Order field | Sent to Trustless Work as | Note |
+| --- | --- | --- |
+| `order.id` | `engagementId` | Reference back to the order. |
+| `order.amount` | `amount` (USDC, not stroops) | Parsed with `parseFloat`; the client converts. |
+| `order.title` | `title` | Falls back to `Escrow for order {id}`. |
+| `order.description` | `description` | Falls back to a generic string. |
+| `order.milestones[]` | `milestones[]` | `ref`/`title`/`amount` become `description`/`amount` with `receiver: seller_address`. |
+| buyer / seller / platform addresses | `roles.*` | See the role table above. |
+
+### Response
+
+<Badge variant="success">201</Badge> The order with its new escrow relation. Order status is `ESCROW_FUNDING` and escrow status is `CREATED` when the contract ID came back from the send; without a contract ID both stay at their previous state (`ESCROW_CREATING` / `CREATING`).
+
+<ResponseSchema
+  label="Escrow creation response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The order, including escrow, dispute, and milestones (OrderWithRelations)." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.status", type: "string", required: true, description: "ESCROW_FUNDING once the contract is deployed.", enum: ["ESCROW_CREATING", "ESCROW_FUNDING"] },
+    { name: "data.data.buyerId", type: "string", required: true, description: "Buyer user ID — approver, release signer, and deploy signer." },
+    { name: "data.data.sellerId", type: "string", required: true, description: "Seller user ID — service provider and receiver." },
+    { name: "data.data.escrow", type: "object", required: true, description: "The escrow row created by this call." },
+    { name: "data.data.escrow.id", type: "string", required: true, description: "Escrow ID with the esc_ prefix." },
+    { name: "data.data.escrow.trustlessContractId", type: "string", required: false, description: "Deployed Stellar contract address; null when the deployment did not return one.", nullable: true },
+    { name: "data.data.escrow.status", type: "string", required: true, description: "CREATED after a successful deployment.", enum: ["CREATING", "CREATED"] },
+    { name: "data.data.escrow.amount", type: "string", required: true, description: "Escrow amount as a decimal string with two places, copied from the order." },
+    { name: "data.data.escrow.terms", type: "object", required: false, description: "Set to { milestones_required: true } when the order has milestones, otherwise null.", nullable: true },
+    { name: "data.data.escrow.fundedAt", type: "string", required: false, description: "Null until the escrow is funded.", nullable: true },
+    { name: "data.data.escrow.releasedAt", type: "string", required: false, description: "Null until the escrow is released.", nullable: true },
+    { name: "data.data.escrow.refundedAt", type: "string", required: false, description: "Null until the escrow is refunded.", nullable: true },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+    { name: "meta.requestId", type: "string", required: true, description: "Your X-Request-ID, or the UUID v4 the server generated when you sent none." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_abc123",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "2500.00",
+        currency: "USD",
+        status: "ESCROW_FUNDING",
+        title: "Landing page build",
+        description: "Build a landing page",
+        escrow: {
+          id: "esc_01JKL",
+          orderId: "ord_abc123",
+          trustlessContractId: "CCBSP2XK4T7Q…",
+          status: "CREATED",
+          amount: "2500.00",
+          terms: { milestones_required: true },
+          fundedAt: null,
+          releasedAt: null,
+          refundedAt: null,
+          createdAt: "2026-02-10T09:00:44.512Z",
+          updatedAt: "2026-02-10T09:00:44.512Z"
+        },
+        milestones: [
+          { id: "cm0design", orderId: "ord_abc123", milestoneRef: "design", title: "Design mockups", amount: "750.00", status: "OPEN" },
+          { id: "cm0dev", orderId: "ord_abc123", milestoneRef: "dev", title: "Development", amount: "1750.00", status: "OPEN" }
+        ],
+        createdAt: "2026-02-09T18:12:04.221Z",
+        updatedAt: "2026-02-10T09:00:44.601Z"
+      }
+    },
+    meta: { requestId: "req_2c8a10", timestamp: "2026-02-10T09:00:44.700Z" }
+  }}
+/>
+
+### Rollback on failure
+
+If any step after the state change fails, the catch block moves the order back to `FUNDS_RESERVED`, writes an `ESCROW_CREATE_FAILED` audit entry with `result: "FAILURE"`, and rethrows the original error (`orders.service.ts`, `createEscrow`). The error therefore reaches you as a provider failure, not as a state error — read the order again to confirm the rollback landed.
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `INVALID_STATE` | Order is not `FUNDS_RESERVED` (`InvalidOrderStateException`). |
+| `404` | `ORDER_NOT_FOUND` | Unknown order ID. |
+| `409` | `ESCROW_ALREADY_EXISTS` | The order already has an escrow record. |
+| `500` | `INTERNAL_ERROR` | Buyer or seller has no active payment account, milestone amounts do not sum to the order amount, the Trustless Work deploy call failed, or no unsigned transaction came back. In every case the order is rolled back to `FUNDS_RESERVED`. |
+
+```json
+{
+  "error": {
+    "code": "ESCROW_ALREADY_EXISTS",
+    "message": "Escrow already exists for order ord_abc123"
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Escrow creation examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `# No request body: the amount, currency, and milestones come from the order.
+# The order must be in FUNDS_RESERVED — call POST /orders/{id}/reserve first.
+curl -X POST "http://localhost:4000/api/v1/orders/ord_abc123/escrow" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "X-Request-ID: req_2c8a10"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+// Funds must be reserved first: await sdk.orders.reserve("ord_abc123");
+const result = await sdk.orders.createEscrow("ord_abc123");
+
+// The HTTP client returns the parsed JSON body typed as the resource; with the
+// current ResponseInterceptor envelope the order sits under data.data.
+const order = (result as any).data?.data ?? result;
+console.log(order.status, order.escrow?.status); // "ESCROW_FUNDING" "CREATED"
+console.log(order.escrow?.trustlessContractId);  // Stellar contract address`
+    }
+  ]}
+/>
+
+## POST /api/v1/orders/:id/escrow/fund
+
+Moves the buyer's reserved balance into the on-chain contract. `OrdersService.fundEscrow` deducts `order.amount` from the buyer's **reserved** balance, calls the Trustless Work fund endpoint with the buyer's Stellar address, signs and submits the returned XDR with the buyer's wallet, then commits `escrow.status = FUNDED` with `fundedAt` and moves the order to `IN_PROGRESS` in one serializable transaction.
+
+### Path parameters
+
+<ParamTable
+  label="Path parameters"
+  fields={[
+    { name: "id", type: "string", required: true, description: "Order ID with the ord_ prefix, e.g. ord_abc123." },
+  ]}
+/>
+
+### Preconditions
+
+1. The order exists and its status is `ESCROW_FUNDING` — otherwise `400 INVALID_STATE` ("Cannot fund escrow order … in state …").
+2. The order has an escrow row — otherwise `500 INTERNAL_ERROR`, with the message `No escrow found for order {id}`.
+3. That escrow row is in status `CREATED` — otherwise `500 INTERNAL_ERROR`, with the message `Escrow status must be CREATED, got {status}`.
+4. The buyer's reserved balance covers `order.amount` — otherwise `422 RESERVE_NOT_FOUND` (`InsufficientReservedFundsException`, `apps/api/src/modules/balance/exceptions/balance.exceptions.ts`).
+
+<Callout type="warning">
+  `fundEscrow` picks the contract type with `order.milestones?.length ? "multi-release" : "single-release"`, while `EscrowClient.createEscrow` only deploys `multi-release` when there is **more than one** milestone. On an order with exactly one milestone the contract is `single-release` while the fund call addresses the `multi-release` path. Orders with zero or two or more milestones are unaffected.
+</Callout>
+
+### What happens to the money
+
+| Step | Code | Effect |
+| --- | --- | --- |
+| 1 | `balanceService.deductReserved(buyer, { amount, currency, orderId, description })` | Reserved balance decreases by the full order amount. |
+| 2 | `escrowClient.fundEscrow(trustlessContractId, amount, buyerAddress, escrowType)` | Asks Trustless Work for the funding transaction. |
+| 3 | `paymentProvider.signEscrowTransaction(buyerId, unsignedTransaction)` then `escrowClient.sendTransaction(signedXdr)` | Buyer signs and submits; the USDC lands in the contract. |
+| 4 | `prisma.$transaction` | `escrow.status = FUNDED`, `escrow.fundedAt = now()`, `order.status = IN_PROGRESS`, plus an `ESCROW_FUNDED` audit entry. |
+| 5 | `eventBus.emit(ORDER_ESCROW_FUNDED)` | `order.escrow_funded` on the [SSE stream](/docs/api-reference/events). |
+
+### Response
+
+<Badge variant="success">201</Badge> The order with its funded escrow. Order status is `IN_PROGRESS` — the work window is open, and `release`, `refund`, and `dispute` become available.
+
+<ResponseSchema
+  label="Escrow funding response"
+  fields={[
+    { name: "data", type: "object", required: true, description: "Standard envelope added by ResponseInterceptor." },
+    { name: "data.success", type: "boolean", required: true, description: "Always true on a successful call." },
+    { name: "data.data", type: "object", required: true, description: "The order, including escrow, dispute, and milestones." },
+    { name: "data.data.id", type: "string", required: true, description: "Order ID." },
+    { name: "data.data.status", type: "string", required: true, description: "IN_PROGRESS after a successful funding.", enum: ["ESCROW_FUNDING", "IN_PROGRESS"] },
+    { name: "data.data.escrow", type: "object", required: true, description: "The escrow row updated by this call." },
+    { name: "data.data.escrow.status", type: "string", required: true, description: "FUNDED after a successful funding.", enum: ["CREATED", "FUNDED"] },
+    { name: "data.data.escrow.fundedAt", type: "string", required: false, description: "ISO 8601 timestamp of the funding.", nullable: true },
+    { name: "data.data.escrow.trustlessContractId", type: "string", required: false, description: "Deployed Stellar contract address that received the funds.", nullable: true },
+    { name: "data.data.milestones", type: "array", required: true, description: "Milestones included in the response; they start as OPEN." },
+    { name: "meta", type: "object", required: true, description: "Added by ResponseInterceptor: the correlation ID and a server timestamp." },
+  ]}
+  example={{
+    data: {
+      success: true,
+      data: {
+        id: "ord_abc123",
+        buyerId: "usr_buyer123",
+        sellerId: "usr_seller456",
+        amount: "2500.00",
+        currency: "USD",
+        status: "IN_PROGRESS",
+        title: "Landing page build",
+        escrow: {
+          id: "esc_01JKL",
+          orderId: "ord_abc123",
+          trustlessContractId: "CCBSP2XK4T7Q…",
+          status: "FUNDED",
+          amount: "2500.00",
+          terms: { milestones_required: true },
+          fundedAt: "2026-02-10T09:02:11.120Z",
+          releasedAt: null,
+          refundedAt: null,
+          createdAt: "2026-02-10T09:00:44.512Z",
+          updatedAt: "2026-02-10T09:02:11.120Z"
+        },
+        milestones: [
+          { id: "cm0design", orderId: "ord_abc123", milestoneRef: "design", title: "Design mockups", amount: "750.00", status: "OPEN" }
+        ],
+        createdAt: "2026-02-09T18:12:04.221Z",
+        updatedAt: "2026-02-10T09:02:11.240Z"
+      }
+    },
+    meta: { requestId: "req_2c8a11", timestamp: "2026-02-10T09:02:11.402Z" }
+  }}
+/>
+
+### Rollback on failure
+
+If the provider call fails, the catch block reserves the buyer's balance again, moves the order back to `FUNDS_RESERVED`, writes an `ESCROW_FUNDING_FAILED` audit entry, and throws `EscrowFundingFailedException` — so the buyer is never left short.
+
+### Errors
+
+| HTTP | `error.code` | When |
+| --- | --- | --- |
+| `400` | `INVALID_STATE` | Order is not `ESCROW_FUNDING`. |
+| `400` | `ESCROW_FUNDING_FAILED` | The funding flow failed and was rolled back (`EscrowFundingFailedException`, a `BadRequestException` — the shared `ERROR_HTTP_STATUS` table nominally maps this code to `422`). |
+| `422` | `RESERVE_NOT_FOUND` | The buyer's reserved balance is below `order.amount`; `details` reports `requested`, `reserved`, and `currency`. |
+| `500` | `INTERNAL_ERROR` | No escrow row for the order, or the escrow is not in `CREATED`. |
+
+```json
+{
+  "error": {
+    "code": "RESERVE_NOT_FOUND",
+    "message": "Insufficient reserved balance for this operation",
+    "details": { "requested": "2500.00", "reserved": "1200.00", "currency": "USD" }
+  }
+}
+```
+
+### Examples
+
+<CodeTabs
+  label="Escrow funding examples"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `# No request body: the amount is the order amount, debited from the
+# buyer's reserved balance. The order must be in ESCROW_FUNDING.
+curl -X POST "http://localhost:4000/api/v1/orders/ord_abc123/escrow/fund" \\
+  -H "Authorization: Bearer ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "X-Request-ID: req_2c8a11"`
+    },
+    {
+      id: "sdk",
+      label: "TypeScript SDK",
+      language: "typescript",
+      code: `import { OfferHubSDK } from "@offerhub/sdk";
+
+const sdk = new OfferHubSDK({
+  apiUrl: "https://your-orchestrator.example.com",
+  apiKey: "ohk_live_xxxxxxxxxxxxxxxxxxxxxxxx",
+});
+
+const result = await sdk.orders.fundEscrow("ord_abc123");
+
+const order = (result as any).data?.data ?? result;
+console.log(order.status, order.escrow?.status, order.escrow?.fundedAt);
+// "IN_PROGRESS" "FUNDED" "2026-02-10T09:02:11.120Z"
+
+// From here the order can be settled — see the Resolution reference.
+await sdk.orders.release("ord_abc123", "All milestones delivered");`
+    }
+  ]}
+/>
+
+## End-to-end order
+
+<Callout type="tip">
+  The four calls that move a marketplace order from created to settled, in order: `POST /api/v1/orders` → `POST /api/v1/orders/{id}/reserve` → `POST /api/v1/orders/{id}/escrow` → `POST /api/v1/orders/{id}/escrow/fund` → one of `release` / `refund` / `dispute`. The [Orders Guide](/docs/guide/orders) walks the same sequence with SDK calls.
+</Callout>
+
+## Error codes for this group
+
+| Code | HTTP | Endpoints | Meaning |
+| --- | --- | --- | --- |
+| `INVALID_STATE` | `400` | both | The order is not in the state this step requires. |
+| `ORDER_NOT_FOUND` | `404` | both | Unknown order ID. |
+| `ESCROW_ALREADY_EXISTS` | `409` | `escrow` | The order already has an escrow record. |
+| `RESERVE_NOT_FOUND` | `422` | `escrow/fund` | Reserved balance below the order amount. |
+| `ESCROW_FUNDING_FAILED` | `400` | `escrow/fund` | Funding failed and was rolled back. |
+| `INTERNAL_ERROR` | `500` | both | Missing payment accounts, bad milestone totals, wrong escrow status, or a provider failure. |
+
+## Related
+
+- [Resolution Endpoints](/docs/api-reference/resolution) — `release`, `refund`, and `dispute`, the three ways an escrow settles
+- [API Reference overview](/docs/api-reference/overview) — base URL, headers, error envelope, idempotency, and pagination
+- [Escrow Guide](/docs/guide/escrow) and [Escrow Flows](/docs/guide/escrow-flows) — contract roles, milestones, and money movement end to end
+- [Events (SSE)](/docs/api-reference/events) — `order.escrow_creating` and `order.escrow_funded`
+- [Self-Hosting](/docs/guide/self-hosting) — the `PLATFORM_USER_ID`, `STELLAR_USDC_ISSUER`, and Trustless Work settings these flows depend on

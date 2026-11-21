@@ -356,7 +356,7 @@ describe("fetchChangelogEntries", () => {
         date: "March 2026",
         title: "Escrow improvements",
         badge: "Release",
-        badgeColor: "bg-theme-success/10 text-theme-success",
+        badgeTone: "success",
         description: "Ships the new escrow flow.",
         changes: ["Adds deposit endpoint", "Fixes withdrawals"],
       },
@@ -380,16 +380,16 @@ describe("fetchChangelogEntries", () => {
   });
 
   it.each([
-    [{ draft: true }, "Draft"],
-    [{ prerelease: true }, "Pre-release"],
-    [{}, "Release"],
-  ])("badges %j as %s", async (flags, badge) => {
+    [{ draft: true }, "Draft", "default"],
+    [{ prerelease: true }, "Pre-release", "warning"],
+    [{}, "Release", "success"],
+  ])("badges %j as %s", async (flags, badge, tone) => {
     stubReleases([release(flags)]);
 
     const { entries } = await fetchChangelogEntries();
 
     expect(entries[0].badge).toBe(badge);
-    expect(entries[0].badgeColor).toContain("/10");
+    expect(entries[0].badgeTone).toBe(tone);
   });
 
   it("prefers Draft over Pre-release when a release is both", async () => {

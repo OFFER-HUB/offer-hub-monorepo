@@ -2,6 +2,8 @@
 title: Quick Start
 description: Create your first user, order and escrow in a few minutes.
 order: 1
+description: Create your first user and order in 5 minutes.
+order: 11
 section: Guides
 ---
 
@@ -26,12 +28,45 @@ This walkthrough takes a running instance to a funded escrow and a released orde
 curl -X POST http://localhost:4000/api/v1/users \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
+## Step 1: Create a User
+
+Register a buyer in the system. Pick your language below — the docs remember your choice on every page:
+
+<CodeTabs
+  label="Create a user"
+  tabs={[
+    {
+      id: "curl",
+      label: "cURL",
+      language: "bash",
+      code: `curl -X POST http://localhost:4000/api/v1/users \\
+  -H "Authorization: Bearer ohk_live_your_api_key" \\
+  -H "Content-Type: application/json" \\
   -d '{
     "externalUserId": "your-buyer-123",
     "email": "buyer@example.com",
     "type": "BUYER"
-  }'
-```
+  }'`,
+    },
+    {
+      id: "typescript",
+      label: "TypeScript",
+      language: "typescript",
+      code: `import { OfferHubSDK } from '@offerhub/sdk';
+
+const sdk = new OfferHubSDK({
+  apiUrl: process.env.OFFERHUB_API_URL,
+  apiKey: process.env.OFFERHUB_API_KEY,
+});
+
+const user = await sdk.users.create({
+  externalUserId: 'your-user-123',
+  email: 'buyer@example.com',
+  type: 'BUYER',
+});`,
+    },
+  ]}
+/>
 
 ```json
 {
@@ -76,6 +111,7 @@ curl -X POST http://localhost:4000/api/v1/orders \
   -H "Authorization: Bearer ohk_live_your_api_key" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: your-order-reference-001" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440008" \
   -d '{
     "buyerId": "usr_buyer_id",
     "sellerId": "usr_seller_id",
@@ -205,6 +241,12 @@ The stream carries order, escrow, balance, dispute and payout events. Treat each
 | `USER_NOT_FOUND` | Unknown user ID | Create the user first |
 | `IDEMPOTENCY_KEY_REUSED` | Same key, different request body | Use a new key for a new request |
 | `INSUFFICIENT_SCOPE` | Key lacks `write` or `support` | Use a key with the right scope |
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `INSUFFICIENT_FUNDS` | Balance too low | Check `available` before creating order |
+| `INVALID_STATE` | Wrong order status | Check current status before action |
+| `USER_NOT_FOUND` | Unknown user ID | Create user first |
+| `IDEMPOTENCY_CONFLICT` | Same key, different body | Use a new `Idempotency-Key` |
 
 ## Next steps
 

@@ -11,6 +11,10 @@ export const dataRightsSchema = z.object({
   email: dataRightsEmailField,
 });
 
+export const dataRightsConfirmSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/),
+});
+
 export type DataRightsPayload = z.infer<typeof dataRightsSchema>;
 
 /** Message used by GDPR API routes for invalid email. */

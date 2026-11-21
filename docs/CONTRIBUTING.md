@@ -46,6 +46,11 @@ The project uses **npm Workspaces**. You can run the services from the root:
 - **Build**: `npm run build`
 - **Lint**: `npm run lint`
 
+Dependabot checks the root, `mcp/`, `backend/`, and GitHub Actions weekly,
+grouping minor and patch updates. CI also runs `npm audit --omit=dev
+--audit-level=high` against the root dependencies and fails on high or critical
+production advisories.
+
 ### Backend (Orchestrator)
 
 For the backend Orchestrator, see the [OFFER-HUB-Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB-Orchestrator) repository:
