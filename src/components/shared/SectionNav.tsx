@@ -59,7 +59,7 @@ export function SectionNav({
       <div className="max-w-3xl mx-auto px-6 flex justify-center">
         <div
           className={cn(
-            "pointer-events-auto flex items-center p-2 rounded-2xl transition-shadow duration-500 bg-bg-base",
+            "pointer-events-auto flex items-center p-2 rounded-2xl transition-shadow duration-300 bg-bg-base",
             isNavPinned ? "shadow-neu-raised-scrolled" : "shadow-neu-raised"
           )}
         >
@@ -77,7 +77,7 @@ export function SectionNav({
                     onClick={(e) => scrollToId(e, id)}
                     aria-current={isActive ? "true" : undefined}
                     className={cn(
-                      "relative px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300",
+                      "relative inline-flex items-center min-h-11 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300",
                       isActive
                         ? "text-theme-primary z-10"
                         : "text-content-secondary hover:text-content-primary"

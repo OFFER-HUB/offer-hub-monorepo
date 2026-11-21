@@ -44,7 +44,7 @@ export function Input({
                 aria-invalid={error ? "true" : undefined}
                 aria-describedby={error ? errorId : ariaDescribedBy}
                 className={cn(
-                    "w-full rounded-xl px-4 py-3",
+                    "w-full min-h-11 rounded-xl px-4 py-3",
                     "bg-bg-sunken shadow-neu-sunken-subtle",
                     "text-content-primary placeholder:text-content-muted",
                     "focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2",

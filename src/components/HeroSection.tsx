@@ -101,7 +101,7 @@ export function HeroSection() {
             Get Started
             <ArrowRight
               size={15}
-              className="group-hover:translate-x-0.5 transition-transform duration-[200ms]"
+              className="group-hover:translate-x-0.5 transition-transform duration-200"
             />
           </a>
 

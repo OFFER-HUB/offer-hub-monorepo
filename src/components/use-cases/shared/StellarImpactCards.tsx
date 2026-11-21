@@ -180,7 +180,7 @@ function ModeToggleDetailed({
           key={key}
           onClick={() => onChange(key)}
           className={cn(
-            "relative flex min-w-0 items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-[color,box-shadow] duration-300 sm:px-4",
+            "relative flex min-w-0 min-h-11 items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-[color,box-shadow] duration-300 sm:px-4",
             mode === key
               ? "text-theme-primary shadow-neu-raised"
               : "text-content-muted hover:text-content-secondary",
@@ -221,7 +221,7 @@ function ModeToggleSimple({
           key={m}
           onClick={() => onChange(m)}
           className={cn(
-            "relative z-10 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors duration-200",
+            "relative z-10 min-h-11 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors duration-200",
             mode === m
               ? "text-bg-base"
               : "text-content-muted hover:text-content-secondary",

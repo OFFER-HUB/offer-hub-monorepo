@@ -65,7 +65,7 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 {repoStats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-4 sm:p-6 transition-transform duration-500 hover:scale-[1.02] min-w-0 w-full overflow-hidden"
+                    className="group rounded-3xl bg-bg-elevated shadow-neu-raised p-4 sm:p-6 transition-transform duration-300 hover:scale-[1.02] min-w-0 w-full overflow-hidden"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-2.5 rounded-xl bg-bg-sunken shadow-neu-sunken-subtle">

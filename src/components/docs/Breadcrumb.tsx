@@ -76,7 +76,7 @@ export function Breadcrumb() {
               ) : (
                 <Link
                   href={href}
-                  className="text-content-secondary hover:text-content-primary transition-colors font-medium inline-flex items-center min-h-11"
+                  className="text-content-secondary hover:text-content-primary transition-colors font-medium inline-flex items-center min-h-11 min-w-11"
                 >
                   {formatSegment(segment)}
                 </Link>

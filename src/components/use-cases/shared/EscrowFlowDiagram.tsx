@@ -195,7 +195,7 @@ function BlockchainPulse({ active }: { active: boolean }) {
   return (
     <div
       className={cn(
-        "hidden md:block absolute inset-0 pointer-events-none transition-opacity duration-500",
+        "hidden md:block absolute inset-0 pointer-events-none transition-opacity duration-300",
         active ? "opacity-100" : "opacity-0",
       )}
     >

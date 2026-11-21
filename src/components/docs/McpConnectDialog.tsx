@@ -34,7 +34,7 @@ export function McpConnectDialog({ onClose }: McpConnectDialogProps) {
   }
 
   const copyButtonClasses =
-    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 transition-colors";
+    "inline-flex items-center gap-1.5 min-h-11 rounded-lg px-2.5 py-1.5 text-xs font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 transition-colors";
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">

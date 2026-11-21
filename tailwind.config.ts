@@ -36,17 +36,12 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(20px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
-        fadeIn: {
-          from: { opacity: "0" },
-          to: { opacity: "1" },
-        },
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
       },
       animation: {
-        fadeInUp: "fadeInUp 400ms ease-out both",
-        fadeIn: "fadeIn 300ms ease-out both",
+        fadeInUp: "fadeInUp 300ms ease-out both",
         shimmer: "shimmer 1.5s ease-in-out infinite",
       },
       boxShadow: {

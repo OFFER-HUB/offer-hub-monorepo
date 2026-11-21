@@ -35,7 +35,7 @@ export function RepoLinksSection() {
                                 rel="noopener noreferrer"
                                 className="group relative flex min-w-0 w-full items-center gap-5 overflow-hidden p-6 rounded-3xl bg-bg-elevated shadow-neu-raised transition-[box-shadow,transform] duration-300 active:shadow-neu-sunken hover:scale-[1.02]"
                             >
-                                <div className="w-14 h-14 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 group-hover:shadow-neu-sunken-subtle transition-shadow duration-500">
+                                <div className="w-14 h-14 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 group-hover:shadow-neu-sunken-subtle transition-shadow duration-300">
                                     <Github size={24} className="text-theme-primary" />
                                 </div>
 

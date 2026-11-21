@@ -23,7 +23,7 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-24 bg-bg-base transition-colors duration-500">
+    <section id="how-it-works" className="py-24 bg-bg-base transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center mb-16 animate-fadeInUp">
@@ -46,14 +46,14 @@ export function HowItWorksSection() {
               className={cn(
                 "group flex flex-col items-center text-center gap-8 p-10 rounded-3xl",
                 "bg-bg-elevated shadow-neu-raised",
-                "transition-[box-shadow,transform] duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+                "transition-[box-shadow,transform] duration-300 cubic-bezier(0.4, 0, 0.2, 1)",
                 "hover:translate-y-[-12px] hover:shadow-neu-raised-hover",
                 "animate-fadeInUp"
               )}
               style={{ animationDelay: `${i * 150}ms` }}
             >
               {/* Step number container - uses sunken effect */}
-              <div className="w-20 h-20 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 relative z-10 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-[360deg]">
+              <div className="w-20 h-20 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 relative z-10 transition-transform duration-[600ms] ease-out group-hover:scale-110 group-hover:rotate-[360deg]">
                 <span className="text-3xl font-black text-theme-primary drop-shadow-sm">
                   {step.number}
                 </span>
