@@ -65,7 +65,6 @@ This roadmap is the definitive guide to building OFFER-HUB. It maps 100% of the 
 - [x] **Issue 3.1: Payment Provider Abstraction**
     - [x] 3.1.1: `PaymentProvider` interface (Strategy Pattern)
     - [x] 3.1.2: Crypto-native provider (Stellar wallets, USDC)
-    - [x] 3.1.3: Airtm provider (optional, for fiat on/off ramp)
 
 - [x] **Issue 3.2: Trustless Work Integration**
     - [x] 3.2.1: Stellar wallet logic (Balance projection).
@@ -160,14 +159,14 @@ This roadmap is the definitive guide to building OFFER-HUB. It maps 100% of the 
 *Goal: Add crypto-native payment provider using invisible Stellar wallets.*
 
 **Status:** Complete (2026-02-16)
-**Approach:** Strategy Pattern -- NOT deleting AirTM, abstracting with `PaymentProvider` interface
+**Approach:** Strategy Pattern -- abstracting payment rails with the `PaymentProvider` interface
 **Documentation:** See [docs/crypto-native/](./docs/crypto-native/) for full plan and architecture.
 
 ### Context
-- **Problem:** AirTM API requires Enterprise status (5k+ txns/month, $30k+/month) -- not viable
-- **Decision:** Build crypto-native provider as default, keep AirTM as switchable alternative
+- **Problem:** The legacy fiat provider required Enterprise API access that was not viable.
+- **Decision:** Build the crypto-native provider as the default payment rail.
 - **Wallet Strategy:** Invisible wallets (server-side Stellar keypairs, AES-256-GCM encrypted)
-- **Impact:** No code deletion. New provider + interface + wallet module added alongside existing code.
+- **Impact:** New provider + interface + wallet module added alongside existing code.
 
 ### Phase 10.1: Foundation
 - [x] Create `PaymentProvider` interface (Strategy Pattern)
@@ -227,8 +226,7 @@ This roadmap is the definitive guide to building OFFER-HUB. It maps 100% of the 
 3. Rate Limit Load Testing (k6/Artillery)
 
 ### After Phase 9
-1. AirTM adapter -- When Enterprise access is available
-2. Launch crypto-native MVP -- Deploy on testnet, onboard first users
+1. Launch crypto-native MVP -- Deploy on testnet, onboard first users
 
 ---
 

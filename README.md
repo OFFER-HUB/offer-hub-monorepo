@@ -19,14 +19,14 @@
 --------------- Marketplaces Orchestrator & Freelance Platform ---------------
 ```
 
-**OFFER-HUB Orchestrator** is a self-hosted payments orchestration system designed for Marketplaces. It manages a Web2-like experience (balances, top-ups, payments with escrow, and withdrawals) using **Airtm** for fund management and **Trustless Work** for non-custodial escrows on the Stellar network.
+**OFFER-HUB Orchestrator** is a self-hosted payments orchestration system designed for Marketplaces. It manages a Web2-like experience (balances, deposits, payments with escrow, and withdrawals) using **Stellar** wallets, **BlindPay** for bank payouts, and **Trustless Work** for non-custodial escrows on the Stellar network.
 
 ##  Features
 
 - 💰 **User Balances**: Internal management of available and reserved balances.
-- ⚡ **Top-ups**: Fast reloads via Airtm.
+- ⚡ **Deposits**: USDC deposits to each user's Stellar wallet.
 - 🤝 **Smart Escrow**: Secure checkout with non-custodial escrow via TW.
-- 💸 **Withdrawals**: Direct withdrawals to Airtm accounts.
+- 💸 **Withdrawals**: USDC withdrawals to Stellar addresses and bank payouts through BlindPay.
 - 🔐 **Secure & Audited**: Native idempotency, audit logs, and modular architecture.
 
 ## 🛠️ Tech Stack
@@ -112,11 +112,11 @@ Comprehensive documentation is available in the [`/docs`](./docs/) folder:
 
 ### Freelance Marketplace (Primary)
 Connect freelancers with clients using escrow protection:
-1. Client tops up balance via Airtm
+1. Client deposits USDC to their Stellar wallet
 2. Client pays for project → funds go to escrow (Trustless Work)
 3. Freelancer completes work
 4. Client approves → funds released instantly to freelancer
-5. Freelancer withdraws to Airtm
+5. Freelancer withdraws USDC or requests a bank payout through BlindPay
 
 ### Other Marketplaces
 - **E-commerce**: Buyer/seller escrow with delivery confirmation
@@ -175,7 +175,7 @@ Built with ❤️ for the decentralized marketplace future.
 - [NestJS](https://nestjs.com/) - Progressive Node.js framework
 - [Prisma](https://www.prisma.io/) - Next-generation ORM
 - [BullMQ](https://docs.bullmq.io/) - Premium message queue
-- [Airtm](https://www.airtm.com/) - Payment infrastructure
+- [BlindPay](https://www.blindpay.com/) - Bank payouts
 - [Trustless Work](https://trustlesswork.com/) - Non-custodial escrow on Stellar
 
 ---

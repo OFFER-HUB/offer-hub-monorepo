@@ -46,6 +46,15 @@ const nextConfig: NextConfig = {
       { source: "/api/:path*", headers: [...securityHeaders, ...corsHeaders] },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/docs/guide/airtm",
+        destination: "/docs/guide/withdrawals",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     // `[...slug]` is a catch-all and Next.js requires catch-all segments to be
     // the last part of a route, so `/docs/[...slug]/raw/route.ts` cannot exist

@@ -14,7 +14,7 @@ src/
 ├── orders/         # Order lifecycle
 ├── escrow/         # Escrow integration
 ├── resolution/     # Release/refund/dispute
-├── topups/         # Top-up management (Airtm)
+├── topups/         # Top-up management
 ├── withdrawals/    # Withdrawal management
 ├── disputes/       # Dispute resolution
 ├── events/         # Event bus & SSE
@@ -66,7 +66,6 @@ src/
 
 **Integration:**
 - Auto-creates wallet in crypto mode
-- Links Airtm account in airtm mode
 
 ---
 
@@ -161,9 +160,9 @@ CREATED → RESERVED → ESCROW_CREATING → ESCROW_CREATED
 
 ---
 
-### TopUps Module (Airtm Mode)
+### TopUps Module
 
-**Purpose:** Fiat on-ramp via Airtm.
+**Purpose:** Top-up management.
 
 **Key Components:**
 - `TopUpsService`: Create/get/list top-ups
@@ -177,15 +176,14 @@ CREATED → RESERVED → ESCROW_CREATING → ESCROW_CREATED
 
 **Flow:**
 1. Create top-up → get confirmation URL
-2. Redirect user to Airtm
-3. User pays in Airtm
-4. Webhook received → balance credited
+2. User completes payment
+3. Provider webhook received → balance credited
 
 ---
 
 ### Withdrawals Module
 
-**Purpose:** Fiat off-ramp (Airtm) or crypto send (Stellar).
+**Purpose:** Bank payout (BlindPay) or crypto send (Stellar).
 
 **Key Components:**
 - `WithdrawalsService`: Create/commit/get withdrawals
@@ -198,7 +196,7 @@ CREATED → RESERVED → ESCROW_CREATING → ESCROW_CREATED
 - `GET /withdrawals/:id` - Get withdrawal details
 
 **Modes:**
-- **Airtm:** Payout to user's Airtm account
+- **Bank payout:** Payout to a bank account through BlindPay
 - **Crypto:** Send USDC to external Stellar address
 
 ---
@@ -300,16 +298,16 @@ CREATED → RESERVED → ESCROW_CREATING → ESCROW_CREATED
 
 ### Webhooks Module
 
-**Purpose:** Ingress for Airtm and Trustless Work webhooks.
+**Purpose:** Ingress for Trustless Work and BlindPay webhooks.
 
 **Key Components:**
 - `WebhooksController`: Webhook endpoints
 - `WebhooksService`: Process webhooks
-- `AirtmWebhookHandler`: Handle Airtm events
+- `BlindPayWebhookHandler`: Handle BlindPay events
 - `TrustlessWorkWebhookHandler`: Handle TW events
 
 **Endpoints:**
-- `POST /webhooks/airtm` - Airtm webhook
+- `POST /webhooks/blindpay` - BlindPay webhook
 - `POST /webhooks/trustless-work` - Trustless Work webhook
 
 **Security:**
@@ -387,15 +385,11 @@ DATABASE_URL=postgresql://...
 REDIS_URL=redis://...
 
 # Payment Provider
-PAYMENT_PROVIDER=crypto  # or 'airtm'
+PAYMENT_PROVIDER=crypto
 
 # Crypto Mode
 WALLET_ENCRYPTION_KEY=...
 STELLAR_NETWORK=testnet  # or 'mainnet'
-
-# Airtm Mode
-AIRTM_API_KEY=...
-AIRTM_SECRET=...
 
 # Trustless Work
 TRUSTLESS_WORK_API_KEY=...
