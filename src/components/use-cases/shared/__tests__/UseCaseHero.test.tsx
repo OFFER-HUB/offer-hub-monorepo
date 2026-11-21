@@ -1,26 +1,10 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ShoppingCart } from "lucide-react";
+
 import { UseCaseHero, type UseCaseHeroProps } from "../UseCaseHero";
 
-// framer-motion's `whileInView` (used by the "At a glance" stat cards) relies on
-// IntersectionObserver, which jsdom does not implement.
-beforeAll(() => {
-  vi.stubGlobal(
-    "IntersectionObserver",
-    class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-      takeRecords() {
-        return [];
-      }
-    },
-  );
-});
-
 const baseProps: UseCaseHeroProps = {
-  gradientId: "test-network-line",
   badgeLabel: "CASE STUDY: LVL-9 TEST",
   headline: "Test Headline",
   subheadline: "A concise test subheadline describing the use case.",
@@ -31,15 +15,6 @@ const baseProps: UseCaseHeroProps = {
     { label: "Target", value: "B2B / Test", accent: "Test Scope" },
     { label: "Provider", value: "Stellar (USDC)", accent: "Settlement Layer" },
     { label: "Features", value: "A, B, C", accent: "Release Logic" },
-  ],
-  nodes: [
-    { id: "a", x: 16, y: 44, size: 12, delay: 0 },
-    { id: "b", x: 50, y: 38, size: 14, delay: 0.6 },
-    { id: "c", x: 86, y: 50, size: 10, delay: 1.5 },
-  ],
-  links: [
-    ["a", "b"],
-    ["b", "c"],
   ],
 };
 
@@ -85,29 +60,16 @@ describe("UseCaseHero", () => {
     }
   });
 
-  it("renders the background network graph from nodes and links", () => {
+  it("uses a calm solid surface with no animated network behind the copy", () => {
     const { container } = render(<UseCaseHero {...baseProps} />);
 
-    // The background network graph lives in its own 100x100 SVG.
-    const graph = container.querySelector('svg[viewBox="0 0 100 100"]');
-    expect(graph).not.toBeNull();
+    const surface = container.querySelector(".bg-bg-elevated");
+    expect(surface).not.toBeNull();
 
-    // One gradient definition using the supplied id.
+    // The old animated background graph lived in a 100x100 SVG viewBox.
+    expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeNull();
     expect(
-      graph!.querySelector(`linearGradient#${baseProps.gradientId}`),
-    ).not.toBeNull();
-
-    // One <line> per link, wired to the gradient.
-    const lines = graph!.querySelectorAll("line");
-    expect(lines).toHaveLength(baseProps.links.length);
-    expect(lines[0]).toHaveAttribute(
-      "stroke",
-      `url(#${baseProps.gradientId})`,
-    );
-
-    // Each node renders its group of three concentric circles.
-    expect(graph!.querySelectorAll("circle")).toHaveLength(
-      baseProps.nodes.length * 3,
-    );
+      container.querySelectorAll('div[style*="radial-gradient"]'),
+    ).toHaveLength(0);
   });
 });
