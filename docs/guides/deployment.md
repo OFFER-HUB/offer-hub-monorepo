@@ -236,7 +236,7 @@ REDIS_URL=rediss://:password@host:6379
 # Auth
 OFFERHUB_MASTER_KEY=<long-random-secret>
 
-# Payment Provider (crypto or airtm)
+# Payment Provider
 PAYMENT_PROVIDER=crypto
 
 # Trustless Work
@@ -260,15 +260,6 @@ STELLAR_NETWORK=mainnet               # or testnet for development
 Generate encryption key:
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-### Required for AirTM Mode (`PAYMENT_PROVIDER=airtm`)
-
-```env
-AIRTM_ENV=prod              # sandbox or prod
-AIRTM_API_KEY=<ak_xxx>
-AIRTM_API_SECRET=<as_xxx>
-AIRTM_WEBHOOK_SECRET=<whs_xxx>
 ```
 
 ---
@@ -348,7 +339,7 @@ Use this endpoint for load balancer health checks and uptime monitoring.
 - [ ] `OFFERHUB_MASTER_KEY` is a long random secret (not a memorable password)
 - [ ] `WALLET_ENCRYPTION_KEY` is a fresh 32-byte random hex value
 - [ ] `WALLET_ENCRYPTION_KEY` is backed up in at least 2 secure locations (not the DB)
-- [ ] `TRUSTLESS_WEBHOOK_SECRET` and `AIRTM_WEBHOOK_SECRET` are set
+- [ ] `TRUSTLESS_WEBHOOK_SECRET` is set
 - [ ] No `.env` file committed to git
 - [ ] Secrets stored in platform secrets manager (Railway Variables, Render Env, AWS Secrets Manager)
 
@@ -428,7 +419,7 @@ services:
 | `STELLAR_NETWORK` | `testnet` | `testnet` | `mainnet` |
 | `LOG_LEVEL` | `debug` | `info` | `warn` |
 | `DATABASE_URL` | Supabase free/local | Supabase Pro | Supabase Pro/Enterprise |
-| `PAYMENT_PROVIDER` | `crypto` | `crypto` | `crypto` or `airtm` |
+| `PAYMENT_PROVIDER` | `crypto` | `crypto` | `crypto` |
 | `PUBLIC_BASE_URL` | `http://localhost:4000` | `https://staging.yourapp.com` | `https://api.yourapp.com` |
 
 ---
@@ -461,7 +452,7 @@ node apps/api/dist/main.js 2>&1 | your-log-aggregator
 ### Events for Ops Monitoring
 
 Subscribe to these events for operational awareness:
-- `withdrawal.failed` — investigate Stellar/AirTM issue
+- `withdrawal.failed` — investigate the Stellar transaction or provider response
 - `provider_error` — check Trustless Work status
 - Any pattern of `INVALID_STATE` errors — possible integration bug
 

@@ -75,7 +75,7 @@ You're building a platform where:
 
 You need programmable USDC payments for:
 - Cross-border payments between LATAM users
-- On-ramp/off-ramp via AirTM (fiat ↔ USDC)
+- USDC settlement on Stellar
 - Automated payment disbursement
 
 ---
@@ -92,11 +92,6 @@ Buyer deposits USDC → Creates order → Funds escrow → Work delivered → Re
 **With dispute handling:**
 ```
 ... → Work disputed → Support reviews → FULL_RELEASE | FULL_REFUND | SPLIT → Order closed
-```
-
-**With AirTM (fiat support):**
-```
-Buyer tops up via AirTM (bank/card) → Same escrow flow → Seller withdraws to bank via AirTM
 ```
 
 ---
@@ -136,24 +131,8 @@ Every state change emits a domain event streamed via SSE. Your backend subscribe
 ### Full Audit Log
 Every balance change, state transition, and blockchain interaction is recorded in PostgreSQL with timestamps. Complete traceability for compliance and debugging.
 
-### Payment Provider Abstraction
-Switch between crypto (Stellar USDC, default) and AirTM (fiat) via a single environment variable: `PAYMENT_PROVIDER=crypto|airtm`. The escrow mechanics are identical either way.
-
----
-
-## Payment Providers
-
-| Feature | Crypto-Native (default) | AirTM (optional) |
-|---------|------------------------|-----------------|
-| Deposit method | Send USDC to Stellar address | Fiat payin via AirTM redirect |
-| Withdrawal method | Direct USDC to Stellar address | Payout to bank/mobile money |
-| Settlement currency | USDC (Stellar) | USD |
-| KYC required | No | AirTM KYC |
-| Webhook required | No (Horizon SSE) | Yes (AirTM webhooks) |
-| Speed | Seconds | Minutes to days |
-| LATAM coverage | Global | LATAM-focused |
-
-For most new deployments, **crypto mode is recommended**. AirTM is available for teams that need fiat on/off-ramp via AirTM's network.
+### Payment Rail
+Deposits and withdrawals use USDC on Stellar. Bank payouts are handled through BlindPay in supported corridors. Escrow mechanics are the same for every flow.
 
 ---
 
@@ -220,4 +199,3 @@ curl http://localhost:4000/api/v1/balances/usr_abc123 \
 | [Errors & Troubleshooting](./errors-troubleshooting.md) | Error codes and debugging |
 | [Deployment](./deployment.md) | Production deployment |
 | [Scaling & Customization](./scaling-customization.md) | Horizontal scaling |
-| [AirTM Integration](./airtm.md) | AirTM fiat payment provider |

@@ -55,7 +55,6 @@ The wizard will ask for:
 | API Port | Default: `4000` |
 | PostgreSQL URL | Use the **pooler** URL (port 6543) for Supabase |
 | Redis URL | `redis://` or `rediss://` for TLS |
-| Payment provider | `crypto` (Stellar, default) or `airtm` |
 | Stellar network | `testnet` for development, `mainnet` for production |
 | Trustless Work API key | From your TW dashboard |
 | Trustless Work Webhook Secret | From your TW dashboard |
@@ -139,8 +138,8 @@ await sdk.orders.release(order.data.id, 'Work completed');
 | `sdk.balance` | `get()`, `sync()` | User balance |
 | `sdk.orders` | `create()`, `get()`, `list()`, `fund()`, `release()`, `cancel()` | Escrow orders |
 | `sdk.disputes` | `create()`, `get()`, `list()` | Dispute management |
-| `sdk.topups` | `create()`, `get()` | AirTM top-ups (AirTM mode only) |
-| `sdk.withdrawals` | `create()`, `get()` | AirTM withdrawals (AirTM mode only) |
+| `sdk.topups` | `create()`, `get()` | Top-up management |
+| `sdk.withdrawals` | `create()`, `get()` | Withdrawal management |
 
 ### Error handling
 

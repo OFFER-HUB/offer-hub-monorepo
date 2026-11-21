@@ -11,7 +11,6 @@ export const metadata: Metadata = {
     "non-custodial",
     "Stellar",
     "Trustless Work",
-    "Airtm",
     "payment orchestration",
     "USDC",
   ],
