@@ -45,14 +45,18 @@ function collectDefined() {
   const twConfigPath = path.join(ROOT, "tailwind.config.ts");
   const twConfig = fs.readFileSync(twConfigPath, "utf8");
 
-  const boxShadowMatch = twConfig.match(/boxShadow:\s*{([\s\S]*?)\n\s*},/);
+  const boxShadowMatch = twConfig.match(
+    /boxShadow:\s*{([\s\S]*?)\r?\n\s*},/,
+  );
   if (boxShadowMatch) {
     for (const m of boxShadowMatch[1].matchAll(/["']?([a-zA-Z0-9-]+)["']?\s*:/g)) {
       shadow.add(m[1]);
     }
   }
 
-  const animationMatch = twConfig.match(/\banimation:\s*{([\s\S]*?)\n\s*},/);
+  const animationMatch = twConfig.match(
+    /\banimation:\s*{([\s\S]*?)\r?\n\s*},/,
+  );
   if (animationMatch) {
     for (const m of animationMatch[1].matchAll(/["']?([a-zA-Z0-9-]+)["']?\s*:/g)) {
       animate.add(m[1]);
@@ -60,7 +64,9 @@ function collectDefined() {
   }
 
   // Extended color names, valid as `shadow-{color}`.
-  const colorsMatch = twConfig.match(/colors:\s*{([\s\S]*?)\n\s*},\n\s*keyframes/);
+  const colorsMatch = twConfig.match(
+    /colors:\s*{([\s\S]*?)\r?\n\s*},\r?\n\s*keyframes/,
+  );
   if (colorsMatch) {
     for (const m of colorsMatch[1].matchAll(/["']?([a-zA-Z0-9-]+)["']?\s*:/g)) {
       BUILTIN_COLOR_NAMES.add(m[1]);
