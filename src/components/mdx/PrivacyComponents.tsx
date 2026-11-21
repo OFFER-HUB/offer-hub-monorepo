@@ -1,6 +1,7 @@
 import React from "react";
 import { Mail, Link2 } from "lucide-react";
 import { DataRightsForm } from "./DataRightsForm";
+import { Callout } from "@/components/docs/Callout";
 import { getIcon, type IconName } from "@/lib/icon-registry";
 import { COMPANY_INFO } from "@/data/company-info";
 import { legalSlug } from "@/components/legal/legalSlug";
@@ -134,15 +135,13 @@ export function ContactSection(): React.ReactElement {
             </span>
           </a>
         ))}
-        <div className="rounded-2xl px-6 py-5 shadow-neu-raised-sm bg-bg-elevated">
-          <p className="text-xs leading-relaxed font-medium text-content-secondary">
-            {COMPANY_INFO.name}
-            <br />
-            {COMPANY_INFO.address.line1}
-            <br />
-            {COMPANY_INFO.address.line2}
-          </p>
-        </div>
+        <Callout tone="note" label="Registered office" className="my-0">
+          {COMPANY_INFO.name}
+          <br />
+          {COMPANY_INFO.address.line1}
+          <br />
+          {COMPANY_INFO.address.line2}
+        </Callout>
       </div>
     </div>
   );

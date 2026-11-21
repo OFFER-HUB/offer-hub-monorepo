@@ -1,8 +1,9 @@
 "use client";
 
 import Script from "next/script";
-import { Send, User, Mail, MessageSquare, CheckCircle2, AlertCircle, Timer } from "lucide-react";
+import { Send, User, Mail, MessageSquare, CheckCircle2 } from "lucide-react";
 import { FormField } from "@/components/forms/FormField";
+import { Callout } from "@/components/docs/Callout";
 import { useWaitlistForm } from "@/hooks/use-waitlist-form";
 
 export function RegistrationForm() {
@@ -62,19 +63,15 @@ export function RegistrationForm() {
                     className="p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-8"
                 >
                     {error && (
-                        <div role="alert" className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 flex items-start gap-3 animate-fadeIn">
-                            <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-red-700 dark:text-red-400 font-medium">{error}</p>
-                        </div>
+                        <Callout tone="danger" role="alert" label="Submission error" className="my-0 animate-fadeIn">
+                            {error}
+                        </Callout>
                     )}
 
                     {cooldownSeconds > 0 && (
-                        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 flex items-center gap-3 animate-fadeIn">
-                            <Timer size={20} className="text-amber-500 flex-shrink-0" />
-                            <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
-                                Please wait <span className="font-black">{cooldownSeconds}s</span> before trying again.
-                            </p>
-                        </div>
+                        <Callout tone="warning" label="Please wait" className="my-0 animate-fadeIn">
+                            Please wait <span className="font-bold">{cooldownSeconds}s</span> before trying again.
+                        </Callout>
                     )}
 
                     <FormField

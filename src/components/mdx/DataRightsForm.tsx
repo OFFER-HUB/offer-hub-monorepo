@@ -4,6 +4,7 @@ import React from "react";
 import { ShieldCheck, Trash2, Download } from "lucide-react";
 import { useDataRightsForm } from "@/hooks/use-data-rights-form";
 import { Input } from "@/components/ui/Input";
+import { Callout } from "@/components/docs/Callout";
 
 const iconMap = {
   ShieldCheck,
@@ -67,12 +68,14 @@ export function DataRightsForm({
           {loading ? "Processing…" : buttonLabel}
         </button>
         {status && (
-          <p
+          <Callout
+            tone={status.ok ? "tip" : "danger"}
             role="alert"
-            className={`text-xs font-medium ${status.ok ? "text-theme-primary" : "text-theme-error"}`}
+            label={status.ok ? "Request received" : "Request failed"}
+            className="my-0 text-xs font-medium"
           >
             {status.message}
-          </p>
+          </Callout>
         )}
       </form>
     </div>

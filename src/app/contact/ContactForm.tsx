@@ -1,7 +1,8 @@
 "use client";
 
-import { Send, User, Mail, MessageSquare, Building2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Send, User, Mail, MessageSquare, Building2, CheckCircle2 } from "lucide-react";
 import { FormField } from "@/components/forms/FormField";
+import { Callout } from "@/components/docs/Callout";
 import { useContactForm } from "@/hooks/use-contact-form";
 
 export function ContactForm() {
@@ -30,10 +31,9 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="p-8 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
       {submitError && (
-        <div role="alert" aria-live="assertive" className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 flex items-start gap-3 animate-fadeIn">
-          <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-400 font-medium">{submitError}</p>
-        </div>
+        <Callout tone="danger" role="alert" label="Submission error" className="my-0 animate-fadeIn">
+          {submitError}
+        </Callout>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

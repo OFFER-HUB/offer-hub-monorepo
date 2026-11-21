@@ -14,7 +14,9 @@ This guide documents the OFFER-HUB design system, including colors, typography, 
 
 ## API Schema Components
 
-Use `ParamTable` for request parameters and `ResponseSchema` for response fields. Both components use the theme tokens and keep wide tables inside a labelled, keyboard-focusable scroll region on small screens. Nested fields start expanded and can be collapsed; field metadata supports defaults, enums, nullable values, and deprecation notes.
+Use `ParamTable` for request parameters and `ResponseSchema` for response fields. Both use the shared `Table` exported from `src/components/docs/ParamTable.tsx`, as do MDX tables and the roadmap table. The table keeps wide content inside a labelled, keyboard-focusable scroll region so narrow viewports never widen the page. Nested fields start expanded and can be collapsed; field metadata supports defaults, enums, nullable values, and deprecation notes.
+
+All code samples render through the single `CodeBlock` in `src/components/docs/CodeBlock.tsx`: fenced MDX blocks, `CodeTabs`, `CommandLine` (terminal mode), the API explorer, `ResponseSchema`, the MCP dialog and the use-case showcase. Shiki uses palette CSS variables so tokens follow light and dark themes; the shared header carries the language/label, optional tabs and the copy button. Use `Callout` in `src/components/docs/Callout.tsx` for notices instead of local alert markup.
 
 The example below is reviewed against the checked-in Orchestrator contract at `public/openapi.json`: the `/balances` operation (`get-user-balances`) and its response example. In the orchestrator source, keep the corresponding controller and DTO references alongside the contract when updating a schema page.
 
@@ -276,8 +278,9 @@ Rules and behaviour:
   roving `tabindex`. `ArrowLeft` / `ArrowRight` move between tabs, `Home` / `End`
   jump to the first / last tab, and only the selected tab is in the tab order.
   Panels are wired with `aria-controls` / `aria-labelledby`.
-- **Copy per panel** — each selected panel's **Copy** button copies that
-  panel's code; inactive panels are hidden from view and the accessibility tree.
+- **Copy per panel** — the shared `CodeBlock` header button copies the selected
+  panel's code and announces the result in a polite live region; inactive panels
+  are hidden from view and the accessibility tree.
 - **Selection is remembered** — the chosen tab label is persisted in
   `localStorage` under `offer-hub-docs-code-tab` and re-applied on every docs
   page. All `CodeTabs` instances on a page stay in sync (custom `storage` /
