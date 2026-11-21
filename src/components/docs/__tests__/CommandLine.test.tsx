@@ -25,8 +25,7 @@ describe("CommandLine", () => {
     });
     expect(region).toBeInTheDocument();
     expect(region).toHaveAttribute("tabindex", "0");
-    expect(screen.getByText("git status")).toBeInTheDocument();
-    expect(screen.getByText("$")).toBeInTheDocument();
+    expect(region).toHaveTextContent("$ git status");
   });
 
   it("renders custom title or label in header", () => {
