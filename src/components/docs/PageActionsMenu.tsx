@@ -326,7 +326,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls="page-actions-menu"
-        className="neu-circle h-10 flex items-center gap-2 px-4 text-sm font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
+        className="neu-circle min-h-11 flex items-center gap-2 px-4 text-sm font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
       >
         {copiedItem === "page" ? <Check size={16} /> : <Copy size={16} />}
         <span>{copiedItem === "page" ? "Copied!" : "Copy page"}</span>

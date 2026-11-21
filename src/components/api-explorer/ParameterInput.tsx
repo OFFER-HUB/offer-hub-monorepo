@@ -67,7 +67,7 @@ export function ParameterInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={cn(
-            "w-full rounded-xl px-3 py-2.5 text-sm font-medium",
+            "w-full min-h-11 rounded-xl px-3 py-2.5 text-sm font-medium",
             "bg-bg-sunken shadow-neu-sunken-subtle",
             "text-content-primary",
             "border border-transparent transition-all duration-200",

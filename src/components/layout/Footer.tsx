@@ -83,7 +83,7 @@ export function Footer() {
         <div className="rounded-3xl px-10 py-12 bg-bg-elevated shadow-neu-raised">
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
             <div className="flex flex-col gap-6 md:w-72 md:flex-shrink-0 min-w-0 w-full max-w-full">
-              <Link href="/" className="flex items-center gap-2.5">
+              <Link href="/" className="flex items-center gap-2.5 min-h-11">
                 <Image
                   src={
                     resolvedTheme === "dark"
@@ -141,14 +141,14 @@ export function Footer() {
                                 new CustomEvent(COOKIE_PREFERENCES_EVENT)
                               );
                             }}
-                            className="inline-flex items-center min-h-11 text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
+                            className="inline-flex items-center min-h-11 min-w-11 text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
                           >
                             {link.label}
                           </a>
                         ) : (
                           <Link
                             href={link.href}
-                            className="inline-flex items-center min-h-11 text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
+                            className="inline-flex items-center min-h-11 min-w-11 text-sm text-content-secondary hover:text-content-primary transition-colors duration-200"
                           >
                             {link.label}
                           </Link>

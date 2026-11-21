@@ -40,7 +40,7 @@ export const TERMS_MDX_COMPONENTS: MDXComponents = {
   a: ({ href, children }) => (
     <a
       href={href}
-      className="font-bold text-theme-primary hover:text-content-primary underline underline-offset-2"
+      className="inline-flex items-center min-h-11 font-bold text-theme-primary hover:text-content-primary underline underline-offset-2"
     >
       {children}
     </a>

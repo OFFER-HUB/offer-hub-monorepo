@@ -231,7 +231,7 @@ export function CodeIntegrationShowcase({
                     id={`${tab.id}-tab`}
                     onClick={() => setActiveTabId(tab.id)}
                     className={cn(
-                      "flex items-center gap-1.5 rounded-xl px-4 py-2",
+                      "flex items-center gap-1.5 min-h-11 rounded-xl px-4 py-2",
                       "text-[11px] font-bold uppercase tracking-widest font-mono",
                       "transition-[color,background-color,box-shadow] duration-200 focus:outline-none",
                       isActive

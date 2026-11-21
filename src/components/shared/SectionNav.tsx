@@ -77,7 +77,7 @@ export function SectionNav({
                     onClick={(e) => scrollToId(e, id)}
                     aria-current={isActive ? "true" : undefined}
                     className={cn(
-                      "relative px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300",
+                      "relative inline-flex items-center min-h-11 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300",
                       isActive
                         ? "text-theme-primary z-10"
                         : "text-content-secondary hover:text-content-primary"

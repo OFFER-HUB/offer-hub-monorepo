@@ -67,7 +67,7 @@ export function ProcessorCard({
           href={link}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-bold text-theme-primary hover:underline flex items-center gap-1"
+          className="text-xs font-bold text-theme-primary hover:underline inline-flex items-center gap-1 min-h-11"
         >
           Privacy Policy <Link2 size={12} />
         </a>

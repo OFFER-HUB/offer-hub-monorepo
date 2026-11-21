@@ -97,7 +97,7 @@ export function Navbar() {
               <Link
                 href="/"
                 className={cn(
-                  "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
+                  "inline-flex items-center min-h-11 px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
                   "transition-[color,box-shadow] duration-300 ease-out bg-bg-base",
                   isLinkActive("/", pathname)
                     ? "text-content-primary shadow-neu-sunken-subtle"
@@ -111,7 +111,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
+                    "inline-flex items-center min-h-11 px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
                     "transition-[color,box-shadow] duration-300 ease-out bg-bg-base",
                     isLinkActive(link.href, pathname)
                       ? "text-content-primary shadow-neu-sunken-subtle"
@@ -128,7 +128,7 @@ export function Navbar() {
               <ThemeToggle />
               <a
                 href="#waitlist-form"
-                className="px-6 py-2 rounded-full text-sm font-semibold btn-neumorphic-primary flex items-center gap-2 group"
+                className="min-h-11 px-6 py-2 rounded-full text-sm font-semibold btn-neumorphic-primary flex items-center gap-2 group"
               >
                 Join Waitlist
                 <Send

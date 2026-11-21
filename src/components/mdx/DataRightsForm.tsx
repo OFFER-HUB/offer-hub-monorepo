@@ -58,7 +58,7 @@ export function DataRightsForm({
         <button
           type="submit"
           disabled={loading}
-          className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-colors disabled:opacity-50 ${
+          className={`min-h-11 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-colors disabled:opacity-50 ${
             destructive
               ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
               : "bg-theme-primary text-white hover:bg-theme-primary-hover shadow-lg"

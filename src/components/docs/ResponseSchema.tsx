@@ -56,7 +56,7 @@ export function ResponseSchema({
           <button
             type="button"
             onClick={copyExample}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-bg-base px-3 text-xs font-bold text-content-secondary shadow-neu-raised-sm transition-shadow hover:text-theme-primary hover:shadow-neu-raised-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-bg-base px-3 text-xs font-bold text-content-secondary shadow-neu-raised-sm transition-shadow hover:text-theme-primary hover:shadow-neu-raised-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
             aria-label="Copy JSON example"
           >
             {copied ? (

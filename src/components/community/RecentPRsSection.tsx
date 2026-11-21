@@ -25,7 +25,7 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
               href={pr.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-black text-content-primary leading-tight hover:text-theme-primary transition-colors mb-2 min-h-6 max-w-full overflow-hidden truncate flex items-center"
+              className="text-sm font-black text-content-primary leading-tight hover:text-theme-primary transition-colors mb-2 min-h-11 max-w-full overflow-hidden truncate flex items-center"
             >
               {pr.title}
             </a>

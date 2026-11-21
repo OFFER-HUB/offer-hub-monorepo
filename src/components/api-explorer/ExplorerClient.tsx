@@ -77,13 +77,13 @@ export function ExplorerClient({ categories }: ExplorerClientProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search endpoints by path, title, or description…"
-          className="bg-transparent flex-1 min-h-6 text-content-primary placeholder:text-content-secondary w-full outline-none"
+          className="bg-transparent flex-1 min-h-11 text-content-primary placeholder:text-content-secondary w-full outline-none"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
             aria-label="Clear search"
-            className="text-content-secondary hover:text-content-primary transition-colors"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 text-content-secondary hover:text-content-primary transition-colors"
           >
             <X size={16} aria-hidden="true" />
           </button>

@@ -59,7 +59,7 @@ export function CookieConsentBanner() {
           We use cookies and analytics to improve your experience. Read our{" "}
           <Link
             href="/privacy"
-            className="inline-flex items-center min-h-6 text-theme-primary font-semibold underline-offset-2 hover:underline"
+            className="inline-flex items-center min-h-11 text-theme-primary font-semibold underline-offset-2 hover:underline"
           >
             Privacy Policy
           </Link>{" "}
