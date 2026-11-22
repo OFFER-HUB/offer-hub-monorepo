@@ -1,4 +1,3 @@
-import { ArchitectureSection } from "@/components/shared/ArchitectureSection";
 import { ZoomableDiagram } from "@/components/shared/ZoomableDiagram";
 import {
   Table,
@@ -6,25 +5,67 @@ import {
   TABLE_HEAD_CLASS,
   TABLE_ROW_CLASS,
 } from "@/components/docs/ParamTable";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SCF_GANTT_CHART } from "./scf-tranche-roadmap.charts";
 
 export function SCFTrancheRoadmap() {
+  const milestones = [
+    {
+      code: "T0 — Upfront",
+      date: "On award",
+      cost: "—",
+      payout: "$8,000",
+      pct: "10%",
+      status: "completed" as const,
+    },
+    {
+      code: "T1 — MVP: SWK Connection & Auth",
+      date: "Sept 1, 2026",
+      cost: "$16,000",
+      payout: "$16,000",
+      pct: "22%",
+      status: "in-progress" as const,
+    },
+    {
+      code: "T2 — Testnet: Core Integrations",
+      date: "Oct 20, 2026",
+      cost: "$19,500",
+      payout: "$19,500",
+      pct: "26%",
+      status: "planned" as const,
+    },
+    {
+      code: "T3 — Mainnet Launch & OS Adapters",
+      date: "Dec 5, 2026",
+      cost: "$30,500",
+      payout: "$30,500",
+      pct: "41%",
+      status: "planned" as const,
+    },
+  ];
+
   return (
-    <ArchitectureSection
-      id="roadmap"
-      sectionClassName="px-6 py-24 bg-bg-base"
-      eyebrowClassName="inline-block rounded-full bg-bg-elevated shadow-neu-raised-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
-      eyebrow="Delivery Schedule"
-      heading="SCF Build #44 Roadmap"
-      description="Detailed timeline for the execution of our $74,000 SCF Build Award milestones."
-      infoText="Three tranches, each tied to verifiable on-chain or functional deliverables. Tranche 1 ships the wallet connection layer. Tranche 2 completes both SCF integrations on testnet. Tranche 3 migrates to Stellar RPC, launches on mainnet, records 10 live transactions as proof, and open-sources the integration adapters."
-    >
-      <div className="rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 p-6 md:p-10 mb-12">
-        <ZoomableDiagram
-          chart={SCF_GANTT_CHART}
-          title="SCF Build #44 Roadmap"
-          className="w-full min-w-[800px]"
-        />
+    <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-10 mb-8 max-w-full overflow-hidden">
+      <div className="flex flex-col items-center text-center mb-8">
+        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-4">
+          Delivery Schedule
+        </span>
+        <h2 className="text-2xl md:text-[28px] font-bold text-content-primary tracking-tight mb-3">
+          SCF Build #44 Roadmap
+        </h2>
+        <p className="text-content-secondary max-w-2xl text-sm md:text-base leading-relaxed">
+          Detailed timeline for the execution of our $74,000 SCF Build Award milestones.
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-bg-base shadow-neu-raised p-4 sm:p-6 mb-8 max-w-full overflow-hidden">
+        <div className="w-full max-w-full overflow-x-auto">
+          <ZoomableDiagram
+            chart={SCF_GANTT_CHART}
+            title="SCF Build #44 Roadmap"
+            className="w-full min-w-0 sm:min-w-[500px]"
+          />
+        </div>
       </div>
 
       <Table
@@ -34,7 +75,7 @@ export function SCFTrancheRoadmap() {
       >
         <thead>
           <tr>
-            {["Milestone", "Date", "Technical Cost", "SCF Payout", "%"].map(
+            {["Milestone", "Status", "Date", "Technical Cost", "SCF Payout", "%"].map(
               (heading) => (
                 <th key={heading} scope="col" className={TABLE_HEAD_CLASS}>
                   {heading}
@@ -44,29 +85,36 @@ export function SCFTrancheRoadmap() {
           </tr>
         </thead>
         <tbody>
-          {[
-            ["T0 — Upfront", "On award", "—", "$8,000", "10%"],
-            ["T1 — MVP: SWK Connection & Auth", "Sept 1, 2026", "$16,000", "$16,000", "22%"],
-            ["T2 — Testnet: Core Integrations", "Oct 20, 2026", "$19,500", "$19,500", "26%"],
-            ["T3 — Mainnet Launch & OS Adapters", "Dec 5, 2026", "$30,500", "$30,500", "41%"],
-          ].map(([milestone, date, cost, payout, percent]) => (
-            <tr key={milestone} className={TABLE_ROW_CLASS}>
-              <td className={`${TABLE_CELL_CLASS} font-medium text-content-primary`}>{milestone}</td>
-              <td className={TABLE_CELL_CLASS}>{date}</td>
-              <td className={TABLE_CELL_CLASS}>{cost}</td>
-              <td className={TABLE_CELL_CLASS}>{payout}</td>
-              <td className={TABLE_CELL_CLASS}>{percent}</td>
+          {milestones.map((m) => (
+            <tr key={m.code} className={TABLE_ROW_CLASS}>
+              <td className={`${TABLE_CELL_CLASS} font-medium text-content-primary`}>{m.code}</td>
+              <td className={TABLE_CELL_CLASS}>
+                {m.status === "completed" && (
+                  <StatusBadge variant="success">Completed</StatusBadge>
+                )}
+                {m.status === "in-progress" && (
+                  <StatusBadge variant="primary">In progress</StatusBadge>
+                )}
+                {m.status === "planned" && (
+                  <StatusBadge variant="muted">Planned</StatusBadge>
+                )}
+              </td>
+              <td className={TABLE_CELL_CLASS}>{m.date}</td>
+              <td className={TABLE_CELL_CLASS}>{m.cost}</td>
+              <td className={TABLE_CELL_CLASS}>{m.payout}</td>
+              <td className={TABLE_CELL_CLASS}>{m.pct}</td>
             </tr>
           ))}
           <tr className={TABLE_ROW_CLASS}>
-            {["Total", "", "$74,000", "$74,000", "100%"].map((value, index) => (
-              <td key={index} className={`${TABLE_CELL_CLASS} font-bold text-theme-primary`}>
-                {value}
-              </td>
-            ))}
+            <td className={`${TABLE_CELL_CLASS} font-bold text-theme-primary`}>Total</td>
+            <td className={TABLE_CELL_CLASS}></td>
+            <td className={TABLE_CELL_CLASS}></td>
+            <td className={`${TABLE_CELL_CLASS} font-bold text-theme-primary`}>$74,000</td>
+            <td className={`${TABLE_CELL_CLASS} font-bold text-theme-primary`}>$74,000</td>
+            <td className={`${TABLE_CELL_CLASS} font-bold text-theme-primary`}>100%</td>
           </tr>
         </tbody>
       </Table>
-    </ArchitectureSection>
+    </div>
   );
 }

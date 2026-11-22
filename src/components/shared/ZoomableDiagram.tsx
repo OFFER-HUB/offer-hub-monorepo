@@ -21,7 +21,7 @@ export function ZoomableDiagram({
 
   return (
     <>
-      <div className="relative rounded-[2rem] bg-bg-base shadow-neu-sunken p-6 w-full flex-grow overflow-x-auto">
+      <div className="relative rounded-3xl bg-bg-base shadow-neu-sunken p-4 sm:p-6 w-full max-w-full flex-grow overflow-x-auto">
         <MermaidDiagram chart={chart} className={className} variant="plain" />
         <button
           onClick={() => setIsZoomOpen(true)}

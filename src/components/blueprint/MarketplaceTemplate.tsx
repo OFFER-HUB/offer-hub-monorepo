@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Terminal, Layers, Wallet, Clock, TrendingUp, Package } from "lucide-react";
+import { ArrowUpRight, Terminal, Layers, Wallet, Clock, TrendingUp, Package, Globe } from "lucide-react";
 import { BlueprintMotionSection } from "@/components/shared/BlueprintMotionSection";
 import { cn } from "@/lib/cn";
 
@@ -15,7 +15,9 @@ function FreelancerView() {
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-semibold text-content-primary">Freelancer Dashboard</span>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-theme-primary/10 text-theme-primary font-mono">v2.4.1</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-theme-primary font-mono">
+          v2.4.1
+        </span>
       </div>
 
       <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
@@ -66,7 +68,9 @@ function BusinessView() {
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-semibold text-content-primary">Business Dashboard</span>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-theme-primary/10 text-theme-primary font-mono">v2.4.1</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-theme-primary font-mono">
+          v2.4.1
+        </span>
       </div>
 
       <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
@@ -125,14 +129,14 @@ export function MarketplaceTemplate() {
   const [view, setView] = useState<View>("freelancer");
 
   return (
-    <BlueprintMotionSection id="templates" className="py-24 px-6 bg-transparent">
+    <BlueprintMotionSection id="templates" className="py-12 sm:py-16 px-0 sm:px-6 bg-transparent">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-semibold text-theme-primary uppercase tracking-widest bg-bg-base shadow-neu-sunken">
             <Layers size={12} />
             Marketplace Template
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-content-primary mt-3">
+          <h2 className="text-2xl md:text-[28px] font-bold text-content-primary mt-3">
             Your Frontend, Ready to Ship
           </h2>
           <p className="mt-4 text-content-secondary max-w-xl mx-auto text-sm leading-relaxed">
@@ -140,7 +144,7 @@ export function MarketplaceTemplate() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-start">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-1 p-1 rounded-full bg-bg-base shadow-neu-sunken">
               {(["freelancer", "business"] as View[]).map((v) => (
@@ -148,7 +152,7 @@ export function MarketplaceTemplate() {
                   key={v}
                   onClick={() => setView(v)}
                   className={cn(
-                    "relative px-5 py-2 rounded-full text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
+                    "relative px-4 sm:px-5 py-2 rounded-full text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
                     view === v
                       ? "bg-bg-base shadow-neu-raised text-theme-primary"
                       : "text-content-secondary"
@@ -159,12 +163,11 @@ export function MarketplaceTemplate() {
               ))}
             </div>
 
-            <div className="w-full rounded-3xl p-4 bg-bg-base shadow-neu-raised-l2">
+            <div className="w-full rounded-3xl p-4 bg-bg-base shadow-neu-raised">
+              {/* Window chrome without macOS dots */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 bg-bg-sunken shadow-neu-sunken-subtle">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
+                <div className="flex items-center gap-1.5 text-content-muted pl-1">
+                  <Globe size={13} className="text-theme-primary" />
                 </div>
                 <div className="flex-1 mx-2 px-3 py-0.5 rounded-full text-[10px] text-content-muted font-mono bg-bg-base shadow-neu-sunken-subtle">
                   app.offer-hub.tech/{view}
@@ -194,8 +197,7 @@ export function MarketplaceTemplate() {
                 Quick Start
               </h3>
               <div
-                className="bg-bg-base shadow-neu-sunken p-6 rounded-2xl font-mono text-xs"
-                style={{ overflowX: "auto" }}
+                className="bg-bg-base shadow-neu-sunken p-6 rounded-2xl font-mono text-xs overflow-x-auto"
               >
                 <p className="text-content-muted select-none mb-1">
                   $ <span className="text-theme-primary">npx</span>{" "}

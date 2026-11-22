@@ -8,7 +8,7 @@ interface OrchestratorDiagramProps {
 
 export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: OrchestratorDiagramProps) {
   return (
-    <div className="rounded-[2rem] bg-bg-base p-4 shadow-neu-sunken-l2 md:p-6 overflow-visible blueprint-layer">
+    <div className="rounded-3xl bg-bg-base p-4 shadow-neu-sunken-l2 md:p-6 overflow-visible blueprint-layer max-w-full">
       <svg
         viewBox="0 0 720 336"
         className="h-full w-full"
@@ -72,7 +72,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           y="18"
           width="160"
           height="42"
-          rx="21"
+          rx="20"
           fill="var(--color-bg-elevated)"
           stroke="var(--color-border)"
           strokeOpacity="0.45"
@@ -81,7 +81,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="35"
           textAnchor="middle"
-          className="fill-current text-[12px] font-semibold uppercase tracking-[0.18em] text-content-secondary"
+          className="fill-current text-[12px] font-semibold uppercase tracking-[0.18em]"
           style={{ fill: "var(--color-text-secondary)" }}
         >
           Fiat + Crypto rails
@@ -101,7 +101,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           y="276"
           width="184"
           height="42"
-          rx="21"
+          rx="20"
           fill="var(--color-bg-elevated)"
           stroke="var(--color-border)"
           strokeOpacity="0.45"
@@ -110,7 +110,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="293"
           textAnchor="middle"
-          className="fill-current text-[12px] font-semibold uppercase tracking-[0.18em] text-content-secondary"
+          className="fill-current text-[12px] font-semibold uppercase tracking-[0.18em]"
           style={{ fill: "var(--color-text-secondary)" }}
         >
           SDK state machine
@@ -136,10 +136,6 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
               stroke={selectedNode === node.id ? "var(--color-primary)" : "var(--color-border)"}
               strokeOpacity="0.45"
               strokeWidth="2"
-              style={{
-                filter:
-                  "drop-shadow(10px 10px 16px var(--shadow-dark)) drop-shadow(-10px -10px 16px var(--shadow-light))",
-              }}
             />
             <circle
               cx={node.x}

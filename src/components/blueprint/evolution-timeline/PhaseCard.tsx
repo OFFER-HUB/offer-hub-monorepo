@@ -44,10 +44,10 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
             isInProgress
               ? cfg.border
               : isCompleted
-              ? "border-[var(--color-success)]/20"
+              ? "border-[color-mix(in_srgb,var(--color-success)_20%,transparent)]"
               : "border-[var(--color-border)]"
           }
-          ${isInProgress ? "ring-1 ring-[var(--color-primary)]/30" : ""}
+          ${isInProgress ? "ring-1 ring-[color-mix(in_srgb,var(--color-primary)_30%,transparent)]" : ""}
           md:w-[calc(50%_-_2.5rem)]
           cursor-pointer select-none transition-[box-shadow,opacity,border-color] duration-300
         `}
@@ -56,7 +56,7 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
       >
         {isInProgress && (
           <motion.div
-            className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-[var(--color-primary)]/50"
+            className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-[color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
             animate={shouldReduceMotion ? {} : { opacity: [0.3, 0.8, 0.3] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -157,8 +157,8 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
                       <span
                         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
                           deliverable.done
-                            ? "bg-[var(--color-success)]/20 text-[var(--color-success)]"
-                            : "bg-[var(--color-text-muted)]/15 text-[var(--color-text-muted)]"
+                            ? "bg-[color-mix(in_srgb,var(--color-success)_20%,transparent)] text-theme-success"
+                            : "bg-[color-mix(in_srgb,var(--color-text-muted)_15%,transparent)] text-content-muted"
                         }`}
                       >
                         {deliverable.done ? "\u2713" : "\u00b7"}
