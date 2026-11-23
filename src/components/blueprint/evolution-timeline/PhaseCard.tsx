@@ -72,7 +72,7 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
               </span>
 
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-content-secondary">
+                <p className="text-xs font-semibold uppercase tracking-widest text-content-secondary">
                   {phase.phase}
                   {phase.dateTag && (
                     <span className="ml-2 font-normal text-content-muted">
@@ -80,26 +80,26 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
                     </span>
                   )}
                 </p>
-                <h3 className="mt-0.5 text-[15px] font-bold leading-tight text-content-primary">
+                <h3 className="mt-0.5 text-base font-bold leading-tight text-content-primary">
                   {phase.title}
                 </h3>
               </div>
             </div>
 
             <span
-              className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${cfg.bg} ${cfg.border} ${cfg.color}`}
+              className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${cfg.bg} ${cfg.border} ${cfg.color}`}
             >
               <StatusIcon size={11} className={isInProgress ? "animate-spin" : ""} />
               {cfg.label}
             </span>
           </div>
 
-          <p className="mt-3 text-[13px] leading-relaxed text-content-secondary">{phase.goal}</p>
+          <p className="mt-3 text-sm leading-relaxed text-content-secondary">{phase.goal}</p>
 
           <div className="mt-4">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[11px] text-content-muted">Completion</span>
-              <span className={`text-[12px] font-bold ${cfg.color}`}>{phase.completion}%</span>
+              <span className="text-xs text-content-muted">Completion</span>
+              <span className={`text-xs font-bold ${cfg.color}`}>{phase.completion}%</span>
             </div>
             <div className={`h-2 w-full overflow-hidden rounded-full ${NEU_SUNKEN}`}>
               <motion.div
@@ -119,7 +119,7 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
           </div>
 
           <button
-            className={`mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-medium transition-colors ${cfg.bg} ${cfg.color} hover:brightness-110`}
+            className={`mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium transition-colors ${cfg.bg} ${cfg.color} hover:brightness-110`}
             onClick={(e) => {
               e.stopPropagation();
               setExpanded((v) => !v);
@@ -148,14 +148,14 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
               className="overflow-hidden"
             >
               <div className={`mx-5 mb-5 rounded-xl border border-[var(--color-border)] p-4 ${NEU_SUNKEN}`}>
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-content-muted">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-content-muted">
                   Technical Deliverables
                 </p>
                 <ul className="space-y-2">
                   {phase.deliverables.map((deliverable) => (
                     <li key={deliverable.id} className="flex items-start gap-2.5">
                       <span
-                        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
+                        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                           deliverable.done
                             ? "bg-[color-mix(in_srgb,var(--color-success)_20%,transparent)] text-theme-success"
                             : "bg-[color-mix(in_srgb,var(--color-text-muted)_15%,transparent)] text-content-muted"
@@ -164,11 +164,11 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
                         {deliverable.done ? "\u2713" : "\u00b7"}
                       </span>
                       <span
-                        className={`text-[12px] leading-snug ${
+                        className={`text-xs leading-snug ${
                           deliverable.done ? "text-content-primary" : "text-content-muted"
                         }`}
                       >
-                        <span className="mr-1.5 font-mono text-[10px] text-content-muted">
+                        <span className="mr-1.5 font-mono text-xs text-content-muted">
                           [{deliverable.id}]
                         </span>
                         {deliverable.label}

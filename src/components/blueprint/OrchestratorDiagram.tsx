@@ -81,7 +81,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="35"
           textAnchor="middle"
-          className="fill-current text-[12px] font-semibold uppercase tracking-[0.18em]"
+          className="fill-current text-xs font-semibold uppercase tracking-[0.18em]"
           style={{ fill: "var(--color-text-secondary)" }}
         >
           Fiat + Crypto rails
@@ -90,7 +90,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="50"
           textAnchor="middle"
-          className="fill-current text-[11px]"
+          className="fill-current text-xs"
           style={{ fill: "var(--color-text-muted)" }}
         >
           Deposits normalize into escrow-safe instructions
@@ -110,7 +110,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="293"
           textAnchor="middle"
-          className="fill-current text-[12px] font-semibold uppercase tracking-[0.18em]"
+          className="fill-current text-xs font-semibold uppercase tracking-[0.18em]"
           style={{ fill: "var(--color-text-secondary)" }}
         >
           SDK state machine
@@ -119,7 +119,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="308"
           textAnchor="middle"
-          className="fill-current text-[11px]"
+          className="fill-current text-xs"
           style={{ fill: "var(--color-text-muted)" }}
         >
           prepare() {"->"} authorize() {"->"} finalize()
@@ -149,7 +149,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
               x={node.x}
               y={node.y - 4}
               textAnchor="middle"
-              className="fill-current text-[14px] font-semibold"
+              className="fill-current text-sm font-semibold"
               style={{ fill: "var(--color-text-primary)" }}
             >
               {node.label}
@@ -158,7 +158,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
               x={node.x}
               y={node.y + 16}
               textAnchor="middle"
-              className="fill-current text-[11px]"
+              className="fill-current text-xs"
               style={{ fill: "var(--color-text-secondary)" }}
             >
               {node.sublabel}
@@ -171,7 +171,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
             x="240"
             y="150"
             textAnchor="middle"
-            className="fill-current text-[11px] font-medium"
+            className="fill-current text-xs font-medium"
             style={{ fill: "var(--color-primary)" }}
           >
             prepare()
@@ -180,7 +180,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
             x="480"
             y="150"
             textAnchor="middle"
-            className="fill-current text-[11px] font-medium"
+            className="fill-current text-xs font-medium"
             style={{ fill: "var(--color-primary)" }}
           >
             authorize()
@@ -189,7 +189,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
             x="600"
             y="246"
             textAnchor="middle"
-            className="fill-current text-[11px] font-medium"
+            className="fill-current text-xs font-medium"
             style={{ fill: "var(--color-primary)" }}
           >
             finalize()

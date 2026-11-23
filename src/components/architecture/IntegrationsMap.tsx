@@ -19,7 +19,7 @@ export function IntegrationsMap() {
       {/* Stacked hub & spokes layout (fits both desktop side column and mobile 390px) */}
       <div className="flex flex-col gap-4">
         {/* Center Hub: OFFER-HUB */}
-        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 flex flex-col items-center text-center border border-theme-border/40">
+        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 flex flex-col items-center text-center border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]">
           <div className="w-3.5 h-3.5 rounded-full bg-theme-primary animate-pulse mb-2 shadow-neu-raised-sm" />
           <h3 className="text-base font-bold text-content-primary">OFFER-HUB</h3>
           <p className="text-xs text-theme-primary font-medium mt-0.5 mb-2">NestJS Orchestrator</p>
@@ -31,10 +31,10 @@ export function IntegrationsMap() {
         </div>
 
         {/* Spoke 1: SWK */}
-        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 border border-theme-border/40 flex flex-col gap-3">
+        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] flex flex-col gap-3">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-content-primary">Stellar Wallets Kit</h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-sunken shadow-neu-sunken px-2 py-0.5 rounded-full text-theme-primary">
+            <span className="text-xs font-bold uppercase tracking-wider bg-bg-sunken shadow-neu-sunken px-2 py-0.5 rounded-full text-theme-primary">
               SCF Integration #1
             </span>
           </div>
@@ -46,7 +46,7 @@ export function IntegrationsMap() {
             {swkWallets.map((w) => (
               <span
                 key={w}
-                className="text-[11px] bg-bg-elevated shadow-neu-raised-sm px-2.5 py-0.5 rounded-full text-content-primary font-medium"
+                className="text-xs bg-bg-elevated shadow-neu-raised-sm px-2.5 py-0.5 rounded-full text-content-primary font-medium"
               >
                 {w}
               </span>
@@ -64,19 +64,19 @@ export function IntegrationsMap() {
         </div>
 
         {/* Spoke 2: BlindPay */}
-        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 border border-theme-border/40 flex flex-col gap-3">
+        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] flex flex-col gap-3">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-content-primary">BlindPay</h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-sunken shadow-neu-sunken px-2 py-0.5 rounded-full text-theme-primary">
+            <span className="text-xs font-bold uppercase tracking-wider bg-bg-sunken shadow-neu-sunken px-2 py-0.5 rounded-full text-theme-primary">
               SCF Integration #2
             </span>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <span className="text-[10px] bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-md text-content-muted">
+            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-md text-content-muted">
               FinCEN MSB
             </span>
-            <span className="text-[10px] bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-md text-content-muted">
+            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-md text-content-muted">
               YC-backed
             </span>
           </div>
@@ -85,7 +85,7 @@ export function IntegrationsMap() {
             {corridors.map((c) => (
               <div
                 key={c}
-                className="text-[10px] font-medium text-center bg-bg-elevated shadow-neu-raised-sm rounded-lg py-1.5 text-content-primary px-1"
+                className="text-xs font-medium text-center bg-bg-elevated shadow-neu-raised-sm rounded-lg py-1.5 text-content-primary px-1"
               >
                 {c}
               </div>
@@ -95,7 +95,7 @@ export function IntegrationsMap() {
       </div>
 
       {/* Stats Strip */}
-      <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm border border-theme-border/40 px-4 py-3 flex items-center justify-center gap-3 text-xs font-medium text-content-secondary">
+      <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] px-4 py-3 flex items-center justify-center gap-3 text-xs font-medium text-content-secondary">
         <span>2 SCF Integrations</span>
         <span className="text-content-muted">•</span>
         <span className="text-theme-primary font-bold">7 BlindPay Corridors</span>

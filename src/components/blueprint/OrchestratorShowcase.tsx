@@ -29,7 +29,7 @@ function FlowLegend() {
           key={item.label}
           className="rounded-2xl bg-bg-base p-4 shadow-neu-sunken-l2-subtle text-left overflow-visible"
         >
-          <div className="mb-2 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-theme-primary">
+          <div className="mb-2 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-theme-primary">
             {item.label}
           </div>
           <p className="text-sm leading-6 text-content-secondary">{item.text}</p>

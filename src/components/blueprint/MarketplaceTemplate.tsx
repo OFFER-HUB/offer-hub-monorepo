@@ -116,7 +116,7 @@ function BusinessView() {
               className="rounded-lg p-2 text-center bg-bg-base shadow-neu-raised-sm"
             >
               <p className="text-lg font-bold font-mono text-content-primary">{stat.value}</p>
-              <p className="text-[10px] text-content-muted leading-tight">{stat.label}</p>
+              <p className="text-xs text-content-muted leading-tight">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -169,7 +169,7 @@ export function MarketplaceTemplate() {
                 <div className="flex items-center gap-1.5 text-content-muted pl-1">
                   <Globe size={13} className="text-theme-primary" />
                 </div>
-                <div className="flex-1 mx-2 px-3 py-0.5 rounded-full text-[10px] text-content-muted font-mono bg-bg-base shadow-neu-sunken-subtle">
+                <div className="flex-1 mx-2 px-3 py-0.5 rounded-full text-xs text-content-muted font-mono bg-bg-base shadow-neu-sunken-subtle">
                   app.offer-hub.tech/{view}
                 </div>
               </div>
@@ -203,7 +203,7 @@ export function MarketplaceTemplate() {
                   $ <span className="text-theme-primary">npx</span>{" "}
                   <span className="text-content-primary">create-offer-hub-app@latest</span>
                 </p>
-                <p className="text-content-muted text-[10px] mt-3">
+                <p className="text-content-muted text-xs mt-3">
                   ↳ Scaffolds a full marketplace with Buyer &amp; Seller routes, escrow hooks, and the @offerhub/sdk pre-configured.
                 </p>
               </div>
@@ -243,7 +243,7 @@ export function MarketplaceTemplate() {
                   className="rounded-xl px-4 py-3 bg-bg-base shadow-neu-raised-sm"
                 >
                   <p className="text-xs font-semibold text-content-primary">{feat.label}</p>
-                  <p className="text-[10px] text-content-muted mt-0.5">{feat.desc}</p>
+                  <p className="text-xs text-content-muted mt-0.5">{feat.desc}</p>
                 </div>
               ))}
             </div>

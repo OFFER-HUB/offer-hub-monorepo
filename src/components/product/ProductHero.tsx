@@ -53,7 +53,7 @@ export function ProductHero() {
                 <span className="text-xs font-bold uppercase tracking-wider text-content-primary">
                   {p.title}
                 </span>
-                <p className="text-[11px] text-content-secondary leading-snug">
+                <p className="text-xs text-content-secondary leading-snug">
                   {p.desc}
                 </p>
               </div>

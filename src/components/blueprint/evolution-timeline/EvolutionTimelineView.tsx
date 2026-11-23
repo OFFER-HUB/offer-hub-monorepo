@@ -44,7 +44,7 @@ export function EvolutionTimelineView() {
           className="mb-4 text-center"
         >
           <span
-            className={`inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-widest text-[var(--color-primary)] ${NEU_SUNKEN}`}
+            className={`inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)] ${NEU_SUNKEN}`}
           >
             <motion.span
               animate={shouldReduceMotion ? {} : { opacity: [1, 0.3, 1] }}
@@ -70,7 +70,7 @@ export function EvolutionTimelineView() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto mb-10 max-w-xl text-center text-sm md:text-[15px] text-content-secondary"
+          className="mx-auto mb-10 max-w-xl text-center text-sm md:text-base text-content-secondary"
         >
           Every milestone, every decision - the definitive visual guide to where
           we&apos;ve been and where we&apos;re going.
@@ -103,7 +103,7 @@ export function EvolutionTimelineView() {
           ].map((stat) => (
             <div key={stat.label} className={`rounded-xl p-3 text-center ${NEU_SUNKEN}`}>
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.val}</p>
-              <p className="mt-0.5 text-[11px] text-content-muted">{stat.label}</p>
+              <p className="mt-0.5 text-xs text-content-muted">{stat.label}</p>
             </div>
           ))}
         </motion.div>
@@ -121,7 +121,7 @@ export function EvolutionTimelineView() {
               <button
                 key={domainOption.key}
                 onClick={() => setActiveDomain(domainOption.key)}
-                className={`whitespace-nowrap rounded-xl px-4 py-2 text-[13px] font-semibold transition-[background-color,color,box-shadow] duration-200 ${
+                className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   active
                     ? `${NEU_SUNKEN} bg-bg-base text-theme-primary font-bold`
                     : "text-content-secondary hover:text-content-primary"
@@ -153,7 +153,7 @@ export function EvolutionTimelineView() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-16 flex flex-col items-start gap-3 text-[12px] text-content-muted sm:items-center md:flex-row md:flex-wrap md:justify-center md:gap-6"
+          className="mt-16 flex flex-col items-start gap-3 text-xs text-content-muted sm:items-center md:flex-row md:flex-wrap md:justify-center md:gap-6"
         >
           {[
             { status: "completed" as PhaseStatus, desc: "Solid elevated card" },
