@@ -4,7 +4,6 @@ import React from "react";
 import { ShieldCheck, Trash2, Download } from "lucide-react";
 import { useDataRightsForm } from "@/hooks/use-data-rights-form";
 import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 
 const iconMap = {
   ShieldCheck,
@@ -56,13 +55,17 @@ export function DataRightsForm({
           error={errors.email}
           disabled={loading}
         />
-        <Button
+        <button
           type="submit"
           disabled={loading}
-          variant={destructive ? "danger" : "primary"}
+          className={`inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50 ${
+            destructive
+              ? "bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] text-theme-error hover:bg-[color-mix(in_srgb,var(--color-error)_20%,transparent)]"
+              : "bg-theme-primary text-bg-base hover:bg-theme-primary-hover"
+          }`}
         >
           {loading ? "Processing…" : buttonLabel}
-        </Button>
+        </button>
         {status && (
           <p
             role="alert"

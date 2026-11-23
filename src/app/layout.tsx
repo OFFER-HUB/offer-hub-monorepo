@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Analytics } from "@/components/Analytics";
@@ -22,17 +22,15 @@ const themeInitScript = `(function () {
   } catch (e) {}
 })();`;
 
-const inter = localFont({
-  src: "./fonts/inter-latin.woff2",
-  weight: "400 900",
-  display: "swap",
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
   variable: "--font-inter",
 });
 
-const jetbrainsMono = localFont({
-  src: "./fonts/jetbrains-mono-latin.woff2",
-  weight: "400 700",
-  display: "swap",
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-jetbrains-mono",
 });
 
