@@ -8,13 +8,11 @@ section: API Reference
 The Orchestrator exposes **two inbound webhook receivers** that external providers call to notify it about events. These are endpoints **your Orchestrator receives** — you never register or call them as an integrator.
 
 <Callout type="warning">
-  OFFER-HUB does **not** provide an outbound webhook subscription API. There is **no** `POST /api/v1/webhooks` endpoint to register a URL, an event list, or a signing secret. The only real-time mechanism for integrators is the **SSE event stream** (`GET /api/v1/events`). The `/webhooks` endpoint that exists is an **inbound** receiver used by external providers (Trustless Work) to notify your Orchestrator — you never call it as an integrator.
   OFFER-HUB does **not** provide an outbound webhook subscription API. There is no `POST /api/v1/webhooks` endpoint for registering a URL, an event list, or a signing secret. The only real-time mechanism for integrators is the **SSE event stream** — see the [Events](/docs/api-reference/events) reference for subscriptions and the event catalog. The two `/webhooks` endpoints below are inbound receivers used by external providers.
 </Callout>
 
 ## Common behavior
 
-The event stream is the supported way to receive real-time notifications about users, orders, escrows, balances, disputes, payouts, and withdrawals.
 Both receivers live in `WebhooksController` (`apps/api/src/modules/webhooks/webhooks.controller.ts`). Because of the global `/api/v1` prefix (`apps/api/src/main.ts`), the full paths are `POST /api/v1/webhooks/airtm` and `POST /api/v1/webhooks/trustless-work`.
 
 For both endpoints:
@@ -136,90 +134,6 @@ Accepted `type` values drive the escrow lifecycle:
 - `escrow.refunded` → confirms refund and credits the buyer
 - `escrow.disputed` → marks the escrow as `DISPUTED`
 
-## Event Catalog
-
-These are the event types you can subscribe to. Wildcard subscriptions are supported: `order.*`, `topup.*`, `withdrawal.*`, and `*`.
-
-### User Events
-
-| Event | Payload |
-|-------|---------|
-| `user.created` | `{ userId, externalUserId, type, status }` |
-| `user.stellar_linked` | `{ userId, stellarAddress, linkedAt }` |
-
-### Wallet Events
-
-| Event | Payload |
-|-------|---------|
-| `wallet.created` | `{ userId, publicKey, provider, funded, trustlineReady }` |
-
-### Balance Events
-
-| Event | Payload |
-|-------|---------|
-| `balance.credited` | `{ userId, amount, source, newBalance, transactionHash? }` |
-| `balance.debited` | `{ userId, amount, destination, newBalance }` |
-| `balance.reserved` | `{ userId, amount, orderId, reservedBalance }` |
-| `balance.released` | `{ userId, amount, orderId, reason }` |
-
-### Order Events
-
-| Event | Payload |
-|-------|---------|
-| `order.created` | `{ orderId, buyerId, sellerId, amount, title }` |
-| `order.funds_reserved` | `{ orderId, amount, buyerId, reservedBalance }` |
-| `order.escrow_creating` | `{ orderId, escrowId }` |
-| `order.escrow_funding` | `{ orderId, escrowId, trustlessContractId }` |
-| `order.escrow_funded` | `{ orderId, escrowId, fundedAt }` |
-| `order.in_progress` | `{ orderId }` |
-| `order.release_requested` | `{ orderId, requestedBy }` |
-| `order.released` | `{ orderId, sellerId, amount, releasedAt }` |
-| `order.refund_requested` | `{ orderId, requestedBy }` |
-| `order.refunded` | `{ orderId, buyerId, amount, refundedAt }` |
-| `order.disputed` | `{ orderId, disputeId, openedBy, reason }` |
-| `order.closed` | `{ orderId, finalStatus, closedAt }` |
-| `order.canceled` | `{ orderId, canceledBy, reason }` |
-
-### Escrow Events
-
-| Event | Payload |
-|-------|---------|
-| `escrow.created` | `{ escrowId, orderId, amount }` |
-| `escrow.funding_started` | `{ escrowId, trustlessContractId }` |
-| `escrow.funded` | `{ escrowId, fundedAt, amount }` |
-| `escrow.milestone_completed` | `{ escrowId, milestoneRef, completedAt }` |
-| `escrow.released` | `{ escrowId, releasedAt, amount }` |
-| `escrow.refunded` | `{ escrowId, refundedAt, amount }` |
-
-### Dispute Events
-
-| Event | Payload |
-|-------|---------|
-| `dispute.opened` | `{ disputeId, orderId, openedBy, reason }` |
-| `dispute.under_review` | `{ disputeId, reviewedBy }` |
-| `dispute.resolved` | `{ disputeId, decision, resolvedBy, resolvedAt }` |
-
-### Withdrawal Events
-
-| Event | Payload |
-|-------|---------|
-| `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
-| `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, payoutId }` |
-| `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
-| `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
-| `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |
-| `withdrawal.canceled` | `{ withdrawalId, canceledBy, refundedToBalance }` |
-
-## Inbound Provider Webhooks (Self-Hosting)
-
-The Orchestrator exposes an **inbound webhook receiver** that external providers call to notify it about events. This is an endpoint **your Orchestrator receives** — integrators never register or call it.
-
-<Callout type="note">
-  Because of the global `/api/v1` prefix, the full path is `POST /api/v1/webhooks/trustless-work`. Signature verification and deduplication are handled internally by the Orchestrator — no outbound configuration is needed.
-</Callout>
-
-### Trustless Work — `POST /api/v1/webhooks/trustless-work`
 On-chain events carrying a `transaction_hash` are verified against the Stellar network before the state change is applied (`verifyTransactionIfPresent`, `apps/api/src/providers/trustless-work/services/webhook.service.ts`).
 
 ### Deduplication
@@ -236,7 +150,6 @@ The Orchestrator looks up the `WebhookEvent` row with `(provider = TRUSTLESS_WOR
 
 ## Self-hosting
 
-The endpoint responds with `{ "status": "ok" }` and is covered by the `TRUSTLESS_WEBHOOK_SECRET` variable documented in the [Configuration guide](/docs/configuration).
 Both receivers run inside your Orchestrator instance — no outbound configuration or public exposure beyond the provider's configured callback URL is required. See the [Self-Hosting guide](/docs/guide/self-hosting) for deployment, and the [Configuration guide](/docs/configuration) for the `AIRTM_WEBHOOK_SECRET` and `TRUSTLESS_WEBHOOK_SECRET` environment variables.
 
 ## Next Steps

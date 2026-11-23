@@ -1,93 +1,10 @@
 ---
 title: Configuration
-description: Environment variable reference for a self-hosted OFFER-HUB Orchestrator.
 description: Complete environment variable reference for the OFFER-HUB Orchestrator and the documentation site — verified from source code in both repositories.
 order: 3
 section: Getting Started
 ---
 
-The Orchestrator is configured through environment variables. This page lists the variables a self-hosted deployment needs. Values here are placeholders — use your own.
-
-<Callout type="warning">
-  Environment variables belong in your deployment's secret store or an untracked `.env` file. Never commit real values, and never paste them into an issue or a chat.
-</Callout>
-
-## Minimum configuration
-
-```env
-# Runtime
-NODE_ENV=production
-PORT=4000
-
-# Storage and queues
-DATABASE_URL=postgresql://user:password@host:5432/database
-REDIS_URL=redis://host:6379
-
-# Operator credential, used once to create the first API key
-OFFERHUB_MASTER_KEY=your-master-key
-
-# Escrow provider
-TRUSTLESS_API_KEY=your-trustless-api-key
-TRUSTLESS_WEBHOOK_SECRET=your-trustless-webhook-secret
-
-# Stellar network selection
-STELLAR_NETWORK=mainnet
-STELLAR_RPC_URL=https://your-stellar-rpc-endpoint
-STELLAR_USDC_ASSET_CODE=USDC
-STELLAR_USDC_ISSUER=your-usdc-issuer
-
-# Public URL used for provider callbacks
-PUBLIC_BASE_URL=https://api.yourdomain.example
-```
-
-## Server
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `NODE_ENV` | Yes | `development` | `development`, `staging` or `production` |
-| `PORT` | No | `4000` | HTTP listen port |
-| `LOG_LEVEL` | No | `info` | `debug`, `info`, `warn` or `error` |
-| `PUBLIC_BASE_URL` | Yes | — | Public HTTPS origin of the instance, used in provider callbacks |
-
-## Database
-
-| Variable | Required | Description |
-|---|---|---|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-
-Use a connection string with TLS when the database is not on the same private network:
-
-```env
-DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
-```
-
-<Callout type="note">
-  Managed PostgreSQL works. If your provider offers a pooled and a direct connection, run migrations over the direct connection and serve traffic over the pooled one.
-</Callout>
-
-## Redis
-
-| Variable | Required | Description |
-|---|---|---|
-| `REDIS_URL` | Yes | Redis connection string. Use `rediss://` for TLS. |
-
-Redis backs the background job queues, rate limiting and idempotency storage.
-
-## Operator credential
-
-| Variable | Required | Description |
-|---|---|---|
-| `OFFERHUB_MASTER_KEY` | Yes | Creates the first API key. Store it in a secret manager and rotate it after bootstrap. |
-
-Bootstrap sequence:
-
-1. Set `OFFERHUB_MASTER_KEY=your-master-key` in the deployment environment.
-2. Create the first API key with `support` scope using that key.
-3. Create `read` and `write` keys for the marketplace backend.
-4. Remove the master key from day-to-day use; keep it only in the operator's secret store.
-
-<Callout type="danger">
-  The master key bypasses scopes. Anyone who holds it can mint credentials. Never place it in client code, a CI log or a shared document.
 This page documents every environment variable that is read by source code in either the **OFFER-HUB Orchestrator** (`github.com/OFFER-HUB/OFFER-HUB`) or the **documentation site** (`github.com/OFFER-HUB/offer-hub-monorepo`). Every entry is traced to the exact implementation file that reads it.
 
 <Callout type="note">
@@ -261,26 +178,6 @@ These variables are read only by the `@offerhub/cli` package. They are not used 
 NODE_ENV=development
 PORT=4000
 
-## Escrow provider
-
-| Variable | Required | Description |
-|---|---|---|
-| `TRUSTLESS_API_KEY` | Yes | Trustless Work API key, used to prepare escrow transactions |
-| `TRUSTLESS_WEBHOOK_SECRET` | Yes | Verifies inbound Trustless Work webhooks |
-
-Escrows are Soroban contracts in USDC. The Orchestrator prepares the transactions; the user's wallet signs them.
-
-## Stellar network
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `STELLAR_NETWORK` | Yes | `testnet` | `testnet` for the sandbox, `mainnet` for production |
-| `STELLAR_RPC_URL` | Yes | — | Stellar RPC endpoint for the selected network |
-| `STELLAR_USDC_ASSET_CODE` | No | `USDC` | Asset code used for escrow and payouts |
-| `STELLAR_USDC_ISSUER` | Yes | — | Issuer of the asset on the selected network |
-
-<Callout type="note">
-  Point `STELLAR_RPC_URL` at an RPC endpoint for the same network as `STELLAR_NETWORK`. A mismatch fails every on-chain call.
 ### AirTM Fiat Endpoints (Optional)
 
 <Callout type="warning">
@@ -316,46 +213,6 @@ DATABASE_URL=postgres://USER:PASSWORD@HOST:6543/postgres?pgbouncer=true
 # Direct URL (for migrations — must be port 5432, no pooler)
 DIRECT_URL=postgres://USER:PASSWORD@HOST:5432/postgres
 
-### Choosing a network
-
-| Setting | Use it for | Notes |
-|---|---|---|
-| `testnet` | Development and demos | Public sandbox. Invisible wallets and the 90-day wallet claim flow exist only here. |
-| `mainnet` | Production | Real USDC. Users sign with their own wallet; the Orchestrator never holds their keys. |
-
-<Callout type="warning">
-  Mixing a mainnet RPC URL with `STELLAR_NETWORK=testnet` produces confusing on-chain failures. Change both together.
-</Callout>
-
-## Off-ramp
-
-Withdrawals to an external Stellar address need no extra configuration. The BlindPay off-ramp to Brazil, Mexico, Argentina and Colombia is enabled by the operator's BlindPay credentials, which are configured in the deployment environment and validated by the Orchestrator at startup. Refer to `.env.example` in the starter shell for the exact variable names of your release, and keep the values in your secret store.
-
-<Callout type="note">
-  Corridor availability and payout limits are set by BlindPay for your account. The Orchestrator does not add fees of its own to the off-ramp.
-</Callout>
-
-## Frontend variables
-
-The documentation site in this repository uses:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
-NEXT_PUBLIC_SITE_URL=https://offer-hub.tech
-```
-
-`NEXT_PUBLIC_*` values are visible in the browser. Never put an API key or provider secret behind that prefix.
-
-## Security checklist
-
-- [ ] `NODE_ENV=production`
-- [ ] All secrets live in the platform secret store, not in the repository
-- [ ] `DATABASE_URL` uses TLS
-- [ ] `REDIS_URL` uses `rediss://`
-- [ ] `OFFERHUB_MASTER_KEY` removed from runtime use after bootstrap
-- [ ] `TRUSTLESS_WEBHOOK_SECRET` set and rotated with the provider
-- [ ] `PUBLIC_BASE_URL` is the HTTPS origin, with a valid certificate
-- [ ] Database and Redis are not reachable from the public internet
 # ─── Redis ────────────────────────────────────────────────────────────────────
 REDIS_URL=redis://localhost:6379
 
@@ -503,11 +360,8 @@ The following variables appear in `offer-hub-monorepo/.env.example` but are not 
 
 ---
 
-## Next steps
+## Next Steps
 
-- [Self-Hosting](/docs/guide/self-hosting) — deploy and operate the instance
-- [Background Jobs](/docs/guide/background-jobs) — queues and reconciliation
-- [Troubleshooting](/docs/guide/troubleshooting) — symptom-to-fix reference
 - [Installation](/docs/installation) — Set up the Orchestrator locally with Docker or the setup wizard
 - [Getting Started](/docs/getting-started) — Architecture overview and first integration steps
 - [API Reference](/docs/api-reference/overview) — Full REST API documentation

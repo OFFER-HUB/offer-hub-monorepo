@@ -218,8 +218,6 @@ The catalog below is derived from the Orchestrator's `apps/api/src/modules/event
 
 | Event | Payload |
 | --- | --- |
-| `user.created` | `{ userId, externalUserId, type }` |
-| `user.stellar_linked` | `{ userId, stellarAddress }` |
 | `user.created` | `{ userId, externalUserId, email?, type, status }` |
 | `user.airtm_linked` | `{ userId, airtmUserId, linkedAt }` |
 | `user.stellar_linked` | `{ userId, stellarAddress, linkedAt }` |
@@ -350,27 +348,6 @@ The catalog below is derived from the Orchestrator's `apps/api/src/modules/event
 
 | Event | Payload |
 | --- | --- |
-| `withdrawal.created` | `{ withdrawalId, userId, amount, destinationType }` |
-| `withdrawal.committed` | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `{ withdrawalId, payoutId }` |
-| `withdrawal.pending_user_action` | `{ withdrawalId, actionRequired }` |
-| `withdrawal.completed` | `{ withdrawalId, userId, amount, completedAt }` |
-| `withdrawal.failed` | `{ withdrawalId, reason, errorCode }` |
-| `withdrawal.canceled` | `{ withdrawalId, canceledBy, refundedToBalance }` |
-
-## Wildcard subscriptions
-
-Wildcard patterns are available to code running inside the Orchestrator through `EventBusService`. A trailing `.*` matches all events in that domain, and `*` matches every event.
-
-```typescript
-eventBus.subscribe('order.*', (event) => {
-  // Handles order.created, order.funds_reserved, and every other order event.
-  processOrderEvent(event);
-});
-
-eventBus.subscribe('*', (event) => {
-  recordEvent(event);
-});
 | `withdrawal.created` | `{ withdrawalId, userId, amount, currency, destinationType, destinationRef }` |
 | `withdrawal.committed` | `{ withdrawalId, userId, amount, currency, committedBalance, availableBalance }` |
 | `withdrawal.pending` | `{ withdrawalId, userId, airtmPayoutId, amount }` |
