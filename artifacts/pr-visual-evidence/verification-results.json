@@ -1,0 +1,212 @@
+[
+  {
+    "name": "all six routes respond 200",
+    "status": "pass",
+    "detail": [
+      {
+        "route": "/docs/guide/style-guide",
+        "status": 200
+      },
+      {
+        "route": "/docs/sdk/quick-start",
+        "status": 200
+      },
+      {
+        "route": "/docs/api-reference/interactive",
+        "status": 200
+      },
+      {
+        "route": "/contact",
+        "status": 200
+      },
+      {
+        "route": "/community",
+        "status": 200
+      },
+      {
+        "route": "/architecture",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "name": "tabs work",
+    "status": "pass",
+    "detail": {
+      "count": 2,
+      "before": "true",
+      "afterFirst": "false",
+      "afterSecond": "true",
+      "panels": 2
+    }
+  },
+  {
+    "name": "copy works and announces Copied through aria-live",
+    "status": "pass",
+    "detail": {
+      "buttonCount": 12,
+      "copied": [
+        "Code copied to clipboard"
+      ],
+      "clipboardLength": 25,
+      "copiedLabel": "Copied",
+      "buttonText": "Copied"
+    }
+  },
+  {
+    "name": "terminal mode works",
+    "status": "pass",
+    "detail": {
+      "terminalRegions": 2,
+      "sample": "$ npm install @offerhub/sdk"
+    }
+  },
+  {
+    "name": "Shiki tokens use CSS palette variables",
+    "status": "pass",
+    "detail": {
+      "count": 8,
+      "sample": [
+        "color:var(--color-primary)",
+        "color:var(--color-success)",
+        "color:var(--color-success)"
+      ]
+    }
+  },
+  {
+    "name": "every visible copy button belongs to a CodeBlock header",
+    "status": "pass",
+    "detail": {
+      "visibleCopyButtons": 11,
+      "codeRegions": 12
+    }
+  },
+  {
+    "name": "Callout tones render through shared component",
+    "status": "pass",
+    "detail": {
+      "count": 4,
+      "sample": [
+        {
+          "role": "note",
+          "label": "Warning",
+          "background": "rgba(245, 158, 11, 0.13)",
+          "radius": "16px"
+        },
+        {
+          "role": "note",
+          "label": "Note",
+          "background": "rgba(31, 184, 185, 0.12)",
+          "radius": "16px"
+        },
+        {
+          "role": "note",
+          "label": "Warning",
+          "background": "rgba(245, 158, 11, 0.13)",
+          "radius": "16px"
+        },
+        {
+          "role": "note",
+          "label": "Note",
+          "background": "rgba(31, 184, 185, 0.12)",
+          "radius": "16px"
+        }
+      ]
+    }
+  },
+  {
+    "name": "style-guide schema table is not clipped at desktop width",
+    "status": "pass",
+    "detail": {
+      "regionClientWidth": 239,
+      "regionScrollWidth": 512,
+      "regionRight": 687,
+      "tableWidth": 512,
+      "scrollsInternally": true
+    }
+  },
+  {
+    "name": "API explorer uses shared CodeBlock headers",
+    "status": "pass",
+    "detail": {
+      "copyButtons": 53,
+      "codeRegions": 168
+    }
+  },
+  {
+    "name": "390px overflow and table containment (light)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0,
+      "tableCount": 12,
+      "internallyScrollingTables": 12,
+      "scrollerRightMax": 358
+    }
+  },
+  {
+    "name": "390px overflow and table containment (dark)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0,
+      "tableCount": 12,
+      "internallyScrollingTables": 12,
+      "scrollerRightMax": 358
+    }
+  },
+  {
+    "name": "390px page overflow (quick-start)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0
+    }
+  },
+  {
+    "name": "390px page overflow (interactive)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0
+    }
+  },
+  {
+    "name": "390px page overflow (contact)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0
+    }
+  },
+  {
+    "name": "390px page overflow (community)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0
+    }
+  },
+  {
+    "name": "390px page overflow (architecture)",
+    "status": "pass",
+    "detail": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "overflowPx": 0,
+      "scrollX": 0
+    }
+  }
+]
