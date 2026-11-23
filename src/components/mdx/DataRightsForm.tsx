@@ -5,6 +5,7 @@ import { ShieldCheck, Trash2, Download } from "lucide-react";
 import { useDataRightsForm } from "@/hooks/use-data-rights-form";
 import { Input } from "@/components/ui/Input";
 import { Callout } from "@/components/docs/Callout";
+import { Button } from "@/components/ui/Button";
 
 const iconMap = {
   ShieldCheck,
