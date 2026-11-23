@@ -72,7 +72,7 @@ describe("CodeBlock", () => {
       isHeaderHidden: true,
     });
 
-    const header = container.querySelector(".bg-bg-sunken");
+    const header = container.querySelector(".rounded-t-2xl");
     expect(header).toHaveClass("hidden");
   });
 
@@ -146,5 +146,74 @@ describe("CodeBlock", () => {
     expect(lines[3]).toHaveClass("shadow-neu-sunken-subtle");
     expect(lines[0]).not.toHaveClass("bg-bg-sunken");
     expect(lines[2]).not.toHaveClass("bg-bg-sunken");
+  });
+
+  it("renders tabs in a single header and copies the selected tab's code", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+
+    renderCodeBlock({
+      label: "Request examples",
+      tabs: [
+        { id: "curl", label: "cURL", language: "bash", code: "curl https://api.example.com" },
+        { id: "ts", label: "TypeScript", language: "typescript", code: "await sdk.users.list()" },
+      ],
+    });
+
+    expect(screen.getByRole("tablist", { name: "Request examples" })).toBeInTheDocument();
+    expect(screen.getAllByRole("tab")).toHaveLength(2);
+    expect(screen.getByRole("tab", { name: "cURL" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("curl https://api.example.com");
+
+    await user.click(screen.getByRole("tab", { name: "TypeScript" }));
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("await sdk.users.list()");
+
+    await user.click(screen.getByRole("button", { name: "Copy code" }));
+    expect(writeText).toHaveBeenCalledWith("await sdk.users.list()");
+    expect(screen.getByText("Copied")).toBeInTheDocument();
+    expect(screen.getByText("Code copied to clipboard")).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("supports roving keyboard selection inside CodeBlock tabs", async () => {
+    const user = userEvent.setup();
+    renderCodeBlock({
+      tabs: [
+        { id: "curl", label: "cURL", language: "bash", code: "curl example" },
+        { id: "ts", label: "TypeScript", language: "typescript", code: "sdk example" },
+      ],
+    });
+
+    const tabs = screen.getAllByRole("tab");
+    tabs[0]!.focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+    expect(tabs[1]).toHaveFocus();
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("sdk example");
+  });
+
+  it("renders terminal mode with a prompt and copies the prompt-free command", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    mockClipboard(writeText);
+
+    renderCodeBlock({
+      code: "npm run build",
+      copyText: "npm run build",
+      terminal: true,
+      title: "Terminal 1",
+    });
+
+    expect(screen.getByText("Terminal 1")).toBeInTheDocument();
+    expect(screen.getByText("$ npm run build")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", {
+        name: /terminal 1 \(bash\) code sample, scrollable horizontally/i,
+      }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Copy code" }));
+    expect(writeText).toHaveBeenCalledWith("npm run build");
   });
 });
