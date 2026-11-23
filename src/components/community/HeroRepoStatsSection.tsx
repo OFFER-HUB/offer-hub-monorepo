@@ -38,7 +38,7 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
                 href={GITHUB_REPO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="max-w-full min-w-0 px-6 py-4 sm:px-8 rounded-xl bg-content-primary text-bg-base text-xs font-black uppercase tracking-widest shadow-neu-raised hover:bg-black hover:text-white transition-all"
+                className="max-w-full min-w-0 px-6 py-4 sm:px-8 rounded-xl bg-content-primary text-bg-base text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black hover:text-white transition-all"
               >
                 Star on GitHub
               </a>
