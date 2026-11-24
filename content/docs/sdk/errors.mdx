@@ -66,16 +66,18 @@ try {
 
 ## Error catalog
 
-Each SDK class maps to one Orchestrator HTTP status and a defined set of server codes. Codes come from `docs/api/errors.md` in the Orchestrator repo; the status mapping matches the JSON error envelope documented in `docs/ai-context.md`.
+Named SDK subclasses map to the Orchestrator HTTP statuses and server codes below. When a response has no dedicated subclass, handle it through the base `OfferHubError`. Codes come from `docs/api/errors.md` in the Orchestrator repo; the status mapping matches the JSON error envelope documented in `docs/ai-context.md`.
 
 | SDK class | HTTP | Server codes | When it fires | Retry? |
 |---|---|---|---|---|
 | `AuthenticationError` | `401` | `UNAUTHORIZED` | Missing or invalid API key. | No |
 | `AuthorizationError` | `403` | `INSUFFICIENT_SCOPE` | Valid key, but lacks the required scope for this route. | No |
-| `NotFoundError` | `404` | `USER_NOT_FOUND`, `ORDER_NOT_FOUND`, `ESCROW_NOT_FOUND`, `DISPUTE_NOT_FOUND` | The resource ID does not exist. | No |
-| `ValidationError` | `400` | `VALIDATION_ERROR` | Payload failed DTO validation. | No |
+| `NotFoundError` | `404` | `USER_NOT_FOUND`, `ORDER_NOT_FOUND`, `ESCROW_NOT_FOUND`, `DISPUTE_NOT_FOUND`, `MILESTONE_NOT_FOUND` | The resource ID does not exist. | No |
+| `ValidationError` | `400` | `VALIDATION_ERROR`, `INVALID_REQUEST` | Payload failed DTO validation or an order uses the same buyer and seller. | No |
 | `InsufficientFundsError` | `422` | `INSUFFICIENT_FUNDS` | Balance cannot cover the reserve or debit. | No |
+| `OfferHubError` | `422` | `INVALID_AMOUNT` | Split dispute resolution amounts are missing or do not total the order amount. | No |
 | `InvalidTransitionError` | `409` | `INVALID_STATE` | State machine rejects the requested transition. | No |
+| `OfferHubError` | `409` | `BALANCE_CONCURRENCY_CONFLICT`, `BALANCE_DISCREPANCY` | Balance changed concurrently or differs from the provider; refresh or reconcile before proceeding. | No |
 | `IdempotencyError` | `409` | `IDEMPOTENCY_KEY_REUSED` | Same `Idempotency-Key` replayed with a different body. | No |
 | `ProviderError` | `502` / `504` | `PROVIDER_ERROR`, `PROVIDER_TIMEOUT` | Upstream provider (Stellar, AirTM, Trustless Work) failed. | Yes |
 | `RateLimitError` | `429` | `RATE_LIMIT_EXCEEDED` | API key exceeded its bucket. | Yes |

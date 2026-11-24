@@ -1,16 +1,38 @@
 import { MetadataRoute } from 'next';
 import docsIndex from '@/data/docs-index.json';
 import { SITE_URL_FALLBACK } from '@/constants/site';
+import { GITHUB_RELEASES_API_URL } from '@/constants/github';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+async function hasPublishedReleases(): Promise<boolean> {
+  try {
+    const response = await fetch(`${GITHUB_RELEASES_API_URL}?per_page=1`, {
+      next: { revalidate: 3600 },
+      headers: {
+        Accept: 'application/vnd.github+json',
+      },
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const releases: unknown = await response.json();
+    return Array.isArray(releases) && releases.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL_FALLBACK;
+  const includeChangelog = await hasPublishedReleases();
 
   const staticRoutes = [
     '',
     '/use-cases',
-    '/blueprint',
+    '/product',
     '/pricing',
-    '/changelog',
+    ...(includeChangelog ? ['/changelog'] : []),
     '/community',
     '/docs',
     '/terms',

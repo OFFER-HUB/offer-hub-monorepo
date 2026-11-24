@@ -32,7 +32,7 @@
     "@modelcontextprotocol/sdk": "^1.32.1",
     "glob": "^11.0.0",
     "gray-matter": "^4.0.3",
-    "zod": "^3.24.0"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

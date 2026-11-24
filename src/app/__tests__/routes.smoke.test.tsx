@@ -57,13 +57,12 @@ vi.mock("@/components/shared/MermaidDiagram", () => ({
 
 import Home from "../page";
 import AccessibilityPage from "../accessibility/page";
-import ArchitecturePage from "../architecture/page";
-import BlueprintPage from "../blueprint/page";
 import ChangelogPage from "../changelog/page";
 import CommunityPage from "../community/page";
 import ContactPage from "../contact/page";
 import PricingPage from "../pricing/page";
 import PrivacyPage from "../privacy/page";
+import ProductPage from "../product/page";
 import TermsPage from "../terms/page";
 import UseCasesPage from "../use-cases/page";
 import DocsPage from "../docs/page";
@@ -107,10 +106,9 @@ afterEach(() => {
 
 const SYNC_ROUTES: Array<[string, () => React.ReactElement]> = [
   ["/accessibility", AccessibilityPage],
-  ["/architecture", ArchitecturePage],
-  ["/blueprint", BlueprintPage],
   ["/contact", ContactPage],
   ["/pricing", PricingPage],
+  ["/product", ProductPage],
   ["/use-cases", UseCasesPage],
 ];
 

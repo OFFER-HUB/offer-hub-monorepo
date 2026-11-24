@@ -5,7 +5,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { TERMS_MDX_COMPONENTS } from "@/components/terms/terms-mdx-components";
-import { TermsPageHeader } from "@/components/terms/TermsPageHeader";
+import { LegalLayout } from "@/components/legal/LegalLayout";
+import { legalSlug } from "@/components/legal/legalSlug";
 import { buildPageMetadata } from "@/lib/seo";
 import { getStaticMdxContent } from "@/lib/mdx";
 
@@ -32,16 +33,14 @@ export default async function TermsOfServicePage() {
     <div className="min-h-screen flex flex-col bg-bg-base text-content-primary">
       <LoadingBar />
       <Navbar />
-      <main className="flex-grow pt-32 pb-24 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <TermsPageHeader />
+      <LegalLayout eyebrow="Legal Framework" title={<>Platform <span className="text-theme-primary">Terms</span></>} updated="April 29, 2026" description="These terms outline the agreement between you and OFFER-HUB. By using our tools, you agree to these principles of operation." sections={Array.from(source.matchAll(/<TermsSection icon="[^"]+" title="(?:\d+\. )?([^"]+)"/g), ([, label]) => ({ id: legalSlug(label), label }))}>
           <div className="space-y-12">
             <MDXRemote
               source={source}
               components={TERMS_MDX_COMPONENTS}
               options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
             />
-            <div className="p-8 md:p-10 rounded-[2.5rem] bg-bg-base shadow-neu-sunken-subtle">
+            <div className="p-8 md:p-10 rounded-3xl bg-bg-base shadow-neu-sunken-subtle">
               <p className="text-sm font-medium italic leading-relaxed text-content-secondary">
                 This document was drafted for the OFFER-HUB open-source project and should be reviewed by a licensed
                 attorney before publication in a production environment. It is intended as a comprehensive starting point
@@ -49,8 +48,7 @@ export default async function TermsOfServicePage() {
               </p>
             </div>
           </div>
-        </div>
-      </main>
+      </LegalLayout>
       <Footer />
     </div>
   );

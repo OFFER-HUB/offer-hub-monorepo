@@ -47,7 +47,7 @@ export async function exportDocPdf({ slug, title, description }: ExportDocPdfOpt
   exportContainer.style.fontFamily = "Inter, Roboto, Arial, sans-serif";
   exportContainer.style.color = PDF_COLORS.text;
 
-  const logo = `${window.location.origin}/OFFER-HUB-logo.png`;
+  const logo = `${window.location.origin}/logo.png`;
   const printableDate = new Date().toLocaleDateString("en-CA", {
     year: "numeric",
     month: "2-digit",

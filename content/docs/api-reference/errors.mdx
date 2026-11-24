@@ -121,10 +121,12 @@ For the complete SDK exception class hierarchy, retry options, and client catchi
 | --- | --- | --- | --- |
 | `UNAUTHORIZED`, `INVALID_API_KEY`, `TOKEN_EXPIRED` | `401` | `AuthenticationError` | Missing, malformed, or expired credentials. |
 | `INSUFFICIENT_SCOPE`, `USER_INACTIVE`, `UNAUTHORIZED_DISPUTE` | `403` | `AuthorizationError` | Valid credentials, but lacking permissions for resource or action. |
-| `USER_NOT_FOUND`, `ORDER_NOT_FOUND`, `ESCROW_NOT_FOUND`, `DISPUTE_NOT_FOUND`, `TOPUP_NOT_FOUND`, `WITHDRAWAL_NOT_FOUND`, `RESERVE_NOT_FOUND`, `WALLET_NOT_FOUND` | `404` | `NotFoundError` | The requested entity ID does not exist. |
-| `VALIDATION_ERROR`, `INVALID_AMOUNT_FORMAT`, `INVALID_CURRENCY`, `MISSING_REQUIRED_FIELD`, `INVALID_PAGINATION`, `INVALID_RESOLUTION` | `400` | `ValidationError` | Request payload failed DTO field or format constraints. |
+| `USER_NOT_FOUND`, `ORDER_NOT_FOUND`, `ESCROW_NOT_FOUND`, `DISPUTE_NOT_FOUND`, `TOPUP_NOT_FOUND`, `WITHDRAWAL_NOT_FOUND`, `RESERVE_NOT_FOUND`, `WALLET_NOT_FOUND`, `MILESTONE_NOT_FOUND` | `404` | `NotFoundError` | The requested entity ID does not exist. |
+| `VALIDATION_ERROR`, `INVALID_REQUEST`, `INVALID_AMOUNT_FORMAT`, `INVALID_CURRENCY`, `MISSING_REQUIRED_FIELD`, `INVALID_PAGINATION`, `INVALID_RESOLUTION` | `400` | `ValidationError` | Request payload failed DTO field or format constraints. |
 | `INSUFFICIENT_FUNDS`, `RESERVE_MISMATCH_AMOUNT`, `TOPUP_EXPIRED`, `WITHDRAWAL_DESTINATION_INVALID`, `TRUSTLINE_MISSING`, `AIRTM_USER_NOT_LINKED`, `AIRTM_USER_INVALID` | `422` | `InsufficientFundsError` / `OfferHubError` | Business rule rejected the transaction. |
+| `INVALID_AMOUNT` | `422` | `OfferHubError` | Split dispute resolution amounts are missing or do not total the order amount. |
 | `INVALID_STATE`, `ORDER_NOT_IN_PROGRESS`, `ESCROW_NOT_READY`, `ESCROW_NOT_FUNDED` | `409` / `400` | `InvalidTransitionError` | State machine rejected the requested status transition. |
+| `BALANCE_CONCURRENCY_CONFLICT`, `BALANCE_DISCREPANCY` | `409` | `OfferHubError` | A concurrent balance update or a local/provider balance discrepancy requires checking the latest balance before proceeding. |
 | `IDEMPOTENCY_KEY_REUSED`, `IDEMPOTENCY_KEY_IN_PROGRESS`, `IDEMPOTENCY_CONFLICT` | `409` | `IdempotencyError` | Replay key collision or concurrent execution in progress. |
 | `PROVIDER_ERROR`, `PROVIDER_TIMEOUT`, `PROVIDER_RATE_LIMITED`, `ESCROW_CREATE_FAILED`, `ESCROW_FUNDING_FAILED`, `TOPUP_FAILED`, `WITHDRAWAL_FAILED` | `502` / `504` | `ProviderError` | Upstream provider (Trustless Work, Airtm, Stellar Horizon) failed. |
 | `RATE_LIMIT_EXCEEDED`, `RATE_LIMITED` | `429` | `RateLimitError` | Request volume exceeded allocated per-minute bucket. |
@@ -179,6 +181,8 @@ Implemented in `apps/api/src/modules/balances/balances.service.ts`, `apps/api/sr
 | Code | HTTP | Cause | How to Fix | Implementation Citation |
 | --- | --- | --- | --- | --- |
 | `INSUFFICIENT_FUNDS` | `422` | User available balance (`balance.available`) is less than requested reservation or transfer. | Have user deposit funds via crypto or Airtm top-up, or reduce order amount. | `BalancesService.reserveFunds` |
+| `BALANCE_CONCURRENCY_CONFLICT` | `409` | Another request modified the same user's balance during an optimistic-lock update. | Refresh the balance, re-evaluate the intended operation against the latest value, and only then retry if it is still appropriate. | `apps/api/src/modules/balance/exceptions/balance.exceptions.ts` (`BalanceConcurrencyException`) |
+| `BALANCE_DISCREPANCY` | `409` | The local and provider balances differ by more than `$1.00`. | Stop balance-dependent actions and reconcile the local and provider balances before proceeding; do not blindly retry. | `apps/api/src/modules/balance/exceptions/balance.exceptions.ts` (`BalanceDiscrepancyException`) |
 | `FUNDS_ALREADY_RESERVED` | `409` | Funds for this order ID have already been reserved in the ledger. | Do not call `reserve` twice; proceed to escrow initialization (`POST /orders/{id}/escrow`). | `OrdersService.reserveFunds` |
 | `RESERVE_NOT_FOUND` | `404` | No active balance reservation was found when attempting escrow funding. | Call `POST /api/v1/orders/{id}/reserve` before calling `POST /api/v1/orders/{id}/escrow/fund`. | `OrdersService.fundEscrow` |
 | `RESERVE_MISMATCH_AMOUNT` | `422` | Reserved balance amount does not match `order.amount`. | Ensure the reservation amount precisely matches the order amount. | `OrdersService.validateReservation` |
@@ -191,6 +195,8 @@ Implemented in `apps/api/src/modules/orders/orders.service.ts`, `apps/api/src/mo
 | Code | HTTP | Cause | How to Fix | Implementation Citation |
 | --- | --- | --- | --- | --- |
 | `ORDER_NOT_FOUND` | `404` | Order ID (`ord_...`) does not exist in the database. | Verify the order identifier or list active orders with `GET /api/v1/orders`. | `OrdersService.getOrder` |
+| `MILESTONE_NOT_FOUND` | `404` | No milestone with the supplied `milestoneRef` exists on this order. | Check the order's milestone references and use the current reference. | `OrdersService` |
+| `INVALID_REQUEST` | `400` | An order is created with the same user as buyer and seller. | Supply different buyer and seller IDs. | `SameUserException` |
 | `INVALID_STATE` | `409` / `400` | The requested action is not permitted in the order's current state. | Inspect `details.currentState` and `details.allowedStates` to follow the valid lifecycle. | `OrdersService.validateStateTransition` |
 | `ORDER_NOT_IN_PROGRESS` | `409` | Settlement or dispute action requires order to be in `IN_PROGRESS` status. | Complete escrow contract creation and on-chain funding before initiating settlement. | `ResolutionService.validateInProgress` |
 | `ORDER_ALREADY_EXISTS` | `409` | An order with the specified external reference identifier already exists. | Fetch existing order with `GET /api/v1/orders/{id}` or generate a fresh ID. | `OrdersService.createOrder` |
@@ -219,6 +225,7 @@ Implemented in `apps/api/src/modules/disputes/disputes.service.ts`, `apps/api/sr
 | `DISPUTE_ALREADY_EXISTS` | `409` | Attempted to create duplicate dispute record for an order. | Inspect existing dispute details via `GET /api/v1/disputes/{id}`. | `DisputesService.createDispute` |
 | `UNAUTHORIZED_DISPUTE` | `403` | Caller is neither the buyer, seller, nor authorized platform dispute resolver. | Ensure dispute action is initiated by the order buyer or key with `support` scope. | `ResolutionService.validateDisputeParty` |
 | `INVALID_RESOLUTION` | `400` | Resolution payload invalid (e.g., split percentages do not equal 100%). | Pass valid resolution type (`FULL_RELEASE`, `FULL_REFUND`, or `SPLIT` with valid percentages). | `ResolveDisputeDto`, `DisputesService.resolve` |
+| `INVALID_AMOUNT` | `422` | A `SPLIT` resolution omits either amount, or `releaseAmount` plus `refundAmount` does not equal the order amount. | Provide both split amounts and ensure their sum exactly matches the order amount. | `InvalidDisputeResolutionException` |
 
 ### 8. Top-ups & Inbound Deposits (`topups`)
 

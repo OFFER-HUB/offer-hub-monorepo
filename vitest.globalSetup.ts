@@ -18,7 +18,7 @@ export default async function setup() {
 
   const generator = path.resolve(
     process.cwd(),
-    "scripts/generate-docs-index.mjs",
+    "scripts/generate-docs-index.ts",
   );
   await import(pathToFileURL(generator).href);
 }
