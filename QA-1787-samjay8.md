@@ -6,8 +6,8 @@
 - **Device, OS and browser:** Windows 11 desktop, Google Chrome (headless, driven with Playwright), 1280x800 viewport
 - **Wallet (only if used):** None
 - **Recording(s):**
-  - Client account, steps 1–6, 9, 10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/client-session.webm
-  - Freelancer account, steps 7–10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/freelancer-session.webm
+  - Client account, steps 1–6, 9, 10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/client-session.mp4
+  - Freelancer account, steps 7–10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/freelancer-session.mp4
   - Screenshots: [client](https://github.com/samjay8/offer-hub-monorepo/tree/qa-1787-evidence/qa-1787/client-shots) · [freelancer](https://github.com/samjay8/offer-hub-monorepo/tree/qa-1787-evidence/qa-1787/freelancer-shots)
 - **Discussion thread:** https://github.com/OFFER-HUB/OFFER-HUB-Frontend/discussions/597
 
