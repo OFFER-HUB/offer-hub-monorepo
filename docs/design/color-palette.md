@@ -76,7 +76,8 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-success`
 - **Light hex:** `#166534` | **Dark hex:** `#4ade80`
 - **Usage:** Success messages, completed states, positive indicators; icon and text use in Callout tip, Badge, CommandLine copied state
-- **Common Pattern:** `bg-theme-success/10 text-theme-success` for badges
+- **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-theme-success` for badges
+  - ⚠️ **Never use `bg-theme-success/10`** — Tailwind 3 cannot emit CSS for opacity modifiers on CSS-variable colors. Use `color-mix()` instead.
 - **Accessibility:**
   - Light `#166534` on `#F1F3F7`: **6.42:1** ✓ AA (was `#16a34a` = 2.97:1 ✗)
   - Light `#166534` on `#ffffff`: **7.13:1** ✓ AA
@@ -87,7 +88,8 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-warning`
 - **Light hex:** `#b45309` | **Dark hex:** `#f59e0b`
 - **Usage:** Pending status, caution alerts, non-critical warnings
-- **Common Pattern:** `bg-theme-warning/10 text-theme-warning` for badges
+- **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] text-theme-warning` for badges
+  - ⚠️ **Never use `bg-theme-warning/10`** — use `color-mix()` (see Success above).
 - **Accessibility:**
   - Light `#b45309` on `#F1F3F7`: **4.52:1** ✓ AA (was `#d97706` = 3.14:1 ✗)
   - Light `#b45309` on `#ffffff`: **5.02:1** ✓ AA
@@ -98,7 +100,8 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-error`
 - **Light hex:** `#c0392b` | **Dark hex:** `#f87171`
 - **Usage:** Form validation errors, destructive actions, critical alerts
-- **Common Pattern:** `text-theme-error bg-theme-error/10` for error states
+- **Common Pattern:** `text-theme-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]` for error states
+  - ⚠️ **Never use `bg-theme-error/10`** — use `color-mix()` (see Success above).
 - **Accessibility:**
   - Light `#c0392b` on `#F1F3F7`: **4.90:1** ✓ AA (was `#FF0000` = harsh pure red)
   - Light `#c0392b` on `#ffffff`: **5.44:1** ✓ AA
@@ -160,6 +163,13 @@ Use these opacity values for consistency:
 | `opacity-0` | `0` | Fully transparent |
 
 **Common Pattern:** `bg-success/10` = success color at 10% opacity
+
+> ⚠️ **Important:** When the color is a CSS variable (all theme tokens), Tailwind 3 **cannot** emit CSS for opacity modifiers. `bg-theme-success/10` produces **no CSS at all**.
+> Use `color-mix()` arbitrary-value syntax instead:
+> ```
+> bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]
+> ```
+> `npm run lint:classes` will fail with a pointed error if the broken pattern is added.
 
 ---
 

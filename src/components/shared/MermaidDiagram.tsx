@@ -120,7 +120,7 @@ export function MermaidDiagram({
 
   if (error) {
     return (
-      <div className="my-10 rounded-2xl overflow-hidden bg-bg-elevated p-6 border border-theme-error/30">
+      <div className="my-10 rounded-2xl overflow-hidden bg-bg-elevated p-6 border border-[color-mix(in_srgb,var(--color-error)_30%,transparent)]">
         <p className="text-theme-error text-sm font-semibold">Failed to render diagram</p>
         <pre className="mt-2 text-xs text-content-secondary overflow-auto max-h-32">{error}</pre>
       </div>
@@ -156,11 +156,11 @@ export function MermaidDiagram({
         <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/40" />
-              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/25" />
-              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/15" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_40%,transparent)]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_25%,transparent)]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_15%,transparent)]" />
             </div>
-            <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
+            <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-[color-mix(in_srgb,var(--color-text-secondary)_80%,transparent)]">
               Mermaid
             </span>
           </div>
@@ -174,7 +174,7 @@ export function MermaidDiagram({
                 "relative flex items-center gap-2.5 px-4 py-2 min-h-11 rounded-xl text-xs font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
                 copied
                   ? "text-white bg-theme-primary shadow-lg shadow-theme-primary/25"
-                  : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",
+                  : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] active:scale-95",
               )}
             >
               <span className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export function MermaidDiagram({
         >
           {isLoading || !svg ? (
             <div className="flex flex-col items-center gap-3 text-content-secondary">
-              <div className="w-8 h-8 rounded-full border-2 border-theme-primary/30 border-t-theme-primary animate-spin" />
+              <div className="w-8 h-8 rounded-full border-2 border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] border-t-theme-primary animate-spin" />
               <span className="text-sm font-medium">Rendering diagram…</span>
             </div>
           ) : (

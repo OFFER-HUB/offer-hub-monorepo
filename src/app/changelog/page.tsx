@@ -167,7 +167,7 @@ export default async function ChangelogPage() {
           {/* Timeline Wrapper */}
           <div className="relative">
             {/* Improved Timeline Line */}
-            <div className="absolute left-6 md:left-1/2 top-4 bottom-4 w-1 transform md:-translate-x-1/2 bg-theme-primary/10 dark:bg-theme-primary/30 rounded-full" />
+            <div className="absolute left-6 md:left-1/2 top-4 bottom-4 w-1 transform md:-translate-x-1/2 bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] rounded-full" />
 
             {changelogEntries.length === 0 ? (
               <div className="pl-12 md:pl-0">
@@ -235,7 +235,7 @@ export default async function ChangelogPage() {
                         {entry.changes.map((change) => (
                           <li
                             key={`${entry.version}-${change}`}
-                            className="flex items-start gap-3 text-sm font-medium text-content-primary/80"
+                            className="flex items-start gap-3 text-sm font-medium text-[color-mix(in_srgb,var(--color-text-primary)_80%,transparent)]"
                           >
                             <span className="mt-2 h-1 w-1 rounded-full bg-theme-primary shrink-0" />
                             <span>{change}</span>

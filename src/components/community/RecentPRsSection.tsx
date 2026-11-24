@@ -31,17 +31,17 @@ const PRCard = memo(function PRCard({ pr }: { pr: PullRequestData }) {
             </a>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1.5 text-[10px] font-bold text-content-secondary">
-                <User size={12} className="text-theme-primary/40" />
+                <User size={12} className="text-[color-mix(in_srgb,var(--color-primary)_40%,transparent)]" />
                 @{pr.author}
               </div>
-              <div className="w-1 h-1 rounded-full bg-content-muted/30" />
+              <div className="w-1 h-1 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_30%,transparent)]" />
               <div className="min-w-0 max-w-full truncate text-[10px] font-bold text-content-secondary lowercase">
                 {isMerged ? `merged ${pr.timestamp}` : `opened ${pr.timestamp}`}
               </div>
               {!isMerged && (
                 <>
-                  <div className="w-1 h-1 rounded-full bg-content-muted/30" />
-                  <span className="min-w-0 max-w-full truncate text-[9px] font-black uppercase tracking-widest text-theme-primary px-1.5 py-0.5 rounded bg-theme-primary/10 shadow-sm">
+                  <div className="w-1 h-1 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_30%,transparent)]" />
+                  <span className="min-w-0 max-w-full truncate text-[9px] font-black uppercase tracking-widest text-theme-primary px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] shadow-sm">
                     Open
                   </span>
                 </>
@@ -97,8 +97,8 @@ export const RecentPRsSection = ({ pullRequests }: RecentPRsSectionProps) => {
           {/* Right Side: CSS-animated Marquee (GPU-accelerated) */}
           <div className="lg:col-span-8 relative h-[600px] overflow-hidden group">
             {/* Gradient Overlays for Fade */}
-            <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-bg-base/90 to-transparent z-10 pointer-events-none" />
-            <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-bg-base/90 to-transparent z-10 pointer-events-none" />
+            <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-[color-mix(in_srgb,var(--color-bg-base)_90%,transparent)] to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[color-mix(in_srgb,var(--color-bg-base)_90%,transparent)] to-transparent z-10 pointer-events-none" />
 
             <div
               className="flex flex-col gap-6 px-6 sm:px-12 py-10 animate-marquee-vertical group-hover:[animation-play-state:paused]"

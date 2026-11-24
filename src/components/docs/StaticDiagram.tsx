@@ -24,7 +24,7 @@ export function StaticDiagram({ name, caption }: StaticDiagramProps) {
     svg = fs.readFileSync(filePath, "utf-8");
   } catch {
     return (
-      <div className="my-10 rounded-2xl overflow-hidden bg-bg-elevated p-6 border border-theme-error/30">
+      <div className="my-10 rounded-2xl overflow-hidden bg-bg-elevated p-6 border border-[color-mix(in_srgb,var(--color-error)_30%,transparent)]">
         <p className="text-theme-error text-sm font-semibold">Diagram not found</p>
         <p className="mt-2 text-xs text-content-secondary">
           Expected public/diagrams/{name}.svg. Run <code>npm run diagrams</code> to generate it.
@@ -39,11 +39,11 @@ export function StaticDiagram({ name, caption }: StaticDiagramProps) {
         <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/40" />
-              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/25" />
-              <span className="w-2.5 h-2.5 rounded-full bg-content-muted/15" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_40%,transparent)]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_25%,transparent)]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_15%,transparent)]" />
             </div>
-            <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
+            <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-[color-mix(in_srgb,var(--color-text-secondary)_80%,transparent)]">
               Static diagram
             </span>
           </div>

@@ -58,7 +58,7 @@ export function Breadcrumb() {
       <div className="flex items-center gap-2 text-[14px] whitespace-nowrap overflow-x-auto no-scrollbar py-1">
         <Link
           href="/docs"
-          className="text-theme-primary hover:text-theme-primary/80 transition-colors font-medium inline-flex items-center gap-1.5 min-h-11"
+          className="text-theme-primary hover:text-[color-mix(in_srgb,var(--color-primary)_80%,transparent)] transition-colors font-medium inline-flex items-center gap-1.5 min-h-11"
         >
           <Home size={15} />
           Docs
@@ -68,7 +68,7 @@ export function Breadcrumb() {
           const isLast = index === pathSegments.length - 1;
           return (
             <span key={`${segment}-${index}`} className="flex items-center gap-2">
-              <ChevronRight size={14} className="text-content-secondary/30" />
+              <ChevronRight size={14} className="text-[color-mix(in_srgb,var(--color-text-secondary)_30%,transparent)]" />
               {isLast ? (
                 <span className="text-content-primary font-medium">
                   {formatSegment(segment)}

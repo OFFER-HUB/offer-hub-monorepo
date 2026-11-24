@@ -14,7 +14,7 @@ function FreelancerView() {
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-semibold text-content-primary">Freelancer Dashboard</span>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-theme-primary/10 text-theme-primary font-mono">v2.4.1</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary font-mono">v2.4.1</span>
       </div>
 
       <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">
@@ -65,7 +65,7 @@ function BusinessView() {
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-semibold text-content-primary">Business Dashboard</span>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-theme-primary/10 text-theme-primary font-mono">v2.4.1</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary font-mono">v2.4.1</span>
       </div>
 
       <div className="rounded-xl p-4 bg-bg-sunken shadow-neu-sunken">

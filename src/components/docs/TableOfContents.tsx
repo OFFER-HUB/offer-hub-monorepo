@@ -52,7 +52,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   return (
     <nav className="w-full">
       <div className="flex flex-col">
-        <p className="text-xs font-bold uppercase tracking-[0.15em] mb-6 px-4 text-content-secondary/70">
+        <p className="text-xs font-bold uppercase tracking-[0.15em] mb-6 px-4 text-[color-mix(in_srgb,var(--color-text-secondary)_70%,transparent)]">
           On this page
         </p>
         <ul className="flex flex-col gap-1">

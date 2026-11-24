@@ -48,7 +48,7 @@ export function ParameterInput({
         <span
           className={cn(
             "text-xs font-medium px-1.5 py-0.5 rounded",
-            required ? "text-theme-error bg-theme-error/10" : "text-content-secondary bg-content-muted/10"
+            required ? "text-theme-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]" : "text-content-secondary bg-[color-mix(in_srgb,var(--color-text-muted)_10%,transparent)]"
           )}
         >
           {required ? "required" : "optional"}
