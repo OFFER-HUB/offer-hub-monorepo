@@ -29,7 +29,7 @@ export function HowToContribute() {
                         How to Contribute
                     </p>
                     <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-content-primary max-w-full">
-                        Join the OFFER HUB Community
+                        Join the OFFER-HUB Community
                     </h2>
                     <p className="text-lg max-w-2xl mx-auto text-content-secondary">
                         We welcome all types of contributions! Here is a step-by-step guide to help you build with us.

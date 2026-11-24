@@ -75,7 +75,7 @@ export function FeaturesSection() {
         {/* Heading */}
         <div className="text-center mb-16 animate-fadeInUp">
           <p className="text-xs font-medium uppercase tracking-[0.4em] mb-4 text-theme-primary">
-            Why OFFER HUB
+            Why OFFER-HUB
           </p>
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-content-primary">
             Built for modern marketplaces
