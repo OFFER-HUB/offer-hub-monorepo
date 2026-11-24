@@ -43,7 +43,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 ## Neutral Palette
 
 ### Background
-- **Token:** `--color-background`
+- **Token:** `--color-bg-base`
 - **Hex:** `#F1F3F7`
 - **RGB:** `rgb(241, 243, 247)`
 - **HSL:** `hsl(220, 25%, 96%)`
@@ -58,7 +58,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **RGB:** `rgb(25, 33, 61)`
 - **HSL:** `hsl(227, 42%, 17%)`
 - **Usage:** Headings, primary body content
-- **Contrast:** 12.5:1 on background (AAA)
+- **Contrast:** 14.25:1 on background (AAA)
 
 #### Text Secondary
 - **Token:** `--color-text-secondary`
@@ -66,7 +66,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **RGB:** `rgb(109, 117, 143)`
 - **HSL:** `hsl(226, 14%, 49%)`
 - **Usage:** Captions, subtitles, placeholders, inactive labels
-- **Contrast:** 4.8:1 on background (AA)
+- **Contrast:** 4.12:1 on background — below the 4.5:1 bar for body text, so use only for captions and placeholders
 
 ---
 
@@ -76,7 +76,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-success`
 - **Light hex:** `#166534` | **Dark hex:** `#4ade80`
 - **Usage:** Success messages, completed states, positive indicators; icon and text use in Callout tip, Badge, CommandLine copied state
-- **Common Pattern:** `bg-theme-success/10 text-theme-success` for badges
+- **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-theme-success` for badges
 - **Accessibility:**
   - Light `#166534` on `#F1F3F7`: **6.42:1** ✓ AA (was `#16a34a` = 2.97:1 ✗)
   - Light `#166534` on `#ffffff`: **7.13:1** ✓ AA
@@ -87,7 +87,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-warning`
 - **Light hex:** `#b45309` | **Dark hex:** `#f59e0b`
 - **Usage:** Pending status, caution alerts, non-critical warnings
-- **Common Pattern:** `bg-theme-warning/10 text-theme-warning` for badges
+- **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] text-theme-warning` for badges
 - **Accessibility:**
   - Light `#b45309` on `#F1F3F7`: **4.52:1** ✓ AA (was `#d97706` = 3.14:1 ✗)
   - Light `#b45309` on `#ffffff`: **5.02:1** ✓ AA
@@ -98,7 +98,7 @@ This document provides a comprehensive reference for the OFFER-HUB color system.
 - **Token:** `--color-error`
 - **Light hex:** `#c0392b` | **Dark hex:** `#f87171`
 - **Usage:** Form validation errors, destructive actions, critical alerts
-- **Common Pattern:** `text-theme-error bg-theme-error/10` for error states
+- **Common Pattern:** `text-theme-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]` for error states
 - **Accessibility:**
   - Light `#c0392b` on `#F1F3F7`: **4.90:1** ✓ AA (was `#FF0000` = harsh pure red)
   - Light `#c0392b` on `#ffffff`: **5.44:1** ✓ AA
@@ -139,7 +139,7 @@ background: linear-gradient(180deg, #F1F3F7 0%, #E5E7EB 100%);
 
 ### Success Gradient
 ```css
-background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success) 100%);
 ```
 **Usage:** Success banners, completion states
 
@@ -159,7 +159,7 @@ Use these opacity values for consistency:
 | `opacity-10` | `0.1` | Very transparent (backgrounds) |
 | `opacity-0` | `0` | Fully transparent |
 
-**Common Pattern:** `bg-success/10` = success color at 10% opacity
+**Common Pattern:** `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]` = success color at 10% opacity
 
 ---
 
@@ -291,6 +291,66 @@ Semantic tokens are defined in `src/app/globals.css`. Light and dark values are 
 
 ---
 
+## Generated Token Tables
+
+<!-- BEGIN GENERATED TOKEN TABLES -->
+
+### Color tokens
+
+Values are read from `src/app/globals.css` (`:root` for light, `.dark` for dark).
+
+| Token | Light | Dark | Tailwind class | Usage |
+|---|---|---|---|---|
+| `--color-bg-base` | `#F1F3F7` | `#242433` | `bg-bg-base` | Page background |
+| `--color-bg-elevated` | `#ffffff` | `#2e2e3f` | `bg-bg-elevated` | Cards, modals, elevated surfaces |
+| `--color-bg-sunken` | `#e8eaef` | `#1a1a26` | `bg-bg-sunken` | Inset areas, input backgrounds |
+| `--color-text-primary` | `#19213D` | `#f1f3f7` | `text-content-primary` | Headings, primary text |
+| `--color-text-secondary` | `#6D758F` | `#b8bfd0` | `text-content-secondary` | Body text, descriptions |
+| `--color-text-muted` | `#9ca3af` | `#6D758F` | `text-content-muted` | Placeholder text, hints |
+| `--color-primary` | `#149A9B` | `#1fb8b9` | `bg-theme-primary / text-theme-primary` | Primary buttons, links, accents |
+| `--color-primary-hover` | `#0d7377` | `#25d4d5` | `bg-theme-primary-hover` | Primary hover states |
+| `--color-secondary` | `#002333` | `#002333` | `bg-theme-secondary / text-theme-secondary` | Deep-navy accent (diagrams, icon tints) |
+| `--color-accent` | `#15949C` | `#15949C` | `text-theme-accent` | Accent highlights |
+| `--color-success` | `#166534` | `#4ade80` | `text-theme-success` | Success states |
+| `--color-warning` | `#b45309` | `#f59e0b` | `text-theme-warning` | Warning states |
+| `--color-error` | `#c0392b` | `#f87171` | `text-theme-error` | Error states |
+| `--color-border` | `#d1d5db` | `#3d3d5c` | `border-theme-border` | Borders, dividers |
+| `--shadow-dark` | `#d1d5db` | `#1a1a26` | `var(--shadow-dark)` | Dark shadow in neumorphic effects |
+| `--shadow-light` | `#ffffff` | `#2e2e3f` | `var(--shadow-light)` | Light shadow in neumorphic effects |
+
+### Shadow tokens
+
+Values are read from the `boxShadow` entries in `tailwind.config.ts`.
+
+| Utility | Value |
+|---|---|
+| `shadow-neu-raised` | `6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)` |
+| `shadow-neu-raised-hover` | `2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light)` |
+| `shadow-neu-raised-l2` | `12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light)` |
+| `shadow-neu-raised-l2-sm` | `8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light)` |
+| `shadow-neu-raised-scrolled` | `8px 8px 18px var(--shadow-dark), -7px -7px 16px var(--shadow-light)` |
+| `shadow-neu-raised-sm` | `3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)` |
+| `shadow-neu-sunken` | `inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)` |
+| `shadow-neu-sunken-l2` | `inset 8px 8px 16px var(--shadow-dark), inset -8px -8px 16px var(--shadow-light)` |
+| `shadow-neu-sunken-l2-subtle` | `inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light)` |
+| `shadow-neu-sunken-subtle` | `inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)` |
+
+### Radius tokens
+
+The Review bar allows only these four radii. `tailwind.config.ts` does not
+extend `borderRadius`, so these are the Tailwind 3 default sizes.
+
+| Utility | Size | Usage |
+|---|---|---|
+| `rounded-xl` | 12px | Controls |
+| `rounded-2xl` | 16px | Inner cards, code, callouts, tables |
+| `rounded-3xl` | 24px | Section cards |
+| `rounded-full` | 9999px | Badges, avatars |
+
+<!-- END GENERATED TOKEN TABLES -->
+
+---
+
 ## Color Swatches
 
 ### Visual Reference
@@ -316,4 +376,3 @@ Error (dark):         ████ #f87171
 **Next Steps:**
 - Apply colors in [Visual DNA](./visual-dna.md)
 - Use with neumorphic shadows in [Neumorphism Guide](./neumorphism.md)
-- See component examples in [Components Guide](./components.md)

@@ -19,7 +19,7 @@ export function TimelineLine({ containerRef }: TimelineLineProps) {
     <div className="pointer-events-none absolute left-5 top-0 z-10 flex h-full w-0 -translate-x-1/2 flex-col items-center md:left-1/2">
       <div className="absolute inset-y-0 w-[2px] rounded-full bg-[var(--color-primary)] opacity-20" />
       <motion.div
-        className="absolute top-0 h-full w-[2px] origin-top rounded-full bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-accent)] shadow-[0_0_8px_var(--color-primary)]"
+        className="absolute top-0 h-full w-[2px] origin-top rounded-full bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-accent)]"
         style={{ scaleY }}
       />
     </div>

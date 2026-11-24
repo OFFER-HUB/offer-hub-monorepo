@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Code, BookOpen, PenTool, Bug } from "lucide-react";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { Button } from "@/components/ui/Button";
 
 const steps = [
     { number: "01", title: "Fork", description: "Fork the repository to your own GitHub account." },
@@ -85,22 +85,19 @@ export function HowToContribute() {
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <Link
+                    <Button
                         href={`${GITHUB_REPO_URL}/issues`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn-neumorphic-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2"
+                        size="lg"
                     >
                         View open issues
                         <Bug className="w-4 h-4" />
-                    </Link>
-                    <Link
-                        href="/docs"
-                        className="btn-neumorphic-secondary px-8 py-4 rounded-xl font-medium flex items-center gap-2"
-                    >
+                    </Button>
+                    <Button href="/docs" variant="secondary" size="lg">
                         Read contribution guide
                         <BookOpen className="w-4 h-4" />
-                    </Link>
+                    </Button>
                 </div>
             </div>
         </section>

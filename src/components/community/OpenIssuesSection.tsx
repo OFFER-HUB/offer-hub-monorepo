@@ -3,6 +3,7 @@
 import { useState, memo, useMemo } from "react";
 import { Tag, ArrowUpRight, ChevronDown } from "lucide-react";
 import { SectionHeading } from "@/components/community/SectionHeading";
+import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import type { IssueData } from "@/types/community";
 
@@ -67,15 +68,16 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           </div>
         </div>
 
-        <a
+        <Button
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open issue #${issue.number}: ${issue.title}`}
-          className="w-11 h-11 rounded-xl text-white transition-[background-color,box-shadow,transform] btn-neumorphic-primary flex items-center justify-center shadow-neu-raised-sm hover:scale-105 shrink-0"
+          size="md"
+          className="h-11 w-11 p-0"
         >
           <ArrowUpRight size={18} aria-hidden="true" />
-        </a>
+        </Button>
       </div>
     </article>
   );
@@ -127,5 +129,4 @@ export const OpenIssuesSection = ({ issues }: OpenIssuesSectionProps) => {
     </section>
   );
 };
-
 

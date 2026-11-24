@@ -96,13 +96,15 @@ Three semantic token pairs were non-compliant in dark mode and have been correct
 
 ### Badge
 
-| Variant | Foreground | Background (10% tint) | Light ratio | Dark ratio | Result |
+> **Tinted backgrounds use `color-mix(...)`, not an opacity suffix.** `bg-theme-success/10` (and any `bg-theme-*/10`) emits no CSS in Tailwind 3, because the token color is a CSS variable and Tailwind cannot append an alpha channel to it. The working form is `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]`. The ratios below are measured on that 10% tint.
+
+| Variant | Foreground | Background (10% tint via `color-mix`) | Light ratio | Dark ratio | Result |
 |---|---|---|---|---|---|
-| `default` | `text-content-secondary` | `bg-content-muted/10` | ~4.12:1 | ~8.29:1 | ✅ |
-| `primary` | `text-theme-primary` | `bg-theme-primary/10` | 3.09:1 | 6.26:1 | ✅ |
-| `success` | `text-theme-success` | `bg-theme-success/10` | 6.42:1 | 8.76:1 | ✅ |
-| `warning` | `text-theme-warning` | `bg-theme-warning/10` | 4.52:1 | 7.11:1 | ✅ |
-| `danger` | `text-theme-error` | `bg-theme-error/10` | 4.90:1 | 5.52:1 | ✅ |
+| `default` | `text-content-secondary` | `bg-[color-mix(in_srgb,var(--color-text-muted)_10%,transparent)]` | ~4.12:1 | ~8.29:1 | ✅ |
+| `primary` | `text-theme-primary` | `bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]` | 3.09:1 | 6.26:1 | ✅ |
+| `success` | `text-theme-success` | `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]` | 6.42:1 | 8.76:1 | ✅ |
+| `warning` | `text-theme-warning` | `bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)]` | 4.52:1 | 7.11:1 | ✅ |
+| `danger` | `text-theme-error` | `bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]` | 4.90:1 | 5.52:1 | ✅ |
 
 Note: `text-xs font-semibold` (12px bold ≈ 9pt bold) does not qualify as large text; 4.5:1 AA applies to text content. Badge labels used as pure decorative icons are exempt.
 
@@ -113,9 +115,9 @@ Note: `text-xs font-semibold` (12px bold ≈ 9pt bold) does not qualify as large
 
 | Element | Token (current) | Light ratio | Dark ratio | Result |
 |---|---|---|---|---|
-| Traffic-light red dot | `bg-theme-error/80` | Decorative | Decorative | ✅ |
-| Traffic-light yellow dot | `bg-theme-warning/80` | Decorative | Decorative | ✅ |
-| Traffic-light green dot | `bg-theme-success/80` | Decorative | Decorative | ✅ |
+| Traffic-light red dot | `bg-[color-mix(in_srgb,var(--color-error)_80%,transparent)]` | Decorative | Decorative | ✅ |
+| Traffic-light yellow dot | `bg-[color-mix(in_srgb,var(--color-warning)_80%,transparent)]` | Decorative | Decorative | ✅ |
+| Traffic-light green dot | `bg-[color-mix(in_srgb,var(--color-success)_80%,transparent)]` | Decorative | Decorative | ✅ |
 | "Copied" state copy button | `text-theme-success` | 6.42:1 | 8.76:1 | ✅ |
 | Command text — `text-content-primary` | unchanged | 14.25:1 | 13.75:1 | ✅ |
 | Prompt `$` — `text-theme-primary` | unchanged | 3.09:1 (UI) | 6.26:1 | ✅ |

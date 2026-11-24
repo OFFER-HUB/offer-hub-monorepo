@@ -6,6 +6,7 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/cn";
 import { logger } from "@/utils/logger";
 import { getMermaidThemeVariables, getNeumorphicDiagramCSS, readDiagramColorTokens } from "@/lib/diagram-theme";
+import { Button } from "@/components/ui/Button";
 
 export type MermaidDiagramProps = {
   chart?: string;
@@ -166,26 +167,14 @@ export function MermaidDiagram({
           </div>
 
           {chartContent && (
-            <button
-              type="button"
+            <Button
               onClick={handleCopy}
               aria-label={copied ? "Copied" : "Copy diagram source"}
-              className={cn(
-                "relative flex items-center gap-2.5 px-4 py-2 min-h-11 rounded-xl text-xs font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
-                copied
-                  ? "text-white bg-theme-primary shadow-lg shadow-theme-primary/25"
-                  : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",
-              )}
+              variant={copied ? "primary" : "secondary"}
+              leadingIcon={copied ? <Check size={14} /> : <Copy size={14} />}
             >
-              <span className="flex items-center gap-2">
-                {copied ? (
-                  <Check size={14} className="stroke-[3.5]" />
-                ) : (
-                  <Copy size={14} className="stroke-[2.5]" />
-                )}
-                <span>{copied ? "Copied" : "Copy source"}</span>
-              </span>
-            </button>
+              {copied ? "Copied" : "Copy source"}
+            </Button>
           )}
         </div>
 
@@ -220,5 +209,4 @@ export function MermaidDiagram({
     </figure>
   );
 }
-
 

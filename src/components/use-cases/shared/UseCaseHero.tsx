@@ -1,4 +1,5 @@
 import { ArrowUpRight, FileText } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 import type { UseCaseHeroData } from "../types";
 import { CardEyebrow, InsetCard } from "./CardPrimitives";
@@ -41,22 +42,21 @@ export function UseCaseHero({
           </p>
 
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
+            <Button
               href={docsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold btn-neumorphic-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-elevated"
+              leadingIcon={<FileText size={16} aria-hidden="true" />}
+              trailingIcon={<ArrowUpRight size={15} aria-hidden="true" />}
             >
-              <FileText size={16} aria-hidden="true" />
               {ctaLabel}
-              <ArrowUpRight size={15} aria-hidden="true" />
-            </a>
-            <a
+            </Button>
+            <Button
               href="#escrow-flow"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold btn-neumorphic-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-elevated"
+              variant="secondary"
             >
               See the escrow flow
-            </a>
+            </Button>
           </div>
         </div>
 

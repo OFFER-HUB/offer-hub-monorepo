@@ -1,10 +1,10 @@
 "use client"
 
-import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
 import { AlertTriangle } from "lucide-react"
 import { Footer } from "@/components/layout/Footer"
 import { Navbar } from "@/components/layout/Navbar"
+import { Button } from "@/components/ui/Button"
 
 export interface RouteErrorProps {
   title: string
@@ -57,20 +57,18 @@ const RouteErrorCard = ({
         </p>
 
         <div className="flex flex-wrap justify-center gap-3">
-          <button
+          <Button
             type="button"
             onClick={reset}
-            className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold"
           >
             Try again
-          </button>
+          </Button>
           {secondaryLink && (
-            <Link
+            <Button
               href={secondaryLink.href}
-              className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold"
             >
               {secondaryLink.label}
-            </Link>
+            </Button>
           )}
         </div>
       </motion.div>
