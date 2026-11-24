@@ -26,8 +26,6 @@ describe.each(CASES)("useCaseData: %s", (slug, data) => {
     expect(data.hero.badgeLabel).toMatch(/^CASE STUDY:/);
     expect(data.hero.headline.length).toBeGreaterThan(0);
     expect(data.hero.subheadline.length).toBeGreaterThan(0);
-    expect(data.hero.footerLabel.length).toBeGreaterThan(0);
-    expect(data.hero.footerIcon).toBeTruthy();
     expect(data.hero.docsUrl).toMatch(
       /^https:\/\/.*\/docs\/business\/use-cases\.md/,
     );

@@ -2,7 +2,6 @@ import {
   ShieldCheck,
   Zap,
   Globe,
-  Orbit,
   Users,
   Lock,
   Layers,
@@ -37,8 +36,6 @@ export const useCaseData: UseCaseData = {
       "A live blueprint for escrow-backed freelance infrastructure: mapped payment flows, milestone controls, and global USDC settlement without custodial risk.",
     docsUrl:
       "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md#use-case-1-freelance-platform",
-    footerIcon: Orbit,
-    footerLabel: "Deployment-grade architecture",
     stats: [
       { label: "Target", value: "B2B / Freelance", accent: "Marketplace Scope" },
       { label: "Provider", value: "Stellar (USDC)", accent: "Settlement Layer" },
