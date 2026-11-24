@@ -9,7 +9,7 @@ export default function InteractiveExplorerPage() {
     <article className="max-w-4xl mx-auto">
       {/* Page header */}
       <header className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-content-primary">
+        <h1 className="text-[2rem] font-bold leading-[1.2] text-content-primary">
           Interactive API Explorer
         </h1>
         <p className="mt-3 text-base text-content-secondary">

@@ -94,11 +94,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 <Menu size={20} aria-hidden="true" />
               </button>
 
-              {isHub ? (
-                <span className="text-content-primary font-bold tracking-tight opacity-70 italic text-[14px]">Documentation Index</span>
-              ) : (
-                <Breadcrumb />
-              )}
+              {!isHub && <Breadcrumb />}
             </nav>
           </div>
         </div>
