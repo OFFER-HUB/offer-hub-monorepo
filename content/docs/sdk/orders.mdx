@@ -12,7 +12,7 @@ section: SDK
 ```ts
 import { createSdk } from "@offerhub/sdk";
 
-const sdk = createSdk({ baseUrl: "https://api.offerhub.io" });
+const sdk = createSdk({ baseUrl: "https://api.offer-hub.tech" });
 
 // All order methods are accessed through an authenticated user context.
 const user = sdk.asUser(token);
@@ -325,7 +325,7 @@ await sdk.asUser(token).resolution.dispute("order_xyz789", {
 ```ts
 import { createSdk } from "@offerhub/sdk";
 
-const sdk = createSdk({ baseUrl: "https://api.offerhub.io" });
+const sdk = createSdk({ baseUrl: "https://api.offer-hub.tech" });
 
 async function placeAndFundOrder(token: string) {
   const user = sdk.asUser(token);
