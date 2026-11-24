@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { ErrorCard } from "@/components/shared/ErrorCard";
+import { Button } from "@/components/ui/Button";
 
 export default function Error({
   error,
@@ -29,18 +29,14 @@ export default function Error({
         }
         action={
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={reset}
-              className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold"
             >
               Try again
-            </button>
-            <Link
-              href="/"
-              className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold"
-            >
+            </Button>
+            <Button href="/">
               Return to Home
-            </Link>
+            </Button>
           </div>
         }
       />

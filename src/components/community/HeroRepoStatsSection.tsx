@@ -1,6 +1,7 @@
 import { Star, GitFork, Users, AlertCircle } from "lucide-react";
 import type { RepoStats } from "@/types/community";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { Button } from "@/components/ui/Button";
 
 interface HeroRepoStatsSectionProps {
   stats: RepoStats | null;
@@ -34,14 +35,14 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
-              <a
+              <Button
                 href={GITHUB_REPO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="max-w-full min-w-0 px-6 py-4 sm:px-8 rounded-xl bg-content-primary text-bg-base text-xs font-black uppercase tracking-widest shadow-xl shadow-content-primary/20 hover:bg-black hover:text-white transition-all"
+                size="lg"
               >
                 Star on GitHub
-              </a>
+              </Button>
             </div>
           </div>
 
@@ -89,5 +90,4 @@ export const HeroRepoStatsSection = ({ stats }: HeroRepoStatsSectionProps) => {
     </section>
   );
 };
-
 

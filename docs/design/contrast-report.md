@@ -96,12 +96,9 @@ Three semantic token pairs were non-compliant in dark mode and have been correct
 
 ### Badge
 
-> **Implementation note:** Badge tints use `color-mix()` arbitrary-value classes
-> (e.g. `bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]`) because
-> Tailwind 3 cannot emit CSS for opacity modifiers on CSS-variable colors.
-> See [#1734](https://github.com/OFFER-HUB/offer-hub-monorepo/issues/1734).
+> **Tinted backgrounds use `color-mix(...)`, not an opacity suffix.** `bg-theme-success/10` (and any `bg-theme-*/10`) emits no CSS in Tailwind 3, because the token color is a CSS variable and Tailwind cannot append an alpha channel to it. The working form is `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]`. The ratios below are measured on that 10% tint.
 
-| Variant | Foreground | Background (10% tint via color-mix) | Light ratio | Dark ratio | Result |
+| Variant | Foreground | Background (10% tint via `color-mix`) | Light ratio | Dark ratio | Result |
 |---|---|---|---|---|---|
 | `default` | `text-content-secondary` | `bg-[color-mix(in_srgb,var(--color-text-muted)_10%,transparent)]` | ~4.12:1 | ~8.29:1 | ✅ |
 | `primary` | `text-theme-primary` | `bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]` | 3.09:1 | 6.26:1 | ✅ |

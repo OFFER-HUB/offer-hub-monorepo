@@ -12,6 +12,7 @@ import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 const navLinks = [
+  { href: "/product", label: "Product" },
   { href: "/#features", label: "Features" },
   { href: "/#how-it-works", label: "How it Works" },
   { href: "/use-cases", label: "Use Cases" },

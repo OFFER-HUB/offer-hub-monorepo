@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { SITE_URL_FALLBACK, SITE_NAME } from "@/constants/site";
 import { THEME_STORAGE_KEY } from "@/constants/storage";
+import { Button } from "@/components/ui/Button";
 
 const themeInitScript = `(function () {
   try {
@@ -163,12 +164,13 @@ export default function RootLayout({
             This site requires JavaScript to function. Please enable JavaScript in your browser settings.
           </div>
         </noscript>
-        <a
+        <Button
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-6 focus:left-6  focus:z-[9999] px-8 py-10 rounded-full text-sm font-semibold btn-neumorphic-primary outline-none transition-none"
+          size="lg"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-6 focus:left-6 focus:z-[9999]"
         >
           Skip to main content
-        </a>
+        </Button>
         <ThemeProvider>
           <Suspense fallback={null}>
             <NavigationProgress />

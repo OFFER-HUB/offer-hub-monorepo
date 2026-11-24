@@ -12,6 +12,7 @@ import {
 import { Check, Copy } from "lucide-react";
 import type { ThemeRegistration } from "shiki";
 import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/Button";
 import { logger } from "@/utils/logger";
 import {
   escapeHtml,
@@ -443,24 +444,16 @@ export function CodeBlock({
 
         <div className="flex items-center gap-2">
           {accessory}
-          <button
-            type="button"
+          <Button
             onClick={handleCopy}
             aria-label={copied ? "Copied" : copyLabel}
-            className={cn(
-              "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3 py-2",
-              "font-mono text-xs font-semibold uppercase tracking-widest text-content-secondary",
-              "bg-bg-base shadow-neu-raised-sm transition-colors duration-200 hover:text-theme-primary",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
-            )}
+            variant={copied ? "primary" : "secondary"}
+            size="sm"
+            leadingIcon={copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+            className="font-mono text-xs uppercase tracking-widest"
           >
-            {copied ? (
-              <Check size={14} aria-hidden="true" />
-            ) : (
-              <Copy size={14} aria-hidden="true" />
-            )}
             <span>{copied ? "Copied" : "Copy"}</span>
-          </button>
+          </Button>
         </div>
       </div>
 
