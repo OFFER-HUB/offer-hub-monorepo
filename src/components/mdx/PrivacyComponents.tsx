@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Mail, Link2 } from "lucide-react";
 import { DataRightsForm } from "./DataRightsForm";
 import { Callout } from "@/components/docs/Callout";
@@ -121,19 +122,19 @@ export function ContactSection(): React.ReactElement {
       </div>
       <div className="flex flex-col gap-5 w-full md:w-auto md:shrink-0 md:min-w-[280px]">
         {[
-          { label: "Privacy inquiries", email: COMPANY_INFO.emails.privacy },
-          { label: "General support", email: COMPANY_INFO.emails.support },
-        ].map(({ label, email }) => (
-          <a
-            key={email}
-            href={`mailto:${email}`}
+          { label: "Privacy inquiries", cta: "Submit via contact form" },
+          { label: "General support", cta: "Reach us via contact form" },
+        ].map(({ label, cta }) => (
+          <Link
+            key={label}
+            href={COMPANY_INFO.contactPath}
             className="flex min-h-11 flex-col justify-center gap-1 rounded-2xl px-6 py-5 transition-shadow duration-200 shadow-neu-sunken-subtle bg-bg-elevated hover:shadow-neu-sunken group focus-visible:outline-2 focus-visible:outline-theme-primary"
           >
             <span className="text-[10px] font-black uppercase tracking-widest text-content-secondary">{label}</span>
             <span className="text-base font-bold text-theme-primary group-hover:text-content-primary transition-colors">
-              {email}
+              {cta}
             </span>
-          </a>
+          </Link>
         ))}
         <Callout tone="note" label="Registered office" className="my-0">
           {COMPANY_INFO.name}

@@ -92,9 +92,9 @@ We value your feedback and are committed to making the Platform accessible to ev
 
 ### Primary Contact Method
 
-**Email:** [support@offerhub.io](mailto:support@offerhub.io)
+**Contact Form:** [Submit an accessibility report](/contact)
 
-**Subject Line:** Accessibility Issue Report
+**Topic / Subject:** Accessibility Issue Report
 
 **Information to Include:**
 - Description of the accessibility barrier
@@ -248,7 +248,7 @@ Your feedback is essential for improving our accessibility. We review all access
 
 **For accessibility questions or concerns:**
 
-📧 **Email:** [support@offerhub.io](mailto:support@offerhub.io)
+📬 **Contact Form:** [Submit via /contact](/contact)
 🕐 **Response Time:** 2 business days
 
 **For general support:**

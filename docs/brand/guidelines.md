@@ -260,7 +260,7 @@ OFFER-HUB™ is a trademark of [Company Name]. Unauthorized use is prohibited.
 ## Contact
 
 For brand asset requests or usage questions:
-- **Email:** brand@offerhub.com
+- **Contact Form:** [Submit a brand request](/contact)
 - **Documentation:** See `/brand/` directory
 
 ---

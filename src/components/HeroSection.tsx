@@ -65,7 +65,7 @@ export function HeroSection() {
             willChange: "background-image",
           }}
         >
-          OFFER HUB
+          OFFER-HUB
         </h1>
 
         {/* Tagline — product-accurate description */}

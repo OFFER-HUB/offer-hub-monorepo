@@ -93,11 +93,11 @@ export default function DocsPage() {
             </p>
 
             <h1 className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8 select-none text-content-primary">
-              OFFER HUB
+              OFFER-HUB
             </h1>
 
             <p className="text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed font-medium animate-fadeInUp text-content-secondary" style={{ animationDelay: "200ms" }}>
-              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the Offer Hub ecosystem.
+              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the OFFER-HUB ecosystem.
             </p>
 
             <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "400ms" }}>
