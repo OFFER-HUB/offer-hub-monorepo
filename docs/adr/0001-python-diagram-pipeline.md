@@ -30,15 +30,15 @@ Every node/edge gets a semantic CSS class (`oh-node`, `oh-node--terminal`, `oh-e
 
 Given the same Graphviz version and the same input graph, `dot`'s layout algorithm produces byte-identical output — verified by running the pipeline twice and diffing, both locally and inside the exact container described below. The Python package version is pinned in `requirements.txt`.
 
-**`dot`'s layout is deterministic per version, but not stable across versions.** This was caught, not assumed: an early version of this pipeline committed an SVG generated with a locally-installed Graphviz 16.1.0, and CI's unpinned `apt-get install graphviz` installed 2.42.2 on `ubuntu-latest`, producing a different (still internally valid, just differently laid out) SVG — CI's own staleness check correctly failed the PR. The CI job now pins its runner to Ubuntu 24.04 and installs its exact Graphviz package version, `graphviz=2.42.2-9build1`. Pinning the runner codename keeps the package available and prevents `ubuntu-latest` from silently moving the job to a release where this package is no longer present. Every committed SVG under `public/diagrams/` is generated against Graphviz 2.42.2. Bumping it is a deliberate choice, not a side effect of a runner image update — see [Regenerating against CI's exact environment](#regenerating-against-cis-exact-environment).
+**`dot`'s layout is deterministic per version, but not stable across versions.** This was caught, not assumed: an early version of this pipeline committed an SVG generated with a locally-installed Graphviz 16.1.0, and CI's unpinned `apt-get install graphviz` installed 2.42.2 on `ubuntu-latest`, producing a different (still internally valid, just differently laid out) SVG — CI's own staleness check correctly failed the PR. The fix: `.github/workflows/ci.yml` now installs an exact pinned version, `graphviz=2.42.2-9ubuntu0.1`, and every committed SVG under `public/diagrams/` is generated against that same version. Bumping it is a deliberate choice, not a side effect of a runner image update — see [Regenerating against CI's exact environment](#regenerating-against-cis-exact-environment).
 
 ### Regenerating against CI's exact environment
 
-Because of the version sensitivity above, don't assume your local Graphviz install matches CI's pinned `2.42.2-9build1`. Regenerate inside the same environment CI uses:
+Because of the version sensitivity above, don't assume your local Graphviz install matches CI's pinned `2.42.2-9ubuntu0.1`. Regenerate inside the same environment CI uses:
 
 ```bash
 docker run --rm -v "$(pwd):/work" -w /work ubuntu:24.04 bash -c '
-  apt-get update -qq && apt-get install -y -qq graphviz=2.42.2-9build1 python3 python3-pip python3-venv
+  apt-get update -qq && apt-get install -y -qq graphviz=2.42.2-9ubuntu0.1 python3 python3-pip python3-venv
   python3 -m venv /tmp/venv
   /tmp/venv/bin/pip install -q -r scripts/diagrams/requirements.txt
   /tmp/venv/bin/python scripts/diagrams/generate_all.py
