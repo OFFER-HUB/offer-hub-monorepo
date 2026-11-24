@@ -149,14 +149,12 @@ export default async function ChangelogPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
-      {/* Subtle teal glow centered */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_45%_at_50%_50%,rgba(20,154,155,0.07)_0%,transparent_70%)]" />
       <Navbar />
 
       <main className="flex-grow pt-32 pb-24 px-6 md:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <header className="text-center mb-24 animate-fadeInUp">
+          <header className="text-center mb-12 animate-fadeInUp">
             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-theme-primary mb-4">Evolution</p>
             <h1 className="text-4xl md:text-6xl font-black text-content-primary tracking-tighter leading-none mb-6">
               Platform <span className="text-theme-primary">Updates</span>
