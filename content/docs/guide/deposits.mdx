@@ -136,8 +136,6 @@ The Orchestrator then:
 2. Credits the user's balance
 3. Emits `balance.credited` on the SSE stream, which your app can listen to
 
-<StaticDiagram name="deposit-airtm-flow" caption="AirTM top-up: statuses follow TOPUP_TRANSITIONS; the provider webhook (or a manual refresh) moves the top-up forward and the balance is credited on success." />
-
 Source: `topup-status.enum.ts`, `topups.controller.ts`, `topups.service.ts` and `airtm-webhook.service.ts` in the [Orchestrator](https://github.com/OFFER-HUB/OFFER-HUB).
 
 <Callout type="warning">
