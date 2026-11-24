@@ -32,19 +32,10 @@ export function PageHero({
   return (
     <section
       id={id}
-      className="relative isolate overflow-hidden pt-44 md:pt-48 pb-20 bg-transparent"
+      className="pt-32 pb-20 bg-transparent"
       style={{ scrollMarginTop: scrollMarginPx }}
     >
-      {/* Same soft teal glow language as the home hero — ties pages together */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 58% 48% at 50% 38%, rgba(20,154,155,0.085) 0%, transparent 68%)",
-        }}
-      />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center flex flex-col items-center">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center flex flex-col items-center">
         <motion.div
           variants={heroContainerVariants}
           initial="hidden"

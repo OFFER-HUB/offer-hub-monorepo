@@ -34,17 +34,8 @@ export function HeroSection() {
     <section
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden select-none bg-transparent"
     >
-      {/* ── Subtle teal glow centered ── */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 45% at 50% 50%, color-mix(in srgb, var(--color-primary) 7%, transparent) 0%, transparent 70%)",
-        }}
-      />
-
       {/* ── Hero content — pt-28 clears the fixed pill navbar ── */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4 w-full pt-28">
+      <div className="flex flex-col items-center text-center px-4 w-full pt-28">
         {/* Eyebrow — key value props from product docs */}
         <p
           className="animate-fadeIn text-xs font-medium uppercase tracking-[0.4em] mb-10 text-theme-primary"
@@ -94,23 +85,23 @@ export function HeroSection() {
           style={{ animationDelay: "500ms" }}
         >
           {/* Primary — neumorphic raised, teal */}
-          <a
-            href="#waitlist-form"
+          <Link
+            href="/docs"
             className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-primary"
           >
-            Get Started
+            Read the docs
             <ArrowRight
               size={15}
               className="group-hover:translate-x-0.5 transition-transform duration-[200ms]"
             />
-          </a>
+          </Link>
 
           {/* Secondary — neumorphic raised, same base color as page */}
           <Link
-            href="/docs"
+            href="/use-cases"
             className="px-7 py-3.5 rounded-xl text-sm font-medium btn-neumorphic-secondary"
           >
-            View Docs
+            Explore use cases
           </Link>
         </div>
       </div>

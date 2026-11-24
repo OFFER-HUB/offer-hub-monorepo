@@ -37,8 +37,6 @@ export const useCaseData: UseCaseData = {
       "The professional services platform blueprint: SOW-based escrow, milestone-gated releases, structured dispute resolution, and instant settlement — for legal, consulting, design, and managed services.",
     docsUrl:
       "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md#use-case-3-service-marketplace",
-    footerIcon: Briefcase,
-    footerLabel: "Enterprise-grade service escrow",
     stats: [
       {
         label: "Target",

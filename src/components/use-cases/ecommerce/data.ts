@@ -37,8 +37,6 @@ export const useCaseData: UseCaseData = {
       "A deep dive into escrow-secured e-commerce: automatic delivery escrow, buyer-protection windows, dispute handling, and instant seller payouts on Stellar — without custodial risk.",
     docsUrl:
       "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md#use-case-2-e-commerce-marketplace",
-    footerIcon: ShoppingCart,
-    footerLabel: "Trustless commerce infrastructure",
     stats: [
       { label: "Target", value: "B2C / eCommerce", accent: "Marketplace Scope" },
       { label: "Provider", value: "Stellar (USDC)", accent: "Settlement Layer" },

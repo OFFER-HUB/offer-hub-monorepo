@@ -22,8 +22,6 @@ export interface UseCaseHeroData {
   subheadline: string;
   docsUrl: string;
   ctaLabel?: string;
-  footerIcon: LucideIcon;
-  footerLabel: string;
   stats: UseCaseHeroStat[];
 }
 
