@@ -1,24 +1,35 @@
 {
-  "name": "Offer Hub",
-  "short_name": "OfferHub",
-  "description": "The marketplace where opportunities meet talent.",
+  "name": "OFFER-HUB",
+  "short_name": "OFFER-HUB",
+  "description": "Non-custodial escrow payments for your marketplace.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "theme_color": "#0e9898",
-  "background_color": "#0a0a0a",
+  "theme_color": "#149A9B",
+  "background_color": "#F1F3F7",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

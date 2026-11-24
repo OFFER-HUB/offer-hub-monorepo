@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Twitter, Send, Github, Disc3 } from "lucide-react";
-import { useTheme } from "@/components/providers/ThemeProvider";
+import { Logo } from "@/components/ui/Logo";
 import { COOKIE_PREFERENCES_EVENT } from "@/constants/events";
 import { SOCIAL_X, SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
 import { GITHUB_ORG_URL } from "@/constants/github";
@@ -48,7 +47,6 @@ const socialLinks = [
 export function Footer() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const { resolvedTheme } = useTheme();
   const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
@@ -84,17 +82,7 @@ export function Footer() {
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
             <div className="flex flex-col gap-6 md:w-72 md:flex-shrink-0 min-w-0 w-full max-w-full">
               <Link href="/" className="flex items-center gap-2.5">
-                <Image
-                  src={
-                    resolvedTheme === "dark"
-                      ? "/OFFER-HUB-logo-to-darkmode.png"
-                      : "/OFFER-HUB-logo.png"
-                  }
-                  alt="OFFER-HUB"
-                  width={160}
-                  height={42}
-                  className="h-9 w-auto object-contain"
-                />
+                <Logo height={36} />
               </Link>
 
               <p className="text-sm leading-relaxed text-content-secondary">
