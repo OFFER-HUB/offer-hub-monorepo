@@ -6,7 +6,6 @@ import { RecentPRsSection } from "@/components/community/RecentPRsSection";
 import { OpenIssuesSection } from "@/components/community/OpenIssuesSection";
 import { RepoLinksSection } from "@/components/community/RepoLinksSection";
 import { CommunityChannelsSection } from "@/components/community/CommunityChannelsSection";
-import { RegistrationForm } from "@/components/community/RegistrationForm";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
@@ -178,7 +177,6 @@ export default async function CommunityPage() {
         <OpenIssuesSection issues={issues} />
         <HowToContribute />
         <CommunityChannelsSection />
-        <RegistrationForm />
       </main>
       <Footer />
     </div>
