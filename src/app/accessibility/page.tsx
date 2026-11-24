@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LegalLayout } from "@/components/legal/LegalLayout";
+import { Button } from "@/components/ui/Button";
 import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, MessageSquare } from "lucide-react";
 import { SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
 import { GITHUB_REPO_URL } from "@/constants/github";
@@ -335,13 +336,12 @@ export default function AccessibilityPage() {
                          <p className="text-lg text-content-secondary font-medium mb-8 max-w-2xl mx-auto">
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.
                          </p>
-                         <Link
+                         <Button
                               href="/contact"
-                              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-theme-primary px-8 text-bg-base font-semibold text-sm hover:bg-theme-primary-hover transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary"
+                              leadingIcon={<Mail size={18} />}
                          >
-                              <Mail size={18} />
                               Contact Support
-                         </Link>
+                         </Button>
                     </div>
                </LegalLayout>
           </div>

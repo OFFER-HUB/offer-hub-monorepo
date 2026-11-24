@@ -8,6 +8,7 @@ import { ConnectorDot } from "./ConnectorDot";
 import { PhaseCard } from "./PhaseCard";
 import { TimelineLine } from "./TimelineLine";
 import type { PhaseDomain, PhaseStatus } from "./types";
+import { Button } from "@/components/ui/Button";
 
 export function EvolutionTimelineView() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -118,17 +119,16 @@ export function EvolutionTimelineView() {
           {DOMAINS.map((domainOption) => {
             const active = activeDomain === domainOption.key;
             return (
-              <button
+              <Button
                 key={domainOption.key}
+                type="button"
                 onClick={() => setActiveDomain(domainOption.key)}
-                className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
-                  active
-                    ? `${NEU_SUNKEN} bg-bg-base text-theme-primary font-bold`
-                    : "text-content-secondary hover:text-content-primary"
-                }`}
+                size="sm"
+                variant={active ? "primary" : "ghost"}
+                className="whitespace-nowrap"
               >
                 {domainOption.label}
-              </button>
+              </Button>
             );
           })}
         </motion.div>
