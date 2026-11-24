@@ -6,10 +6,14 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+
+/** Single primary CTA, shared by the desktop bar and the mobile menu. */
+export const NAV_CTA = { href: "/docs/getting-started", label: "Get started" } as const;
 
 const navLinks = [
   { href: "/product", label: "Product" },
@@ -112,6 +116,9 @@ export function Navbar() {
             {/* ── Desktop theme toggle ── */}
             <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle />
+              <Button href={NAV_CTA.href} size="sm">
+                {NAV_CTA.label}
+              </Button>
             </div>
 
             {/* ── Mobile hamburger ── */}
@@ -180,6 +187,9 @@ export function Navbar() {
                 <span className="text-sm text-content-secondary">Theme</span>
                 <ThemeToggle />
               </div>
+              <Button href={NAV_CTA.href} className="w-full" onClick={() => setIsMenuOpen(false)}>
+                {NAV_CTA.label}
+              </Button>
             </div>
           </div>
         </>
