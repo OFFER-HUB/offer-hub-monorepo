@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
         destination: "/product#orchestrator",
         permanent: true,
       },
+      {
+        source: "/docs/guide/airtm",
+        destination: "/docs/guide/withdrawals",
+        permanent: true,
+      },
     ];
   },
   async headers() {
@@ -44,15 +49,6 @@ const nextConfig: NextConfig = {
     return [
       { source: "/(.*)", headers: securityHeaders },
       { source: "/api/:path*", headers: [...securityHeaders, ...corsHeaders] },
-    ];
-  },
-  async redirects() {
-    return [
-      {
-        source: "/docs/guide/airtm",
-        destination: "/docs/guide/withdrawals",
-        permanent: true,
-      },
     ];
   },
   async rewrites() {
