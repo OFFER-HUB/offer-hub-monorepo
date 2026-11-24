@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { useLiquidTextAnimation } from "@/hooks/useLiquidTextAnimation";
 
@@ -34,17 +34,8 @@ export function HeroSection() {
     <section
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden select-none bg-transparent"
     >
-      {/* ── Subtle teal glow centered ── */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 45% at 50% 50%, color-mix(in srgb, var(--color-primary) 7%, transparent) 0%, transparent 70%)",
-        }}
-      />
-
       {/* ── Hero content — pt-28 clears the fixed pill navbar ── */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4 w-full pt-28">
+      <div className="flex flex-col items-center text-center px-4 w-full pt-28">
         {/* Eyebrow — key value props from product docs */}
         <p
           className="animate-fadeIn text-xs font-medium uppercase tracking-[0.4em] mb-10 text-theme-primary"
@@ -74,7 +65,7 @@ export function HeroSection() {
             willChange: "background-image",
           }}
         >
-          OFFER HUB
+          OFFER-HUB
         </h1>
 
         {/* Tagline — product-accurate description */}
@@ -94,24 +85,23 @@ export function HeroSection() {
           style={{ animationDelay: "500ms" }}
         >
           {/* Primary — neumorphic raised, teal */}
-          <a
-            href="#waitlist-form"
-            className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-sm font-semibold btn-neumorphic-primary"
+          <Button
+            href="/docs"
+            size="lg"
+            className="group"
           >
-            Get Started
-            <ArrowRight
-              size={15}
-              className="group-hover:translate-x-0.5 transition-transform duration-[200ms]"
-            />
-          </a>
+            Read the docs
+            <ArrowRight size={15} className="transition-transform duration-[200ms] group-hover:translate-x-0.5" />
+          </Button>
 
           {/* Secondary — neumorphic raised, same base color as page */}
-          <Link
-            href="/docs"
-            className="px-7 py-3.5 rounded-xl text-sm font-medium btn-neumorphic-secondary"
+          <Button
+            href="/use-cases"
+            variant="secondary"
+            size="lg"
           >
-            View Docs
-          </Link>
+            Explore use cases
+          </Button>
         </div>
       </div>
 

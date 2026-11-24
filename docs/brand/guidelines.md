@@ -62,9 +62,9 @@ The OFFER-HUB logo consists of the wordmark "OFFER-HUB" in a modern sans-serif t
 - Main brand color
 - Use for primary CTAs, highlights, and brand elements
 
-**Secondary Navy:** `#002333`  
-- Structural color
-- Use for headers, footers, and dark backgrounds
+**Secondary Navy:** `#002333`
+- Deep-navy accent color
+- Use for architecture-diagram labels and icon tints — not for the navbar or footer (the navbar is a canvas-colored floating pill, the footer is an elevated card)
 
 **Accent Teal:** `#15949C`  
 - Supporting color
@@ -77,9 +77,9 @@ The OFFER-HUB logo consists of the wordmark "OFFER-HUB" in a modern sans-serif t
 **Background:** `#F1F3F7` (Light gray)  
 **Text Primary:** `#19213D` (Dark navy)  
 **Text Secondary:** `#6D758F` (Medium gray)  
-**Success:** `#16a34a` (Green)  
-**Warning:** `#d97706` (Amber)  
-**Error:** `#FF0000` (Red)
+**Success:** `#166534` (Green, light) / `#4ade80` (dark)
+**Warning:** `#b45309` (Amber, light) / `#f59e0b` (dark)
+**Error:** `#c0392b` (Red, light) / `#f87171` (dark)
 
 See [Color Palette](../design/color-palette.md) for complete reference.
 
@@ -180,7 +180,7 @@ OFFER-HUB uses a neumorphic design language with soft shadows and tactile depth.
 
 **Key Elements:**
 - Dual shadows (dark + light)
-- Consistent light source (145° top-left)
+- Consistent light source (135° top-left)
 - Soft, rounded corners
 - Monochromatic base
 
@@ -202,8 +202,8 @@ See [Neumorphism Guide](../design/neumorphism.md) for details.
 - Logo on left
 - Navigation in center
 - CTA button on right
-- Background: `#002333` (Secondary Navy)
-- Text: White
+- Floating pill: canvas-colored (`bg-bg-base`), `rounded-full`, `shadow-neu-raised`
+- Text: `text-content-primary` / `text-content-secondary`
 
 ### Primary Button
 - Background: `#149A9B` (Primary Teal)
@@ -260,12 +260,11 @@ OFFER-HUB™ is a trademark of [Company Name]. Unauthorized use is prohibited.
 ## Contact
 
 For brand asset requests or usage questions:
-- **Email:** brand@offerhub.com
+- **Contact Form:** [Submit a brand request](/contact)
+- **Website:** https://offer-hub.tech
 - **Documentation:** See `/brand/` directory
 
 ---
 
 **Next Steps:**
 - Review [Visual DNA](../design/visual-dna.md) for design system
-- See [Voice & Tone](./voice-tone.md) for communication guidelines
-- Check [Logo Usage](./logo.md) for detailed logo specifications

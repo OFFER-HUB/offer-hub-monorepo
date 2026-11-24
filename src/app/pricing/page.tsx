@@ -6,11 +6,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { buildPageMetadata } from "@/lib/seo";
-import {
-  COMPARISON_FEATURES,
-  PRICING_FAQS,
-  PRICING_TIERS,
-} from "./pricing.data";
+import { GITHUB_REPO_URL } from "@/constants/github";
+import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
@@ -82,29 +79,16 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <div className="mt-8 flex flex-col gap-3">
-                    <Link
-                      href={tier.primaryCta.href}
-                      target={tier.primaryCta.external ? "_blank" : undefined}
-                      rel={tier.primaryCta.external ? "noopener noreferrer" : undefined}
-                      className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-3 rounded-xl text-sm font-semibold btn-neumorphic-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
-                    >
-                      <span>{tier.primaryCta.label}</span>
-                      <ArrowUpRight className="w-4 h-4 shrink-0" aria-hidden="true" />
-                    </Link>
-
-                    {tier.secondaryCta && (
-                      <Link
-                        href={tier.secondaryCta.href}
-                        target={tier.secondaryCta.external ? "_blank" : undefined}
-                        rel={tier.secondaryCta.external ? "noopener noreferrer" : undefined}
-                        className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-3 rounded-xl text-sm font-semibold bg-bg-base shadow-neu-raised text-theme-primary hover:shadow-neu-raised-hover transition-shadow duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
-                      >
-                        <span>{tier.secondaryCta.label}</span>
-                        <ArrowUpRight className="w-4 h-4 shrink-0" aria-hidden="true" />
-                      </Link>
-                    )}
-                  </div>
+                  <Button
+                    href={tier.ctaHref}
+                    target={tier.external ? "_blank" : undefined}
+                    rel={tier.external ? "noopener noreferrer" : undefined}
+                    variant={tier.ctaStyle === "primary" ? "primary" : "secondary"}
+                    className="mt-8 w-full"
+                  >
+                    <span>{tier.ctaLabel}</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Button>
                 </article>
               );
             })}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, FileText, Home, SearchX } from "lucide-react";
 import { DocsSearchBar } from "@/components/docs/DocsSearchBar";
+import { Button } from "@/components/ui/Button";
 
 const recommendedDocs = [
   {
@@ -44,20 +45,14 @@ export default function DocsNotFound() {
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/docs"
-            className="btn-neumorphic-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold"
-          >
+          <Button href="/docs">
             <Home size={17} />
             Back to Docs
-          </Link>
-          <Link
-            href="/"
-            className="btn-neumorphic-secondary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-content-primary"
-          >
+          </Button>
+          <Button href="/" variant="secondary">
             <BookOpen size={17} />
             Home
-          </Link>
+          </Button>
         </div>
       </div>
 

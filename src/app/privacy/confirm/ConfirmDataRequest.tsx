@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { LegalLayout } from "@/components/legal/LegalLayout";
+import { Button } from "@/components/ui/Button";
 
 type Outcome =
   | { ok: true; message: string; data?: Record<string, unknown> }
@@ -40,12 +42,10 @@ export function ConfirmDataRequest() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-8 sm:p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
-      <h1 className="text-2xl font-black tracking-tight text-content-primary">
-        Confirm your data request
-      </h1>
+    <LegalLayout eyebrow="Privacy & Data Rights" title="Confirm your data request" updated="April 28, 2026" sections={[]}>
+    <div className="mx-auto flex max-w-xl flex-col gap-6 rounded-3xl bg-bg-elevated p-8 shadow-neu-raised sm:p-10">
       {!token ? (
-        <p role="alert" className="text-sm font-medium text-red-500">
+        <p role="alert" className="text-sm font-medium text-theme-error">
           This confirmation link is invalid or has expired.
         </p>
       ) : (
@@ -55,20 +55,20 @@ export function ConfirmDataRequest() {
               <p className="text-sm font-medium leading-relaxed text-content-secondary">
                 Confirm that you own the email address this link was sent to. The link works once.
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={confirm}
                 disabled={loading}
-                className="py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-theme-primary text-white hover:bg-theme-primary-hover shadow-lg transition-colors disabled:opacity-50"
+                loading={loading}
               >
                 {loading ? "Processing…" : "Confirm request"}
-              </button>
+              </Button>
             </>
           )}
           {outcome && (
             <p
               role="alert"
-              className={`text-sm font-medium ${outcome.ok ? "text-theme-primary" : "text-red-500"}`}
+              className={`text-sm font-medium ${outcome.ok ? "text-theme-primary" : "text-theme-error"}`}
             >
               {outcome.message}
             </p>
@@ -81,5 +81,6 @@ export function ConfirmDataRequest() {
         </>
       )}
     </div>
+    </LegalLayout>
   );
 }

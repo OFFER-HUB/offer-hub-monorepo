@@ -23,6 +23,11 @@
   --color-secondary: #002333;
   --color-accent: #15949C;
 
+  /* Action button colors */
+  --color-action: #107D7E;
+  --color-action-hover: #0D7377;
+  --color-on-action: #FFFFFF;
+
   /* Neumorphic shadows */
   --shadow-dark: #d1d5db;
   --shadow-light: #ffffff;
@@ -58,6 +63,11 @@
   --color-primary-hover: #25d4d5;
   --color-accent: #15949C;
 
+  /* Action button colors */
+  --color-action: #1FB8B9;
+  --color-action-hover: #2BC4C5;
+  --color-on-action: #062B2C;
+
   /* Semantic — dark mode values calibrated for WCAG AA on #242433 / #2e2e3f surfaces.
      All three swap to lighter tones so the text+bg pair clears 4.5:1.
        success #4ade80 on #242433 = 8.76:1  ✓ AAA
@@ -81,25 +91,11 @@
   --color-callout-danger-bg: rgba(248, 113, 113, 0.12);
 }
 
-/* Subtle page background — faint teal corner glows only (Dot grid handled by React) */
+/* Flat page background (dot grid handled by React) */
 body {
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 65% 55% at 5% 0%, rgba(20, 154, 155, 0.055) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 65% at 96% 100%, rgba(20, 154, 155, 0.045) 0%, transparent 60%),
-    radial-gradient(ellipse 42% 52% at 96% 4%, rgba(13, 115, 119, 0.040) 0%, transparent 58%),
-    radial-gradient(ellipse 48% 42% at 4% 96%, rgba(21, 148, 156, 0.038) 0%, transparent 55%);
-  will-change: auto;
 }
 
 @layer utilities {
@@ -243,116 +239,6 @@ body::before {
     transition: background 0.15s ease;
   }
 
-  /* ── 3D Colored Neumorphic Buttons ── */
-  /* Ramp darkened from the brand teal (#149A9B/#15A9AA/#0D7377) so white
-     text clears WCAG AA 4.5:1 in every state: default 4.93:1, hover 6.29:1,
-     active 8.10:1 (was as low as 2.43:1 on hover). See issue #1499. */
-  .btn-neumorphic-primary {
-    background: #107D7E;
-    box-shadow:
-      6px 6px 12px var(--shadow-dark),
-      -6px -6px 12px var(--shadow-light),
-      inset 2px 2px 5px rgba(255, 255, 255, 0.4),
-      inset -3px -3px 7px rgba(0, 0, 0, 0.15);
-    transition: all 400ms cubic-bezier(0.25, 1, 0.5, 1);
-    color: white;
-  }
-
-  .btn-neumorphic-primary:hover {
-    background: #0E6B6C;
-    /* Slightly brighter highlight */
-    box-shadow:
-      3px 3px 6px var(--shadow-dark),
-      -3px -3px 6px var(--shadow-light),
-      inset 2px 2px 4px rgba(255, 255, 255, 0.5),
-      inset -2px -2px 5px rgba(0, 0, 0, 0.1);
-    transform: translateY(2px);
-  }
-
-  .btn-neumorphic-primary:active {
-    background: #0C595A;
-    box-shadow:
-      inset 5px 5px 10px rgba(0, 0, 0, 0.2),
-      inset -5px -5px 10px rgba(255, 255, 255, 0.15);
-    transform: translateY(4px);
-  }
-
-  /* Secondary Base color Neumorphic Buttons */
-  .btn-neumorphic-secondary {
-    background: var(--color-bg-base);
-    box-shadow:
-      6px 6px 12px var(--shadow-dark),
-      -6px -6px 12px var(--shadow-light),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.8),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 400ms cubic-bezier(0.25, 1, 0.5, 1);
-    color: var(--color-text-primary);
-  }
-
-  .btn-neumorphic-secondary:hover {
-    box-shadow:
-      3px 3px 6px var(--shadow-dark),
-      -3px -3px 6px var(--shadow-light),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.9);
-    transform: translateY(2px);
-  }
-
-  .btn-neumorphic-secondary:active {
-    box-shadow:
-      inset 4px 4px 8px var(--shadow-dark),
-      inset -4px -4px 8px var(--shadow-light);
-    transform: translateY(4px);
-  }
-
-  /* ── Dark Mode Neumorphic Buttons ── */
-  /* Same AA-compliant ramp as the light mode button above (contrast is a
-     property of the button's own bg/fg pair, not the surrounding page). */
-  .dark .btn-neumorphic-primary {
-    background: #107D7E;
-    box-shadow:
-      6px 6px 12px var(--shadow-dark),
-      -6px -6px 12px var(--shadow-light),
-      inset 2px 2px 5px rgba(255, 255, 255, 0.15),
-      inset -3px -3px 7px rgba(0, 0, 0, 0.3);
-  }
-
-  .dark .btn-neumorphic-primary:hover {
-    background: #0E6B6C;
-    box-shadow:
-      3px 3px 6px var(--shadow-dark),
-      -3px -3px 6px var(--shadow-light),
-      inset 2px 2px 4px rgba(255, 255, 255, 0.2),
-      inset -2px -2px 5px rgba(0, 0, 0, 0.2);
-  }
-
-  .dark .btn-neumorphic-primary:active {
-    background: #0C595A;
-    box-shadow:
-      inset 5px 5px 10px rgba(0, 0, 0, 0.4),
-      inset -5px -5px 10px rgba(255, 255, 255, 0.05);
-  }
-
-  .dark .btn-neumorphic-secondary {
-    box-shadow:
-      6px 6px 12px var(--shadow-dark),
-      -6px -6px 12px var(--shadow-light),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.1),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-    color: var(--color-text-primary);
-  }
-
-  .dark .btn-neumorphic-secondary:hover {
-    box-shadow:
-      3px 3px 6px var(--shadow-dark),
-      -3px -3px 6px var(--shadow-light),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.15);
-  }
-
-  .dark .btn-neumorphic-secondary:active {
-    box-shadow:
-      inset 4px 4px 8px var(--shadow-dark),
-      inset -4px -4px 8px var(--shadow-light);
-  }
 }
 
 /* CSS-only fade-in-up animation (replaces framer-motion whileInView) */
@@ -488,10 +374,6 @@ body::before {
   #doc-page-export-content {
     background: transparent !important;
     color: #000000 !important;
-  }
-
-  body::before {
-    display: none !important;
   }
 
   /* Reset spacings and paddings */

@@ -60,7 +60,10 @@ jobs:
 
   diagrams:
     name: Generated diagrams up to date
-    runs-on: ubuntu-latest
+    # Pinned because the Graphviz version below is the one the committed SVGs
+    # were generated with. ubuntu-latest moved to 26.04, where that exact
+    # package version is no longer available.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v5

@@ -19,12 +19,11 @@ This document defines the animation system for OFFER-HUB. Movement should feel o
 | Duration | Value | Usage |
 |:---------|:------|:------|
 | `instant` | `100ms` | Micro-interactions (checkbox, toggle) |
-| `fast` | `200ms` | Hover states, tooltips |
-| `normal` | `300ms` | Dropdowns, popovers |
-| `moderate` | `400ms` | Modals, cards, page transitions |
-| `slow` | `600ms` | Complex animations, page loads |
+| `fast` | `200ms` | Hover states, press states, tooltips |
+| `normal` | `300ms` | Enter animations, dropdowns, popovers |
+| `slow` | `600ms` | Maximum — complex animations, page loads |
 
-**Default:** Use `400ms` for most animations.
+**Target:** 200ms for hover/press, 300ms for enter, 600ms maximum. Never use 400ms as a default.
 
 ### Easing Functions
 
@@ -62,12 +61,12 @@ All keyframes are defined in `globals.css` for consistency.
 
 **Application:**
 ```css
-animation: fadeInUp 400ms ease-out;
+animation: fadeInUp 300ms ease-out;
 ```
 
 **Example:**
 ```tsx
-<div className="animate-[fadeInUp_400ms_ease-out]">
+<div className="animate-[fadeInUp_300ms_ease-out]">
   Card Content
 </div>
 ```
@@ -144,7 +143,7 @@ animation: scaleIn 300ms ease-out;
 
 **Application:**
 ```css
-animation: slideInRight 400ms ease-out;
+animation: slideInRight 300ms ease-out;
 ```
 
 ---
@@ -235,14 +234,14 @@ animation: pulse 2s ease-in-out infinite;
 **Application:**
 ```css
 stroke-dasharray: 100;
-animation: drawCheck 400ms ease-out forwards;
+animation: drawCheck 300ms ease-out forwards;
 ```
 
 **Example:**
 ```tsx
 <svg className="w-6 h-6">
   <path 
-    className="animate-[drawCheck_400ms_ease-out_forwards]"
+    className="animate-[drawCheck_300ms_ease-out_forwards]"
     strokeDasharray="100"
     d="M5 13l4 4L19 7"
   />
@@ -261,7 +260,7 @@ For lists and grids, stagger the entrance of child elements for a "waterfall" ef
 {items.map((item, index) => (
   <div
     key={item.id}
-    className="animate-[fadeInUp_400ms_ease-out]"
+    className="animate-[fadeInUp_300ms_ease-out]"
     style={{ animationDelay: `${index * 100}ms` }}
   >
     {item.content}
@@ -286,7 +285,7 @@ style={{ animationDelay: `${Math.min(index * 100, 500)}ms` }}
 Use `fadeInUp` for new page content:
 
 ```tsx
-<main className="animate-[fadeInUp_400ms_ease-out]">
+<main className="animate-[fadeInUp_300ms_ease-out]">
   {children}
 </main>
 ```
@@ -301,7 +300,7 @@ Use `fadeInUp` for new page content:
 
 {/* Modal */}
 <div className="fixed inset-0 flex items-center justify-center">
-  <div className="bg-background rounded-2xl p-8 animate-[scaleIn_300ms_ease-out]">
+  <div className="bg-bg-base rounded-2xl p-8 animate-[scaleIn_300ms_ease-out]">
     Modal Content
   </div>
 </div>
@@ -327,7 +326,7 @@ All interactive elements should have smooth hover transitions.
 ### Standard Hover
 
 ```css
-transition: all 400ms ease-out;
+transition: all 200ms ease-out;
 ```
 
 **Properties to Transition:**
@@ -339,16 +338,7 @@ transition: all 400ms ease-out;
 ### Example: Button Hover
 
 ```tsx
-<button className="
-  bg-primary 
-  text-white 
-  rounded-xl 
-  px-6 py-3
-  shadow-raised
-  hover:shadow-raised-hover
-  hover:bg-primary-hover
-  transition-all duration-400 ease-out
-">
+<button className="bg-theme-primary text-content-primary rounded-xl px-6 py-3 shadow-neu-raised hover:shadow-neu-raised-hover hover:bg-theme-primary-hover transition-shadow duration-200 ease-out">
   Hover Me
 </button>
 ```
@@ -356,16 +346,7 @@ transition: all 400ms ease-out;
 ### Example: Card Hover
 
 ```tsx
-<div className="
-  bg-background 
-  rounded-2xl 
-  p-6
-  shadow-raised
-  hover:shadow-raised-hover
-  hover:-translate-y-1
-  transition-all duration-400 ease-out
-  cursor-pointer
-">
+<div className="bg-bg-base rounded-2xl p-6 shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-200 ease-out cursor-pointer">
   Card Content
 </div>
 ```
@@ -380,23 +361,23 @@ Use `pulse` animation for skeleton screens:
 
 ```tsx
 <div className="animate-pulse">
-  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+  <div className="h-4 bg-bg-sunken rounded w-3/4 mb-2"></div>
+  <div className="h-4 bg-bg-sunken rounded w-1/2"></div>
 </div>
 ```
 
 ### Spinner
 
 ```tsx
-<div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-primary"></div>
+<div className="animate-spin rounded-full h-8 w-8 border-4 border-theme-border border-t-theme-primary"></div>
 ```
 
 ### Progress Bar
 
 ```tsx
-<div className="w-full bg-gray-200 rounded-full h-2">
-  <div 
-    className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+<div className="w-full bg-bg-sunken rounded-full h-2">
+  <div
+    className="bg-theme-primary h-2 rounded-full transition-all duration-500 ease-out"
     style={{ width: `${progress}%` }}
   ></div>
 </div>
@@ -414,10 +395,10 @@ Use `pulse` animation for skeleton screens:
   className="
     appearance-none 
     w-5 h-5 
-    border-2 border-gray-300 
-    rounded 
-    checked:bg-primary 
-    checked:border-primary
+    border-2 border-theme-border
+    rounded
+    checked:bg-theme-primary
+    checked:border-theme-primary
     transition-all duration-200 ease-out
   "
 />
@@ -429,10 +410,10 @@ Use `pulse` animation for skeleton screens:
 <button className={`
   relative w-12 h-6 rounded-full
   transition-colors duration-300 ease-out
-  ${isOn ? 'bg-primary' : 'bg-gray-300'}
+  ${isOn ? 'bg-theme-primary' : 'bg-bg-sunken'}
 `}>
   <span className={`
-    absolute top-1 left-1 w-4 h-4 bg-white rounded-full
+    absolute top-1 left-1 w-4 h-4 bg-bg-elevated rounded-full
     transition-transform duration-300 ease-out
     ${isOn ? 'translate-x-6' : 'translate-x-0'}
   `} />
@@ -547,7 +528,7 @@ When adding animations:
 - [ ] Performance is optimized (transform/opacity only)
 - [ ] Respects `prefers-reduced-motion`
 - [ ] Staggered animations cap delay at 500ms
-- [ ] Hover states have smooth transitions (400ms)
+- [ ] Hover states have smooth transitions (200ms)
 - [ ] Loading states use pulse or spin
 - [ ] Keyframes are defined in `globals.css`
 
@@ -558,14 +539,7 @@ When adding animations:
 ### Toast Notification
 
 ```tsx
-<div className="
-  fixed top-4 right-4
-  bg-background 
-  rounded-xl 
-  p-4 
-  shadow-raised
-  animate-[fadeInUp_400ms_ease-out]
-">
+<div className="fixed top-4 right-4 bg-bg-base rounded-xl p-4 shadow-neu-raised animate-[fadeInUp_300ms_ease-out]">
   Notification Content
 </div>
 ```
@@ -573,14 +547,7 @@ When adding animations:
 ### Dropdown Menu
 
 ```tsx
-<div className="
-  absolute top-full mt-2
-  bg-background 
-  rounded-xl 
-  shadow-raised
-  animate-[scaleIn_300ms_ease-out]
-  origin-top
-">
+<div className="absolute top-full mt-2 bg-bg-base rounded-xl shadow-neu-raised animate-[scaleIn_300ms_ease-out] origin-top">
   Menu Items
 </div>
 ```
@@ -592,14 +559,7 @@ When adding animations:
   <>
     <div className="fixed inset-0 bg-black/50 animate-[fadeIn_300ms_ease-out]" />
     <div className="fixed inset-0 flex items-center justify-center">
-      <div className="
-        bg-background 
-        rounded-2xl 
-        p-8 
-        max-w-md 
-        w-full
-        animate-[scaleIn_300ms_ease-out]
-      ">
+      <div className="bg-bg-base rounded-2xl p-8 max-w-md w-full animate-[scaleIn_300ms_ease-out]">
         Modal Content
       </div>
     </div>
@@ -618,13 +578,7 @@ When adding animations:
   {cards.map((card, index) => (
     <div
       key={card.id}
-      className="
-        bg-background 
-        rounded-2xl 
-        p-6 
-        shadow-raised
-        animate-[fadeInUp_400ms_ease-out]
-      "
+      className="bg-bg-base rounded-2xl p-6 shadow-neu-raised animate-[fadeInUp_300ms_ease-out]"
       style={{ animationDelay: `${Math.min(index * 100, 500)}ms` }}
     >
       {card.content}
@@ -636,17 +590,7 @@ When adding animations:
 ### Button with Hover
 
 ```tsx
-<button className="
-  bg-primary 
-  text-white 
-  rounded-xl 
-  px-6 py-3
-  shadow-raised
-  hover:shadow-raised-hover
-  hover:scale-105
-  active:scale-95
-  transition-all duration-400 ease-out
-">
+<button className="bg-theme-primary text-content-primary rounded-xl px-6 py-3 shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-200 ease-out">
   Click Me
 </button>
 ```
@@ -654,6 +598,5 @@ When adding animations:
 ---
 
 **Next Steps:**
-- Apply animations to components in [Components Guide](./components.md)
 - Review [Neumorphism Guide](./neumorphism.md) for shadow transitions
 - See [Visual DNA](./visual-dna.md) for complete design system

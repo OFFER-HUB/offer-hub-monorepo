@@ -1,7 +1,7 @@
 "use client";
 
+import { Fragment, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 export type SchemaField = {
@@ -21,6 +21,51 @@ export type ParamTableProps = {
   label?: string;
   className?: string;
 };
+
+/** Shared table cell styles used by MDX tables and the roadmap table. */
+export const TABLE_HEAD_CLASS =
+  "bg-bg-sunken px-4 py-3 text-xs font-semibold uppercase tracking-widest text-content-secondary";
+export const TABLE_ROW_CLASS =
+  "border-b border-theme-border align-top text-sm text-content-primary transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--color-primary)_6%,var(--color-bg-base))]";
+export const TABLE_CELL_CLASS =
+  "px-4 py-4 align-top leading-relaxed text-content-secondary";
+
+/**
+ * The single table surface. Wide content scrolls inside the labelled region
+ * instead of widening the page; at 390px the region stays within its column.
+ */
+export function Table({
+  label,
+  caption,
+  children,
+  className,
+}: {
+  label: string;
+  caption?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "my-8 w-full min-w-0 max-w-full rounded-2xl bg-bg-base p-1 shadow-neu-raised",
+        className,
+      )}
+    >
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label={label}
+        className="max-w-full overflow-x-auto rounded-2xl scrollbar-thin scrollbar-track-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+      >
+        <table className="w-full min-w-[32rem] border-collapse text-left">
+          {caption && <caption className="sr-only">{caption}</caption>}
+          {children}
+        </table>
+      </div>
+    </div>
+  );
+}
 
 function Metadata({ field }: { field: SchemaField }) {
   return (
@@ -76,10 +121,10 @@ function FieldRows({
         const isOpen = openFields[field.name] ?? false;
 
         return (
-          <>
-            <tr className="align-top text-sm text-content-primary">
+          <Fragment key={`${depth}-${field.name}`}>
+            <tr className={TABLE_ROW_CLASS}>
               <td
-                className="w-[22%] px-4 py-4 font-mono font-semibold"
+                className={cn(TABLE_CELL_CLASS, "w-[22%] font-mono font-semibold")}
                 style={{ paddingLeft: `${1 + depth * 1.25}rem` }}
               >
                 <div className="flex items-start gap-2">
@@ -105,27 +150,23 @@ function FieldRows({
                   ) : (
                     <span className="w-5" aria-hidden="true" />
                   )}
-                  <span
-                    className={cn(
-                      field.deprecated && "line-through opacity-70",
-                    )}
-                  >
+                  <span className={cn(field.deprecated && "line-through opacity-70")}>
                     {field.name}
                   </span>
                 </div>
               </td>
-              <td className="w-[16%] px-4 py-4 font-mono text-xs text-theme-primary">
+              <td className={cn(TABLE_CELL_CLASS, "w-[16%] font-mono text-xs text-theme-primary")}>
                 {field.type}
                 {field.nullable ? " | null" : ""}
               </td>
-              <td className="w-[12%] px-4 py-4 text-xs font-semibold">
+              <td className={cn(TABLE_CELL_CLASS, "w-[12%] text-xs font-semibold")}>
                 {field.required ? (
                   <span className="text-theme-primary">Yes</span>
                 ) : (
                   <span className="text-content-muted">No</span>
                 )}
               </td>
-              <td className="px-4 py-4 leading-relaxed text-content-secondary">
+              <td className={TABLE_CELL_CLASS}>
                 {field.description || (
                   <span className="text-content-muted">No description</span>
                 )}
@@ -135,7 +176,7 @@ function FieldRows({
             {hasChildren && isOpen && (
               <FieldRows fields={field.children ?? []} depth={depth + 1} />
             )}
-          </>
+          </Fragment>
         );
       })}
     </>
@@ -148,37 +189,19 @@ export function ParamTable({
   className,
 }: ParamTableProps) {
   return (
-    <div
-      className={cn(
-        "my-8 overflow-x-auto rounded-2xl bg-bg-base p-3 shadow-neu-raised",
-        className,
-      )}
-      tabIndex={0}
-      role="region"
-      aria-label={label}
-    >
-      <table className="min-w-[720px] w-full border-collapse text-left">
-        <caption className="sr-only">{label}</caption>
-        <thead className="bg-bg-sunken text-[11px] uppercase tracking-[0.12em] text-theme-primary shadow-neu-sunken-subtle">
-          <tr>
-            <th scope="col" className="px-4 py-3 font-black">
-              Name
+    <Table label={label} caption={label} className={className}>
+      <thead>
+        <tr>
+          {["Name", "Type", "Required", "Description"].map((heading) => (
+            <th key={heading} scope="col" className={TABLE_HEAD_CLASS}>
+              {heading}
             </th>
-            <th scope="col" className="px-4 py-3 font-black">
-              Type
-            </th>
-            <th scope="col" className="px-4 py-3 font-black">
-              Required
-            </th>
-            <th scope="col" className="px-4 py-3 font-black">
-              Description
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-bg-base">
-          <FieldRows fields={fields} />
-        </tbody>
-      </table>
-    </div>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="bg-bg-base">
+        <FieldRows fields={fields} />
+      </tbody>
+    </Table>
   );
 }

@@ -1,47 +1,69 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Copy, Check, Code2 } from "lucide-react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
+import { Check, Copy } from "lucide-react";
+import type { ThemeRegistration } from "shiki";
 import { cn } from "@/lib/cn";
-import { useTheme } from "@/components/providers/ThemeProvider";
+import { Button } from "@/components/ui/Button";
 import { logger } from "@/utils/logger";
-import { highlightCache, escapeHtml, parseLineHighlightRange } from "@/utils/shiki-highlight";
+import {
+  escapeHtml,
+  highlightCache,
+  parseLineHighlightRange,
+} from "@/utils/shiki-highlight";
+
+export type CodeBlockTab = {
+  /** Stable id used for tab/panel wiring; falls back to the tab index. */
+  id?: string;
+  /** Visible tab label. Icons should be marked `aria-hidden`. */
+  label: ReactNode;
+  /** Raw code sample shown in the panel and copied by the header button. */
+  code: string;
+  /** Highlighting language for this tab. Falls back to the block language. */
+  language?: string;
+  /** Optional accessible label for the tab's code region. */
+  title?: string;
+};
 
 interface CodeBlockProps {
   code?: string;
   children?: string;
   language?: string;
   className?: string;
-  /**
-   * Hide the header bar (language label + copy button). Used when an outer
-   * component — e.g. CodeTabs — provides its own toolbar so the panel does
-   * not render a second, redundant header.
-   */
-  isHeaderHidden?: boolean;
-  /**
-   * Optional title or filename displayed in the header bar.
-   */
   title?: string;
-  /**
-   * Alias for title.
-   */
   filename?: string;
-  /**
-   * Line highlighting range expression, e.g. "{1,3-5}" or "1, 3-5".
-   */
   highlight?: string;
-  /**
-   * Alias for highlight.
-   */
   highlightLines?: string;
-  /**
-   * Whether to display line numbers.
-   */
   lineNumbers?: boolean;
-  /**
-   * Alias for lineNumbers.
-   */
   showLineNumbers?: boolean;
+  /** Optional tabs rendered in the same header as the copy button. */
+  tabs?: CodeBlockTab[];
+  /** Controlled selection for `tabs`. Defaults to the first tab. */
+  activeIndex?: number;
+  onTabChange?: (index: number) => void;
+  /** Accessible name for the tab list. */
+  label?: string;
+  /** Renders a command prompt and labels the block as a terminal. */
+  terminal?: boolean;
+  promptSymbol?: string;
+  /** Overrides the copied value (terminal mode omits the prompt). */
+  copyText?: string;
+  /** Accessible name for the copy button when the block has a specific target. */
+  copyLabel?: string;
+  /** Extra header content, e.g. a link to the full SDK reference. */
+  accessory?: ReactNode;
+  /** Tighter padding and a bounded height for embedded panels. */
+  dense?: boolean;
+  /** Kept for callers that provide their own toolbar. */
+  isHeaderHidden?: boolean;
 }
 
 const LANGUAGE_ALIASES: Record<string, string> = {
@@ -53,37 +75,105 @@ const LANGUAGE_ALIASES: Record<string, string> = {
   config: "ini",
 };
 
-export function CodeBlock({
-  code: codeProp,
-  children,
-  language = "typescript",
-  className,
-  isHeaderHidden = false,
-  title,
-  filename,
-  highlight,
-  highlightLines,
-  lineNumbers,
-  showLineNumbers,
-}: CodeBlockProps) {
-  const { resolvedTheme } = useTheme();
-  const normalizedLang = LANGUAGE_ALIASES[language] || language;
-  const shikiTheme = resolvedTheme === "dark" ? "github-dark" : "github-light";
-  const [copied, setCopied] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<string>("");
-  const [highlightedCode, setHighlightedCode] = useState<string>("");
+/**
+ * One Shiki theme for both color schemes: every foreground is a CSS custom
+ * property, so the browser resolves the palette token for the active theme.
+ */
+const PALETTE_THEME: ThemeRegistration = {
+  name: "offer-hub-palette",
+  type: "light",
+  colors: {
+    "editor.background": "var(--color-bg-sunken)",
+    "editor.foreground": "var(--color-text-primary)",
+  },
+  settings: [
+    { settings: { foreground: "var(--color-text-primary)" } },
+    {
+      scope: ["comment", "punctuation.definition.comment"],
+      settings: { foreground: "var(--color-text-muted)", fontStyle: "italic" },
+    },
+    {
+      scope: [
+        "keyword",
+        "keyword.control",
+        "storage",
+        "entity.name.tag",
+        "support.type.property-name",
+      ],
+      settings: { foreground: "var(--color-primary-hover)" },
+    },
+    {
+      scope: ["string", "constant.character", "markup.underline.link"],
+      settings: { foreground: "var(--color-success)" },
+    },
+    {
+      scope: ["constant.numeric", "constant.language", "support.constant"],
+      settings: { foreground: "var(--color-warning)" },
+    },
+    {
+      scope: ["entity.name.function", "support.function", "meta.function-call"],
+      settings: { foreground: "var(--color-primary)" },
+    },
+    {
+      scope: ["entity.name.type", "support.type", "support.class"],
+      settings: { foreground: "var(--color-error)" },
+    },
+    {
+      scope: ["variable", "variable.other", "meta.definition.variable"],
+      settings: { foreground: "var(--color-text-secondary)" },
+    },
+    {
+      scope: ["punctuation", "meta.brace"],
+      settings: { foreground: "var(--color-text-muted)" },
+    },
+  ],
+};
+
+const SURFACE_CLASSES = cn(
+  "min-w-0 overflow-x-auto p-4 text-sm leading-relaxed text-content-primary sm:p-6",
+  "scrollbar-thin scrollbar-track-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
+  "[&_pre]:!m-0 [&_pre]:!bg-transparent [&_pre]:!p-0",
+  "[&_.line]:-mx-3 [&_.line]:block [&_.line]:min-h-6 [&_.line]:px-3",
+  "[&_.highlighted-line]:rounded-lg [&_.highlighted-line]:bg-bg-sunken [&_.highlighted-line]:shadow-neu-sunken-subtle",
+  "[&.with-line-numbers_[data-line]]:before:mr-4 [&.with-line-numbers_[data-line]]:before:inline-block [&.with-line-numbers_[data-line]]:before:w-8 [&.with-line-numbers_[data-line]]:before:text-right [&.with-line-numbers_[data-line]]:before:text-content-muted [&.with-line-numbers_[data-line]]:before:content-[attr(data-line)]",
+);
+
+interface CodeSurfaceProps {
+  code: string;
+  language: string;
+  label: string;
+  highlightRange: string;
+  highlightedSet: Set<number>;
+  hasLineNumbers: boolean;
+  terminal: boolean;
+  promptSymbol: string;
+  dense: boolean;
+}
+
+function CodeSurface({
+  code,
+  language,
+  label,
+  highlightRange,
+  highlightedSet,
+  hasLineNumbers,
+  terminal,
+  promptSymbol,
+  dense,
+}: CodeSurfaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const displayTitle = title ?? filename;
-  const highlightRange = highlight ?? highlightLines ?? "";
-  const hasLineNumbers = Boolean(lineNumbers ?? showLineNumbers);
-  const highlightedSet = parseLineHighlightRange(highlightRange);
-
-  const rawCode = (codeProp || children || "").trim();
-  const cacheKey = `${shikiTheme}:${normalizedLang}:${hasLineNumbers ? "ln" : "noln"}:${highlightRange}:${rawCode}`;
+  const [highlightedCode, setHighlightedCode] = useState("");
+  const normalizedLang = LANGUAGE_ALIASES[language] || language;
+  const displayedCode = terminal ? `${promptSymbol} ${code}` : code;
+  const cacheKey = [
+    "palette",
+    normalizedLang,
+    hasLineNumbers ? "ln" : "noln",
+    highlightRange,
+    displayedCode,
+  ].join(":");
 
   useEffect(() => {
-    // Return cached result immediately — no Shiki load needed
     const cached = highlightCache.get(cacheKey);
     if (cached) {
       setHighlightedCode(cached);
@@ -91,217 +181,306 @@ export function CodeBlock({
     }
 
     let isMounted = true;
-
-    // Lazy-load Shiki only when code block is near the viewport
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) {
-          observer.disconnect();
-          import("shiki").then(({ codeToHtml }) => {
-            codeToHtml(rawCode, {
+        if (!entries[0]?.isIntersecting) return;
+        observer.disconnect();
+        import("shiki")
+          .then(({ codeToHtml }) =>
+            codeToHtml(displayedCode, {
               lang: normalizedLang,
-              theme: shikiTheme,
+              theme: PALETTE_THEME,
               transformers: [
                 {
                   line(node, lineIndex) {
-                    node.properties = node.properties || {};
-                    node.properties["data-line"] = lineIndex;
-                    if (highlightedSet.has(lineIndex)) {
+                    node.properties = {
+                      ...node.properties,
+                      "data-line": lineIndex + 1,
+                    };
+                    if (highlightedSet.has(lineIndex + 1)) {
                       this.addClassToHast(node, "highlighted-line");
                     }
                   },
                 },
               ],
-            })
-              .then((html) => {
-                highlightCache.set(cacheKey, html);
-                if (isMounted) setHighlightedCode(html);
-              })
-              .catch(() => {
-                const fallback = `<pre><code>${escapeHtml(rawCode)}</code></pre>`;
-                highlightCache.set(cacheKey, fallback);
-                if (isMounted) setHighlightedCode(fallback);
-              });
+            }),
+          )
+          .then((html) => {
+            highlightCache.set(cacheKey, html);
+            if (isMounted) setHighlightedCode(html);
+          })
+          .catch(() => {
+            const fallback = `<pre><code>${escapeHtml(displayedCode)}</code></pre>`;
+            highlightCache.set(cacheKey, fallback);
+            if (isMounted) setHighlightedCode(fallback);
           });
-        }
       },
       { rootMargin: "200px" },
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => {
       isMounted = false;
       observer.disconnect();
     };
-  }, [cacheKey, rawCode, normalizedLang, shikiTheme, highlightedSet]);
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(rawCode);
-      setCopied(true);
-      setCopyStatus("Code copied to clipboard");
-      setTimeout(() => {
-        setCopied(false);
-        setCopyStatus("");
-      }, 2000);
-    } catch (err) {
-      logger.error("Failed to copy!", err);
-      setCopied(false);
-      setCopyStatus("Failed to copy code to clipboard");
-      setTimeout(() => setCopyStatus(""), 2000);
-    }
-  }
+  }, [cacheKey, displayedCode, highlightedSet, normalizedLang]);
 
   return (
     <div
       ref={containerRef}
+      tabIndex={0}
+      role="region"
+      aria-label={`${label} code sample, scrollable horizontally`}
       className={cn(
-        "relative rounded-3xl overflow-hidden my-10 bg-bg-elevated shadow-neu-raised group transition-colors duration-300",
+        SURFACE_CLASSES,
+        dense && "max-h-[34rem] overflow-auto p-4 text-xs",
+        hasLineNumbers && "with-line-numbers",
+      )}
+    >
+      {highlightedCode ? (
+        <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+      ) : (
+        <pre className="font-mono">
+          <code>
+            {displayedCode.split("\n").map((lineText, index) => {
+              const lineNumber = index + 1;
+              return (
+                <span
+                  key={index}
+                  data-line={hasLineNumbers ? lineNumber : undefined}
+                  className={cn(
+                    "block min-h-6 px-3 -mx-3 transition-colors",
+                    highlightedSet.has(lineNumber) &&
+                      "rounded-lg bg-bg-sunken shadow-neu-sunken-subtle",
+                  )}
+                >
+                  {lineText || " "}
+                </span>
+              );
+            })}
+          </code>
+        </pre>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The single code surface used across docs, the API explorer, dialogs and
+ * marketing pages. It owns the header, tab list, copy feedback and highlighting.
+ */
+export function CodeBlock({
+  code: codeProp,
+  children,
+  terminal = false,
+  language = terminal ? "bash" : "typescript",
+  className,
+  title,
+  filename,
+  highlight,
+  highlightLines,
+  lineNumbers,
+  showLineNumbers,
+  tabs,
+  activeIndex,
+  onTabChange,
+  label = "Code examples",
+  promptSymbol = "$",
+  copyText,
+  copyLabel = "Copy code",
+  accessory,
+  dense = false,
+  isHeaderHidden = false,
+}: CodeBlockProps) {
+  const items = useMemo(() => (Array.isArray(tabs) ? tabs : []), [tabs]);
+  const baseId = useId();
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [internalIndex, setInternalIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
+  const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const selectedIndex =
+    activeIndex !== undefined
+      ? Math.min(Math.max(activeIndex, 0), Math.max(items.length - 1, 0))
+      : internalIndex;
+  const activeTab = items[selectedIndex];
+  const rawCode = (codeProp || children || "").trim();
+  const code = activeTab ? activeTab.code.trim() : rawCode;
+  const codeLanguage = activeTab?.language ?? language;
+  const displayTitle = title ?? filename ?? (terminal ? "Terminal" : undefined);
+  const highlightRange = highlight ?? highlightLines ?? "";
+  const highlightedSet = useMemo(
+    () => parseLineHighlightRange(highlightRange),
+    [highlightRange],
+  );
+  const hasLineNumbers = Boolean(lineNumbers ?? showLineNumbers);
+
+  useEffect(
+    () => () => {
+      if (copyTimeout.current) clearTimeout(copyTimeout.current);
+    },
+    [],
+  );
+
+  function selectTab(index: number) {
+    if (index < 0 || index >= items.length) return;
+    setInternalIndex(index);
+    onTabChange?.(index);
+    tabRefs.current[index]?.focus();
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const last = items.length - 1;
+    const next =
+      event.key === "ArrowRight"
+        ? index === last
+          ? 0
+          : index + 1
+        : event.key === "ArrowLeft"
+          ? index === 0
+            ? last
+            : index - 1
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? last
+              : null;
+
+    if (next === null) return;
+    event.preventDefault();
+    selectTab(next);
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(copyText ?? code);
+      setCopied(true);
+      setCopyStatus("Code copied to clipboard");
+    } catch (error) {
+      logger.error("Failed to copy code", error);
+      setCopied(false);
+      setCopyStatus("Failed to copy code to clipboard");
+    }
+
+    if (copyTimeout.current) clearTimeout(copyTimeout.current);
+    copyTimeout.current = setTimeout(() => {
+      setCopied(false);
+      setCopyStatus("");
+    }, 2000);
+  }
+
+  const tabId = (index: number) => `${baseId}-tab-${items[index]?.id ?? index}`;
+  const panelId = (index: number) => `${baseId}-panel-${items[index]?.id ?? index}`;
+  const regionLabel = displayTitle ? `${displayTitle} (${codeLanguage})` : codeLanguage;
+  const surfaceProps = {
+    highlightRange,
+    highlightedSet,
+    hasLineNumbers,
+    terminal,
+    promptSymbol,
+    dense,
+    label: regionLabel,
+  };
+
+  return (
+    <div
+      className={cn(
+        "my-10 w-full min-w-0 overflow-hidden rounded-2xl bg-bg-sunken shadow-neu-sunken",
         className,
       )}
     >
-      {/* Hidden aria-live live region announcing copy feedback */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
         {copyStatus}
-      </div>
+      </span>
 
-      {/* Header bar — sunken, clean edges (no border). Hidden when an outer
-          toolbar (e.g. CodeTabs) already owns the copy/language controls. */}
       <div
         className={cn(
-          "items-center justify-between px-6 py-4 rounded-t-3xl bg-bg-sunken shadow-neu-sunken-subtle",
-          isHeaderHidden ? "hidden" : "flex",
+          "flex flex-wrap items-center justify-between gap-3 rounded-t-2xl bg-bg-sunken px-4 py-3 shadow-neu-sunken-subtle",
+          isHeaderHidden && "hidden",
         )}
       >
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-base shadow-neu-raised-sm transition-colors duration-300 group-hover:bg-theme-primary/10">
-            <Code2 size={16} className="text-content-secondary group-hover:text-theme-primary" />
-          </div>
-          <div className="flex items-center gap-2.5">
-            {displayTitle && (
-              <span className="text-xs font-bold text-content-primary font-mono tracking-tight">
-                {displayTitle}
-              </span>
-            )}
-            <span
-              className={cn(
-                "text-xs font-black uppercase tracking-[0.18em] font-mono",
-                displayTitle ? "text-content-secondary/60 text-[11px]" : "text-content-secondary/70",
-              )}
-            >
-              {language}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleCopy}
-          aria-label={copied ? "Copied" : "Copy code"}
-          className={cn(
-            "relative flex items-center gap-2.5 px-4 py-2 min-h-11 rounded-xl text-xs font-black uppercase tracking-widest transition-[color,background-color,transform] duration-300",
-            copied
-              ? "text-white bg-theme-primary shadow-neu-raised-sm"
-              : "text-content-secondary bg-bg-base shadow-neu-raised-sm hover:text-content-primary hover:bg-theme-primary/10 active:scale-95",
-          )}
-        >
-          <span className="flex items-center gap-2">
-            {copied ? <Check size={14} className="stroke-[3.5]" /> : <Copy size={14} className="stroke-[2.5]" />}
-            <span>{copied ? "Copied" : "Copy"}</span>
-          </span>
-        </button>
-      </div>
-
-      {/* Code Area */}
-      <div
-        tabIndex={0}
-        role="region"
-        aria-label={`${displayTitle ? `${displayTitle} (${language})` : `${language}`} code sample, scrollable horizontally`}
-        className="p-8 overflow-x-auto text-[14px] leading-[1.8] min-h-[5rem] text-content-primary scrollbar-thin scrollbar-track-transparent selection:bg-theme-primary/20 selection:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50"
-      >
-        {highlightedCode ? (
+        {items.length > 0 ? (
           <div
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-            className={cn(
-              "shiki-container [&>pre]:!bg-transparent [&>pre]:!p-0 [&>pre]:!m-0 [&>pre]:!outline-none [&_.line-number]:text-content-muted",
-              hasLineNumbers && "with-line-numbers",
-            )}
-          />
+            role="tablist"
+            aria-label={label}
+            aria-orientation="horizontal"
+            className="flex min-w-0 flex-wrap items-center gap-1"
+          >
+            {items.map((tab, index) => {
+              const isActive = index === selectedIndex;
+              return (
+                <button
+                  key={tab.id ?? index}
+                  ref={(node) => {
+                    tabRefs.current[index] = node;
+                  }}
+                  type="button"
+                  id={tabId(index)}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={panelId(index)}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => selectTab(index)}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
+                  className={cn(
+                    "inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest",
+                    "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
+                    isActive
+                      ? "bg-bg-base text-theme-primary shadow-neu-raised-sm"
+                      : "text-content-secondary hover:text-content-primary",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         ) : (
-          <pre className="text-content-secondary/70 font-mono font-medium">
-            <code>
-              {rawCode.split("\n").map((lineText, idx) => {
-                const lineNum = idx + 1;
-                const isHighlighted = highlightedSet.has(lineNum);
-                return (
-                  <span
-                    key={idx}
-                    data-line={hasLineNumbers ? lineNum : undefined}
-                    className={cn(
-                      "block min-h-[1.5rem] px-4 -mx-4 transition-colors",
-                      isHighlighted && "bg-bg-sunken shadow-neu-sunken-subtle rounded-md",
-                      hasLineNumbers &&
-                        "before:inline-block before:w-9 before:text-right before:mr-5 before:text-content-muted/60 before:select-none before:tabular-nums before:content-[attr(data-line)]",
-                    )}
-                  >
-                    {lineText || " "}
-                  </span>
-                );
-              })}
-            </code>
-          </pre>
+          <span className="min-w-0 font-mono text-xs font-semibold uppercase tracking-widest text-content-secondary">
+            {displayTitle ?? codeLanguage}
+          </span>
         )}
+
+        <div className="flex items-center gap-2">
+          {accessory}
+          <Button
+            onClick={handleCopy}
+            aria-label={copied ? "Copied" : copyLabel}
+            variant={copied ? "primary" : "secondary"}
+            size="sm"
+            leadingIcon={copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+            className="font-mono text-xs uppercase tracking-widest"
+          >
+            <span>{copied ? "Copied" : "Copy"}</span>
+          </Button>
+        </div>
       </div>
 
-      <style jsx global>{`
-        .shiki-container pre {
-          color: inherit;
-          background-color: transparent !important;
-        }
-        .shiki-container code {
-          background-color: transparent !important;
-        }
-        .shiki-container .line {
-          display: inline-block;
-          width: 100%;
-          min-height: 1.5rem;
-          padding: 0 1rem;
-          margin: 0 -1rem;
-          background-color: transparent !important;
-          transition: background-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .shiki-container .line.highlighted-line {
-          background-color: var(--color-bg-sunken) !important;
-          box-shadow: inset 1px 1px 2px var(--neu-shadow-dark, rgba(0, 0, 0, 0.08)), inset -1px -1px 2px var(--neu-shadow-light, rgba(255, 255, 255, 0.04));
-          border-radius: 6px;
-        }
-        .shiki-container.with-line-numbers [data-line]::before {
-          content: attr(data-line);
-          display: inline-block;
-          width: 2.25rem;
-          text-align: right;
-          margin-right: 1.25rem;
-          color: var(--color-text-muted);
-          opacity: 0.6;
-          user-select: none;
-          font-variant-numeric: tabular-nums;
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-          height: 8px;
-          width: 8px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: var(--color-border);
-          border-radius: 20px;
-          border: 2px solid var(--color-bg-elevated);
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: var(--color-text-muted);
-        }
-      `}</style>
+      {items.length > 0 ? (
+        items.map((tab, index) => (
+          <div
+            key={tab.id ?? index}
+            id={panelId(index)}
+            role="tabpanel"
+            aria-labelledby={tabId(index)}
+            hidden={index !== selectedIndex}
+            className="min-w-0"
+          >
+            <CodeSurface
+              {...surfaceProps}
+              code={tab.code}
+              language={tab.language ?? codeLanguage}
+              label={
+                tab.title ??
+                (typeof tab.label === "string" ? tab.label : regionLabel)
+              }
+            />
+          </div>
+        ))
+      ) : (
+        <CodeSurface {...surfaceProps} code={rawCode} language={codeLanguage} />
+      )}
     </div>
   );
 }

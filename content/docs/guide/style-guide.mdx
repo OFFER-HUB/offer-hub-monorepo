@@ -14,7 +14,9 @@ This guide documents the OFFER-HUB design system, including colors, typography, 
 
 ## API Schema Components
 
-Use `ParamTable` for request parameters and `ResponseSchema` for response fields. Both components use the theme tokens and keep wide tables inside a labelled, keyboard-focusable scroll region on small screens. Nested fields start expanded and can be collapsed; field metadata supports defaults, enums, nullable values, and deprecation notes.
+Use `ParamTable` for request parameters and `ResponseSchema` for response fields. Both use the shared `Table` exported from `src/components/docs/ParamTable.tsx`, as do MDX tables and the roadmap table. The table keeps wide content inside a labelled, keyboard-focusable scroll region so narrow viewports never widen the page. Nested fields start expanded and can be collapsed; field metadata supports defaults, enums, nullable values, and deprecation notes.
+
+All code samples render through the single `CodeBlock` in `src/components/docs/CodeBlock.tsx`: fenced MDX blocks, `CodeTabs`, `CommandLine` (terminal mode), the API explorer, `ResponseSchema`, the MCP dialog and the use-case showcase. Shiki uses palette CSS variables so tokens follow light and dark themes; the shared header carries the language/label, optional tabs and the copy button. Use `Callout` in `src/components/docs/Callout.tsx` for notices instead of local alert markup.
 
 The example below is reviewed against the checked-in Orchestrator contract at `public/openapi.json`: the `/balances` operation (`get-user-balances`) and its response example. In the orchestrator source, keep the corresponding controller and DTO references alongside the contract when updating a schema page.
 
@@ -56,6 +58,8 @@ The example below is reviewed against the checked-in Orchestrator contract at `p
   example={{ code: 200, type: "success", ok: true, message: "Balances retrieved", data: { balances: [{ currency: "USD", available: 1250, held: 200 }] } }}
 />
 
+{/* BEGIN GENERATED TOKEN TABLES */}
+
 ## Color System
 
 OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically adapt when switching between light and dark modes.
@@ -64,16 +68,16 @@ OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically ad
 
 | Token | Light Mode | Dark Mode | Usage |
 |-------|------------|-----------|-------|
-| `--color-bg-base` | `#F1F3F7` | `#1a1a2e` | Page background |
-| `--color-bg-elevated` | `#ffffff` | `#25253d` | Cards, modals, elevated surfaces |
-| `--color-bg-sunken` | `#e8eaef` | `#12121f` | Inset areas, input backgrounds |
+| `--color-bg-base` | `#F1F3F7` | `#242433` | Page background |
+| `--color-bg-elevated` | `#ffffff` | `#2e2e3f` | Cards, modals, elevated surfaces |
+| `--color-bg-sunken` | `#e8eaef` | `#1a1a26` | Inset areas, input backgrounds |
 
 ### Text Colors
 
 | Token | Light Mode | Dark Mode | Usage |
 |-------|------------|-----------|-------|
 | `--color-text-primary` | `#19213D` | `#f1f3f7` | Headings, primary text |
-| `--color-text-secondary` | `#6D758F` | `#a0a6b8` | Body text, descriptions |
+| `--color-text-secondary` | `#6D758F` | `#b8bfd0` | Body text, descriptions |
 | `--color-text-muted` | `#9ca3af` | `#6D758F` | Placeholder text, hints |
 
 ### Brand Colors
@@ -82,23 +86,16 @@ OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically ad
 |-------|------------|-----------|-------|
 | `--color-primary` | `#149A9B` | `#1fb8b9` | Primary buttons, links, accents |
 | `--color-primary-hover` | `#0d7377` | `#25d4d5` | Primary hover states |
-| `--color-secondary` | `#002333` | `#002333` | Secondary elements |
+| `--color-secondary` | `#002333` | `#002333` | Deep-navy accent (diagrams, icon tints) |
 | `--color-accent` | `#15949C` | `#15949C` | Accent highlights |
 
 ### Semantic Colors
 
 | Token | Light Mode | Dark Mode | Usage |
 |-------|------------|-----------|-------|
-| `--color-success` | `#16a34a` | `#16a34a` | Success states |
-| `--color-warning` | `#d97706` | `#d97706` | Warning states |
-| `--color-error` | `#FF0000` | `#FF0000` | Error states |
-
-### Shadow Colors (Neumorphic)
-
-| Token | Light Mode | Dark Mode | Usage |
-|-------|------------|-----------|-------|
-| `--shadow-dark` | `#d1d5db` | `#0f0f1a` | Dark shadow in neumorphic effects |
-| `--shadow-light` | `#ffffff` | `#252540` | Light shadow in neumorphic effects |
+| `--color-success` | `#166534` | `#4ade80` | Success states |
+| `--color-warning` | `#b45309` | `#f59e0b` | Warning states |
+| `--color-error` | `#c0392b` | `#f87171` | Error states |
 
 ### Border Colors
 
@@ -106,7 +103,14 @@ OFFER-HUB uses CSS variables for theme-aware colors. All colors automatically ad
 |-------|------------|-----------|-------|
 | `--color-border` | `#d1d5db` | `#3d3d5c` | Borders, dividers |
 
----
+### Shadow Colors (Neumorphic)
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--shadow-dark` | `#d1d5db` | `#1a1a26` | Dark shadow in neumorphic effects |
+| `--shadow-light` | `#ffffff` | `#2e2e3f` | Light shadow in neumorphic effects |
+
+{/* END GENERATED TOKEN TABLES */}
 
 ## Tailwind Utility Classes
 
@@ -189,7 +193,7 @@ font-family: var(--font-inter), Roboto, Outfit, sans-serif;
 | 400 | `font-normal` | Body text |
 | 500 | `font-medium` | Emphasis, labels |
 | 700 | `font-bold` | Headings, buttons |
-| 900 | `font-black` | Hero titles |
+| 900 | `font-black` | Home display line only (72/800) — do not use for headings elsewhere |
 
 ### Text Sizes
 
@@ -212,18 +216,23 @@ font-family: var(--font-inter), Roboto, Outfit, sans-serif;
 #### Primary Button (Neumorphic)
 
 ```jsx
-<button className="btn-neumorphic-primary px-6 py-2 rounded-full text-sm font-semibold">
-  Button Text
-</button>
+import { Button } from "@/components/ui/Button";
+
+<Button variant="primary">Button text</Button>
 ```
 
-#### Secondary Button (Neumorphic)
+#### Secondary, ghost, and danger buttons
 
 ```jsx
-<button className="btn-neumorphic-secondary px-6 py-2 rounded-full text-sm font-semibold">
-  Button Text
-</button>
+<Button variant="secondary">Cancel</Button>
+<Button variant="ghost">Learn more</Button>
+<Button variant="danger">Delete my data</Button>
 ```
+
+Use `size="sm"`, `size="md"` (the default), or `size="lg"` for the shared
+36px, 44px, and 48px control heights. Pass `href` to render a Next.js link,
+and use `leadingIcon`, `trailingIcon`, or `loading` for the corresponding
+button affordances.
 
 ### Cards
 
@@ -276,8 +285,9 @@ Rules and behaviour:
   roving `tabindex`. `ArrowLeft` / `ArrowRight` move between tabs, `Home` / `End`
   jump to the first / last tab, and only the selected tab is in the tab order.
   Panels are wired with `aria-controls` / `aria-labelledby`.
-- **Copy per panel** — each selected panel's **Copy** button copies that
-  panel's code; inactive panels are hidden from view and the accessibility tree.
+- **Copy per panel** — the shared `CodeBlock` header button copies the selected
+  panel's code and announces the result in a polite live region; inactive panels
+  are hidden from view and the accessibility tree.
 - **Selection is remembered** — the chosen tab label is persisted in
   `localStorage` under `offer-hub-docs-code-tab` and re-applied on every docs
   page. All `CodeTabs` instances on a page stay in sync (custom `storage` /
@@ -304,13 +314,13 @@ All generated diagrams (Mermaid today — the same token contract is designed to
 
 - `readDiagramColorTokens()` reads `--color-bg-elevated`, `--color-bg-sunken`, `--color-text-primary`, `--color-text-secondary`, `--color-border`, `--shadow-dark`, and `--shadow-light` from whichever scope (`:root` or `.dark`) is active.
 - `getMermaidThemeVariables()` maps those tokens onto Mermaid's `themeVariables` (node fill, text, line color, cluster background). Node and cluster borders use the neutral `--color-border` token — never `--color-primary` — so diagram structure reads through soft shadow depth, not a colored outline.
-- `getNeumorphicDiagramCSS()` applies the same dual drop-shadow used by `shadow-neu-raised` (dark shadow bottom-right, light highlight top-left — the 145° light source from `docs/design/neumorphism.md`) directly to every node shape, via Mermaid's `themeCSS` hook.
+- `getNeumorphicDiagramCSS()` applies the same dual drop-shadow used by `shadow-neu-raised` (dark shadow bottom-right, light highlight top-left — the 135° light source from `docs/design/neumorphism.md`) directly to every node shape, via Mermaid's `themeCSS` hook.
 - `src/components/shared/MermaidDiagram.tsx` is the single rendering component; import it from `@/components/shared/MermaidDiagram`. Every fenced `mermaid` code block in MDX renders through it automatically via `src/components/docs/mdx-components.tsx`, so it already produces a correct light and a correct dark rendering of each diagram, with no separate `-light`/`-dark` source files to maintain until the static diagram pipeline (tracked separately) lands.
 
 ### Accessibility
 
-- Node and edge labels use `--color-text-primary`, documented in `docs/design/color-palette.md` at 12.5:1 contrast against `--color-bg-elevated` — well past the 4.5:1 WCAG AA requirement for text.
-- Edges (`lineColor`) use `--color-text-secondary`, documented at 4.8:1 against the base background — past the 3:1 AA requirement for non-text graphical elements.
+- Node and edge labels use `--color-text-primary`, documented in `docs/design/color-palette.md` at 15.83:1 contrast against `--color-bg-elevated` — well past the 4.5:1 WCAG AA requirement for text.
+- Edges (`lineColor`) use `--color-text-secondary`, documented at 4.12:1 against the base background — past the 3:1 AA requirement for non-text graphical elements.
 - No diagram hardcodes a color or uses a `border-l-4`-style accent bar. Contribute new diagram styling through `diagram-theme.ts` only.
 
 ### Node Type Reference

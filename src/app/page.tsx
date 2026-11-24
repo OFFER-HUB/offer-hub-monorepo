@@ -22,7 +22,6 @@ import { StatsSection } from "@/components/StatsSection";
 import { SupportedBySection } from "@/components/SupportedBySection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
-import { RegistrationForm } from "@/components/community/RegistrationForm";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 
 export default function Home() {
@@ -38,7 +37,6 @@ export default function Home() {
         <StatsSection />
         <FeaturesSection />
         <HowItWorksSection />
-        <RegistrationForm />
       </main>
       <Footer />
     </>

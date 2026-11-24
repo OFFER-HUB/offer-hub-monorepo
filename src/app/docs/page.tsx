@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { DocsSearchBar } from "@/components/docs/DocsSearchBar";
 import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight, Lock, Rocket } from "lucide-react";
 import Link from "next/link";
@@ -83,83 +82,22 @@ const docSections = [
 ];
 
 export default function DocsPage() {
-  const headingRef = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    const el = headingRef.current;
-    if (!el) return;
-
-    let frame: number;
-    let t = 0;
-
-    const animate = () => {
-      t += 0.022;
-
-      const b1x = 50 + 28 * Math.sin(t * 0.70);
-      const b1y = 50 + 22 * Math.cos(t * 0.50);
-
-      const b2x = 50 + 22 * Math.sin(t * 0.40 + 2.0);
-      const b2y = 50 + 28 * Math.cos(t * 0.60 + 1.2);
-
-      const b3x = 50 + 32 * Math.sin(t * 0.85 + 4.2);
-      const b3y = 50 + 18 * Math.cos(t * 0.75 + 3.0);
-
-      const b4x = 50 + 18 * Math.sin(t * 1.10 + 1.0);
-      const b4y = 50 + 30 * Math.cos(t * 0.95 + 5.1);
-
-      const b5x = 50 + 38 * Math.sin(t * 0.55 + 5.5);
-      const b5y = 50 + 24 * Math.cos(t * 0.42 + 4.0);
-
-      el.style.backgroundImage = [
-        `radial-gradient(ellipse 48% 55% at ${b1x}% ${b1y}%, #1bc8ca 0%, #149A9B 45%, rgba(20,154,155,0) 82%)`,
-        `radial-gradient(ellipse 38% 46% at ${b2x}% ${b2y}%, #22e0e2 0%, #1bc8ca 40%, rgba(27,200,202,0) 80%)`,
-        `radial-gradient(ellipse 32% 42% at ${b3x}% ${b3y}%, #15949C 0%, rgba(21,148,156,0) 78%)`,
-        `radial-gradient(ellipse 28% 38% at ${b4x}% ${b4y}%, #0d7377 0%, rgba(13,115,119,0) 78%)`,
-        `radial-gradient(ellipse 44% 52% at ${b5x}% ${b5y}%, #149A9B 0%, rgba(20,154,155,0) 82%)`,
-        `radial-gradient(ellipse 62% 72% at ${b3x}% ${b2y}%, rgba(241,243,247,0.85) 0%, rgba(241,243,247,0.40) 40%, rgba(241,243,247,0) 78%)`,
-      ].join(", ");
-
-      frame = requestAnimationFrame(animate);
-    };
-
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
   return (
     <div className="flex flex-col">
       <div className="flex-1" id="doc-page-export-content">
         {/* Hub Header */}
-        <div className="relative py-12 md:py-20 overflow-hidden">
-          {/* Background Glow */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse 60% 45% at 50% 50%, rgba(20,154,155,0.08) 0%, transparent 70%)",
-            }}
-          />
-
-          <div className="relative z-10 text-center px-4">
+        <div className="py-12 md:py-16">
+          <div className="text-center px-4">
             <p className="text-xs font-black uppercase tracking-[0.4em] mb-6 animate-fadeIn text-theme-primary opacity-80">
               Documentation Center
             </p>
 
-            <h1
-              ref={headingRef}
-              className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8 select-none drop-shadow-[0_10px_30px_rgba(20,154,155,0.15)]"
-              style={{
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-                backgroundColor: "var(--color-primary)",
-                willChange: "background-image",
-              }}
-            >
-              OFFER HUB
+            <h1 className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8 select-none text-content-primary">
+              OFFER-HUB
             </h1>
 
             <p className="text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed font-medium animate-fadeInUp text-content-secondary" style={{ animationDelay: "200ms" }}>
-              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the Offer Hub ecosystem.
+              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the OFFER-HUB ecosystem.
             </p>
 
             <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "400ms" }}>
