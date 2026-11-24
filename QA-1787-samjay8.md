@@ -3,15 +3,15 @@
 - **Tester (GitHub user):** @samjay8
 - **Issue:** #1787
 - **Date:** 2026-11-24
-- **Device, OS and browser:** Windows 11 desktop, Google Chrome (headless, driven with Playwright), 1280x800 viewport
+- **Device, OS and browser:** Windows 11 desktop, Google Chrome (driven with Playwright), 1280x800 viewport
 - **Wallet (only if used):** None
 - **Recording(s):**
-  - Client account, steps 1–6, 9, 10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/client-session.mp4
-  - Freelancer account, steps 7–10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/freelancer-session.mp4
+  - Client account (about 10 min), steps 1–6, 9, 10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/client-session.mp4
+  - Freelancer account (about 7 min), steps 1, 2, 4, 7–10: https://github.com/samjay8/offer-hub-monorepo/blob/qa-1787-evidence/qa-1787/freelancer-session.mp4
   - Screenshots: [client](https://github.com/samjay8/offer-hub-monorepo/tree/qa-1787-evidence/qa-1787/client-shots) · [freelancer](https://github.com/samjay8/offer-hub-monorepo/tree/qa-1787-evidence/qa-1787/freelancer-shots)
 - **Discussion thread:** https://github.com/OFFER-HUB/OFFER-HUB-Frontend/discussions/597
 
-How this session was run: both accounts were driven through the live site in a real Chrome browser by an automated script, with the screen recorded without cuts from the first page load to the sign-out check. Throwaway mailbox addresses were used for the confirmation and reset emails, so no personal inbox or data appears in the recordings.
+How this session was run: both accounts (a Client and a Freelancer, both registered as Samuel Ojetunde) were driven through the live site in a real Chrome browser by an automated script that types and clicks at a human pace, with the screen recorded without cuts from the first page load to the sign-out check. A short clip of the profile page showing the name is appended at the end of each recording.
 
 ## Step results
 
@@ -24,7 +24,7 @@ How this session was run: both accounts were driven through the live site in a r
 | 5 | Forgot password | ❌ | The reset email arrived in about 5 s. Opening its link immediately shows **"Reset link expired"**, and the page's request `POST /api/v1/auth/password-reset/validate` returns **404**. A fresh, valid link therefore cannot be used and the password cannot be reset, so the "old password" check could not be run. |
 | 6 | Wrong password three times | ✅ | Every attempt, and an unknown email, shows the same "Invalid email or password", so the email's existence is not revealed. There is no lockout or slow-down after three failures: the correct password still signs in immediately. |
 | 7 | Freelancer registration and onboarding | ✅ | Two steps with clear field messages ("Enter your first name to continue", "Write at least 20 characters describing your work"). Step 2 only asks for a professional title and bio, with no skills or rate fields. In an earlier practice run (not in the final recording) reusing a phone number gave "That phone number is already linked to another account" and sent me back to step 1. |
-| 8 | Settings | ❌ | Display name changed to "Quincy", saved and still there after reload ✅. There is **no notification-preferences setting**: Settings only offers Preferences (time zone and date format), Security, Sessions and Account. |
+| 8 | Settings | ❌ | Display name changed to "Samuel A.", saved and still there after reload ✅. There is **no notification-preferences setting**: Settings only offers Preferences (time zone and date format), Security, Sessions and Account. |
 | 9 | Role pages | ❌ | Signed in as the freelancer, `/app/client/offers/new` shows the full "Create Job Offer" page. Signed in as the client, `/app/freelancer/services/new` shows the full "Create New Service" page. Neither is blocked or redirected. This may be intended for dual-role accounts, but both accounts were created with a single role. |
 | 10 | Sign out, Back button | ✅ | After sign-out, Back lands on `/login`, and opening `/app/profile` directly redirects to `/login`. No private page was visible. |
 
