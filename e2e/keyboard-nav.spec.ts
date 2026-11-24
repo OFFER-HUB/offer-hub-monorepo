@@ -24,7 +24,12 @@ const FOCUSABLE_SELECTOR =
  */
 async function tagFocusableElements(page: Page): Promise<number> {
   return page.evaluate((selector) => {
-    const els = document.querySelectorAll(selector);
+    // Elements hidden with display:none/visibility:hidden (e.g. a mobile-only
+    // table of contents on desktop) can never receive focus, so they are not
+    // part of the reachable set.
+    const els = Array.from(document.querySelectorAll<HTMLElement>(selector)).filter((el) =>
+      el.checkVisibility({ checkVisibilityCSS: true }),
+    );
     els.forEach((el, i) => el.setAttribute("data-kbd-test-id", String(i)));
     return els.length;
   }, FOCUSABLE_SELECTOR);
