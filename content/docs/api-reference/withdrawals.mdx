@@ -11,20 +11,20 @@ Withdrawal history is distinct from BlindPay order payouts. These read-only endp
 
 | Method | Path | Auth | Idempotency | Request fields |
 | --- | --- | --- | --- | --- |
-| `GET` | `/withdrawals` | API key, `read` scope | Not applicable | Query fields are not specified by the verified contract |
+| `GET` | `/withdrawals` | API key, `read` scope | Not applicable |  |
 | `GET` | `/withdrawals/:id` | API key, `read` scope | Not applicable | `id` path parameter |
 
 ## GET /withdrawals
 
 <Endpoint method="GET" path="/api/v1/withdrawals" scope="read" />
 
-Lists withdrawal history. The verified public contract does not specify query parameter names or response fields.
+Lists withdrawal history.
 
 ## GET /withdrawals/:id
 
 <Endpoint method="GET" path="/api/v1/withdrawals/:id" scope="read" />
 
-Retrieves one withdrawal history record. The confirmed request field is the `id` path parameter. The verified public contract does not specify the response fields.
+Retrieves one withdrawal history record. The `id` is supplied in the path.
 
 ## Withdrawal history statuses
 

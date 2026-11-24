@@ -11,7 +11,7 @@ In `@offerhub/sdk` 3.0.0, `sdk.withdrawals` is the history resource. It is separ
 
 | Method | HTTP route | Auth | Idempotency | Fields |
 | --- | --- | --- | --- | --- |
-| `sdk.withdrawals.list(...)` | `GET /withdrawals` | API key, `read` scope | Not applicable | Query parameters are not specified by the verified contract |
+| `sdk.withdrawals.list(...)` | `GET /withdrawals` | API key, `read` scope | Not applicable |  |
 | `sdk.withdrawals.get(id)` | `GET /withdrawals/:id` | API key, `read` scope | Not applicable | `id` path parameter |
 
 ## Withdrawal history statuses
@@ -33,8 +33,6 @@ const sdk = new OfferHubSDK({
 const history = await sdk.withdrawals.list();
 const withdrawal = await sdk.withdrawals.get("wd_abc123");
 ```
-
-The `list` query and withdrawal response fields are not specified by the verified public contract. Refer to the installed `@offerhub/sdk` 3.0.0 types for the accepted list arguments and response shape.
 
 ## Related
 
