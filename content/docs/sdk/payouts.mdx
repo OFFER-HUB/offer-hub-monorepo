@@ -14,9 +14,9 @@ The payout resource exposes `sdk.payouts.get`, `sdk.payouts.prepare`, `sdk.payou
 | Method | Operation | Authentication | Idempotency |
 | --- | --- | --- | --- |
 | `sdk.payouts.get` | Read payout for an order | User session JWT | Not applicable |
-| `sdk.payouts.prepare` | Prepare an unsigned transaction for a released order | User session JWT | Not specified by the verified contract |
+| `sdk.payouts.prepare` | Prepare an unsigned transaction for a released order | User session JWT | Not stated |
 | `sdk.payouts.submit` | Submit the seller-signed transaction | User session JWT | Required `Idempotency-Key` |
-| `sdk.payouts.retry` | Retry a failed payout, optionally selecting another bank account in the same corridor | User session JWT | Not specified by the verified contract |
+| `sdk.payouts.retry` | Retry a failed payout, optionally selecting another bank account in the same corridor | User session JWT | Not stated |
 
 Method argument and result property names are defined by the SDK 3.0.0 types. For the HTTP routes and confirmed fields, see the [Payouts API reference](/docs/api-reference/payouts).
 
@@ -27,7 +27,7 @@ The SDK provides the `kyc` and `bankAccounts` resources for the current authenti
 - [KYC endpoints](/docs/api-reference/kyc)
 - [Bank account endpoints](/docs/api-reference/bank-accounts)
 
-The verified public contract does not publish input property names for these resources. Use the installed SDK 3.0.0 declarations instead of inferring body fields.
+Use the SDK 3.0.0 types for the argument and result shapes of these resources.
 
 ## Corridor, limits, and status
 

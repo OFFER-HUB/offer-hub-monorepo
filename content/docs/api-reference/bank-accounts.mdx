@@ -9,40 +9,36 @@ Bank accounts are managed by the authenticated user and used for BlindPay payout
 
 ## Endpoints
 
-| Method | Path | Auth | Idempotency | Request fields |
-| --- | --- | --- | --- | --- |
-| `GET` | `/users/me/bank-accounts` | User session JWT | Not applicable | No query fields or request body |
-| `POST` | `/users/me/bank-accounts` | User session JWT | Not specified by the verified contract | Request body fields are not specified by the verified contract |
-| `PATCH` | `/users/me/bank-accounts/:id/default` | User session JWT | Not specified by the verified contract | `id` path parameter; body fields are not specified by the verified contract |
-| `DELETE` | `/users/me/bank-accounts/:id` | User session JWT | Not applicable | `id` path parameter; no request body |
-
-<Callout type="warning">
-  The verified public contract does not provide bank-account DTO property names or response fields. Use the `bankAccounts` resource types from `@offerhub/sdk` 3.0.0; do not infer local bank-field requirements.
-</Callout>
+| Method | Path | Auth | Idempotency |
+| --- | --- | --- | --- |
+| `GET` | `/users/me/bank-accounts` | User session JWT | Not applicable |
+| `POST` | `/users/me/bank-accounts` | User session JWT | Not stated |
+| `PATCH` | `/users/me/bank-accounts/:id/default` | User session JWT | Not stated |
+| `DELETE` | `/users/me/bank-accounts/:id` | User session JWT | Not applicable |
 
 ## GET /users/me/bank-accounts
 
 <Endpoint method="GET" path="/api/v1/users/me/bank-accounts" />
 
-Lists bank accounts belonging to the authenticated user. The verified contract specifies no query parameters or request body.
+Lists bank accounts belonging to the authenticated user.
 
 ## POST /users/me/bank-accounts
 
 <Endpoint method="POST" path="/api/v1/users/me/bank-accounts" />
 
-Creates a bank account for the authenticated user. The verified public contract does not specify request-body fields or the response schema.
+Creates a bank account for the authenticated user.
 
 ## PATCH /users/me/bank-accounts/:id/default
 
 <Endpoint method="PATCH" path="/api/v1/users/me/bank-accounts/:id/default" />
 
-Sets the account identified by `id` as the user's default bank account. The request body is not specified by the verified public contract.
+Sets the account identified by `id` as the user's default bank account.
 
 ## DELETE /users/me/bank-accounts/:id
 
 <Endpoint method="DELETE" path="/api/v1/users/me/bank-accounts/:id" />
 
-Deletes the account identified by `id`. The request has no body.
+Deletes the account identified by `id`.
 
 ## Related
 

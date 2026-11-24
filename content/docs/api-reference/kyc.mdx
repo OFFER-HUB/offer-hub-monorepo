@@ -9,40 +9,36 @@ These endpoints manage the current user's BlindPay receiver and terms-of-service
 
 ## Endpoints
 
-| Method | Path | Auth | Idempotency | Request fields |
-| --- | --- | --- | --- | --- |
-| `GET` | `/users/me/kyc` | User session JWT | Not applicable | No query fields or request body |
-| `POST` | `/users/me/kyc` | User session JWT | Not specified by the verified contract | Request body fields are not specified by the verified contract |
-| `POST` | `/users/me/kyc/tos-url` | User session JWT | Not specified by the verified contract | No body fields are specified by the verified contract |
-| `POST` | `/users/me/kyc/tos-accept` | User session JWT | Not specified by the verified contract | Request body fields are not specified by the verified contract |
-
-<Callout type="warning">
-  The verified public contract does not provide the KYC DTO property names or response schema. Use the `kyc` resource types from `@offerhub/sdk` 3.0.0; do not infer receiver fields.
-</Callout>
+| Method | Path | Auth | Idempotency |
+| --- | --- | --- | --- |
+| `GET` | `/users/me/kyc` | User session JWT | Not applicable |
+| `POST` | `/users/me/kyc` | User session JWT | Not stated |
+| `POST` | `/users/me/kyc/tos-url` | User session JWT | Not stated |
+| `POST` | `/users/me/kyc/tos-accept` | User session JWT | Not stated |
 
 ## GET /users/me/kyc
 
 <Endpoint method="GET" path="/api/v1/users/me/kyc" />
 
-Retrieves the authenticated user's KYC/receiver information. It takes no query parameters or request body.
+Retrieves the authenticated user's KYC/receiver information.
 
 ## POST /users/me/kyc
 
 <Endpoint method="POST" path="/api/v1/users/me/kyc" />
 
-Creates or updates the authenticated user's KYC/receiver information. The request body is required by the operation, but its field names and response fields are not specified by the verified public contract.
+Creates or updates the authenticated user's KYC/receiver information.
 
 ## POST /users/me/kyc/tos-url
 
 <Endpoint method="POST" path="/api/v1/users/me/kyc/tos-url" />
 
-Requests a terms-of-service URL for the authenticated user. No request fields are specified by the verified public contract.
+Requests a terms-of-service URL for the authenticated user.
 
 ## POST /users/me/kyc/tos-accept
 
 <Endpoint method="POST" path="/api/v1/users/me/kyc/tos-accept" />
 
-Records the authenticated user's acceptance of the terms. The verified public contract does not specify request-body or response fields.
+Records the authenticated user's acceptance of the terms.
 
 ## Related
 
