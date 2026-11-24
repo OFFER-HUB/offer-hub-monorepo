@@ -3,13 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowUpRight,
-  BarChart3,
-  CheckCircle2,
-  ExternalLink,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
 
 import { CodeTabs } from "@/components/docs/CodeTabs";
 import { Footer } from "@/components/layout/Footer";
@@ -22,6 +16,7 @@ import {
   getSourcedMetrics,
   isUseCaseId,
 } from "./data";
+import { BentoCard, CardEyebrow, InsetCard } from "./shared/CardPrimitives";
 import { EscrowFlowDiagram } from "./shared/EscrowFlowDiagram";
 import { UseCaseHero } from "./shared/UseCaseHero";
 import type {
@@ -34,72 +29,42 @@ function VerticalTabs({ activeId }: { activeId: UseCaseId }) {
   return (
     <nav
       aria-label="Use case verticals"
-      className="mx-auto w-full max-w-7xl min-w-0 px-4 pt-28 sm:px-6 lg:px-8"
+      className="overflow-x-auto rounded-2xl bg-bg-sunken p-2 shadow-neu-sunken-subtle"
     >
-      <div className="rounded-2xl bg-bg-sunken p-2 shadow-neu-sunken-subtle">
-        <div
-          role="tablist"
-          aria-label="Use case verticals"
-          className="flex flex-wrap justify-center gap-2"
-        >
-          {USE_CASES.map((useCase) => {
-            const isActive = useCase.id === activeId;
-            const Icon = useCase.icon;
+      <div
+        role="tablist"
+        aria-label="Use case verticals"
+        className="mx-auto flex w-max gap-2"
+      >
+        {USE_CASES.map((useCase) => {
+          const isActive = useCase.id === activeId;
+          const Icon = useCase.icon;
 
-            return (
-              <Link
-                key={useCase.id}
-                id={`use-case-tab-${useCase.id}`}
-                href={`/use-cases/${useCase.id}`}
-                role="tab"
-                aria-selected={isActive}
-                aria-controls="use-case-panel"
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "flex min-w-0 min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-content-primary",
-                  "transition-shadow duration-200 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken",
-                  isActive
-                    ? "bg-bg-base shadow-neu-sunken"
-                    : "hover:bg-bg-base hover:shadow-neu-sunken-subtle",
-                )}
-              >
-                <Icon size={16} className="shrink-0" />
-                <span className="break-words">{useCase.label}</span>
-              </Link>
-            );
-          })}
-        </div>
+          return (
+            <Link
+              key={useCase.id}
+              id={`use-case-tab-${useCase.id}`}
+              href={`/use-cases/${useCase.id}`}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls="use-case-panel"
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold text-content-primary",
+                "transition-shadow duration-200 ease-out",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken",
+                isActive
+                  ? "bg-bg-base shadow-neu-sunken"
+                  : "hover:bg-bg-base hover:shadow-neu-sunken-subtle",
+              )}
+            >
+              <Icon size={16} className="shrink-0" aria-hidden="true" />
+              {useCase.label}
+            </Link>
+          );
+        })}
       </div>
     </nav>
-  );
-}
-
-function BentoCard({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section
-      className={cn(
-        "min-w-0 rounded-3xl bg-bg-elevated p-6 shadow-neu-raised sm:p-8",
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}
-
-function CardEyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary">
-      <Sparkles size={14} className="shrink-0 text-theme-primary" />
-      {children}
-    </p>
   );
 }
 
@@ -124,10 +89,7 @@ function SummaryCard({
         {data.features.map((feature) => {
           const Icon = feature.icon;
           return (
-            <li
-              key={feature.title}
-              className="flex min-w-0 gap-3 rounded-2xl bg-bg-base p-4 shadow-neu-sunken-subtle"
-            >
+            <InsetCard key={feature.title} as="li" className="flex gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bg-elevated text-content-primary shadow-neu-raised-sm">
                 <Icon size={18} />
               </span>
@@ -139,7 +101,7 @@ function SummaryCard({
                   {feature.body}
                 </span>
               </span>
-            </li>
+            </InsetCard>
           );
         })}
       </ul>
@@ -155,7 +117,7 @@ function FlowCard({
   className?: string;
 }) {
   return (
-    <BentoCard className={className}>
+    <BentoCard id="escrow-flow" className={className}>
       <CardEyebrow>Escrow flow</CardEyebrow>
       <h2 className="mt-4 text-2xl font-bold leading-tight text-content-primary">
         From agreement to release
@@ -180,20 +142,14 @@ function MetricsCard({
 }) {
   return (
     <BentoCard className={className}>
-      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary">
-        <BarChart3 size={14} className="shrink-0 text-theme-primary" />
-        Sourced metrics
-      </p>
+      <CardEyebrow>Sourced metrics</CardEyebrow>
       <h2 className="mt-4 text-2xl font-bold leading-tight text-content-primary">
         Network facts, with citations
       </h2>
 
       <div className="mt-6 grid gap-3">
         {metrics.map((metric) => (
-          <article
-            key={metric.id}
-            className="min-w-0 rounded-2xl bg-bg-base p-4 shadow-neu-sunken-subtle"
-          >
+          <InsetCard key={metric.id} as="article">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-content-primary">
               {metric.label}
             </p>
@@ -220,7 +176,7 @@ function MetricsCard({
                 Source: {metric.source.label}
               </a>
             )}
-          </article>
+          </InsetCard>
         ))}
       </div>
     </BentoCard>
@@ -238,10 +194,7 @@ function CodeCard({
 
   return (
     <BentoCard className={className}>
-      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-content-secondary">
-        <CheckCircle2 size={14} className="shrink-0 text-theme-primary" />
-        Developer quickstart
-      </p>
+      <CardEyebrow>Developer quickstart</CardEyebrow>
       <h2 className="mt-4 text-2xl font-bold leading-tight text-content-primary">
         {data.code.heading}
       </h2>
@@ -274,20 +227,17 @@ function CodeCard({
 
       <ul className="grid gap-3 sm:grid-cols-3">
         {data.code.sdkCards.map((card) => (
-          <li
-            key={card.method}
-            className="min-w-0 rounded-2xl bg-bg-base p-4 shadow-neu-sunken-subtle"
-          >
+          <InsetCard key={card.method} as="li">
             <code className="block break-words font-mono text-xs font-semibold text-content-primary">
               {card.method}
             </code>
-            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-content-secondary">
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-content-primary">
               {card.label}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-content-primary">
               {card.detail}
             </p>
-          </li>
+          </InsetCard>
         ))}
       </ul>
     </BentoCard>
@@ -315,31 +265,30 @@ export function UseCaseLayout({ vertical }: { vertical: UseCaseId }) {
     <div className="min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-transparent">
       <Navbar />
 
-      <VerticalTabs activeId={vertical} />
+      <main className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-6 px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+        <VerticalTabs activeId={vertical} />
 
-      <main className="pb-20">
         <div
           id="use-case-panel"
           role="tabpanel"
           aria-labelledby={`use-case-tab-${vertical}`}
+          className="flex min-w-0 flex-col gap-6"
         >
           <UseCaseHero {...data.hero} />
 
-          <div className="mx-auto mt-10 w-full max-w-7xl min-w-0 px-4 sm:px-6 lg:px-8">
-            <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-6">
-              <SummaryCard data={data} className="lg:col-span-4" />
-              <FlowCard data={data} className="lg:col-span-2" />
-              {sourcedMetrics && (
-                <MetricsCard
-                  metrics={sourcedMetrics}
-                  className="lg:col-span-2"
-                />
-              )}
-              <CodeCard
-                data={data}
-                className={sourcedMetrics ? "lg:col-span-4" : "lg:col-span-6"}
+          <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-6">
+            <SummaryCard data={data} className="lg:col-span-4" />
+            <FlowCard data={data} className="lg:col-span-2" />
+            {sourcedMetrics && (
+              <MetricsCard
+                metrics={sourcedMetrics}
+                className="lg:col-span-2"
               />
-            </div>
+            )}
+            <CodeCard
+              data={data}
+              className={sourcedMetrics ? "lg:col-span-4" : "lg:col-span-6"}
+            />
           </div>
         </div>
       </main>

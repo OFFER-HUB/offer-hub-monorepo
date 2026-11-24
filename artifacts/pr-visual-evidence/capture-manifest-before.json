@@ -1,0 +1,1430 @@
+[
+  {
+    "phase": "before",
+    "route": "style-guide",
+    "path": "/docs/guide/style-guide",
+    "viewport": "1440x900",
+    "theme": "light",
+    "filename": "before_style-guide_1440x900_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 12,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 13,
+      "tableCount": 12,
+      "tables": [
+        {
+          "index": 0,
+          "width": 720,
+          "left": 456,
+          "right": 1176,
+          "scroller": {
+            "tag": "div",
+            "label": "List transactions query parameters",
+            "clientWidth": 572,
+            "scrollWidth": 744,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 1,
+          "width": 720,
+          "left": 456,
+          "right": 1176,
+          "scroller": {
+            "tag": "div",
+            "label": "Response schema fields",
+            "clientWidth": 205,
+            "scrollWidth": 744,
+            "left": 444,
+            "right": 649,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 2,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 3,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 4,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 5,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 6,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 7,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 8,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 9,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 10,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 11,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "quick-start",
+    "path": "/docs/sdk/quick-start",
+    "viewport": "1440x900",
+    "theme": "light",
+    "filename": "before_quick-start_1440x900_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 10,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 12,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "api",
+    "path": "/docs/api-reference/interactive",
+    "viewport": "1440x900",
+    "theme": "light",
+    "filename": "before_api_1440x900_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 52,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "contact",
+    "path": "/contact",
+    "viewport": "1440x900",
+    "theme": "light",
+    "filename": "before_contact_1440x900_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "community",
+    "path": "/community",
+    "viewport": "1440x900",
+    "theme": "light",
+    "filename": "before_community_1440x900_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "architecture",
+    "path": "/architecture",
+    "viewport": "1440x900",
+    "theme": "light",
+    "filename": "before_architecture_1440x900_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 894,
+          "left": 273,
+          "right": 1167,
+          "scroller": {
+            "tag": "div",
+            "label": null,
+            "clientWidth": 894,
+            "scrollWidth": 894,
+            "left": 273,
+            "right": 1167,
+            "scrollsInternally": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "style-guide",
+    "path": "/docs/guide/style-guide",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "filename": "before_style-guide_1440x900_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 12,
+      "highlightedCodeBlocks": 12,
+      "copyButtons": 13,
+      "tableCount": 12,
+      "tables": [
+        {
+          "index": 0,
+          "width": 720,
+          "left": 456,
+          "right": 1176,
+          "scroller": {
+            "tag": "div",
+            "label": "List transactions query parameters",
+            "clientWidth": 572,
+            "scrollWidth": 744,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 1,
+          "width": 720,
+          "left": 456,
+          "right": 1176,
+          "scroller": {
+            "tag": "div",
+            "label": "Response schema fields",
+            "clientWidth": 205,
+            "scrollWidth": 744,
+            "left": 444,
+            "right": 649,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 2,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 3,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 4,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 5,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 6,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 7,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 8,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 9,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 10,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 11,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "quick-start",
+    "path": "/docs/sdk/quick-start",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "filename": "before_quick-start_1440x900_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 10,
+      "highlightedCodeBlocks": 3,
+      "copyButtons": 12,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 572,
+          "left": 444,
+          "right": 1016,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 572,
+            "scrollWidth": 572,
+            "left": 444,
+            "right": 1016,
+            "scrollsInternally": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "api",
+    "path": "/docs/api-reference/interactive",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "filename": "before_api_1440x900_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 52,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "contact",
+    "path": "/contact",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "filename": "before_contact_1440x900_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "community",
+    "path": "/community",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "filename": "before_community_1440x900_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "architecture",
+    "path": "/architecture",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "filename": "before_architecture_1440x900_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 894,
+          "left": 273,
+          "right": 1167,
+          "scroller": {
+            "tag": "div",
+            "label": null,
+            "clientWidth": 894,
+            "scrollWidth": 894,
+            "left": 273,
+            "right": 1167,
+            "scrollsInternally": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "style-guide",
+    "path": "/docs/guide/style-guide",
+    "viewport": "390x844",
+    "theme": "light",
+    "filename": "before_style-guide_390x844_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 12,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 13,
+      "tableCount": 12,
+      "tables": [
+        {
+          "index": 0,
+          "width": 720,
+          "left": 40,
+          "right": 760,
+          "scroller": {
+            "tag": "div",
+            "label": "List transactions query parameters",
+            "clientWidth": 334,
+            "scrollWidth": 744,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 1,
+          "width": 720,
+          "left": 40,
+          "right": 760,
+          "scroller": {
+            "tag": "div",
+            "label": "Response schema fields",
+            "clientWidth": 334,
+            "scrollWidth": 744,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 2,
+          "width": 525,
+          "left": 28,
+          "right": 553,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 525,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 3,
+          "width": 528,
+          "left": 28,
+          "right": 556,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 528,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 4,
+          "width": 518,
+          "left": 28,
+          "right": 546,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 518,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 5,
+          "width": 487,
+          "left": 28,
+          "right": 515,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 487,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 6,
+          "width": 510,
+          "left": 28,
+          "right": 538,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 510,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 7,
+          "width": 479,
+          "left": 28,
+          "right": 507,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 479,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 8,
+          "width": 334,
+          "left": 28,
+          "right": 362,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 9,
+          "width": 334,
+          "left": 28,
+          "right": 362,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 10,
+          "width": 334,
+          "left": 28,
+          "right": 362,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 11,
+          "width": 433,
+          "left": 28,
+          "right": 461,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 433,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "quick-start",
+    "path": "/docs/sdk/quick-start",
+    "viewport": "390x844",
+    "theme": "light",
+    "filename": "before_quick-start_390x844_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 10,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 12,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 458,
+          "left": 28,
+          "right": 486,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 458,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "api",
+    "path": "/docs/api-reference/interactive",
+    "viewport": "390x844",
+    "theme": "light",
+    "filename": "before_api_390x844_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 52,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "contact",
+    "path": "/contact",
+    "viewport": "390x844",
+    "theme": "light",
+    "filename": "before_contact_390x844_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "community",
+    "path": "/community",
+    "viewport": "390x844",
+    "theme": "light",
+    "filename": "before_community_390x844_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "architecture",
+    "path": "/architecture",
+    "viewport": "390x844",
+    "theme": "light",
+    "filename": "before_architecture_390x844_light.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "light",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 539,
+          "left": 25,
+          "right": 564,
+          "scroller": {
+            "tag": "div",
+            "label": null,
+            "clientWidth": 340,
+            "scrollWidth": 539,
+            "left": 25,
+            "right": 365,
+            "scrollsInternally": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "style-guide",
+    "path": "/docs/guide/style-guide",
+    "viewport": "390x844",
+    "theme": "dark",
+    "filename": "before_style-guide_390x844_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 12,
+      "highlightedCodeBlocks": 7,
+      "copyButtons": 13,
+      "tableCount": 12,
+      "tables": [
+        {
+          "index": 0,
+          "width": 720,
+          "left": 40,
+          "right": 760,
+          "scroller": {
+            "tag": "div",
+            "label": "List transactions query parameters",
+            "clientWidth": 334,
+            "scrollWidth": 744,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 1,
+          "width": 720,
+          "left": 40,
+          "right": 760,
+          "scroller": {
+            "tag": "div",
+            "label": "Response schema fields",
+            "clientWidth": 334,
+            "scrollWidth": 744,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 2,
+          "width": 525,
+          "left": 28,
+          "right": 553,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 525,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 3,
+          "width": 528,
+          "left": 28,
+          "right": 556,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 528,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 4,
+          "width": 518,
+          "left": 28,
+          "right": 546,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 518,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 5,
+          "width": 487,
+          "left": 28,
+          "right": 515,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 487,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 6,
+          "width": 510,
+          "left": 28,
+          "right": 538,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 510,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 7,
+          "width": 479,
+          "left": 28,
+          "right": 507,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 479,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        },
+        {
+          "index": 8,
+          "width": 334,
+          "left": 28,
+          "right": 362,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 9,
+          "width": 334,
+          "left": 28,
+          "right": 362,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 10,
+          "width": 334,
+          "left": 28,
+          "right": 362,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 334,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": false
+          }
+        },
+        {
+          "index": 11,
+          "width": 433,
+          "left": 28,
+          "right": 461,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 433,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "quick-start",
+    "path": "/docs/sdk/quick-start",
+    "viewport": "390x844",
+    "theme": "dark",
+    "filename": "before_quick-start_390x844_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 10,
+      "highlightedCodeBlocks": 1,
+      "copyButtons": 12,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 458,
+          "left": 28,
+          "right": 486,
+          "scroller": {
+            "tag": "div",
+            "label": "Table, scrollable horizontally",
+            "clientWidth": 334,
+            "scrollWidth": 458,
+            "left": 28,
+            "right": 362,
+            "scrollsInternally": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "phase": "before",
+    "route": "api",
+    "path": "/docs/api-reference/interactive",
+    "viewport": "390x844",
+    "theme": "dark",
+    "filename": "before_api_390x844_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 52,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "contact",
+    "path": "/contact",
+    "viewport": "390x844",
+    "theme": "dark",
+    "filename": "before_contact_390x844_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "community",
+    "path": "/community",
+    "viewport": "390x844",
+    "theme": "dark",
+    "filename": "before_community_390x844_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 0,
+      "tables": []
+    }
+  },
+  {
+    "phase": "before",
+    "route": "architecture",
+    "path": "/architecture",
+    "viewport": "390x844",
+    "theme": "dark",
+    "filename": "before_architecture_390x844_dark.png",
+    "capture": "viewport",
+    "status": 200,
+    "pageErrors": [],
+    "measurement": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "overflowPx": 0,
+      "horizontalScrollX": 0,
+      "themeClass": "dark",
+      "codeRegions": 0,
+      "highlightedCodeBlocks": 0,
+      "copyButtons": 0,
+      "tableCount": 1,
+      "tables": [
+        {
+          "index": 0,
+          "width": 539,
+          "left": 25,
+          "right": 564,
+          "scroller": {
+            "tag": "div",
+            "label": null,
+            "clientWidth": 340,
+            "scrollWidth": 539,
+            "left": 25,
+            "right": 365,
+            "scrollsInternally": true
+          }
+        }
+      ]
+    }
+  }
+]

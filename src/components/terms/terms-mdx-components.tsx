@@ -11,7 +11,7 @@ export const TERMS_MDX_COMPONENTS: MDXComponents = {
   TermsSection,
 
   h3: ({ children }) => (
-    <h3 className="text-lg font-black text-content-primary tracking-tight mt-8 first:mt-0 mb-4">
+    <h3 className="text-xl font-semibold text-content-primary tracking-tight mt-8 first:mt-0 mb-4">
       {children}
     </h3>
   ),
@@ -40,7 +40,7 @@ export const TERMS_MDX_COMPONENTS: MDXComponents = {
   a: ({ href, children }) => (
     <a
       href={href}
-      className="font-bold text-theme-primary hover:text-content-primary underline underline-offset-2"
+      className="inline-flex min-h-11 items-center font-bold text-theme-primary hover:text-content-primary underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-theme-primary"
     >
       {children}
     </a>

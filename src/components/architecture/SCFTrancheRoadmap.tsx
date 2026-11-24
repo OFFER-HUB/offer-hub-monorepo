@@ -1,5 +1,11 @@
 import { ArchitectureSection } from "@/components/shared/ArchitectureSection";
 import { ZoomableDiagram } from "@/components/shared/ZoomableDiagram";
+import {
+  Table,
+  TABLE_CELL_CLASS,
+  TABLE_HEAD_CLASS,
+  TABLE_ROW_CLASS,
+} from "@/components/docs/ParamTable";
 import { SCF_GANTT_CHART } from "./scf-tranche-roadmap.charts";
 
 export function SCFTrancheRoadmap() {
@@ -21,58 +27,46 @@ export function SCFTrancheRoadmap() {
         />
       </div>
 
-      <div className="rounded-[2rem] bg-bg-base shadow-neu-sunken overflow-hidden max-w-4xl mx-auto border border-[var(--color-border)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-bg-sunken text-content-muted text-xs uppercase tracking-widest">
-                <th className="py-4 px-6 font-semibold">Milestone</th>
-                <th className="py-4 px-6 font-semibold">Date</th>
-                <th className="py-4 px-6 font-semibold">Technical Cost</th>
-                <th className="py-4 px-6 font-semibold">SCF Payout</th>
-                <th className="py-4 px-6 font-semibold">%</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-4 px-6 font-medium text-content-primary">T0 — Upfront</td>
-                <td className="py-4 px-6 text-content-secondary">On award</td>
-                <td className="py-4 px-6 text-content-secondary">—</td>
-                <td className="py-4 px-6 text-content-secondary">$8,000</td>
-                <td className="py-4 px-6 text-content-secondary">10%</td>
-              </tr>
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-4 px-6 font-medium text-content-primary">T1 — MVP: SWK Connection & Auth</td>
-                <td className="py-4 px-6 text-content-secondary">Sept 1, 2026</td>
-                <td className="py-4 px-6 text-content-secondary">$16,000</td>
-                <td className="py-4 px-6 text-content-secondary">$16,000</td>
-                <td className="py-4 px-6 text-content-secondary">22%</td>
-              </tr>
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-4 px-6 font-medium text-content-primary">T2 — Testnet: Core Integrations</td>
-                <td className="py-4 px-6 text-content-secondary">Oct 20, 2026</td>
-                <td className="py-4 px-6 text-content-secondary">$19,500</td>
-                <td className="py-4 px-6 text-content-secondary">$19,500</td>
-                <td className="py-4 px-6 text-content-secondary">26%</td>
-              </tr>
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-4 px-6 font-medium text-content-primary">T3 — Mainnet Launch & OS Adapters</td>
-                <td className="py-4 px-6 text-content-secondary">Dec 5, 2026</td>
-                <td className="py-4 px-6 text-content-secondary">$30,500</td>
-                <td className="py-4 px-6 text-content-secondary">$30,500</td>
-                <td className="py-4 px-6 text-content-secondary">41%</td>
-              </tr>
-              <tr className="font-bold">
-                <td className="py-4 px-6 text-theme-primary">Total</td>
-                <td className="py-4 px-6 text-theme-primary"></td>
-                <td className="py-4 px-6 text-theme-primary">$74,000</td>
-                <td className="py-4 px-6 text-theme-primary">$74,000</td>
-                <td className="py-4 px-6 text-theme-primary">100%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <Table
+        label="SCF Build #44 tranche milestones"
+        caption="SCF Build #44 tranche milestones"
+        className="mx-auto max-w-4xl"
+      >
+        <thead>
+          <tr>
+            {["Milestone", "Date", "Technical Cost", "SCF Payout", "%"].map(
+              (heading) => (
+                <th key={heading} scope="col" className={TABLE_HEAD_CLASS}>
+                  {heading}
+                </th>
+              ),
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ["T0 — Upfront", "On award", "—", "$8,000", "10%"],
+            ["T1 — MVP: SWK Connection & Auth", "Sept 1, 2026", "$16,000", "$16,000", "22%"],
+            ["T2 — Testnet: Core Integrations", "Oct 20, 2026", "$19,500", "$19,500", "26%"],
+            ["T3 — Mainnet Launch & OS Adapters", "Dec 5, 2026", "$30,500", "$30,500", "41%"],
+          ].map(([milestone, date, cost, payout, percent]) => (
+            <tr key={milestone} className={TABLE_ROW_CLASS}>
+              <td className={`${TABLE_CELL_CLASS} font-medium text-content-primary`}>{milestone}</td>
+              <td className={TABLE_CELL_CLASS}>{date}</td>
+              <td className={TABLE_CELL_CLASS}>{cost}</td>
+              <td className={TABLE_CELL_CLASS}>{payout}</td>
+              <td className={TABLE_CELL_CLASS}>{percent}</td>
+            </tr>
+          ))}
+          <tr className={TABLE_ROW_CLASS}>
+            {["Total", "", "$74,000", "$74,000", "100%"].map((value, index) => (
+              <td key={index} className={`${TABLE_CELL_CLASS} font-bold text-theme-primary`}>
+                {value}
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </Table>
     </ArchitectureSection>
   );
 }

@@ -120,7 +120,7 @@ See [Use Cases](./use-cases.md) for detailed scenarios.
 - **Documentation:** [docs/](../README.md)
 - **GitHub:** [github.com/offerhub/orchestrator](https://github.com)
 - **Community:** [Discord/Slack]
-- **Email:** support@offerhub.com
+- **Contact:** [Contact form](/contact)
 
 ---
 

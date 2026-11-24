@@ -81,25 +81,11 @@
   --color-callout-danger-bg: rgba(248, 113, 113, 0.12);
 }
 
-/* Subtle page background — faint teal corner glows only (Dot grid handled by React) */
+/* Flat page background (dot grid handled by React) */
 body {
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 65% 55% at 5% 0%, rgba(20, 154, 155, 0.055) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 65% at 96% 100%, rgba(20, 154, 155, 0.045) 0%, transparent 60%),
-    radial-gradient(ellipse 42% 52% at 96% 4%, rgba(13, 115, 119, 0.040) 0%, transparent 58%),
-    radial-gradient(ellipse 48% 42% at 4% 96%, rgba(21, 148, 156, 0.038) 0%, transparent 55%);
-  will-change: auto;
 }
 
 @layer utilities {
@@ -488,10 +474,6 @@ body::before {
   #doc-page-export-content {
     background: transparent !important;
     color: #000000 !important;
-  }
-
-  body::before {
-    display: none !important;
   }
 
   /* Reset spacings and paddings */

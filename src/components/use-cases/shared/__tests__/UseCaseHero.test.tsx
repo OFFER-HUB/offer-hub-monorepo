@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { ShoppingCart } from "lucide-react";
 
 import { UseCaseHero, type UseCaseHeroProps } from "../UseCaseHero";
 
@@ -9,8 +8,6 @@ const baseProps: UseCaseHeroProps = {
   headline: "Test Headline",
   subheadline: "A concise test subheadline describing the use case.",
   docsUrl: "https://example.com/docs#test",
-  footerIcon: ShoppingCart,
-  footerLabel: "Test footer infrastructure",
   stats: [
     { label: "Target", value: "B2B / Test", accent: "Test Scope" },
     { label: "Provider", value: "Stellar (USDC)", accent: "Settlement Layer" },
@@ -48,10 +45,21 @@ describe("UseCaseHero", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the footer label and every stat card", () => {
+  it("links the secondary CTA to the escrow flow section", () => {
     render(<UseCaseHero {...baseProps} />);
 
-    expect(screen.getByText("Test footer infrastructure")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /see the escrow flow/i }),
+    ).toHaveAttribute("href", "#escrow-flow");
+  });
+
+  it("renders every stat card in the shared inset card style", () => {
+    const { container } = render(<UseCaseHero {...baseProps} />);
+
+    expect(screen.getByText("At a glance")).toBeInTheDocument();
+    expect(
+      container.querySelectorAll("article.bg-bg-base.shadow-neu-sunken-subtle"),
+    ).toHaveLength(baseProps.stats.length);
 
     for (const stat of baseProps.stats) {
       expect(screen.getByText(stat.label)).toBeInTheDocument();
@@ -60,7 +68,7 @@ describe("UseCaseHero", () => {
     }
   });
 
-  it("uses a calm solid surface with no animated network behind the copy", () => {
+  it("uses a flat solid surface with no network, orbs or glow behind the copy", () => {
     const { container } = render(<UseCaseHero {...baseProps} />);
 
     const surface = container.querySelector(".bg-bg-elevated");
@@ -68,8 +76,7 @@ describe("UseCaseHero", () => {
 
     // The old animated background graph lived in a 100x100 SVG viewBox.
     expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeNull();
-    expect(
-      container.querySelectorAll('div[style*="radial-gradient"]'),
-    ).toHaveLength(0);
+    expect(container.querySelectorAll('[style*="gradient"]')).toHaveLength(0);
+    expect(container.querySelectorAll("svg circle, svg line")).toHaveLength(0);
   });
 });

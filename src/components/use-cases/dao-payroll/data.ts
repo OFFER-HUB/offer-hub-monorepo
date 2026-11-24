@@ -3,7 +3,6 @@ import {
   ShieldCheck,
   Coins,
   Globe,
-  Users2,
   FileText,
   Wallet,
   CheckSquare,
@@ -39,8 +38,6 @@ export const useCaseData: UseCaseData = {
       "The DAO payroll blueprint: on-chain budget allocation, contributor milestone verification, and atomic USDC distribution — with full governance auditability and zero custodial risk.",
     docsUrl:
       "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md",
-    footerIcon: Users2,
-    footerLabel: "On-chain DAO payroll infrastructure",
     stats: [
       {
         label: "Target",

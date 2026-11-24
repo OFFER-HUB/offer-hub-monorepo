@@ -2,7 +2,6 @@ import {
   ShieldCheck,
   Building2,
   Zap,
-  Home,
   FileText,
   Lock,
   Search,
@@ -39,8 +38,6 @@ export const useCaseData: UseCaseData = {
       "The real estate escrow blueprint: non-custodial deposit locking, condition-based release against inspection reports, and on-chain dispute settlement — for rental and purchase transactions, globally.",
     docsUrl:
       "https://github.com/OFFER-HUB/offer-hub-monorepo/blob/main/docs/business/use-cases.md",
-    footerIcon: Home,
-    footerLabel: "Non-custodial real estate escrow",
     stats: [
       {
         label: "Target",

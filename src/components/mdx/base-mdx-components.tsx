@@ -1,6 +1,12 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import { slugify } from "@/utils/slugify";
+import {
+  Table,
+  TABLE_CELL_CLASS,
+  TABLE_HEAD_CLASS,
+  TABLE_ROW_CLASS,
+} from "@/components/docs/ParamTable";
 
 function headingId(children: ReactNode): string {
   return slugify(String(children ?? ""));
@@ -42,7 +48,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   ),
 
   code: ({ children }) => (
-    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-theme-primary/10 text-theme-primary">
+    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary">
       {children}
     </code>
   ),
@@ -65,12 +71,12 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
 
   li: ({ children }) => (
     <li className="leading-relaxed flex items-start gap-2.5">
-      <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-theme-primary/30 flex-shrink-0" />
+      <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] flex-shrink-0" />
       <span className="flex-1 font-medium">{children}</span>
     </li>
   ),
 
-  hr: () => <hr className="my-12 border-t border-theme-border/30" />,
+  hr: () => <hr className="my-12 border-t border-theme-border" />,
 
   a: ({ href, children }) => (
     <a
@@ -88,28 +94,17 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   ),
 
   table: ({ children }) => (
-    <div className="neu-table-wrap my-10 w-full">
-      <div
-        tabIndex={0}
-        role="region"
-        aria-label="Table, scrollable horizontally"
-        className="overflow-x-auto"
-      >
-        <table className="w-full border-collapse text-left text-sm">{children}</table>
-      </div>
-    </div>
+    <Table label="Documentation table" caption="Documentation table">
+      {children}
+    </Table>
   ),
-  thead: ({ children }) => <thead className="neu-table-head">{children}</thead>,
-  tbody: ({ children }) => <tbody className="neu-table-body bg-bg-base">{children}</tbody>,
-  tr: ({ children }) => <tr className="neu-table-row">{children}</tr>,
+  thead: ({ children }) => <thead>{children}</thead>,
+  tbody: ({ children }) => <tbody>{children}</tbody>,
+  tr: ({ children }) => <tr className={TABLE_ROW_CLASS}>{children}</tr>,
   th: ({ children }) => (
-    <th className="px-6 py-4 font-black uppercase tracking-[0.12em] text-xs text-theme-primary whitespace-nowrap">
+    <th scope="col" className={TABLE_HEAD_CLASS}>
       {children}
     </th>
   ),
-  td: ({ children }) => (
-    <td className="px-6 py-4 text-content-primary font-medium leading-relaxed text-sm border-0">
-      {children}
-    </td>
-  ),
+  td: ({ children }) => <td className={TABLE_CELL_CLASS}>{children}</td>,
 };

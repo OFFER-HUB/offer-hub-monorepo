@@ -11,7 +11,7 @@ const steps = [
     number: "02",
     title: "Configure escrow rules",
     description:
-      "Define release conditions — time-based, milestone-based, or dispute-driven. OFFER HUB enforces them automatically on-chain.",
+      "Define release conditions — time-based, milestone-based, or dispute-driven. OFFER-HUB enforces them automatically on-chain.",
   },
   {
     number: "03",
