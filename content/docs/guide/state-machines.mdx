@@ -1,72 +1,117 @@
-﻿---
-title: Order State Machine
-description: Complete order lifecycle â€” statuses, transitions and the cancel rule.
+---
+title: State Machines
+description: Valid status transitions for Dispute, Top-up, Withdrawal and Milestone — plus links to the Order and Escrow machines.
 order: 16
 section: Guides
 ---
 
+This page documents the transition maps for the domain objects that are **not** covered by the Order or Escrow guides. For the full order lifecycle see [Order lifecycle](/docs/guide/orders#order-lifecycle); for the escrow prepare → sign → submit flow see [Escrow state machine](/docs/guide/escrow#state-machine).
 
-## Order Lifecycle
+## Guard reference
 
-Every order moves through a fixed set of statuses. The diagram below shows all valid transitions, including the escrow creation path, the refund path, the dispute path, and the cancel shortcut.
+Any attempt to trigger a transition that is not in the map below returns an error. The table lists the endpoints and the response they return when the guard fires.
 
-```mermaid
-flowchart TD
-  OC[ORDER_CREATED]
-  FR[FUNDS_RESERVED]
-  EC[ESCROW_CREATING]
-  EF[ESCROW_FUNDING]
-  EFD[ESCROW_FUNDED]
-  IP[IN_PROGRESS]
-  DL[DELIVERED]
-  RR[RELEASE_REQUESTED]
-  RL[RELEASED]
-  CL[CLOSED]
+| Endpoint | Error response |
+|----------|----------------|
+| `POST /disputes/{id}/assign` | `400 INVALID_STATE` |
+| `POST /disputes/{id}/resolve` | `400 INVALID_STATE` |
+| `POST /topups/{id}/cancel` | `409 INVALID_STATE` |
+| `POST /withdrawals/{id}/commit` | `409 WITHDRAWAL_NOT_COMMITTABLE` |
+| `POST /orders/{id}/milestones/{milestoneRef}/complete` | `400 INVALID_STATE` |
+| `POST /orders/{orderId}/resolution/release` | `400 INVALID_STATE` |
 
-  RFQ[REFUND_REQUESTED]
-  RFD[REFUNDED]
-  DIS[DISPUTED]
+## Dispute
 
-  OC --> FR
-  FR --> EC
-  EC --> EF
-  EF --> EFD
-  EFD --> IP
-  IP --> DL
-  DL --> RR
-  RR --> RL
-  RL --> CL
+A dispute is opened by either the buyer or the seller and moves through platform review to a final resolution. See [Disputes guide](/docs/guide/disputes) and [Disputes API](/docs/api-reference/disputes) for endpoint details.
 
-  FR  --> RFQ
-  IP  --> RFQ
-  RFQ --> RFD
-  RFD --> CL
+<MermaidDiagram caption="Dispute state machine" chart={`
+stateDiagram-v2
+  [*] --> OPEN
+  OPEN --> UNDER_REVIEW
+  UNDER_REVIEW --> RESOLVED
+  RESOLVED --> [*]
+`} />
 
-  IP  --> DIS
-  DL  --> DIS
+| Status | Description |
+|--------|-------------|
+| `OPEN` | Dispute filed; awaiting platform review. |
+| `UNDER_REVIEW` | Platform team is actively reviewing the case. |
+| `RESOLVED` | Platform has issued a resolution outcome (`FULL_RELEASE`, `FULL_REFUND`, or `SPLIT`). |
 
-  OC  -->|POST /orders/:id/cancel| CL
-  FR  -->|POST /orders/:id/cancel| CL
-```
+Cross-links: [Disputes API](/docs/api-reference/disputes#dispute), [Resolution API](/docs/api-reference/resolution#dispute).
 
-<Callout type="warning">
-  There is no `CANCELLED` status. `POST /orders/:id/cancel` moves the order directly to `CLOSED`.
+## Top-up
+
+A top-up is a fiat on-ramp operation. The transition map is defined in `TOPUP_TRANSITIONS` in the orchestrator's `packages/shared/src/enums`. See [wallet-topups API](/docs/api-reference/wallet-topups#top-up) and [SDK top-ups](/docs/sdk/topups#top-up) for endpoint details.
+
+<MermaidDiagram caption="Top-up state machine" chart={`
+stateDiagram-v2
+  [*] --> TOPUP_CREATED
+  TOPUP_CREATED --> TOPUP_AWAITING_USER_CONFIRMATION
+  TOPUP_AWAITING_USER_CONFIRMATION --> TOPUP_PROCESSING
+  TOPUP_AWAITING_USER_CONFIRMATION --> TOPUP_CANCELED
+  TOPUP_PROCESSING --> TOPUP_SUCCEEDED
+  TOPUP_PROCESSING --> TOPUP_FAILED
+  TOPUP_SUCCEEDED --> [*]
+  TOPUP_FAILED --> [*]
+  TOPUP_CANCELED --> [*]
+`} />
+
+| Status | Description |
+|--------|-------------|
+| `TOPUP_CREATED` | Top-up record created; awaiting user confirmation. |
+| `TOPUP_AWAITING_USER_CONFIRMATION` | User must confirm payment on the provider side. |
+| `TOPUP_PROCESSING` | Provider has confirmed; orchestrator is processing the credit. |
+| `TOPUP_SUCCEEDED` | Funds credited to the user's balance. |
+| `TOPUP_FAILED` | Provider reported failure; no funds credited. |
+| `TOPUP_CANCELED` | Canceled by the user while in `TOPUP_AWAITING_USER_CONFIRMATION`. |
+
+## Withdrawal
+
+A withdrawal is an outbound funds transfer. The transition map is defined in `WITHDRAWAL_TRANSITIONS` in the orchestrator's `packages/shared/src/enums`. See [Withdrawals guide](/docs/guide/withdrawals#withdrawal) and [SDK withdrawals](/docs/sdk/withdrawals#withdrawal) for endpoint details.
+
+<MermaidDiagram caption="Withdrawal state machine" chart={`
+stateDiagram-v2
+  [*] --> WITHDRAWAL_CREATED
+  WITHDRAWAL_CREATED --> WITHDRAWAL_COMMITTED
+  WITHDRAWAL_CREATED --> WITHDRAWAL_CANCELED
+  WITHDRAWAL_COMMITTED --> WITHDRAWAL_PENDING
+  WITHDRAWAL_PENDING --> WITHDRAWAL_PENDING_USER_ACTION
+  WITHDRAWAL_PENDING --> WITHDRAWAL_COMPLETED
+  WITHDRAWAL_PENDING --> WITHDRAWAL_FAILED
+  WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_PENDING
+  WITHDRAWAL_PENDING_USER_ACTION --> WITHDRAWAL_FAILED
+  WITHDRAWAL_COMPLETED --> [*]
+  WITHDRAWAL_FAILED --> [*]
+  WITHDRAWAL_CANCELED --> [*]
+`} />
+
+| Status | Description |
+|--------|-------------|
+| `WITHDRAWAL_CREATED` | Withdrawal record created; not yet submitted to provider. |
+| `WITHDRAWAL_COMMITTED` | Submitted to the payment provider. |
+| `WITHDRAWAL_PENDING` | Provider has accepted; waiting for settlement. |
+| `WITHDRAWAL_PENDING_USER_ACTION` | Provider requires additional user action before settlement. |
+| `WITHDRAWAL_COMPLETED` | Funds delivered to the destination. |
+| `WITHDRAWAL_FAILED` | Provider reported failure. |
+| `WITHDRAWAL_CANCELED` | Canceled before commitment. |
+
+<Callout type="note">
+  `POST /withdrawals/{id}/commit` returns `409 WITHDRAWAL_NOT_COMMITTABLE` if the withdrawal is not in `WITHDRAWAL_CREATED`.
 </Callout>
 
-## Status Reference
+## Milestone
 
-| Status | Triggered By | Next States |
-|---|---|---|
-| `ORDER_CREATED` | Buyer calls `POST /orders` | `FUNDS_RESERVED`, `CLOSED` (cancel) |
-| `FUNDS_RESERVED` | Payment provider reserves buyer funds | `ESCROW_CREATING`, `REFUND_REQUESTED`, `CLOSED` (cancel) |
-| `ESCROW_CREATING` | Orchestrator initiates escrow creation | `ESCROW_FUNDING` |
-| `ESCROW_FUNDING` | Escrow contract created on-chain; funding in progress | `ESCROW_FUNDED` |
-| `ESCROW_FUNDED` | USDC confirmed inside escrow contract | `IN_PROGRESS` |
-| `IN_PROGRESS` | Platform unlocks work after escrow is funded | `DELIVERED`, `REFUND_REQUESTED`, `DISPUTED` |
-| `DELIVERED` | Seller marks delivery | `RELEASE_REQUESTED`, `DISPUTED` |
-| `RELEASE_REQUESTED` | Buyer approves delivery | `RELEASED` |
-| `RELEASED` | Escrow release transaction submitted and confirmed | `CLOSED` |
-| `CLOSED` | Terminal state â€” order settled, cancelled, or refunded | â€” |
-| `REFUND_REQUESTED` | Buyer or seller requests refund | `REFUNDED` |
-| `REFUNDED` | Escrow refund transaction confirmed | `CLOSED` |
-| `DISPUTED` | Buyer or seller opens a dispute | Resolved externally â†’ `CLOSED` |
+A milestone has a single valid transition. It is triggered by the seller calling `POST /orders/{id}/milestones/{milestoneRef}/complete` while the order is `IN_PROGRESS`. See [Orders API](/docs/api-reference/orders#milestone) for endpoint details.
+
+<MermaidDiagram caption="Milestone state machine" chart={`
+stateDiagram-v2
+  [*] --> OPEN
+  OPEN --> COMPLETED
+  COMPLETED --> [*]
+`} />
+
+| Status | Description |
+|--------|-------------|
+| `OPEN` | Milestone is active; seller has not yet marked it complete. |
+| `COMPLETED` | Seller has marked the milestone as delivered. |

@@ -15,7 +15,7 @@ Every endpoint requires a valid JWT (user session token) in the `Authorization` 
   All `/prepare` endpoints return an **unsigned XDR transaction**. You must sign this transaction client-side (using the Stellar SDK or a compatible wallet) before submitting it. The server never holds or uses your private key.
 </Callout>
 
-For sequence diagrams of each flow, see [Escrow Flows](/docs/guides/escrow-flows).
+For sequence diagrams of each flow, see [Escrow Flows](/docs/guide/escrow-flows). For the dispute status transitions and guards, see the [Dispute state machine](/docs/guide/state-machines#dispute).
 
 ---
 
