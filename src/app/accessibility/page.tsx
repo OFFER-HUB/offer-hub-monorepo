@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { LegalLayout } from "@/components/legal/LegalLayout";
 import { Mail, AlertCircle, CheckCircle, ExternalLink, Headphones, Eye, Hand, Brain, MessageSquare } from "lucide-react";
 import { SOCIAL_TELEGRAM, SOCIAL_DISCORD } from "@/constants/social";
@@ -24,7 +25,7 @@ const features = [
           icon: Mail,
           title: "Report Accessibility Issues",
           description:
-               "Encountered an accessibility barrier? Email support@offerhub.io with details about the issue. We respond within 2 business days and work to resolve problems as quickly as possible.",
+               "Encountered an accessibility barrier? Submit a report through our contact form with details about the issue. We respond within 2 business days and work to resolve problems as quickly as possible.",
           iconColor: "var(--color-primary)",
      },
 ];
@@ -54,10 +55,10 @@ const accessibilityFeatures = [
 
 const contactMethods = [
      {
-          method: "Email",
+          method: "Contact Form",
           description: "Primary method for detailed accessibility reports",
-          value: "support@offerhub.io",
-          href: "mailto:support@offerhub.io?subject=Accessibility%20Issue%20Report",
+          value: "Submit via /contact",
+          href: "/contact",
      },
      {
           method: "Telegram",
@@ -169,24 +170,42 @@ export default function AccessibilityPage() {
                          </div>
 
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                              {contactMethods.map((contact) => (
-                                   <a
-                                        key={contact.method}
-                                        href={contact.href}
-                                        target={contact.external ? "_blank" : undefined}
-                                        rel={contact.external ? "noopener noreferrer" : undefined}
-                                        className="p-8 rounded-2xl bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] transition-shadow duration-200 group"
-                                   >
-                                        <div className="flex items-start justify-between mb-4">
-                                             <div>
-                                                  <h3 className="text-xl font-semibold text-content-primary">{contact.method}</h3>
-                                                  <p className="text-sm text-content-secondary font-medium">{contact.description}</p>
+                              {contactMethods.map((contact) => {
+                                   const cardClassName =
+                                        "p-8 rounded-2xl bg-bg-elevated shadow-neu-raised hover:shadow-neu-raised-hover border border-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] transition-shadow duration-200 group focus-visible:outline-2 focus-visible:outline-theme-primary";
+                                   const cardBody = (
+                                        <>
+                                             <div className="flex items-start justify-between mb-4">
+                                                  <div>
+                                                       <h3 className="text-xl font-semibold text-content-primary">{contact.method}</h3>
+                                                       <p className="text-sm text-content-secondary font-medium">{contact.description}</p>
+                                                  </div>
+                                                  {contact.external && <ExternalLink size={16} className="text-theme-primary" />}
                                              </div>
-                                             {contact.external && <ExternalLink size={16} className="text-theme-primary" />}
-                                        </div>
-                                        <p className="text-theme-primary font-bold text-sm">{contact.value}</p>
-                                   </a>
-                              ))}
+                                             <p className="text-theme-primary font-bold text-sm">{contact.value}</p>
+                                        </>
+                                   );
+
+                                   return contact.external ? (
+                                        <a
+                                             key={contact.method}
+                                             href={contact.href}
+                                             target="_blank"
+                                             rel="noopener noreferrer"
+                                             className={cardClassName}
+                                        >
+                                             {cardBody}
+                                        </a>
+                                   ) : (
+                                        <Link
+                                             key={contact.method}
+                                             href={contact.href}
+                                             className={cardClassName}
+                                        >
+                                             {cardBody}
+                                        </Link>
+                                   );
+                              })}
                          </div>
 
                          <div className="p-8 rounded-2xl bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] flex flex-col gap-4">
@@ -316,13 +335,13 @@ export default function AccessibilityPage() {
                          <p className="text-lg text-content-secondary font-medium mb-8 max-w-2xl mx-auto">
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.
                          </p>
-                         <a
-                              href="mailto:support@offerhub.io?subject=Accessibility%20Question"
+                         <Link
+                              href="/contact"
                               className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-theme-primary px-8 text-bg-base font-semibold text-sm hover:bg-theme-primary-hover transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary"
                          >
                               <Mail size={18} />
-                              Email Support
-                         </a>
+                              Contact Support
+                         </Link>
                     </div>
                </LegalLayout>
           </div>

@@ -40,7 +40,7 @@ To access most features of the Platform, you must create an account. You agree t
 - Provide accurate, complete, and current information during registration.
 - Keep your account information up to date at all times.
 - Maintain the security and confidentiality of your credentials (password, wallet keys, or third-party authentication tokens).
-- Immediately notify us at **support@offerhub.io** of any unauthorized access or suspected breach of your account.
+- Immediately notify us via the [contact form](/contact) of any unauthorized access or suspected breach of your account.
 
 ### 3.2 Account Responsibility
 
@@ -169,7 +169,7 @@ Unless otherwise agreed in writing between Client and Freelancer:
 
 ### 8.4 DMCA / Copyright Infringement
 
-If you believe that content on the Platform infringes your copyright, please notify us at **legal@offerhub.io** with the following information:
+If you believe that content on the Platform infringes your copyright, please notify us via the **[contact form](/contact)** with the following information:
 
 - A description of the copyrighted work.
 - The URL or location of the allegedly infringing content.
@@ -259,7 +259,7 @@ These Terms are governed by and construed in accordance with the laws of the Sta
 
 - GDPR applies to EU users and their rights under Articles 15–22 are preserved.
 - EU users may lodge complaints with their national Data Protection Authority.
-- The platform's Data Protection contact is legal@offerhub.io.
+- Data protection inquiries can be submitted through the [contact form](/contact).
 - EU users have the right to withdraw consent for data processing at any time.
 
 ### 12.5 Jurisdiction
@@ -327,8 +327,8 @@ These Terms, together with the Privacy Policy and any additional agreements you 
 
 For questions, concerns, or legal notices regarding these Terms, please contact us:
 
-- **General Support:** support@offerhub.io
-- **Legal & Compliance:** legal@offerhub.io
+- **General Support:** [Contact form](/contact)
+- **Legal & Compliance:** [Contact form](/contact)
 - **Website:** https://offer-hub.tech
 
 ---
