@@ -7,8 +7,7 @@ import type { OpenApiOperationSpec, OpenApiMediaType } from "@/lib/openapi";
 import { MethodBadge } from "./MethodBadge";
 import { ParameterInput } from "./ParameterInput";
 import { ResponseViewer, type ResponseTab } from "./ResponseViewer";
-import { Textarea } from "@/components/ui/Textarea";
-import { Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Field";
 import { CodeBlock } from "@/components/docs/CodeBlock";
 import { Callout } from "@/components/docs/Callout";
 import { Button } from "@/components/ui/Button";
@@ -226,45 +225,37 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
 
               {operation.requestBody && (
                 <div className="space-y-2">
-                  <Textarea
+                  <Field
+                    as="textarea"
                     id={`request-body-${operation.operationId}`}
                     label="Request body"
-                    labelClassName="text-[11px] font-black uppercase tracking-widest text-theme-primary"
+                    hint={operation.requestBody.contentType}
                     value={bodyValue}
                     onChange={(e) => setBodyValue(e.target.value)}
                     rows={Math.min(bodyValue.split("\n").length + 1, 12)}
-                    className="text-sm font-mono resize-y"
+                    className="text-sm font-mono"
                   />
-                  <p className="text-xs text-content-secondary">{operation.requestBody.contentType}</p>
                 </div>
               )}
 
               {isMutating && (
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor={`idem-${operation.operationId}`}
-                    className="block text-[11px] font-black uppercase tracking-widest text-theme-primary"
-                  >
-                    Idempotency-Key (optional)
-                  </label>
-                  <Input
-                    id={`idem-${operation.operationId}`}
-                    hideWrapper
-                    value={idempotencyKey}
-                    onChange={(e) => setIdempotencyKey(e.target.value)}
-                    placeholder="UUID v4"
-                    className="font-mono text-sm"
-                    rightElement={
-                      <button
-                        type="button"
-                        onClick={() => setIdempotencyKey(crypto.randomUUID())}
-                        className="text-xs font-semibold text-theme-primary hover:text-theme-primary-hover"
-                      >
-                        Generate
-                      </button>
-                    }
-                  />
-                </div>
+                <Field
+                  id={`idem-${operation.operationId}`}
+                  label="Idempotency-Key (optional)"
+                  value={idempotencyKey}
+                  onChange={(e) => setIdempotencyKey(e.target.value)}
+                  placeholder="UUID v4"
+                  className="font-mono text-sm"
+                  trailing={
+                    <button
+                      type="button"
+                      onClick={() => setIdempotencyKey(crypto.randomUUID())}
+                      className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-action transition-colors duration-200 hover:text-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+                    >
+                      Generate
+                    </button>
+                  }
+                />
               )}
             </div>
           )}

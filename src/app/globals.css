@@ -165,13 +165,6 @@ body {
     transition-timing-function: ease-out;
   }
 
-  .neu-input {
-    background: var(--color-bg-sunken);
-    box-shadow:
-      inset 3px 3px 6px var(--shadow-dark),
-      inset -3px -3px 6px var(--shadow-light);
-  }
-
   .neu-btn {
     background: var(--color-bg-base);
     box-shadow:
@@ -215,7 +208,7 @@ body {
       -6px -6px 14px var(--shadow-light);
   }
 
-  /* Header — sunken look, same pattern as .neu-input */
+  /* Header — sunken look */
   .neu-table-head {
     background: var(--color-bg-sunken);
     box-shadow:
