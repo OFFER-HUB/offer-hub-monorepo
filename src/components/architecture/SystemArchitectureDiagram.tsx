@@ -11,7 +11,7 @@ export function SystemArchitectureDiagram() {
       headerClassName="flex flex-col items-center text-center mb-8"
       descriptionClassName="text-content-secondary max-w-2xl text-base md:text-lg"
       infoClassName="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-6 flex gap-3 items-start max-w-full"
-      eyebrowClassName="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
+      eyebrowClassName="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary mb-6"
       eyebrow="Architecture Overview"
       heading="OfferHub System Architecture"
       description="A comprehensive view of the OfferHub platform, showing the flow between our modern frontend, NestJS orchestrator, and external integrations."

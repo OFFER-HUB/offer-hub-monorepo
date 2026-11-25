@@ -43,7 +43,7 @@ export function StaticDiagram({ name, caption }: StaticDiagramProps) {
               <span className="w-2.5 h-2.5 rounded-full bg-content-muted/25" />
               <span className="w-2.5 h-2.5 rounded-full bg-content-muted/15" />
             </div>
-            <span className="text-xs font-black uppercase tracking-[0.18em] font-mono text-content-secondary/80">
+            <span className="text-xs font-bold uppercase tracking-[0.12em] font-mono text-content-secondary/80">
               Static diagram
             </span>
           </div>

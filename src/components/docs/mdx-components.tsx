@@ -21,7 +21,7 @@ function DocsMethodBadge({ className, ...props }: ComponentProps<typeof MethodBa
     <MethodBadge
       {...props}
       className={cn(
-        "justify-center px-2.5 py-1 text-[10px] font-black uppercase leading-none tracking-[0.16em] shadow-neu-raised-sm",
+        "justify-center px-2.5 py-1 text-xs font-bold uppercase leading-none tracking-[0.12em] shadow-neu-raised-sm",
         className,
       )}
     />

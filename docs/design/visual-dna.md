@@ -71,25 +71,38 @@ font-family: var(--font-inter), Roboto, Outfit, sans-serif;
 
 ### Type Scale
 
-| Element | Size | Weight | Line Height | Usage |
-|:--------|:-----|:-------|:------------|:------|
-| Display | 72px | 800 | 1.1 | Home hero only (`font-black` is reserved for this line) |
-| H1 | 40px (32px in docs) | 700 | 1.2 | Page titles |
-| H2 | 28px | 700 | 1.3 | Section headers |
-| H3 | 20px | 650 | 1.4 | Subsection headers |
-| Body | 16px | 400 | 1.6 | Main content |
-| Small | 14px | 400 | 1.5 | Captions, metadata |
-| Label | 12px | 600 | 1.4 | Labels, badges (uppercase) |
+Each role is a Tailwind `fontSize` token in `tailwind.config.ts`. A token sets size, line height, weight and (for `label`) letter spacing in one class. The fluid sizes interpolate from the mobile value at 390px to the desktop value at 1440px.
+
+| Token | Desktop | Mobile | Weight | Line height | Usage |
+|:------|:--------|:-------|:-------|:------------|:------|
+| `text-display` | 72px | 44px | 800 | 1.05 | Home hero display line only |
+| `text-h1` | 40px | 32px | 700 | 1.15 | Page titles (marketing, legal) |
+| `text-h1-docs` | 32px | 28px | 700 | 1.2 | Docs page titles |
+| `text-h2` | 28px | 24px | 700 | 1.25 | Section headings |
+| `text-h3` | 20px | 18px | 650 | 1.3 | Subsection and card headings |
+| `text-body` | 16px | 16px | 400 | 1.6 | Main content |
+| `text-small` | 14px | 14px | 400 | 1.5 | Captions, metadata |
+| `text-label` | 12px | 12px | 600 | 1.4 | Uppercase labels and eyebrows, letter spacing 0.12em |
+
+Nothing renders below 12px. `font-black` (900) is allowed only on the home display line; the target for that line is `text-display` (800).
+
+### Page titles and eyebrows
+
+- **`PageHeader`** (`src/components/shared/PageHeader.tsx`) renders every page title except the home hero. It takes an eyebrow, the title (the page's only `<h1>`), a lead, actions, `align` (`left` | `center`) and `size` (`page` | `docs`).
+- **`Eyebrow`** (`src/components/shared/Eyebrow.tsx`) is the section label: `text-label uppercase` in `text-theme-primary-hover`. That token is 5.1:1 on `bg-base` in light mode, while `text-theme-primary` is only 3.2:1 at 12px.
+- When merging classes, use `cn()` from `src/lib/cn.ts`. It registers the type-scale tokens with tailwind-merge, so `text-h1` is not dropped next to a text color.
 
 ### Typography Rules
 
 **DO:**
-- Use the type scale above (Display 72/800, H1 40/700, H2 28/700, H3 20/650)
+- Use the type-scale tokens above (`text-display`, `text-h1`, `text-h2`, `text-h3`, `text-body`, `text-small`, `text-label`)
+- Use `PageHeader` for page titles and `Eyebrow` for section labels
 - Maintain consistent line heights for readability
 - Use `text-content-primary` for headings, `text-content-secondary` for metadata
 
 **DON'T:**
-- Use ultra-bold weights (800-900) anywhere except the home display line (72/800) — `font-black` is reserved for that line
+- Use weights 800–900 (`font-extrabold`, `font-black`) anywhere except the home display line
+- Use arbitrary sizes such as `text-[10px]` or arbitrary letter spacing such as `tracking-[0.4em]`
 - Mix multiple font families in the same view
 - Use font sizes outside the defined scale
 - Reduce line height below 1.2 (causes cramping)

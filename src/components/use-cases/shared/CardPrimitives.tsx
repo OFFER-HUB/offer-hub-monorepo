@@ -28,7 +28,7 @@ export function BentoCard({
 /** The one section label style used across the use-case page. */
 export function CardEyebrow({ children }: { children: ReactNode }) {
   return (
-    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-content-secondary">
+    <p className="flex items-center gap-2 text-label uppercase text-content-secondary">
       <span
         className="h-2 w-2 shrink-0 rounded-full bg-theme-primary"
         aria-hidden="true"

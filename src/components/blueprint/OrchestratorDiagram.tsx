@@ -81,7 +81,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="35"
           textAnchor="middle"
-          className="fill-current text-xs font-semibold uppercase tracking-[0.18em]"
+          className="fill-current text-xs font-semibold uppercase tracking-[0.12em]"
           style={{ fill: "var(--color-text-secondary)" }}
         >
           Fiat + Crypto rails
@@ -110,7 +110,7 @@ export function OrchestratorDiagram({ nodes, selectedNode, onNodeSelect }: Orche
           x="360"
           y="293"
           textAnchor="middle"
-          className="fill-current text-xs font-semibold uppercase tracking-[0.18em]"
+          className="fill-current text-xs font-semibold uppercase tracking-[0.12em]"
           style={{ fill: "var(--color-text-secondary)" }}
         >
           SDK state machine

@@ -51,7 +51,7 @@ export function CookieConsentBanner() {
       <div className="rounded-3xl bg-bg-elevated shadow-neu-raised px-6 py-5 flex flex-col gap-4">
         <p
           id="cookie-consent-title"
-          className="text-[10px] font-black uppercase tracking-[0.3em] text-theme-primary"
+          className="text-xs font-bold uppercase tracking-[0.12em] text-theme-primary"
         >
           Privacy Notice
         </p>

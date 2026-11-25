@@ -30,9 +30,9 @@ export function PrivacyFeatureCard({
         <Icon size={24} className="text-theme-primary" />
       </div>
       <div>
-          <h3 id={legalSlug(title)} className="font-semibold tracking-tight mb-4 text-xl text-content-primary">
+          <h2 id={legalSlug(title)} className="scroll-mt-28 mb-4 text-h3 text-content-primary">
           {title}
-        </h3>
+        </h2>
         <p className={`font-medium leading-relaxed ${large ? "text-base" : "text-sm"} text-content-secondary`}>
           {description}
         </p>
@@ -113,7 +113,7 @@ export function ContactSection(): React.ReactElement {
           <Mail size={24} className="text-theme-primary" />
         </div>
         <div>
-          <h2 id="get-in-touch" className="scroll-mt-28 text-[28px] font-bold leading-tight text-content-primary tracking-tight mb-4">Get in Touch</h2>
+          <h2 id="get-in-touch" className="scroll-mt-28 text-h2 font-bold leading-tight text-content-primary tracking-tight mb-4">Get in Touch</h2>
           <p className="font-medium leading-relaxed text-base text-content-secondary">
             Questions about this policy or how we handle your data? Our privacy team is here to help. We aim to respond
             to all inquiries within 2 business days.
@@ -130,7 +130,7 @@ export function ContactSection(): React.ReactElement {
             href={COMPANY_INFO.contactPath}
             className="flex min-h-11 flex-col justify-center gap-1 rounded-2xl px-6 py-5 transition-shadow duration-200 shadow-neu-sunken-subtle bg-bg-elevated hover:shadow-neu-sunken group focus-visible:outline-2 focus-visible:outline-theme-primary"
           >
-            <span className="text-[10px] font-black uppercase tracking-widest text-content-secondary">{label}</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-content-secondary">{label}</span>
             <span className="text-base font-bold text-theme-primary group-hover:text-content-primary transition-colors">
               {cta}
             </span>
@@ -157,7 +157,7 @@ export const MDX_PRIVACY_COMPONENTS = {
   DataRightsForm,
   h2: ({ children }: { children: React.ReactNode }) => {
     const label = React.Children.toArray(children).map((child) => typeof child === "string" ? child : React.isValidElement<{ children?: React.ReactNode }>(child) ? String(child.props.children ?? "") : "").join("").replace(/\s+/g, " ").trim();
-    return <h2 id={legalSlug(label)} className="scroll-mt-28 text-[28px] font-bold leading-tight tracking-tight text-content-primary">{children}</h2>;
+    return <h2 id={legalSlug(label)} className="scroll-mt-28 text-h2 font-bold leading-tight tracking-tight text-content-primary">{children}</h2>;
   },
   h3: ({ children }: { children: React.ReactNode }) => <h3 className="text-xl font-semibold leading-tight text-content-primary">{children}</h3>,
 };

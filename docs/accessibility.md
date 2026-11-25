@@ -214,7 +214,6 @@ While we strive for full compliance, certain accessibility measures may be deter
 OFFER-HUB integrates with third-party services that may have varying levels of accessibility support:
 
 - **Stellar Blockchain:** Transaction data is displayed with accessible fallbacks
-- **Airtm:** Payment interface — we ensure accessible integration points
 - **Supabase:** Database authentication uses accessible forms and confirmations
 - **GitHub:** Public data integration follows GitHub's own accessibility practices
 

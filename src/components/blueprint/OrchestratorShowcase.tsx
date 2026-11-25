@@ -29,7 +29,7 @@ function FlowLegend() {
           key={item.label}
           className="rounded-2xl bg-bg-base p-4 shadow-neu-sunken-l2-subtle text-left overflow-visible"
         >
-          <div className="mb-2 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-theme-primary">
+          <div className="mb-2 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary">
             {item.label}
           </div>
           <p className="text-sm leading-6 text-content-secondary">{item.text}</p>
@@ -53,11 +53,11 @@ export function OrchestratorShowcase() {
         <div className="rounded-3xl bg-bg-elevated p-6 sm:p-10 shadow-neu-raised-l2 overflow-visible blueprint-layer">
           <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-bg-base px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary shadow-neu-sunken">
+              <div className="inline-flex items-center gap-2 rounded-full bg-bg-base px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary shadow-neu-sunken">
                 <Workflow className="h-4 w-4" />
                 The Orchestrator
               </div>
-              <h2 className="mt-6 max-w-3xl text-2xl md:text-[28px] font-bold leading-tight text-content-primary">
+              <h2 className="mt-6 max-w-3xl text-2xl md:text-h2 font-bold leading-tight text-content-primary">
                 Visualizing the invisible engine behind decentralized payments.
               </h2>
               <p className="mt-4 max-w-2xl text-sm md:text-base leading-7 text-content-secondary">
@@ -74,7 +74,7 @@ export function OrchestratorShowcase() {
                   { label: "Settlement", value: "Seller release" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-2xl bg-bg-base p-4 shadow-neu-sunken">
-                    <p className="text-xs uppercase tracking-[0.2em] text-content-muted">{item.label}</p>
+                    <p className="text-xs uppercase tracking-[0.12em] text-content-muted">{item.label}</p>
                     <p className="mt-2 text-sm font-semibold text-content-primary">{item.value}</p>
                   </div>
                 ))}

@@ -3,7 +3,7 @@
 import React from "react";
 import { ShieldCheck, Trash2, Download } from "lucide-react";
 import { useDataRightsForm } from "@/hooks/use-data-rights-form";
-import { Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Field";
 import { Callout } from "@/components/docs/Callout";
 import { Button } from "@/components/ui/Button";
 
@@ -46,7 +46,7 @@ export function DataRightsForm({
         <p className="text-sm font-medium leading-relaxed text-content-secondary">{description}</p>
       </div>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-        <Input
+        <Field
           id={`data-rights-email-${endpoint}`}
           label="Email address"
           type="email"
