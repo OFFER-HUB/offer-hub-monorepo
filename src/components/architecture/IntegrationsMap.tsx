@@ -73,10 +73,10 @@ export function IntegrationsMap() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-md text-content-muted">
+            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-full text-content-muted">
               FinCEN MSB
             </span>
-            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-md text-content-muted">
+            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-full text-content-muted">
               YC-backed
             </span>
           </div>
@@ -85,7 +85,7 @@ export function IntegrationsMap() {
             {corridors.map((c) => (
               <div
                 key={c}
-                className="text-xs font-medium text-center bg-bg-elevated shadow-neu-raised-sm rounded-lg py-1.5 text-content-primary px-1"
+                className="text-xs font-medium text-center bg-bg-elevated shadow-neu-raised-sm rounded-xl py-1.5 text-content-primary px-1"
               >
                 {c}
               </div>

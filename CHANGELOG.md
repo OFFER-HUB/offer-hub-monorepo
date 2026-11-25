@@ -11,6 +11,9 @@
 
 ### Changed
 
+- Consolidate theme surfaces onto six neumorphic shadow tokens and the
+  12 / 16 / 24 / pill radius scale across pages, dialogs, and documentation.
+
 - Updated XML sitemap replacing `/blueprint` with `/product`.
 - Replaced arbitrary borders, radiuses, and hardcoded palette colors across architecture and blueprint components with theme tokens.
 - Replaced external links to `docs.offerhub.io` and `app.offerhub.io` with canonical internal routes and `offer-hub.tech`.

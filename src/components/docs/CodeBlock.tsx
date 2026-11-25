@@ -134,7 +134,7 @@ const SURFACE_CLASSES = cn(
   "scrollbar-thin scrollbar-track-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
   "[&_pre]:!m-0 [&_pre]:!bg-transparent [&_pre]:!p-0",
   "[&_.line]:-mx-3 [&_.line]:block [&_.line]:min-h-6 [&_.line]:px-3",
-  "[&_.highlighted-line]:rounded-lg [&_.highlighted-line]:bg-bg-sunken [&_.highlighted-line]:shadow-neu-sunken-subtle",
+  "[&_.highlighted-line]:rounded-xl [&_.highlighted-line]:bg-bg-sunken [&_.highlighted-line]:shadow-neu-sunken-subtle",
   "[&.with-line-numbers_[data-line]]:before:mr-4 [&.with-line-numbers_[data-line]]:before:inline-block [&.with-line-numbers_[data-line]]:before:w-8 [&.with-line-numbers_[data-line]]:before:text-right [&.with-line-numbers_[data-line]]:before:text-content-muted [&.with-line-numbers_[data-line]]:before:content-[attr(data-line)]",
 );
 
@@ -251,7 +251,7 @@ function CodeSurface({
                   className={cn(
                     "block min-h-6 px-3 -mx-3 transition-colors",
                     highlightedSet.has(lineNumber) &&
-                      "rounded-lg bg-bg-sunken shadow-neu-sunken-subtle",
+                      "rounded-xl bg-bg-sunken shadow-neu-sunken-subtle",
                   )}
                 >
                   {lineText || " "}

@@ -327,12 +327,8 @@ Values are read from the `boxShadow` entries in `tailwind.config.ts`.
 | `shadow-neu-raised` | `6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)` |
 | `shadow-neu-raised-hover` | `2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light)` |
 | `shadow-neu-raised-l2` | `12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light)` |
-| `shadow-neu-raised-l2-sm` | `8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light)` |
-| `shadow-neu-raised-scrolled` | `8px 8px 18px var(--shadow-dark), -7px -7px 16px var(--shadow-light)` |
 | `shadow-neu-raised-sm` | `3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)` |
 | `shadow-neu-sunken` | `inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)` |
-| `shadow-neu-sunken-l2` | `inset 8px 8px 16px var(--shadow-dark), inset -8px -8px 16px var(--shadow-light)` |
-| `shadow-neu-sunken-l2-subtle` | `inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light)` |
 | `shadow-neu-sunken-subtle` | `inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)` |
 
 ### Radius tokens
