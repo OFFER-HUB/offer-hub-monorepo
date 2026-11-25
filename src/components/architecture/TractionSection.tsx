@@ -5,10 +5,10 @@ export function TractionSection() {
   return (
     <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-10 mb-8 max-w-full overflow-hidden">
       <div className="flex flex-col items-center text-center mb-8">
-        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-4">
+        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary mb-4">
           Platform Traction
         </span>
-        <h2 className="text-2xl md:text-[28px] font-bold text-content-primary tracking-tight mb-3">
+        <h2 className="text-2xl md:text-h2 font-bold text-content-primary tracking-tight mb-3">
           Live on testnet. Built for scale.
         </h2>
         <p className="text-content-secondary max-w-2xl text-sm md:text-base leading-relaxed">

@@ -30,7 +30,7 @@ export function ResponseSchema({
       <div className="min-w-0">
         <h3
           id={headingId}
-          className="mb-3 text-sm font-black uppercase tracking-[0.12em] text-content-primary"
+          className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-content-primary"
         >
           {label}
         </h3>

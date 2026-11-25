@@ -20,24 +20,24 @@ export function BlueprintHero() {
         <div className="grid grid-cols-3 gap-4 md:gap-6">
           <div className="flex flex-col items-center gap-3">
             <div className="w-full aspect-[4/3] rounded-2xl bg-bg-base shadow-neu-sunken-subtle" />
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-content-muted">
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-content-muted">
               Core
             </span>
           </div>
           <div className="flex flex-col items-center gap-3">
             <div className="w-full aspect-[4/3] rounded-2xl bg-bg-base shadow-neu-raised-sm" />
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-content-muted">
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-content-muted">
               Engine
             </span>
           </div>
           <div className="flex flex-col items-center gap-3">
             <div className="w-full aspect-[4/3] rounded-2xl bg-bg-base shadow-neu-sunken-subtle" />
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-content-muted">
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-content-muted">
               Templates
             </span>
           </div>
         </div>
-        <p className="mt-8 text-xs font-medium uppercase tracking-[0.2em] text-content-secondary">
+        <p className="mt-8 text-xs font-medium uppercase tracking-[0.12em] text-content-secondary">
           Ecosystem structure
         </p>
       </div>

@@ -1,3 +1,4 @@
+import type { StatusTone } from "@/components/ui/status-colors";
 import type { ElementType } from "react";
 
 export type PhaseStatus = "completed" | "in-progress" | "planned";
@@ -24,6 +25,8 @@ export interface Phase {
 
 export interface StatusConfig {
   icon: ElementType;
+  /** Badge tone from status-colors.ts. */
+  tone: StatusTone;
   color: string;
   bg: string;
   border: string;

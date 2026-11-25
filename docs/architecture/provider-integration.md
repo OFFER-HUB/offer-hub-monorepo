@@ -1,10 +1,10 @@
 # Provider Integration
 
-This document details the integration with external payment providers: Trustless Work, Stellar, and Airtm.
+This document details the integration with external payment providers: Trustless Work, Stellar, and BlindPay.
 
 ## Provider Abstraction
 
-OFFER-HUB uses the **Strategy Pattern** to abstract payment providers, allowing seamless switching between crypto-native and fiat rails.
+OFFER-HUB uses the **Strategy Pattern** to abstract the payment rail, keeping domain code provider-agnostic while bank payouts are handled by BlindPay.
 
 ### PaymentProvider Interface
 
@@ -27,11 +27,12 @@ interface PaymentProvider {
 ### Implementations
 
 1. **CryptoNativeProvider** (default): Stellar + Trustless Work
-2. **AirtmProvider** (future): Airtm API
+
+Bank payouts are handled by the BlindPay integration.
 
 **Configuration:**
 ```bash
-PAYMENT_PROVIDER=crypto  # or 'airtm'
+PAYMENT_PROVIDER=crypto
 ```
 
 ---
@@ -358,103 +359,13 @@ const result = await server.submitTransaction(transaction);
 
 ---
 
-## Airtm Integration (Future)
-
-**Purpose:** Fiat on/off-ramp for USD.
-
-**Website:** [airtm.com](https://airtm.com)
-
-**Note:** Requires Airtm Enterprise account.
-
-### API Endpoints
-
-Base URL: `https://api.airtm.com`
-
-#### 1. Create Payin (Top-Up)
-
-```http
-POST /payins
-Authorization: Bearer {AIRTM_API_KEY}
-
-Request:
-{
-  "userId": "usr_xxxxx",
-  "amount": 100.00,
-  "currency": "USD",
-  "redirectUrl": "https://marketplace.com/topup/callback"
-}
-
-Response:
-{
-  "payinId": "payin_xxxxx",
-  "confirmationUrl": "https://airtm.com/payin/xxxxx",
-  "status": "PENDING"
-}
-```
-
-#### 2. Create Payout (Withdrawal)
-
-```http
-POST /payouts
-Authorization: Bearer {AIRTM_API_KEY}
-
-Request:
-{
-  "userId": "usr_xxxxx",
-  "amount": 50.00,
-  "currency": "USD",
-  "destination": "user@example.com"
-}
-
-Response:
-{
-  "payoutId": "payout_xxxxx",
-  "status": "PROCESSING"
-}
-```
-
----
-
-### Airtm Webhooks
-
-```http
-POST {ORCHESTRATOR_URL}/webhooks/airtm
-X-Airtm-Signature: {HMAC_SHA256}
-
-Payload:
-{
-  "event": "payin.completed",
-  "payinId": "payin_xxxxx",
-  "userId": "usr_xxxxx",
-  "amount": 100.00,
-  "currency": "USD",
-  "timestamp": "2026-02-17T19:40:00Z"
-}
-```
-
-**Verification:**
-```typescript
-const signature = req.headers['x-airtm-signature'];
-const payload = JSON.stringify(req.body);
-const expectedSignature = crypto
-  .createHmac('sha256', AIRTM_WEBHOOK_SECRET)
-  .update(payload)
-  .digest('hex');
-
-if (signature !== expectedSignature) {
-  throw new Error('Invalid signature');
-}
-```
-
----
-
 ## Provider Configuration
 
 ### Environment Variables
 
 ```bash
 # Payment Provider Selection
-PAYMENT_PROVIDER=crypto  # or 'airtm'
+PAYMENT_PROVIDER=crypto
 
 # Trustless Work
 TRUSTLESS_WORK_API_KEY=tw_xxxxx
@@ -464,11 +375,6 @@ TRUSTLESS_WORK_WEBHOOK_SECRET=secret_xxxxx
 # Stellar
 STELLAR_NETWORK=testnet  # or 'mainnet'
 WALLET_ENCRYPTION_KEY=32_byte_hex_key
-
-# Airtm (if PAYMENT_PROVIDER=airtm)
-AIRTM_API_KEY=airtm_xxxxx
-AIRTM_SECRET=secret_xxxxx
-AIRTM_WEBHOOK_SECRET=webhook_secret_xxxxx
 ```
 
 ---

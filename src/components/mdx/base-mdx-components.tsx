@@ -22,7 +22,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
     return (
       <h2
         id={id}
-        className="text-2xl font-black mt-16 mb-6 scroll-mt-32 tracking-tight text-content-primary"
+        className="text-2xl font-bold mt-16 mb-6 scroll-mt-32 tracking-tight text-content-primary"
         {...props}
       >
         {children}

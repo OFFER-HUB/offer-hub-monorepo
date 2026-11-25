@@ -16,7 +16,7 @@ export function TermsSection({ icon, title, children }: TermsSectionProps) {
         <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-bg-base shadow-neu-sunken-subtle text-theme-primary">
           <Icon size={20} />
         </div>
-        <h2 className="text-[28px] leading-tight font-bold text-content-primary tracking-tight">{title}</h2>
+        <h2 className="text-h2 leading-tight font-bold text-content-primary tracking-tight">{title}</h2>
       </div>
       <div className="[&_h3:first-child]:mt-0">{children}</div>
     </section>

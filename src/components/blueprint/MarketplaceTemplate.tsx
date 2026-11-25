@@ -136,7 +136,7 @@ export function MarketplaceTemplate() {
             <Layers size={12} />
             Marketplace Template
           </div>
-          <h2 className="text-2xl md:text-[28px] font-bold text-content-primary mt-3">
+          <h2 className="text-2xl md:text-h2 font-bold text-content-primary mt-3">
             Your Frontend, Ready to Ship
           </h2>
           <p className="mt-4 text-content-secondary max-w-xl mx-auto text-sm leading-relaxed">

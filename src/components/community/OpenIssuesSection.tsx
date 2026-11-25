@@ -4,8 +4,16 @@ import { useState, memo, useMemo } from "react";
 import { Tag, ArrowUpRight, ChevronDown } from "lucide-react";
 import { SectionHeading } from "@/components/community/SectionHeading";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-colors";
 import type { IssueData } from "@/types/community";
+
+/** Priority → badge tone. Unknown priorities stay neutral-brand. */
+export function priorityTone(priority: string): StatusTone {
+  if (priority === "High") return "danger";
+  if (priority === "Low") return "success";
+  return "primary";
+}
 
 interface OpenIssuesSectionProps {
   issues: IssueData[];
@@ -41,13 +49,9 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
         {issue.labels.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
             {issue.labels.slice(0, 2).map((label) => (
-              <span
-                key={label}
-                className="flex items-center gap-1.5 text-[10px] font-bold text-content-secondary px-3 py-1.5 bg-bg-base rounded-xl shadow-neu-raised-sm"
-              >
-                <Tag size={10} className="text-theme-primary" />
+              <StatusBadge key={label} icon={<Tag size={12} />}>
                 {label}
-              </span>
+              </StatusBadge>
             ))}
           </div>
         )}
@@ -55,17 +59,10 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
 
       <div className="flex items-center justify-between pt-6 mt-2">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase tracking-widest text-content-muted mb-1">Priority</span>
-          <div className="px-3 py-1 rounded-lg bg-bg-base shadow-neu-sunken-subtle">
-            <span className={cn(
-              "text-[10px] font-black uppercase tracking-widest",
-              issue.priority === 'High' ? 'text-red-500' :
-                issue.priority === 'Low' ? 'text-emerald-500' :
-                  'text-theme-primary'
-            )}>
-              {issue.priority}
-            </span>
-          </div>
+          <span className="text-xs font-semibold uppercase tracking-widest text-content-secondary mb-1">Priority</span>
+          <StatusBadge variant={priorityTone(issue.priority)} className="self-start">
+            {issue.priority}
+          </StatusBadge>
         </div>
 
         <Button

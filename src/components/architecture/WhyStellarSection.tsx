@@ -37,7 +37,7 @@ export function WhyStellarSection() {
   return (
     <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-8 flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary w-fit">
+        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary w-fit">
           Why Stellar
         </span>
         <h2 className="text-xl md:text-2xl font-bold text-content-primary">

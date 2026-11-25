@@ -1,120 +1,106 @@
-"use client";
-
-import { useRef } from "react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { useLiquidTextAnimation } from "@/hooks/useLiquidTextAnimation";
+import { CommandLine } from "@/components/docs/CommandLine";
+import { GITHUB_REPO_URL } from "@/constants/github";
+import { cn } from "@/lib/cn";
+
+export const INSTALL_COMMAND = "npx create-offer-hub-orchestrator";
+
+const STACK = ["USDC", "Stellar", "Trustless Work"] as const;
+
+/** Shared card surface for the home bento. */
+export const BENTO_CARD_CLASS = "rounded-3xl bg-bg-elevated shadow-neu-raised";
+
+/** Label 12/600 uppercase. `text-action` keeps ≥ 4.5:1 on bg-elevated in both themes. */
+export const BENTO_EYEBROW_CLASS = "text-xs font-semibold uppercase tracking-widest text-action";
+
+/** H2 28/700. */
+export const BENTO_H2_CLASS = "text-[1.75rem] font-bold leading-[1.25] text-content-primary";
+
+/** Tinted pill (badge style: rounded-full, no shadow). */
+export const PILL_CLASS =
+  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-content-primary bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]";
+
+const ENTER_CLASS = "animate-fadeIn motion-reduce:animate-none";
 
 /**
- * Animation-only highlight tones for the liquid text effect. These are NOT
- * design tokens — they are brighter teals derived from --color-primary to
- * create the wet-light highlights on the blob surface. If the brand teal
- * changes, regenerate these from --color-primary at runtime.
- */
-const LIQUID_HIGHLIGHTS = {
-  highlight: "#1bc8ca",
-  brightest: "#22e0e2",
-} as const;
-
-/**
- * Liquid text effect: multiple radial gradient blobs orbit inside the heading
- * via requestAnimationFrame, visible through background-clip: text.
- * The dark page acts like a wall; the text is a "glass window" into the liquid.
- *
- * Design tokens are referenced via var(--color-*) inside the gradient strings
- * so the browser re-evaluates them on every paint — this is what makes the
- * effect respond to dark mode toggle without re-running the effect.
+ * Bento row 1: the value-proposition card (4/6) and the install card (2/6).
+ * Rendered as two grid items, so it must sit inside the home page's bento grid.
  */
 export function HeroSection() {
-  const headingRef = useRef<HTMLHeadingElement>(null);
-
-  useLiquidTextAnimation(headingRef, LIQUID_HIGHLIGHTS);
-
   return (
-    <section
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden select-none bg-transparent"
-    >
-      {/* ── Hero content — pt-28 clears the fixed pill navbar ── */}
-      <div className="flex flex-col items-center text-center px-4 w-full pt-28">
-        {/* Eyebrow — key value props from product docs */}
-        <p
-          className="animate-fadeIn text-xs font-medium uppercase tracking-[0.4em] mb-10 text-theme-primary"
-          style={{ animationDelay: "100ms" }}
-        >
-          Self-Hosted · Non-Custodial · Open Source
-        </p>
+    <>
+      <section
+        aria-labelledby="home-title"
+        className={cn(BENTO_CARD_CLASS, ENTER_CLASS, "flex flex-col justify-center p-6 sm:p-10 lg:col-span-4")}
+      >
+        <p className={BENTO_EYEBROW_CLASS}>Self-hosted · non-custodial · open source</p>
 
-        {/*
-         * THE LIQUID TEXT
-         * ───────────────
-         * background-clip: text → the animated gradient is only visible
-         * through the letter shapes. The page background acts as the "wall";
-         * the text becomes a glass window into moving liquid teal.
-         */}
         <h1
-          ref={headingRef}
-          className="font-black leading-[1.1] tracking-tight px-4 sm:px-8 py-4 max-w-full"
-          style={{
-            fontSize: "clamp(3.5rem, 13vw, 12rem)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-            // backgroundColor is the absolute base — always visible through letters
-            // even when no blob covers a given area, this solid teal shows through
-            backgroundColor: "var(--color-primary)",
-            willChange: "background-image",
-          }}
+          id="home-title"
+          className="mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-tight text-content-primary sm:text-[3.5rem] xl:text-[4.5rem]"
         >
-          OFFER-HUB
+          Escrow for your marketplace{" "}
+          <span className="bg-[linear-gradient(90deg,var(--color-action),var(--color-primary))] bg-clip-text text-transparent">
+            without building payments
+          </span>
         </h1>
 
-        {/* Tagline — product-accurate description */}
-        <p
-          className="animate-fadeInUp mt-10 text-lg md:text-xl font-light max-w-xl leading-relaxed"
-          style={{ color: "var(--color-text-secondary)", animationDelay: "300ms" }}
-        >
-          A payments orchestrator for modern marketplaces.{" "}
-          <span className="font-semibold" style={{ color: "var(--color-text-primary)" }}>
-            Zero custodial risk. Complete developer control.
-          </span>
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-content-secondary sm:text-lg">
+          OFFER-HUB is a self-hosted orchestrator that adds non-custodial USDC escrow, releases,
+          refunds, and disputes to your marketplace through one REST API and a TypeScript SDK.
         </p>
 
-        {/* CTA buttons */}
-        <div
-          className="animate-fadeInUp flex flex-col sm:flex-row items-center gap-4 mt-12"
-          style={{ animationDelay: "500ms" }}
-        >
-          {/* Primary — neumorphic raised, teal */}
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
           <Button
-            href="/docs"
+            href="/docs/guide/quick-start"
             size="lg"
-            className="group"
+            trailingIcon={<ArrowRight size={16} aria-hidden="true" />}
           >
-            Read the docs
-            <ArrowRight size={15} className="transition-transform duration-[200ms] group-hover:translate-x-0.5" />
+            Read the quick start
           </Button>
-
-          {/* Secondary — neumorphic raised, same base color as page */}
           <Button
-            href="/use-cases"
+            href={GITHUB_REPO_URL}
             variant="secondary"
             size="lg"
+            target="_blank"
+            rel="noopener noreferrer"
+            trailingIcon={<ExternalLink size={16} aria-hidden="true" />}
           >
-            Explore use cases
+            View on GitHub
           </Button>
         </div>
-      </div>
+      </section>
 
-      {/* ── Scroll indicator ── */}
-      <div
-        className="animate-fadeIn absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[color-mix(in_srgb,var(--color-secondary)_30%,transparent)]"
-        style={{ animationDelay: "900ms" }}
+      <section
+        aria-labelledby="home-install"
+        className={cn(BENTO_CARD_CLASS, ENTER_CLASS, "flex min-w-0 flex-col gap-6 p-6 sm:p-8 lg:col-span-2")}
       >
-        <span className="text-[10px] uppercase tracking-[0.35em] font-medium">
-          Scroll
-        </span>
-        <ChevronDown size={14} className="animate-bounce" />
-      </div>
-    </section>
+        <div>
+          <p className={BENTO_EYEBROW_CLASS}>Install</p>
+          <h2 id="home-install" className={cn(BENTO_H2_CLASS, "mt-2")}>
+            Run your own orchestrator
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-content-secondary">
+            The scaffolder asks a few questions and sets up a configured instance.
+          </p>
+        </div>
+
+        <CommandLine command={INSTALL_COMMAND} title="Terminal" className="my-0" />
+
+        <div className="mt-auto">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-content-secondary">
+            Built on
+          </p>
+          <ul role="list" className="flex flex-wrap gap-2">
+            {STACK.map((item) => (
+              <li key={item} className={PILL_CLASS}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </>
   );
 }
