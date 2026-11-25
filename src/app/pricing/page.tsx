@@ -8,6 +8,11 @@ import { LoadingBar } from "@/components/ui/LoadingBar";
 import { buildPageMetadata } from "@/lib/seo";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  COMPARISON_FEATURES,
+  PRICING_FAQS,
+  PRICING_TIERS,
+} from "./pricing.data";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
