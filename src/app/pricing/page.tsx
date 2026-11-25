@@ -83,7 +83,7 @@ export default function PricingPage() {
                       target={tier.primaryCta.external ? "_blank" : undefined}
                       rel={tier.primaryCta.external ? "noopener noreferrer" : undefined}
                       variant={tier.primaryCta.variant}
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                     >
                       <span>{tier.primaryCta.label}</span>
                       <ArrowUpRight className="w-4 h-4" />
@@ -94,7 +94,7 @@ export default function PricingPage() {
                         target={tier.secondaryCta.external ? "_blank" : undefined}
                         rel={tier.secondaryCta.external ? "noopener noreferrer" : undefined}
                         variant={tier.secondaryCta.variant}
-                        className="flex-1"
+                        className="w-full sm:flex-1"
                       >
                         <span>{tier.secondaryCta.label}</span>
                         <ArrowUpRight className="w-4 h-4" />
