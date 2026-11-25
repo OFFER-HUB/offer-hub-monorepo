@@ -11,14 +11,14 @@ Marketplaces face significant challenges when implementing payment systems:
 1. **Complex Integration:** Integrating multiple payment providers (crypto, fiat, escrow) is time-consuming
 2. **Custodial Risk:** Holding user funds creates regulatory and security burdens
 3. **Escrow Complexity:** Building secure escrow logic requires blockchain expertise
-4. **Multi-Provider Management:** Managing Stellar, Trustless Work, and Airtm separately is complex
+4. **Multi-Provider Management:** Managing Stellar and Trustless Work separately is complex
 
 ## Solution
 
 OFFER-HUB provides a **self-hosted payments orchestrator** that:
 
 - **Orchestrates** user balances, orders, and escrow workflows
-- **Integrates** with Trustless Work (escrow), Stellar (crypto), and Airtm (fiat)
+- **Integrates** with Trustless Work (escrow), Stellar (crypto), and BlindPay (bank payouts)
 - **Abstracts** provider complexity behind a simple REST API
 - **Ensures** non-custodial security (funds in smart contracts, not the orchestrator)
 
@@ -31,16 +31,16 @@ Each marketplace runs its own Orchestrator instance—no centralized SaaS, full 
 Funds are locked in Trustless Work smart contracts on Stellar. The Orchestrator coordinates but never holds escrow funds.
 
 ### 3. Per-User Balances
-Each user has their own balance (Stellar wallet or Airtm account), not pooled marketplace funds.
+Each user has their own balance (Stellar wallet), not pooled marketplace funds.
 
 ### 4. Provider Abstraction
-Switch between crypto-native (Stellar + USDC) and fiat (Airtm) via configuration, without changing business logic.
+The crypto-native provider (Stellar + USDC) sits behind the same business logic, with BlindPay handling bank payouts.
 
 ### 5. Complete Payment Lifecycle
-- **Deposits:** USDC to Stellar wallet or fiat via Airtm
+- **Deposits:** USDC to Stellar wallet
 - **Orders:** Create, reserve funds, escrow
 - **Escrow:** Fund, release, refund, dispute resolution
-- **Withdrawals:** USDC to external address or fiat via Airtm
+- **Withdrawals:** USDC to external address or bank payout through BlindPay
 
 ### 6. Idempotency & Reliability
 All mutations require `Idempotency-Key` for safe retries. Webhooks, retries, and reconciliation ensure reliability.
@@ -96,10 +96,8 @@ See [Use Cases](./use-cases.md) for detailed scenarios.
 - ✅ Balance tracking and reconciliation
 - ✅ Dispute resolution
 
-### Phase 2: Airtm Integration (Future)
-- ⏳ Airtm top-ups (fiat on-ramp)
-- ⏳ Airtm withdrawals (fiat off-ramp)
-- ⏳ Hybrid mode (crypto + fiat)
+### Phase 2: Bank Payouts (Future)
+- ⏳ BlindPay bank payouts in supported corridors
 
 ### Phase 3: Advanced Features (Future)
 - ⏳ Multi-currency support (EUR, GBP, etc.)
@@ -120,7 +118,7 @@ See [Use Cases](./use-cases.md) for detailed scenarios.
 - **Documentation:** [docs/](../README.md)
 - **GitHub:** [github.com/offerhub/orchestrator](https://github.com)
 - **Community:** [Discord/Slack]
-- **Email:** support@offerhub.com
+- **Contact:** [Contact form](/contact)
 
 ---
 

@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, Play, Loader2, AlertTriangle } from "lucide-react";
+import { ChevronDown, Play } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { OpenApiOperationSpec, OpenApiMediaType } from "@/lib/openapi";
 import { MethodBadge } from "./MethodBadge";
 import { ParameterInput } from "./ParameterInput";
 import { ResponseViewer, type ResponseTab } from "./ResponseViewer";
-import { Textarea } from "@/components/ui/Textarea";
-import { Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Field";
+import { CodeBlock } from "@/components/docs/CodeBlock";
+import { Callout } from "@/components/docs/Callout";
+import { Button } from "@/components/ui/Button";
 
 interface EndpointPanelProps {
   operation: OpenApiOperationSpec;
@@ -137,7 +139,9 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full flex items-center gap-3 px-5 py-4 text-left transition-[background-color,box-shadow] duration-200",
-          isOpen ? "bg-bg-sunken shadow-neu-sunken-subtle" : "bg-bg-base hover:bg-bg-sunken/50",
+          isOpen
+            ? "bg-bg-sunken shadow-neu-sunken-subtle"
+            : "bg-bg-base hover:bg-[color-mix(in_srgb,var(--color-bg-sunken)_50%,var(--color-bg-base))]",
         )}
       >
         <MethodBadge method={operation.method} />
@@ -159,7 +163,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
         className="overflow-hidden transition-[height,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{ height: isOpen ? contentHeight : 0, opacity: isOpen ? 1 : 0 }}
       >
-        <div ref={contentRef} className="px-5 pb-6 pt-4 space-y-5 border-t border-theme-border/20">
+        <div ref={contentRef} className="px-5 pb-6 pt-4 space-y-5 border-t border-theme-border">
           <p className="text-sm text-content-secondary leading-relaxed">{operation.description}</p>
 
           {operation.security.length > 0 && (
@@ -167,7 +171,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
               {operation.security.map((s) => (
                 <span
                   key={s.scheme}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide text-theme-primary bg-theme-primary/10"
+                   className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide text-theme-primary bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]"
                 >
                   {s.scopes.length > 0 ? `${s.scopes.join(" / ")} scope` : "Authenticated"}
                 </span>
@@ -221,45 +225,37 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
 
               {operation.requestBody && (
                 <div className="space-y-2">
-                  <Textarea
+                  <Field
+                    as="textarea"
                     id={`request-body-${operation.operationId}`}
                     label="Request body"
-                    labelClassName="text-[11px] font-black uppercase tracking-widest text-theme-primary"
+                    hint={operation.requestBody.contentType}
                     value={bodyValue}
                     onChange={(e) => setBodyValue(e.target.value)}
                     rows={Math.min(bodyValue.split("\n").length + 1, 12)}
-                    className="text-sm font-mono resize-y"
+                    className="text-sm font-mono"
                   />
-                  <p className="text-xs text-content-secondary">{operation.requestBody.contentType}</p>
                 </div>
               )}
 
               {isMutating && (
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor={`idem-${operation.operationId}`}
-                    className="block text-[11px] font-black uppercase tracking-widest text-theme-primary"
-                  >
-                    Idempotency-Key (optional)
-                  </label>
-                  <Input
-                    id={`idem-${operation.operationId}`}
-                    hideWrapper
-                    value={idempotencyKey}
-                    onChange={(e) => setIdempotencyKey(e.target.value)}
-                    placeholder="UUID v4"
-                    className="font-mono text-sm"
-                    rightElement={
-                      <button
-                        type="button"
-                        onClick={() => setIdempotencyKey(crypto.randomUUID())}
-                        className="text-xs font-semibold text-theme-primary hover:text-theme-primary-hover"
-                      >
-                        Generate
-                      </button>
-                    }
-                  />
-                </div>
+                <Field
+                  id={`idem-${operation.operationId}`}
+                  label="Idempotency-Key (optional)"
+                  value={idempotencyKey}
+                  onChange={(e) => setIdempotencyKey(e.target.value)}
+                  placeholder="UUID v4"
+                  className="font-mono text-sm"
+                  trailing={
+                    <button
+                      type="button"
+                      onClick={() => setIdempotencyKey(crypto.randomUUID())}
+                      className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-action transition-colors duration-200 hover:text-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+                    >
+                      Generate
+                    </button>
+                  }
+                />
               )}
             </div>
           )}
@@ -277,23 +273,24 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
           {isStreaming ? (
             <div className="rounded-xl px-4 py-3 text-sm bg-bg-sunken shadow-neu-sunken-subtle text-content-secondary">
               This endpoint streams Server-Sent Events and doesn&apos;t fit a one-shot request. Try it with curl:
-              <pre className="mt-2 overflow-x-auto text-xs font-mono text-content-primary">
-                {`curl -N "${buildUrl()}"${bearerToken.trim() ? ` -H "Authorization: Bearer ${bearerToken.trim()}"` : ""}`}
-              </pre>
+              <CodeBlock
+                code={`curl -N "${buildUrl()}"${bearerToken.trim() ? ` -H "Authorization: Bearer ${bearerToken.trim()}"` : ""}`}
+                language="bash"
+                title="Try it with curl"
+                dense
+                className="my-2"
+              />
             </div>
           ) : (
-            <button
+            <Button
               onClick={handleTryIt}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-neumorphic-primary disabled:opacity-60 disabled:cursor-not-allowed transition-[background-color,box-shadow,transform,opacity] duration-200"
+              loading={loading}
+              size="sm"
             >
-              {loading ? (
-                <Loader2 size={16} aria-hidden="true" className="animate-spin" />
-              ) : (
-                <Play size={16} aria-hidden="true" />
-              )}
+              <Play size={16} aria-hidden="true" />
               {loading ? "Sending..." : "Try it"}
-            </button>
+            </Button>
           )}
 
           {/* Live result */}
@@ -301,8 +298,8 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
             <div className="space-y-1.5">
               <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">Live Response</h4>
               {liveResult.ok ? (
-                <div className="rounded-2xl overflow-hidden shadow-neu-sunken bg-bg-sunken">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-theme-border/20">
+                <div className="min-w-0">
+                  <div className="mb-2 flex items-center justify-between gap-3">
                     <span
                       className={cn(
                         "text-xs font-mono font-semibold",
@@ -313,15 +310,18 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
                     </span>
                     <span className="text-xs text-content-muted">{liveResult.durationMs}ms</span>
                   </div>
-                  <pre className="overflow-x-auto p-4 text-sm leading-relaxed m-0">
-                    <code className="text-content-primary font-mono">{liveResult.body || "(empty body)"}</code>
-                  </pre>
+                  <CodeBlock
+                    code={liveResult.body || "(empty body)"}
+                    language="json"
+                    title="Response body"
+                    dense
+                    className="my-0"
+                  />
                 </div>
               ) : (
-                <div className="rounded-xl px-4 py-3 text-sm bg-theme-error/10 text-theme-error flex items-start gap-2">
-                  <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
-                  <span>{liveResult.error}</span>
-                </div>
+                <Callout tone="danger" role="alert" label="Request failed" className="my-0">
+                  {liveResult.error}
+                </Callout>
               )}
             </div>
           )}

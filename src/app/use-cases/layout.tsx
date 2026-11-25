@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
 
-// Metadata lives in the layout because UseCasesClient owns the whole page and
-// runs on the client, which cannot export a metadata object.
+// Default metadata for `/use-cases`. The `/use-cases/[vertical]` route exports
+// its own `generateMetadata`, which overrides these values per vertical.
 export const metadata: Metadata = buildPageMetadata({
     title: "Industry Use Cases",
     description:

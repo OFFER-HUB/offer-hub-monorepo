@@ -24,14 +24,14 @@ export function LinkCard({ title, href, description, eyebrow, className }: LinkC
       rel={isExternal ? "noopener noreferrer" : undefined}
     >
       {eyebrow && (
-        <span className="mb-3 block text-[10px] font-black uppercase tracking-[0.16em] text-theme-primary">
+        <span className="mb-3 block text-xs font-bold uppercase tracking-[0.12em] text-theme-primary">
           {eyebrow}
         </span>
       )}
 
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-lg font-black tracking-tight text-content-primary">{title}</h3>
+          <h3 className="text-lg font-bold tracking-tight text-content-primary">{title}</h3>
           {description && <p className="mt-2 text-sm leading-relaxed text-content-secondary">{description}</p>}
         </div>
 

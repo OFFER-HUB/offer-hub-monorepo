@@ -6,6 +6,7 @@ import type { StatusTone } from "@/components/ui/status-colors";
 import { buildPageMetadata } from "@/lib/seo";
 import type { GitHubRelease } from "@/types/github";
 import { GITHUB_RELEASES_API_URL } from "@/constants/github";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Changelog",
@@ -149,22 +150,18 @@ export default async function ChangelogPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
-      {/* Subtle teal glow centered */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_45%_at_50%_50%,rgba(20,154,155,0.07)_0%,transparent_70%)]" />
       <Navbar />
 
       <main className="flex-grow pt-32 pb-24 px-6 md:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <header className="text-center mb-24 animate-fadeInUp">
-            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-theme-primary mb-4">Evolution</p>
-            <h1 className="text-4xl md:text-6xl font-black text-content-primary tracking-tighter leading-none mb-6">
-              Platform <span className="text-theme-primary">Updates</span>
-            </h1>
-            <p className="text-lg text-content-secondary font-medium max-w-2xl mx-auto leading-relaxed">
-              Tracking the progress of the Offer Hub ecosystem as we build the foundations of trustless commerce.
-            </p>
-          </header>
+          <PageHeader
+            align="center"
+            className="mb-12 animate-fadeIn motion-reduce:animate-none"
+            eyebrow="Evolution"
+            title={<>Platform <span className="text-theme-primary">Updates</span></>}
+            lead="Tracking the progress of the OFFER-HUB ecosystem as we build the foundations of trustless commerce."
+          />
 
           {/* Timeline Wrapper */}
           <div className="relative">
@@ -174,7 +171,7 @@ export default async function ChangelogPage() {
             {changelogEntries.length === 0 ? (
               <div className="pl-12 md:pl-0">
                 <div className="max-w-2xl mx-auto bg-bg-elevated rounded-3xl p-8 md:p-10 shadow-neu-raised text-center">
-                  <h2 className="text-2xl font-black text-content-primary tracking-tight mb-4">
+                  <h2 className="text-2xl font-bold text-content-primary tracking-tight mb-4">
                     No releases published yet
                   </h2>
                   <p className="text-content-secondary text-sm md:text-base font-medium leading-relaxed">
@@ -201,7 +198,7 @@ export default async function ChangelogPage() {
                   <div
                     className={`hidden md:block w-5/12 ${index % 2 === 0 ? "text-left" : "text-right"}`}
                   >
-                    <span className="text-sm font-black text-content-primary uppercase tracking-widest opacity-70">
+                    <span className="text-sm font-bold text-content-primary uppercase tracking-widest opacity-70">
                       {entry.date}
                     </span>
                   </div>
@@ -211,17 +208,17 @@ export default async function ChangelogPage() {
                     <div className="bg-bg-elevated rounded-3xl p-8 md:p-10 shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-500 ease-out group">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black text-content-primary tracking-tight group-hover:text-theme-primary transition-colors">
+                          <span className="text-2xl font-bold text-content-primary tracking-tight group-hover:text-theme-primary transition-colors">
                             {entry.version}
                           </span>
                           <StatusBadge
                             variant={entry.badgeTone}
-                            className="text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest"
+                            className="text-xs uppercase font-bold px-3 py-1 rounded-full tracking-widest"
                           >
                             {entry.badge}
                           </StatusBadge>
                         </div>
-                        <span className="text-xs font-black text-content-secondary block md:hidden uppercase tracking-widest opacity-60">
+                        <span className="text-xs font-bold text-content-secondary block md:hidden uppercase tracking-widest opacity-60">
                           {entry.date}
                         </span>
                       </div>
@@ -254,7 +251,7 @@ export default async function ChangelogPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer hasReleases={changelogEntries.length > 0} />
     </div>
   );
 }

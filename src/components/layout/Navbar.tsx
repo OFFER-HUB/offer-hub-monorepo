@@ -1,18 +1,22 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Send } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { useTheme } from "@/components/providers/ThemeProvider";
+import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
+/** Single primary CTA, shared by the desktop bar and the mobile menu. */
+export const NAV_CTA = { href: "/docs/getting-started", label: "Get started" } as const;
+
 const navLinks = [
+  { href: "/product", label: "Product" },
   { href: "/#features", label: "Features" },
   { href: "/#how-it-works", label: "How it Works" },
   { href: "/use-cases", label: "Use Cases" },
@@ -60,8 +64,6 @@ export function Navbar() {
 
   useBodyScrollLock(isMenuOpen);
 
-  const { resolvedTheme } = useTheme();
-
   return (
     <>
       <header
@@ -77,18 +79,7 @@ export function Navbar() {
 
             {/* ── Logo ── */}
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-              <Image
-                src={
-                  resolvedTheme === "dark"
-                    ? "/OFFER-HUB-logo-to-darkmode.png"
-                    : "/OFFER-HUB-logo.png"
-                }
-                alt="OFFER-HUB"
-                width={180}
-                height={48}
-                className="h-10 w-auto object-contain"
-                priority
-              />
+              <Logo height={40} />
             </Link>
 
             {/* ── Desktop nav links ── */}
@@ -122,19 +113,12 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* ── Desktop CTAs ── */}
+            {/* ── Desktop theme toggle ── */}
             <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle />
-              <a
-                href="#waitlist-form"
-                className="px-6 py-2 rounded-full text-sm font-semibold btn-neumorphic-primary flex items-center gap-2 group"
-              >
-                Join Waitlist
-                <Send
-                  size={14}
-                  className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                />
-              </a>
+              <Button href={NAV_CTA.href} size="sm">
+                {NAV_CTA.label}
+              </Button>
             </div>
 
             {/* ── Mobile hamburger ── */}
@@ -203,14 +187,9 @@ export function Navbar() {
                 <span className="text-sm text-content-secondary">Theme</span>
                 <ThemeToggle />
               </div>
-              <a
-                href="#waitlist-form"
-                onClick={() => setIsMenuOpen(false)}
-                className="w-full px-5 py-4 flex justify-center items-center gap-2 rounded-2xl text-sm font-bold btn-neumorphic-primary"
-              >
-                Join Waitlist
-                <Send size={14} />
-              </a>
+              <Button href={NAV_CTA.href} className="w-full" onClick={() => setIsMenuOpen(false)}>
+                {NAV_CTA.label}
+              </Button>
             </div>
           </div>
         </>

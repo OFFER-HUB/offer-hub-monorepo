@@ -4,25 +4,51 @@ import { StatusBadge } from "../StatusBadge";
 import { statusColors, type StatusTone } from "../status-colors";
 
 describe("StatusBadge", () => {
-  it("renders its children with the default tone", () => {
+  it("renders a flat pill with the default tone", () => {
     render(<StatusBadge>Draft</StatusBadge>);
 
     const badge = screen.getByText("Draft");
-    expect(badge).toHaveClass(statusColors.default.bg, statusColors.default.text, "rounded-full");
-    expect(badge).not.toHaveClass("shadow-neu-raised-sm");
+    expect(badge).toHaveClass("rounded-full", statusColors.default.bg, "text-content-primary");
+    expect(badge.className).not.toMatch(/shadow-/);
+    expect(badge.className).not.toMatch(/rounded-md/);
   });
 
   it.each(Object.keys(statusColors) as StatusTone[])(
-    "applies the %s palette from statusColors",
+    "tints the %s tone from statusColors and shows its dot",
     (tone) => {
       render(<StatusBadge variant={tone}>label</StatusBadge>);
 
-      expect(screen.getByText("label")).toHaveClass(
-        statusColors[tone].bg,
-        statusColors[tone].text,
-      );
+      const badge = screen.getByText("label");
+      expect(badge).toHaveClass(statusColors[tone].bg);
+      expect(badge).toHaveAttribute("data-tone", tone);
+      const dot = badge.querySelector('[aria-hidden="true"]');
+      expect(dot).toHaveClass(statusColors[tone].dotBg);
     },
   );
+
+  it("never uses tone-colored label text (contrast on the tint)", () => {
+    render(<StatusBadge variant="primary">In progress</StatusBadge>);
+
+    expect(screen.getByText("In progress")).not.toHaveClass(statusColors.primary.text);
+  });
+
+  it("replaces the dot with a decorative icon", () => {
+    render(
+      <StatusBadge variant="success" icon={<svg data-testid="icon" />}>
+        Completed
+      </StatusBadge>,
+    );
+
+    const badge = screen.getByText("Completed");
+    expect(screen.getByTestId("icon").parentElement).toHaveAttribute("aria-hidden", "true");
+    expect(badge.querySelector(`.${statusColors.success.dotBg}`)).toBeNull();
+  });
+
+  it("merges caller classes", () => {
+    render(<StatusBadge className="font-mono">GET</StatusBadge>);
+
+    expect(screen.getByText("GET")).toHaveClass("font-mono", "rounded-full");
+  });
 
   it("lets callers override the shape", () => {
     render(<StatusBadge className="rounded-2xl">custom shape</StatusBadge>);

@@ -8,7 +8,7 @@ import { ConnectorDot } from "./ConnectorDot";
 import { PhaseCard } from "./PhaseCard";
 import { TimelineLine } from "./TimelineLine";
 import type { PhaseDomain, PhaseStatus } from "./types";
-
+import { Button } from "@/components/ui/Button";
 
 export function EvolutionTimelineView() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,7 +27,7 @@ export function EvolutionTimelineView() {
   );
 
   return (
-    <section className="relative overflow-hidden py-24">
+    <section className="relative overflow-hidden py-12 sm:py-16">
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 opacity-[0.04]"
         style={{
@@ -36,7 +36,7 @@ export function EvolutionTimelineView() {
         }}
       />
 
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-6xl px-0 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -45,7 +45,7 @@ export function EvolutionTimelineView() {
           className="mb-4 text-center"
         >
           <span
-            className={`inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/30 px-4 py-1.5 text-[12px] font-semibold uppercase tracking-widest text-[var(--color-primary)] ${NEU_SUNKEN}`}
+            className={`inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)] ${NEU_SUNKEN}`}
           >
             <motion.span
               animate={shouldReduceMotion ? {} : { opacity: [1, 0.3, 1] }}
@@ -61,7 +61,7 @@ export function EvolutionTimelineView() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-3 text-center text-4xl font-extrabold tracking-tight text-content-primary sm:text-5xl"
+          className="mb-3 text-center text-2xl md:text-h2 font-bold tracking-tight text-content-primary"
         >
           Evolution Timeline
         </motion.h2>
@@ -71,7 +71,7 @@ export function EvolutionTimelineView() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto mb-10 max-w-xl text-center text-[15px] text-content-secondary"
+          className="mx-auto mb-10 max-w-xl text-center text-sm md:text-base text-content-secondary"
         >
           Every milestone, every decision - the definitive visual guide to where
           we&apos;ve been and where we&apos;re going.
@@ -89,22 +89,22 @@ export function EvolutionTimelineView() {
             {
               label: "Completed",
               val: completed,
-              color: "text-[var(--color-success)]",
+              color: "text-theme-success",
             },
             {
               label: "In Progress",
               val: inProgress,
-              color: "text-[var(--color-primary)]",
+              color: "text-theme-primary",
             },
             {
               label: "Overall",
               val: `${overallPct}%`,
-              color: "text-[var(--color-accent)]",
+              color: "text-theme-accent",
             },
           ].map((stat) => (
             <div key={stat.label} className={`rounded-xl p-3 text-center ${NEU_SUNKEN}`}>
-              <p className={`text-2xl font-extrabold ${stat.color}`}>{stat.val}</p>
-              <p className="mt-0.5 text-[11px] text-content-muted">{stat.label}</p>
+              <p className={`text-2xl font-bold ${stat.color}`}>{stat.val}</p>
+              <p className="mt-0.5 text-xs text-content-muted">{stat.label}</p>
             </div>
           ))}
         </motion.div>
@@ -119,17 +119,16 @@ export function EvolutionTimelineView() {
           {DOMAINS.map((domainOption) => {
             const active = activeDomain === domainOption.key;
             return (
-              <button
+              <Button
                 key={domainOption.key}
+                type="button"
                 onClick={() => setActiveDomain(domainOption.key)}
-                className={`whitespace-nowrap rounded-xl px-4 py-2 text-[13px] font-semibold transition-[background-color,color,box-shadow] duration-200 ${
-                  active
-                    ? `${NEU_ELEVATED} bg-[var(--color-primary)] text-white`
-                    : "text-content-secondary hover:text-content-primary"
-                }`}
+                size="sm"
+                variant={active ? "primary" : "ghost"}
+                className="whitespace-nowrap"
               >
                 {domainOption.label}
-              </button>
+              </Button>
             );
           })}
         </motion.div>
@@ -154,7 +153,7 @@ export function EvolutionTimelineView() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-16 flex flex-col items-start gap-3 text-[12px] text-content-muted sm:items-center md:flex-row md:flex-wrap md:justify-center md:gap-6"
+          className="mt-16 flex flex-col items-start gap-3 text-xs text-content-muted sm:items-center md:flex-row md:flex-wrap md:justify-center md:gap-6"
         >
           {[
             { status: "completed" as PhaseStatus, desc: "Solid elevated card" },

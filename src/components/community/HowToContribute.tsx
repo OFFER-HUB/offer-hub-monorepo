@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { Code, BookOpen, PenTool, Bug } from "lucide-react";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { Button } from "@/components/ui/Button";
+import { Eyebrow } from "@/components/shared/Eyebrow";
 
 const steps = [
     { number: "01", title: "Fork", description: "Fork the repository to your own GitHub account." },
@@ -25,11 +26,11 @@ export function HowToContribute() {
             <div className="max-w-7xl mx-auto w-full min-w-0 px-6 lg:px-8">
                 {/* Heading */}
                 <div className="text-center mb-16">
-                    <p className="text-xs font-medium uppercase tracking-[0.4em] mb-4 text-theme-primary max-w-full break-words">
+                    <Eyebrow className="mb-4 max-w-full break-words">
                         How to Contribute
-                    </p>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-content-primary max-w-full">
-                        Join the OFFER HUB Community
+                    </Eyebrow>
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-content-primary max-w-full">
+                        Join the OFFER-HUB Community
                     </h2>
                     <p className="text-lg max-w-2xl mx-auto text-content-secondary">
                         We welcome all types of contributions! Here is a step-by-step guide to help you build with us.
@@ -42,7 +43,7 @@ export function HowToContribute() {
                         {steps.map((step) => (
                             <div key={step.number} className="flex flex-col items-center text-center gap-6 min-w-0 w-full max-w-full overflow-hidden">
                                 <div className="w-24 h-24 rounded-full bg-bg-elevated shadow-neu-raised flex items-center justify-center flex-shrink-0 relative z-10">
-                                    <span className="text-2xl font-black text-theme-primary">
+                                    <span className="text-2xl font-bold text-theme-primary">
                                         {step.number}
                                     </span>
                                 </div>
@@ -85,22 +86,19 @@ export function HowToContribute() {
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <Link
+                    <Button
                         href={`${GITHUB_REPO_URL}/issues`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn-neumorphic-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2"
+                        size="lg"
                     >
                         View open issues
                         <Bug className="w-4 h-4" />
-                    </Link>
-                    <Link
-                        href="/docs"
-                        className="btn-neumorphic-secondary px-8 py-4 rounded-xl font-medium flex items-center gap-2"
-                    >
+                    </Button>
+                    <Button href="/docs" variant="secondary" size="lg">
                         Read contribution guide
                         <BookOpen className="w-4 h-4" />
-                    </Link>
+                    </Button>
                 </div>
             </div>
         </section>

@@ -12,7 +12,7 @@ export function Steps({ items, children, className }: StepsProps) {
     children ??
     items?.map((item, index) => (
       <li key={`${item}-${index}`} className="flex items-start gap-3 rounded-2xl bg-bg-base p-4 shadow-neu-sunken-subtle">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-theme-primary/10 text-xs font-black text-theme-primary shadow-neu-raised-sm">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-theme-primary/10 text-xs font-bold text-theme-primary shadow-neu-raised-sm">
           {index + 1}
         </span>
         <span className="flex-1 leading-relaxed text-content-primary">{item}</span>

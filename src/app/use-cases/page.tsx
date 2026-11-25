@@ -1,12 +1,10 @@
-// Server Component — no "use client" directive needed here.
-// All interactive logic (hooks, scroll, IntersectionObserver, window events)
-// lives in UseCasesClient which declares its own "use client" boundary.
-import { UseCasesClient } from "@/components/use-cases/UseCasesClient";
+import { UseCaseLayout } from "@/components/use-cases/UseCaseLayout";
+import { DEFAULT_USE_CASE_ID } from "@/components/use-cases/data";
 
+/**
+ * `/use-cases` opens the first vertical. Legacy `?vertical=` links are
+ * upgraded to their shareable path URL by `UseCaseLayout`.
+ */
 export default function UseCasesPage() {
-  return (
-    <div className="w-full max-w-full overflow-x-hidden min-w-0">
-      <UseCasesClient />
-    </div>
-  );
+  return <UseCaseLayout vertical={DEFAULT_USE_CASE_ID} />;
 }
