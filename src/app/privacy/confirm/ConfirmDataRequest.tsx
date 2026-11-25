@@ -68,7 +68,7 @@ export function ConfirmDataRequest() {
           {outcome && (
             <p
               role="alert"
-              className={`text-sm font-medium ${outcome.ok ? "text-theme-primary" : "text-theme-error"}`}
+              className={`text-sm font-medium ${outcome.ok ? "text-theme-success" : "text-theme-error"}`}
             >
               {outcome.message}
             </p>

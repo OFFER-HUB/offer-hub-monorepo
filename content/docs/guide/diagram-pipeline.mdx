@@ -29,7 +29,7 @@ This calls `scripts/diagrams/generate_all.py`, which runs every diagram module a
 2. Build the graph and call `render_diagram(g, "your-diagram-name")` at the end of a `build()` function.
 3. Register the module in `scripts/diagrams/generate_all.py`'s `DIAGRAM_MODULES` list.
 4. Run `npm run diagrams` and commit the new file under `public/diagrams/`.
-5. Embed it in an MDX page with `<StaticDiagram name="your-diagram-name" caption="..." />`.
+5. Embed it in an MDX page with `` `<StaticDiagram name="your-diagram-name" caption="..." />` ``.
 
 <Callout type="warning">
   Never hardcode a color in a diagram module. Every fill/stroke must come from a `var(--token)` reference already defined in `src/app/globals.css` (see the `STYLE_BLOCK` in `scripts/diagrams/theme.py`) so the diagram stays correct in both light and dark mode with zero extra wiring.

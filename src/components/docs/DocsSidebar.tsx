@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Rocket } from "lucide-react";
+import { Home } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { SidebarSection } from "@/lib/mdx";
 import { getIcon, iconNameForDocsSlug } from "@/lib/icon-registry";
@@ -57,12 +57,6 @@ export function DocsSidebar({ nav, className }: DocsSidebarProps) {
               icon={<Home size={16} className={pathname === "/docs" ? "text-theme-primary" : "text-content-secondary"} />}
               label="Home"
               isActive={pathname === "/docs"}
-            />
-            <SidebarItem
-              href="/docs/getting-started"
-              icon={<Rocket size={16} className={pathname === "/docs/getting-started" ? "text-theme-primary" : "text-content-secondary"} />}
-              label="Welcome"
-              isActive={pathname === "/docs/getting-started"}
             />
           </ul>
         </motion.div>
@@ -133,7 +127,7 @@ function SidebarItem({ href, icon, label, isActive }: { href: string; icon: Reac
         )}
 
         {/* Hover Highlight */}
-        <div className="absolute inset-0 bg-theme-primary/0 group-hover:bg-theme-primary/5 transition-colors z-0" />
+        <div className="absolute inset-0 bg-transparent group-hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] transition-colors duration-200 z-0" />
 
         <span className={cn(
           "relative z-10 flex-shrink-0 transition-[color,transform] duration-300",

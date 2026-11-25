@@ -65,9 +65,9 @@ All errors follow a consistent structure:
 | `422` | Unprocessable | Business rule violation (insufficient funds, etc.) |
 | `429` | Too many requests | Rate limit exceeded |
 | `500` | Internal error | Bug — report with request ID |
-| `502` | Provider error | Trustless Work or AirTM returned an error |
+| `502` | Provider error | Trustless Work or BlindPay returned an error |
 | `503` | Maintenance | Orchestrator offline |
-| `504` | Provider timeout | Trustless Work or AirTM timed out |
+| `504` | Provider timeout | Trustless Work or BlindPay timed out |
 
 ---
 
@@ -139,8 +139,6 @@ All errors follow a consistent structure:
 | Code | HTTP | Description | Fix |
 |------|------|-------------|-----|
 | `USER_NOT_FOUND` | 404 | User ID doesn't exist | Verify `userId` is correct |
-| `AIRTM_USER_NOT_LINKED` | 422 | User needs AirTM account linked | Call `POST /users/:id/airtm-link` first |
-| `AIRTM_USER_INVALID` | 422 | Invalid AirTM user ID | Verify AirTM account exists |
 
 ---
 
@@ -249,10 +247,10 @@ async function createOrderWithRetry(payload, key) {
 
 | Code | HTTP | Description | Fix |
 |------|------|-------------|-----|
-| `PROVIDER_ERROR` | 502 | Trustless Work or AirTM returned an error | Retry with exponential backoff |
+| `PROVIDER_ERROR` | 502 | Trustless Work or BlindPay returned an error | Retry with exponential backoff |
 | `PROVIDER_TIMEOUT` | 504 | Provider didn't respond in time | Retry — Stellar txn may have succeeded |
 | `PROVIDER_RATE_LIMITED` | 502 | Provider rate limited the Orchestrator | Retry after delay |
-| `WEBHOOK_SIGNATURE_INVALID` | 400 | Webhook HMAC validation failed | Check `TRUSTLESS_WEBHOOK_SECRET` or `AIRTM_WEBHOOK_SECRET` |
+| `WEBHOOK_SIGNATURE_INVALID` | 400 | Webhook HMAC validation failed | Check `TRUSTLESS_WEBHOOK_SECRET` or the BlindPay webhook secret |
 | `WEBHOOK_DUPLICATE_IGNORED` | 200 | Webhook already processed (OK) | No action needed |
 
 **Example:**
@@ -280,7 +278,7 @@ async function createOrderWithRetry(payload, key) {
 |------|------|-------------|-----|
 | `WITHDRAWAL_NOT_FOUND` | 404 | Withdrawal doesn't exist | Verify `withdrawalId` |
 | `WITHDRAWAL_NOT_COMMITTABLE` | 409 | Already committed or in wrong state | Check current withdrawal status |
-| `WITHDRAWAL_DESTINATION_INVALID` | 422 | Invalid Stellar address or AirTM destination | Verify destination format |
+| `WITHDRAWAL_DESTINATION_INVALID` | 422 | Invalid Stellar address | Verify destination format |
 
 ---
 
@@ -400,16 +398,9 @@ The reconciliation worker will catch it. If urgent, trigger a manual sweep or co
 
 **Symptom:** Withdrawal stuck in `WITHDRAWAL_PENDING` or `WITHDRAWAL_COMMITTED`.
 
-**For crypto withdrawals:**
 1. Check if transaction was submitted: `GET /api/v1/withdrawals/:id` — look for `transactionHash`
 2. Verify on Stellar Explorer — if confirmed, funds were sent
 3. If no hash: Stellar submission likely failed — retry
-
-**For AirTM withdrawals:**
-1. AirTM payouts can take 1–3 business days for bank transfers
-2. Check for `withdrawal.pending_user_action` event — user may need to complete KYC
-3. Verify `PUBLIC_BASE_URL` is reachable by AirTM for webhooks
-4. Check `AIRTM_WEBHOOK_SECRET` is correctly configured
 
 ---
 

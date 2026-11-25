@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ChevronDown, Command } from "lucide-react";
 import { DetailCard, LayerKey } from "./OrchestratorShowcase.types";
+import { Eyebrow } from "@/components/shared/Eyebrow";
 
 interface OrchestratorDetailPanelProps {
   cards: DetailCard[];
@@ -27,9 +28,9 @@ function ArchitectureCard({
             <Icon className="h-5 w-5 text-theme-primary" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary">
+            <Eyebrow>
               {card.eyebrow}
-            </p>
+            </Eyebrow>
             <h3 className="mt-2 text-xl md:text-2xl font-bold text-content-primary">{card.title}</h3>
           </div>
         </div>
@@ -49,7 +50,7 @@ function ArchitectureCard({
       <p className="mt-6 text-sm leading-7 text-content-secondary">{card.summary}</p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-theme-primary">
+        <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary">
           Core call: {card.method}
         </span>
         <span className="inline-flex items-center rounded-full bg-bg-base px-3 py-1 text-xs text-content-muted shadow-neu-sunken-subtle">

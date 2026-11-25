@@ -150,7 +150,7 @@ function MetricsCard({
       <div className="mt-6 grid gap-3">
         {metrics.map((metric) => (
           <InsetCard key={metric.id} as="article">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-content-primary">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
               {metric.label}
             </p>
             <p className="mt-2 break-words text-3xl font-bold leading-none text-content-primary">
@@ -231,7 +231,7 @@ function CodeCard({
             <code className="block break-words font-mono text-xs font-semibold text-content-primary">
               {card.method}
             </code>
-            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-content-primary">
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-content-primary">
               {card.label}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-content-primary">

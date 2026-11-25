@@ -1,5 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Award } from "lucide-react";
+import { BENTO_CARD_CLASS, BENTO_EYEBROW_CLASS, BENTO_H2_CLASS } from "@/components/HeroSection";
+import { cn } from "@/lib/cn";
 
 const partners = [
   {
@@ -25,25 +28,46 @@ const partners = [
   },
 ];
 
+/**
+ * Bento row 4 (right): "Real signals". Only verifiable items: the SCF Build
+ * award (documented on /architecture) and the projects supporting OFFER-HUB.
+ * Live GitHub numbers stay in StatsSection.
+ */
 export function SupportedBySection() {
   return (
-    <section className="relative py-8 bg-transparent">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col items-center gap-4 animate-fadeIn">
-          {/* Small Label */}
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-content-muted">
-            Supported by
-          </p>
+    <section
+      aria-labelledby="real-signals-title"
+      className={cn(BENTO_CARD_CLASS, "flex flex-col gap-6 p-6 sm:p-8 lg:col-span-3")}
+    >
+      <div>
+        <p className={BENTO_EYEBROW_CLASS}>Real signals</p>
+        <h2 id="real-signals-title" className={cn(BENTO_H2_CLASS, "mt-2")}>
+          Backed by the Stellar ecosystem
+        </h2>
+      </div>
 
-          {/* Partner Logos - Inline */}
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 max-w-full">
-            {partners.map((partner) => (
+      <Link
+        href="/architecture"
+        className="flex min-h-11 items-center gap-3 rounded-2xl bg-bg-sunken p-4 shadow-neu-sunken-subtle transition-colors duration-200 hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-elevated"
+      >
+        <Award size={20} aria-hidden="true" className="shrink-0 text-action" />
+        <span className="text-sm font-semibold text-content-primary">
+          SCF Build Award #44, Integration Track
+        </span>
+      </Link>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-content-secondary">
+          Supported by
+        </p>
+        <ul role="list" className="flex flex-wrap items-center gap-6">
+          {partners.map((partner) => (
+            <li key={partner.name}>
               <Link
-                key={partner.name}
                 href={partner.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center min-w-11 min-h-11 opacity-70 hover:opacity-100 transition-opacity duration-200"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl opacity-80 transition-opacity duration-200 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
               >
                 <Image
                   src={partner.logo}
@@ -51,12 +75,11 @@ export function SupportedBySection() {
                   width={partner.width}
                   height={partner.height}
                   className="object-contain dark:invert dark:brightness-0"
-                  priority
                 />
               </Link>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

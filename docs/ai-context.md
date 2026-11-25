@@ -8,7 +8,7 @@ OFFER-HUB is a **self-hosted payments orchestrator** for marketplaces that provi
 
 **What it provides:**
 - User Balance (Web2)
-- Top-ups (deposits via crypto or Airtm)
+- Top-ups (USDC deposits on Stellar)
 - Checkout with escrow (via Trustless Work on Stellar)
 - Withdrawals (payouts)
 
@@ -43,7 +43,7 @@ Before contributing, you **MUST** read these documents:
 ### 2. Architecture Philosophy
 - **Self-hosted only:** No multi-tenant SaaS
 - **Non-custodial:** Funds locked in Trustless Work smart contracts on Stellar
-- **Provider abstraction:** Strategy pattern for crypto vs Airtm
+- **Provider abstraction:** Strategy pattern for the crypto-native payment rail
 - **Idempotency-first:** All mutations require `Idempotency-Key`
 - **State machines:** Strict transitions for orders, escrows, disputes
 

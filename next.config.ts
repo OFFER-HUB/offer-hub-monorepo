@@ -52,6 +52,11 @@ const nextConfig: NextConfig = {
         destination: "/docs/sdk/payouts",
         permanent: true,
       },
+      {
+        source: "/docs/guide/airtm",
+        destination: "/docs/guide/withdrawals",
+        permanent: true,
+      },
     ];
   },
   async headers() {

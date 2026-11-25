@@ -37,7 +37,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
 
 const MENU_ITEM_CLASS =
   "w-full flex items-center gap-2 px-4 py-2 text-sm text-content-primary " +
-  "hover:text-theme-primary hover:bg-theme-primary/5 text-left " +
+  "hover:text-theme-primary hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] text-left " +
   "focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-[-2px]";
 
 interface PageActionsMenuProps {
@@ -318,7 +318,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
   ];
 
   return (
-    <div className="relative" ref={containerRef} data-pdf-exclude="true">
+    <div className="relative shrink-0" ref={containerRef} data-pdf-exclude="true">
       <button
         ref={triggerRef}
         type="button"
@@ -326,7 +326,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls="page-actions-menu"
-        className="neu-circle h-10 flex items-center gap-2 px-4 text-sm font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
+        className="neu-circle h-11 flex shrink-0 items-center gap-2 whitespace-nowrap px-4 text-sm font-medium text-content-secondary hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
       >
         {copiedItem === "page" ? <Check size={16} /> : <Copy size={16} />}
         <span>{copiedItem === "page" ? "Copied!" : "Copy page"}</span>
@@ -339,7 +339,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
           role="menu"
           aria-label="Page actions"
           onKeyDown={handleMenuKeyDown}
-          className="absolute right-0 top-full mt-2 w-64 rounded-xl z-[100] bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 py-2 animate-dropdownIn"
+          className="absolute right-0 top-full mt-2 w-64 rounded-xl z-[100] bg-bg-elevated border border-theme-border shadow-neu-raised py-2 animate-dropdownIn"
         >
           {items.map((item, index) => {
             const Icon = item.icon;
@@ -347,7 +347,7 @@ export function PageActionsMenu({ slug, title, description, markdownContent }: P
 
             return (
               <Fragment key={item.id}>
-                {showsDivider && <div role="separator" className="my-1 h-px bg-theme-border/40" />}
+                {showsDivider && <div role="separator" className="my-1 h-px bg-theme-border" />}
                 {item.kind === "button" ? (
                   <button
                     ref={(el) => {

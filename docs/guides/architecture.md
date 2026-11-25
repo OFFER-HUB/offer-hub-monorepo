@@ -18,7 +18,6 @@
 - [External Integrations](#external-integrations)
   - [Trustless Work](#trustless-work)
   - [Stellar / Horizon](#stellar--horizon)
-  - [AirTM (Optional)](#airtm-optional)
 - [System Actors](#system-actors)
 - [Payment Provider Strategy Pattern](#payment-provider-strategy-pattern)
 - [Non-Negotiable Technical Principles](#non-negotiable-technical-principles)
@@ -47,7 +46,6 @@ Your marketplace backend never directly touches Stellar or Trustless Work — it
 | A blockchain node | A blockchain client (uses Horizon API) |
 | A crypto exchange | A payments middleware |
 | A user-facing app | A backend service called by your backend |
-| An AirTM replacement | An abstraction layer that can use AirTM or crypto |
 
 ---
 
@@ -67,10 +65,6 @@ Your marketplace backend never directly touches Stellar or Trustless Work — it
 │  - REST API + BullMQ workers                               │
 │  - State machine, idempotency, audit log                   │
 │  - Abstracts payment providers                             │
-├────────────────────────────────────────────────────────────┤
-│  Layer 2: AirTM (optional, legacy)                         │
-│  - Fiat deposits and withdrawals                           │
-│  - Requires Enterprise AirTM account                       │
 ├────────────────────────────────────────────────────────────┤
 │  Layer 1: Trustless Work + Stellar                         │
 │  - Non-custodial escrow (Soroban smart contracts)          │
@@ -126,7 +120,6 @@ The main HTTP server. Handles:
 ### Worker (BullMQ)
 
 Background job processor. Handles:
-- AirTM webhook processing
 - Trustless Work webhook processing
 - Periodic reconciliation (verify on-chain vs DB state)
 - Retry logic for failed operations
@@ -204,17 +197,6 @@ The Orchestrator interacts with Stellar via Horizon for:
 - Streaming real-time payments (deposit detection)
 - Querying balances (reconciliation)
 
-### AirTM (Optional)
-
-AirTM is the fiat payment provider (used when `PAYMENT_PROVIDER=airtm`):
-
-- Handles fiat-to-crypto conversion (top-ups)
-- Manages user payouts (withdrawals to bank accounts)
-- Requires Enterprise API credentials
-- Uses webhooks for async payment confirmation
-
-When using crypto mode, AirTM is not required.
-
 ---
 
 ## System Actors
@@ -262,11 +244,8 @@ interface PaymentProvider {
 
 Two implementations:
 - `CryptoNativeProvider` — Stellar invisible wallets (default)
-- `AirTMProvider` — AirTM fiat payments (legacy)
 
-Switch via `PAYMENT_PROVIDER=crypto` or `PAYMENT_PROVIDER=airtm`.
-
-Both providers use the same Trustless Work integration for escrow — the provider only affects deposit/withdrawal mechanics.
+Both the payment provider and the escrow integration use the same Trustless Work integration for escrow — the provider only affects deposit/withdrawal mechanics.
 
 ---
 
@@ -278,7 +257,7 @@ There is no centralized SaaS. Each marketplace deploys its own instance. This en
 
 ### 2. Per-User Funds (Not Pooled)
 
-In crypto mode, each user has their own Stellar wallet. Funds are never pooled in a shared wallet. In AirTM mode, funds are in the user's AirTM account, not the marketplace's.
+In crypto mode, each user has their own Stellar wallet. Funds are never pooled in a shared wallet.
 
 ### 3. Non-Custodial Escrow
 
@@ -292,8 +271,8 @@ All state-mutating `POST` endpoints accept an `Idempotency-Key` header. Duplicat
 
 Every resource is traceable:
 - `orderId` ↔ `escrowId` ↔ `trustlessContractId`
-- `topupId` ↔ `airtmPayinId`
-- `withdrawalId` ↔ `airtmPayoutId` or `stellarTransactionHash`
+- `topupId` ↔ provider reference
+- `withdrawalId` ↔ provider reference or `stellarTransactionHash`
 - Every API response includes resource IDs for debugging
 
 ### 6. Server-Side Secrets Only
