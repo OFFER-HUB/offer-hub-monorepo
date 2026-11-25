@@ -6,8 +6,12 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { buildPageMetadata } from "@/lib/seo";
-import { GITHUB_REPO_URL } from "@/constants/github";
 import { Button } from "@/components/ui/Button";
+import {
+  COMPARISON_FEATURES,
+  PRICING_FAQS,
+  PRICING_TIERS,
+} from "./pricing.data";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
@@ -79,16 +83,30 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <Button
-                    href={tier.ctaHref}
-                    target={tier.external ? "_blank" : undefined}
-                    rel={tier.external ? "noopener noreferrer" : undefined}
-                    variant={tier.ctaStyle === "primary" ? "primary" : "secondary"}
-                    className="mt-8 w-full"
-                  >
-                    <span>{tier.ctaLabel}</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </Button>
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                    <Button
+                      href={tier.primaryCta.href}
+                      target={tier.primaryCta.external ? "_blank" : undefined}
+                      rel={tier.primaryCta.external ? "noopener noreferrer" : undefined}
+                      variant={tier.primaryCta.variant}
+                      className="flex-1"
+                    >
+                      <span>{tier.primaryCta.label}</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Button>
+                    {tier.secondaryCta && (
+                      <Button
+                        href={tier.secondaryCta.href}
+                        target={tier.secondaryCta.external ? "_blank" : undefined}
+                        rel={tier.secondaryCta.external ? "noopener noreferrer" : undefined}
+                        variant={tier.secondaryCta.variant}
+                        className="flex-1"
+                      >
+                        <span>{tier.secondaryCta.label}</span>
+                        <ArrowUpRight className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </article>
               );
             })}
@@ -128,7 +146,10 @@ export default function PricingPage() {
                   </thead>
                   <tbody className="divide-y divide-[var(--color-border)] bg-bg-base">
                     {COMPARISON_FEATURES.map((feature) => (
-                      <tr key={feature.name} className="hover:bg-bg-elevated/40 transition-colors duration-150">
+                      <tr
+                        key={feature.name}
+                        className="hover:bg-[color-mix(in_srgb,var(--color-bg-elevated)_40%,transparent)] transition-colors duration-150"
+                      >
                         <th scope="row" className="py-4 px-6 font-semibold text-content-primary whitespace-nowrap">
                           {feature.name}
                         </th>

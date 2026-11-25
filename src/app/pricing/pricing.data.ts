@@ -32,7 +32,6 @@ export const PRICING_TIERS: PricingTier[] = [
       "Public issues and open roadmap visibility",
       "Community support via GitHub and Discord",
       "Non-custodial Soroban escrow smart contracts",
-      "No licensing or platform subscription fees",
     ],
     primaryCta: {
       label: "Start self-hosting",
@@ -112,7 +111,7 @@ export const PRICING_FAQS: FaqItem[] = [
   {
     question: "What network fees apply when transacting?",
     answer:
-      "Transactions settle directly on the Stellar ledger and incur standard base network fees (fractions of a cent per operation, paid in stroops). OFFER-HUB charges zero software licensing or recurring platform fees for self-hosting the core platform.",
+      "Transactions settle directly on the Stellar ledger and incur standard Stellar base network fees (fractions of a cent per operation, paid in stroops).",
   },
   {
     question: "Can I self-host OFFER-HUB for production?",
