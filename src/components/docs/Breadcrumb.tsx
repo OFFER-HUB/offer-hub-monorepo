@@ -55,7 +55,7 @@ export function Breadcrumb() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="flex items-center gap-2 text-[14px] whitespace-nowrap overflow-x-auto no-scrollbar py-1">
+      <div className="flex items-center gap-2 text-sm whitespace-nowrap overflow-x-auto no-scrollbar py-1">
         <Link
           href="/docs"
           className="text-theme-primary hover:text-theme-primary/80 transition-colors font-medium inline-flex items-center gap-1.5 min-h-11"

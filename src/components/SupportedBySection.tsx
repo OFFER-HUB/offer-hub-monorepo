@@ -31,7 +31,7 @@ export function SupportedBySection() {
       <div className="container mx-auto px-6">
         <div className="flex flex-col items-center gap-4 animate-fadeIn">
           {/* Small Label */}
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-content-muted">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-content-muted">
             Supported by
           </p>
 

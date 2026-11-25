@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Bell,
 } from "lucide-react";
+import { Eyebrow } from "@/components/shared/Eyebrow";
 
 const features = [
   {
@@ -74,10 +75,10 @@ export function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center mb-16 animate-fadeInUp">
-          <p className="text-xs font-medium uppercase tracking-[0.4em] mb-4 text-theme-primary">
+          <Eyebrow className="mb-4">
             Why OFFER-HUB
-          </p>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight text-content-primary">
+          </Eyebrow>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-content-primary">
             Built for modern marketplaces
           </h2>
           <p className="mt-4 text-lg font-light max-w-xl mx-auto text-content-secondary">

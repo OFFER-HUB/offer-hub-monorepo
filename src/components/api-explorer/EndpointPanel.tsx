@@ -184,9 +184,9 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
             <div className="space-y-4">
               {pathParams.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-theme-primary">
                     Path Parameters
-                  </h4>
+                  </h3>
                   {pathParams.map((param) => (
                     <ParameterInput
                       key={param.name}
@@ -205,9 +205,9 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
 
               {queryParams.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-theme-primary">
                     Query Parameters
-                  </h4>
+                  </h3>
                   {queryParams.map((param) => (
                     <ParameterInput
                       key={param.name}
@@ -229,7 +229,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
                   <Textarea
                     id={`request-body-${operation.operationId}`}
                     label="Request body"
-                    labelClassName="text-[11px] font-black uppercase tracking-widest text-theme-primary"
+                    labelClassName="text-xs font-bold uppercase tracking-widest text-theme-primary"
                     value={bodyValue}
                     onChange={(e) => setBodyValue(e.target.value)}
                     rows={Math.min(bodyValue.split("\n").length + 1, 12)}
@@ -243,7 +243,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
                 <div className="space-y-1.5">
                   <label
                     htmlFor={`idem-${operation.operationId}`}
-                    className="block text-[11px] font-black uppercase tracking-widest text-theme-primary"
+                    className="block text-xs font-bold uppercase tracking-widest text-theme-primary"
                   >
                     Idempotency-Key (optional)
                   </label>
@@ -271,7 +271,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
 
           {/* Request URL */}
           <div className="space-y-1.5">
-            <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">Request URL</h4>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-theme-primary">Request URL</h3>
             <div className="rounded-xl px-4 py-2 text-sm font-mono break-all text-theme-primary bg-bg-sunken shadow-neu-sunken-subtle">
               <span className="text-content-secondary mr-1">{operation.method}</span>
               {buildUrl()}
@@ -305,7 +305,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
           {/* Live result */}
           {liveResult && (
             <div className="space-y-1.5">
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">Live Response</h4>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-theme-primary">Live Response</h3>
               {liveResult.ok ? (
                 <div className="min-w-0">
                   <div className="mb-2 flex items-center justify-between gap-3">
@@ -337,9 +337,9 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
 
           {/* Example response from the spec */}
           <div className="space-y-1.5">
-            <h4 className="text-[11px] font-black uppercase tracking-widest text-theme-primary">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-theme-primary">
               Example Response
-            </h4>
+            </h3>
             <ResponseViewer responses={exampleResponses} />
           </div>
         </div>

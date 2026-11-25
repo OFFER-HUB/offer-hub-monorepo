@@ -59,13 +59,13 @@ export function FormField({
         <label
           id={labelId}
           htmlFor={id}
-          className="text-[10px] font-black uppercase tracking-widest text-content-secondary"
+          className="text-xs font-bold uppercase tracking-widest text-content-secondary"
         >
           {label}
         </label>
         {showCharCount && maxLength && (
           <span
-            className={`text-[10px] font-bold tracking-wider transition-colors duration-200 ${charCountClass}`}
+            className={`text-xs font-bold tracking-wider transition-colors duration-200 ${charCountClass}`}
           >
             {value.length}/{maxLength}
           </span>

@@ -60,7 +60,7 @@ export function ProductHero() {
             );
           })}
         </div>
-        <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-content-secondary text-center">
+        <p className="mt-6 text-xs font-medium uppercase tracking-[0.12em] text-content-secondary text-center">
           Non-custodial · On-chain · LATAM-native
         </p>
       </div>

@@ -70,7 +70,7 @@ function StepCard({
         </span>
 
         <span className="flex min-w-0 flex-col">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-content-primary">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
             Step {step.stepNumber}
           </span>
           <span className="break-words text-sm font-bold text-content-primary">
@@ -99,13 +99,13 @@ function StepCard({
           <span className="block text-xs leading-relaxed text-content-primary">
             {step.description}
           </span>
-          <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-content-primary">
+          <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
             API endpoint
           </span>
           <code className="mt-1 block break-words font-mono text-xs text-content-primary">
             {step.apiMethod}
           </code>
-          <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.14em] text-content-primary">
+          <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
             SDK
           </span>
           <code className="mt-1 block break-words font-mono text-xs text-content-primary">

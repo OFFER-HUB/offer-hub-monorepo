@@ -23,18 +23,18 @@ export function Endpoint({
       <div className="flex flex-wrap items-center gap-3">
         <MethodBadge
           method={method}
-          className="justify-center px-2.5 py-1 text-[10px] font-black uppercase leading-none tracking-[0.16em] shadow-neu-raised-sm"
+          className="justify-center px-2.5 py-1 text-xs font-bold uppercase leading-none tracking-[0.12em] shadow-neu-raised-sm"
         />
         <code className="rounded-lg bg-bg-sunken px-2.5 py-1.5 font-mono text-sm font-bold text-content-primary shadow-neu-sunken-subtle">
           {path}
         </code>
         {scope && (
-          <span className="rounded-full bg-bg-sunken px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-content-secondary shadow-neu-sunken-subtle">
+          <span className="rounded-full bg-bg-sunken px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-content-secondary shadow-neu-sunken-subtle">
             Scope: {scope}
           </span>
         )}
         {idempotent && (
-          <span className="rounded-full bg-theme-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-theme-primary shadow-neu-sunken-subtle">
+          <span className="rounded-full bg-theme-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-theme-primary shadow-neu-sunken-subtle">
             Idempotent
           </span>
         )}

@@ -41,7 +41,7 @@ export function DiagramZoomModal({ title, isOpen, onClose, children }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6 shrink-0">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-content-muted">
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-content-muted">
                 {title}
               </span>
               <button

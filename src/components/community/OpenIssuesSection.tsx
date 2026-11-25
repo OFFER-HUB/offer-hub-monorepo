@@ -19,11 +19,11 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
     <article className="group relative flex flex-col justify-between rounded-3xl bg-bg-base p-6 shadow-neu-raised transition-shadow duration-300 hover:shadow-neu-raised-hover">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg-base text-[10px] font-bold text-content-secondary tracking-wider shadow-neu-sunken-subtle uppercase">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg-base text-xs font-bold text-content-secondary tracking-wider shadow-neu-sunken-subtle uppercase">
             #{issue.number}
           </div>
           {isGoodFirstIssue && (
-            <span className="text-[10px] font-black text-theme-primary uppercase tracking-widest bg-theme-primary/10 px-2 py-1 rounded-lg shadow-sm">
+            <span className="text-xs font-bold text-theme-primary uppercase tracking-widest bg-theme-primary/10 px-2 py-1 rounded-lg shadow-sm">
               Starter
             </span>
           )}
@@ -33,7 +33,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-base font-black text-content-primary hover:text-theme-primary transition-colors leading-tight line-clamp-2 mb-4 tracking-tight min-h-6 max-w-full overflow-hidden"
+          className="block text-base font-bold text-content-primary hover:text-theme-primary transition-colors leading-tight line-clamp-2 mb-4 tracking-tight min-h-6 max-w-full overflow-hidden"
         >
           {issue.title}
         </a>
@@ -43,7 +43,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
             {issue.labels.slice(0, 2).map((label) => (
               <span
                 key={label}
-                className="flex items-center gap-1.5 text-[10px] font-bold text-content-secondary px-3 py-1.5 bg-bg-base rounded-xl shadow-neu-raised-sm"
+                className="flex items-center gap-1.5 text-xs font-bold text-content-secondary px-3 py-1.5 bg-bg-base rounded-xl shadow-neu-raised-sm"
               >
                 <Tag size={10} className="text-theme-primary" />
                 {label}
@@ -55,10 +55,10 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
 
       <div className="flex items-center justify-between pt-6 mt-2">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase tracking-widest text-content-muted mb-1">Priority</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-content-muted mb-1">Priority</span>
           <div className="px-3 py-1 rounded-lg bg-bg-base shadow-neu-sunken-subtle">
             <span className={cn(
-              "text-[10px] font-black uppercase tracking-widest",
+              "text-xs font-bold uppercase tracking-widest",
               issue.priority === 'High' ? 'text-red-500' :
                 issue.priority === 'Low' ? 'text-emerald-500' :
                   'text-theme-primary'
@@ -118,7 +118,7 @@ export const OpenIssuesSection = ({ issues }: OpenIssuesSectionProps) => {
           <div className="mt-16 text-center">
             <button
               onClick={handleLoadMore}
-              className="inline-flex items-center justify-center min-h-11 gap-2 px-4 text-[11px] font-black uppercase tracking-widest text-theme-primary hover:gap-3 transition-[gap] group"
+              className="inline-flex items-center justify-center min-h-11 gap-2 px-4 text-xs font-bold uppercase tracking-widest text-theme-primary hover:gap-3 transition-[gap] group"
             >
               Load more issues
               <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />

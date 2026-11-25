@@ -38,7 +38,7 @@ export function HeroSection() {
       <div className="flex flex-col items-center text-center px-4 w-full pt-28">
         {/* Eyebrow — key value props from product docs */}
         <p
-          className="animate-fadeIn text-xs font-medium uppercase tracking-[0.4em] mb-10 text-theme-primary"
+          className="animate-fadeIn text-xs font-medium uppercase tracking-[0.12em] mb-10 text-theme-primary"
           style={{ animationDelay: "100ms" }}
         >
           Self-Hosted · Non-Custodial · Open Source
@@ -110,7 +110,7 @@ export function HeroSection() {
         className="animate-fadeIn absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-theme-secondary/30"
         style={{ animationDelay: "900ms" }}
       >
-        <span className="text-[10px] uppercase tracking-[0.35em] font-medium">
+        <span className="text-xs uppercase tracking-[0.12em] font-medium">
           Scroll
         </span>
         <ChevronDown size={14} className="animate-bounce" />

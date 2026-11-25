@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { Eyebrow } from "@/components/shared/Eyebrow";
 
 const steps = [
   {
@@ -27,10 +28,10 @@ export function HowItWorksSection() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center mb-16 animate-fadeInUp">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] mb-4 text-theme-primary">
+          <Eyebrow className="mb-4">
             How it works
-          </p>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight text-content-primary">
+          </Eyebrow>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-content-primary">
             Up and running in three steps
           </h2>
         </div>
@@ -54,7 +55,7 @@ export function HowItWorksSection() {
             >
               {/* Step number container - uses sunken effect */}
               <div className="w-20 h-20 rounded-2xl bg-bg-sunken shadow-neu-sunken flex items-center justify-center flex-shrink-0 relative z-10 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-[360deg]">
-                <span className="text-3xl font-black text-theme-primary drop-shadow-sm">
+                <span className="text-3xl font-bold text-theme-primary drop-shadow-sm">
                   {step.number}
                 </span>
               </div>

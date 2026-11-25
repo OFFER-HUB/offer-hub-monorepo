@@ -10,7 +10,7 @@ export default function NotFound() {
       <ErrorCard
         icon={
           <span
-            className="text-5xl font-black tracking-tighter"
+            className="text-5xl font-bold tracking-tighter"
             style={{ color: "var(--color-primary)" }}
           >
             404

@@ -5,6 +5,7 @@ import { Book, Code, Shield, LifeBuoy, Terminal, Zap, ChevronRight, Lock, Rocket
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 const docSections = [
   {
@@ -88,17 +89,14 @@ export default function DocsPage() {
         {/* Hub Header */}
         <div className="py-12 md:py-16">
           <div className="text-center px-4">
-            <p className="text-xs font-black uppercase tracking-[0.4em] mb-6 animate-fadeIn text-theme-primary opacity-80">
-              Documentation Center
-            </p>
-
-            <h1 className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8 select-none text-content-primary">
-              OFFER-HUB
-            </h1>
-
-            <p className="text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed font-medium animate-fadeInUp text-content-secondary" style={{ animationDelay: "200ms" }}>
-              Explore the core architecture, integration guides, and <span className="text-content-primary font-bold">standard practices</span> for the OFFER-HUB ecosystem.
-            </p>
+            <PageHeader
+              align="center"
+              size="docs"
+              className="mb-10"
+              eyebrow="Documentation Center"
+              title="Integrate escrow into your marketplace"
+              lead="Explore the core architecture, integration guides, and standard practices for the OFFER-HUB ecosystem."
+            />
 
             <div className="max-w-xl mx-auto animate-fadeInUp" style={{ animationDelay: "400ms" }}>
               <DocsSearchBar />
@@ -122,11 +120,11 @@ export default function DocsPage() {
                     {section.icon}
                   </div>
                   <div className="flex items-center gap-3 flex-wrap mb-4">
-                    <h3 className="text-2xl font-black group-hover:text-theme-primary transition-colors leading-tight tracking-tight text-content-primary">
+                    <h2 className="text-h3 group-hover:text-theme-primary transition-colors text-content-primary">
                       {section.title}
-                    </h3>
+                    </h2>
                     {section.highlight && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-theme-primary/10 text-theme-primary shadow-neu-raised-sm">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider bg-theme-primary/10 text-theme-primary shadow-neu-raised-sm">
                         Hackathon Start Here
                       </span>
                     )}
@@ -134,7 +132,7 @@ export default function DocsPage() {
                   <p className="text-[15px] leading-relaxed mb-8 font-medium text-content-secondary">
                     {section.description}
                   </p>
-                  <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-content-secondary/40">
+                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.12em] text-content-secondary/40">
                     <span>{section.count}</span>
                     <span className="text-theme-primary opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-500 translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
                       Explore <ChevronRight size={14} />
@@ -162,9 +160,9 @@ export default function DocsPage() {
             Can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex justify-center items-center gap-8">
-            <Link href="/community" className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">Help Center</Link>
+            <Link href="/community" className="inline-flex items-center min-h-11 text-theme-primary font-bold uppercase tracking-widest text-xs hover:tracking-[0.12em] transition-[letter-spacing]">Help Center</Link>
             <span className="w-1.5 h-1.5 rounded-full bg-theme-border/40" />
-            <Link href={`${GITHUB_REPO_URL}/issues`} className="inline-flex items-center min-h-11 text-theme-primary font-black uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-[letter-spacing]">GitHub Issues</Link>
+            <Link href={`${GITHUB_REPO_URL}/issues`} className="inline-flex items-center min-h-11 text-theme-primary font-bold uppercase tracking-widest text-xs hover:tracking-[0.12em] transition-[letter-spacing]">GitHub Issues</Link>
           </div>
         </div>
       </div>

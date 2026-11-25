@@ -90,6 +90,7 @@ export default function AccessibilityPage() {
                <LegalLayout eyebrow="Universal Design" title={<>Accessibility <span className="text-theme-primary">Statement</span></>} updated="May 27, 2026" description="OFFER-HUB is committed to ensuring digital accessibility for all users, including those with disabilities. We continuously work to meet WCAG 2.1 Level AA standards." sections={[{id:"accessibility-features",label:"Accessibility Features"},{id:"report-an-issue",label:"Report an Issue"},{id:"conformance-status",label:"Conformance Status"},{id:"legal-compliance",label:"Legal Compliance"},{id:"questions-about-accessibility",label:"Questions About Accessibility"}]}>
 
                     {/* Key Features Grid */}
+                    <h2 className="sr-only">At a glance</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-20">
                          {features.map((feature) => {
                               const Icon = feature.icon;
@@ -123,7 +124,7 @@ export default function AccessibilityPage() {
                     {/* Accessibility Features */}
                     <div className="mt-24 mb-24 animate-fadeInUp">
                          <div className="flex flex-col gap-6 mb-12">
-                              <h2 id="accessibility-features" className="scroll-mt-28 text-[28px] font-bold leading-tight tracking-tight text-content-primary">
+                              <h2 id="accessibility-features" className="scroll-mt-28 text-h2 font-bold leading-tight tracking-tight text-content-primary">
                                    Accessibility <span className="text-theme-primary">Features</span>
                               </h2>
                               <p className="text-lg font-medium text-content-secondary max-w-3xl leading-relaxed">
@@ -162,7 +163,7 @@ export default function AccessibilityPage() {
                     {/* Report Accessibility Issues */}
                     <div className="mt-24 mb-24 animate-fadeInUp">
                          <div className="flex flex-col gap-6 mb-12">
-                              <h2 id="report-an-issue" className="scroll-mt-28 text-[28px] font-bold leading-tight tracking-tight text-content-primary">
+                              <h2 id="report-an-issue" className="scroll-mt-28 text-h2 font-bold leading-tight tracking-tight text-content-primary">
                                    Report an <span className="text-theme-primary">Issue</span>
                               </h2>
                               <p className="text-lg font-medium text-content-secondary max-w-3xl leading-relaxed">
@@ -229,7 +230,7 @@ export default function AccessibilityPage() {
                     {/* Conformance Status */}
                     <div className="mt-24 mb-24 animate-fadeInUp">
                          <div className="flex flex-col gap-6 mb-12">
-                              <h2 id="conformance-status" className="scroll-mt-28 text-[28px] font-bold leading-tight tracking-tight text-content-primary">
+                              <h2 id="conformance-status" className="scroll-mt-28 text-h2 font-bold leading-tight tracking-tight text-content-primary">
                                    Conformance <span className="text-theme-primary">Status</span>
                               </h2>
                          </div>
@@ -287,7 +288,7 @@ export default function AccessibilityPage() {
                     {/* Legal Compliance */}
                     <div className="mt-24 mb-24 animate-fadeInUp">
                          <div className="flex flex-col gap-6 mb-12">
-                              <h2 id="legal-compliance" className="scroll-mt-28 text-[28px] font-bold leading-tight tracking-tight text-content-primary">
+                              <h2 id="legal-compliance" className="scroll-mt-28 text-h2 font-bold leading-tight tracking-tight text-content-primary">
                                    Legal <span className="text-theme-primary">Compliance</span>
                               </h2>
                               <p className="text-lg font-medium text-content-secondary max-w-3xl leading-relaxed">
@@ -332,7 +333,7 @@ export default function AccessibilityPage() {
 
                     {/* CTA */}
                     <div className="mt-24 mb-8 p-10 sm:p-14 rounded-3xl bg-gradient-to-br from-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] to-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] text-center">
-                         <h2 id="questions-about-accessibility" className="text-[28px] font-bold leading-tight text-content-primary mb-4">Questions About Accessibility?</h2>
+                         <h2 id="questions-about-accessibility" className="text-h2 font-bold leading-tight text-content-primary mb-4">Questions About Accessibility?</h2>
                          <p className="text-lg text-content-secondary font-medium mb-8 max-w-2xl mx-auto">
                               Our team is here to help. Contact us with any accessibility concerns or suggestions for improvement.
                          </p>
