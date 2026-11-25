@@ -27,7 +27,7 @@ The OFFER-HUB Orchestrator is a **self-hosted, server-to-server backend** that y
 
 - **User balances** — Track how much each user has available and reserved
 - **Escrow contracts** — Lock funds in non-custodial smart contracts on Stellar via Trustless Work
-- **Payments** — Move USDC between users (via Stellar) or fiat (via AirTM)
+- **Payments** — Move USDC between users on Stellar
 - **Dispute resolution** — Freeze funds and distribute them based on an arbitration decision
 - **Audit trail** — Every operation is logged with full traceability
 
@@ -35,7 +35,7 @@ The OFFER-HUB Orchestrator is a **self-hosted, server-to-server backend** that y
 
 - **NOT a UI** — It has no frontend. You build the UI for your users.
 - **NOT a user auth system** — It doesn't log in your users. You pass user IDs to it.
-- **NOT a KYC provider** — For crypto: no KYC needed (blockchain-native). For AirTM: KYC is AirTM's responsibility.
+- **NOT a KYC provider** — No KYC is needed for the crypto-native rail (blockchain-native).
 - **NOT a SaaS** — Each marketplace self-hosts their own instance. There is no shared cloud.
 
 ### Who is it for?
@@ -44,7 +44,7 @@ Any marketplace where:
 - A buyer pays for a service and the seller delivers it
 - The payment should be held in escrow until work is approved
 - Disputes need a resolution mechanism
-- Funds move in USDC on Stellar (crypto path) or USD via AirTM (fiat path)
+- Funds move in USDC on Stellar
 
 Examples: freelance platforms, service marketplaces, NFT royalty distribution, peer-to-peer commerce.
 
@@ -318,7 +318,7 @@ Transaction 2: resolve-dispute (X% to seller, Y% to buyer)
 
 Set `PAYMENT_PROVIDER` in `.env` to choose:
 
-### Crypto-Native (`PAYMENT_PROVIDER=crypto`)
+### Crypto-Native
 
 | Aspect | Details |
 |--------|---------|
@@ -328,33 +328,6 @@ Set `PAYMENT_PROVIDER` in `.env` to choose:
 | KYC | None required |
 | Webhook | Not needed — synchronous operations |
 | Target | Crypto-native markets, LATAM, global |
-
-### AirTM (`PAYMENT_PROVIDER=airtm`)
-
-| Aspect | Details |
-|--------|---------|
-| Deposit | `POST /topups` → redirect user to AirTM confirmation page → webhook confirms |
-| Withdrawal | Async two-step: create → commit → AirTM webhook confirms |
-| Settlement | USD (fiat) |
-| KYC | Required (AirTM handles KYC) |
-| Webhook | Required for deposit/withdrawal confirmation |
-| Target | Fiat-first markets, no crypto experience required |
-
-### Switching Providers
-
-Change `PAYMENT_PROVIDER=crypto` to `PAYMENT_PROVIDER=airtm` in your `.env` and restart. The Orchestrator will automatically use the appropriate provider for all deposit/withdrawal operations. Escrow mechanics (Trustless Work on Stellar) are the same for both providers.
-
-### Comparison
-
-| Feature | Crypto-Native | AirTM |
-|---------|--------------|-------|
-| Deposit speed | Seconds (on-chain confirmation) | Minutes (redirect + AirTM processing) |
-| Withdrawal speed | Seconds (synchronous) | Minutes to hours (async + KYC checks) |
-| Withdrawal rollback | Automatic if Stellar tx fails | Manual intervention needed |
-| User experience | No redirect, no KYC | Redirect to AirTM UI |
-| Regulatory | User controls their own wallet | AirTM compliant |
-
----
 
 ## Invisible Wallets
 

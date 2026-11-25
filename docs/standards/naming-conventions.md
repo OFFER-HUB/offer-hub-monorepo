@@ -303,7 +303,7 @@ const apiConfig = {
 type ApiResponse<T> = { ... }
 interface UserProfile { ... }
 enum OrderStatus { ... }
-type PaymentMethod = 'card' | 'crypto' | 'airtm';
+type PaymentMethod = 'card' | 'crypto';
 
 ❌ INCORRECT:
 type apiResponse<T> = { ... }    (camelCase)

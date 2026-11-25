@@ -5,7 +5,7 @@ import Fuse from "fuse.js";
 import { Search, X, Globe, KeyRound } from "lucide-react";
 import type { OpenApiCategory } from "@/lib/openapi";
 import { EndpointPanel } from "./EndpointPanel";
-import { Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Field";
 
 interface ExplorerClientProps {
   categories: OpenApiCategory[];
@@ -43,17 +43,17 @@ export function ExplorerClient({ categories }: ExplorerClientProps) {
       <div className="rounded-2xl bg-bg-base shadow-neu-raised p-5 space-y-4">
         <h2 className="text-xs font-bold uppercase tracking-widest text-theme-primary">Try-it setup</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input
+          <Field
             label="Base URL"
-            icon={<Globe size={16} aria-hidden="true" />}
+            leadingIcon={<Globe size={16} />}
             value={baseUrl}
             onChange={(e) => setBaseUrl(e.target.value)}
             placeholder="http://localhost:4000"
             className="font-mono text-sm"
           />
-          <Input
+          <Field
             label="Bearer token"
-            icon={<KeyRound size={16} aria-hidden="true" />}
+            leadingIcon={<KeyRound size={16} />}
             type="password"
             value={bearerToken}
             onChange={(e) => setBearerToken(e.target.value)}
@@ -68,27 +68,28 @@ export function ExplorerClient({ categories }: ExplorerClientProps) {
       </div>
 
       {/* Search */}
-      <div className="neu-input rounded-xl p-4 flex items-center gap-3">
-        <Search className="text-content-secondary" size={18} aria-hidden="true" />
-        <input
-          id="explorer-search"
-          name="explorer-search"
-          aria-label="Search endpoints"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search endpoints by path, title, or description…"
-          className="bg-transparent flex-1 min-h-6 text-content-primary placeholder:text-content-secondary w-full outline-none"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            aria-label="Clear search"
-            className="text-content-secondary hover:text-content-primary transition-colors"
-          >
-            <X size={16} aria-hidden="true" />
-          </button>
-        )}
-      </div>
+      <Field
+        id="explorer-search"
+        name="explorer-search"
+        label="Search endpoints"
+        hideLabel
+        leadingIcon={<Search size={18} />}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search endpoints by path, title, or description…"
+        trailing={
+          query ? (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-content-secondary transition-colors duration-200 hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* Categories */}
       {visibleCategories.length === 0 ? (

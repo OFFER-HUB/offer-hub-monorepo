@@ -4,9 +4,7 @@ This document details the complete payment lifecycle flows in OFFER-HUB, includi
 
 ## Overview
 
-OFFER-HUB supports two payment modes:
-1. **Crypto-Native (Default):** USDC on Stellar with Trustless Work escrow
-2. **Airtm Mode:** Fiat on/off-ramp via Airtm
+OFFER-HUB uses a crypto-native payment rail: USDC on Stellar with Trustless Work escrow, plus bank payouts through BlindPay.
 
 ---
 
@@ -159,53 +157,6 @@ CREATED → RESERVED → ESCROW_CREATING → ESCROW_CREATED → ESCROW_FUNDED �
 
 ---
 
-## Airtm Mode Flow
-
-### 1. Top-Up Flow
-
-**User adds fiat funds via Airtm**
-
-```
-1. POST /topups (create top-up)
-   ↓ Airtm API: create payin
-   ↓ Response: confirmation URL
-   ↓ TopUp status: PENDING
-   
-2. User redirected to Airtm
-   ↓ User completes payment in Airtm
-   
-3. Airtm webhook received
-   ↓ Verify HMAC signature
-   ↓ TopUp status: CONFIRMED → COMPLETED
-   ↓ Balance credited (available += amount)
-   ↓ Event emitted: balance.credited
-```
-
----
-
-### 2. Withdrawal Flow (Airtm)
-
-**User withdraws fiat via Airtm**
-
-```
-1. POST /withdrawals (create withdrawal)
-   ↓ Validate: available balance >= amount
-   ↓ Balance: available → reserved
-   ↓ Withdrawal status: PENDING
-   
-2. POST /withdrawals/:id/commit (commit withdrawal)
-   ↓ Airtm API: create payout
-   ↓ Withdrawal status: PROCESSING
-   
-3. Airtm webhook received
-   ↓ Payout confirmed
-   ↓ Balance: reserved → 0
-   ↓ Withdrawal status: COMPLETED
-   ↓ Event emitted: balance.debited
-```
-
----
-
 ## State Machine Diagrams
 
 ### Order State Machine
@@ -261,7 +212,7 @@ CREATED → RESERVED → ESCROW_CREATING → ESCROW_CREATED → ESCROW_FUNDED �
 
 ```
 ┌──────────────┐
-│   DEPOSIT    │ (crypto: blockchain, airtm: webhook)
+│   DEPOSIT    │ (blockchain monitor)
 └──────┬───────┘
        │
        ▼
@@ -363,7 +314,7 @@ User can retry or cancel order
 ### Webhook Failure
 
 ```
-Airtm webhook received but processing fails
+Provider webhook received but processing fails
   ↓
 Webhook queued in BullMQ for retry
   ↓

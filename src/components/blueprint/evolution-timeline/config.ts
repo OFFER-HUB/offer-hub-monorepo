@@ -30,6 +30,7 @@ export function statusConfig(status: PhaseStatus): StatusConfig {
 
   return {
     ...STATUS_VISUALS[status],
+    tone: STATUS_TONES[status],
     color: colors.text,
     bg: colors.bg,
     border: colors.border,
