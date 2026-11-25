@@ -60,19 +60,17 @@ jobs:
 
   diagrams:
     name: Generated diagrams up to date
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      # Pinned, not just "whatever's current": dot's layout algorithm is
-      # deterministic for a given version, but NOT stable across Graphviz
-      # versions (confirmed - an unpinned install here produced a different
-      # layout than this package version). Committed SVGs are only valid
-      # against this exact version; bump it deliberately (see
-      # docs/adr/0001-python-diagram-pipeline.md) and regenerate everything
-      # under public/diagrams/ in the same change.
+      # The runner is pinned to Ubuntu 24.04 because it provides this exact
+      # Graphviz package version. dot's layout is deterministic for a given
+      # version but not stable across versions; bump it deliberately (see
+      # docs/adr/0001-python-diagram-pipeline.md) and regenerate all SVGs in
+      # public/diagrams/ in the same change.
       - name: Install Graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz=2.42.2-9ubuntu0.1
       - run: pip install -r scripts/diagrams/requirements.txt
