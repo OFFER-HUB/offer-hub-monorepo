@@ -42,11 +42,10 @@ A client-supplied unique identifier (typically a UUID) used to deduplicate state
 ---
 
 ### Payment Provider
-A strategy abstraction that allows switching between crypto-native (Stellar + Trustless Work) and fiat (Airtm) payment rails. The business logic remains provider-agnostic.
+The payment rail used to move user funds. The Orchestrator uses a crypto-native provider (Stellar + Trustless Work), with bank payouts handled by BlindPay. Business logic stays provider-agnostic.
 
 **Implementations:**
 - `CryptoNativeProvider` (default)
-- `AirtmProvider` (future)
 
 ---
 
@@ -67,18 +66,14 @@ A defined set of states and valid transitions for entities like orders, escrows,
 ## Payment Terms
 
 ### Top-Up
-The process of adding funds to a user's balance. In Airtm mode, this is a fiat deposit via redirect. In crypto mode, users send USDC to their Stellar deposit address.
-
-**Airtm Flow:** Create top-up → redirect to Airtm → user pays → webhook → balance credited
+The process of adding funds to a user's balance. Users send USDC to their Stellar deposit address and the Orchestrator credits the balance when the payment is detected.
 
 **Crypto Flow:** User sends USDC → BlockchainMonitor detects → balance credited
 
 ---
 
 ### Withdrawal
-The process of removing funds from a user's balance. In Airtm mode, this is a fiat payout. In crypto mode, USDC is sent to an external Stellar address.
-
-**Airtm Flow:** Create withdrawal → Airtm payout → webhook → balance debited
+The process of removing funds from a user's balance. USDC is sent to an external Stellar address, or a bank payout is requested through BlindPay.
 
 **Crypto Flow:** Create withdrawal → send USDC transaction → balance debited
 
@@ -161,7 +156,7 @@ A special API key with elevated permissions used to create, list, and revoke oth
 ---
 
 ### Webhook
-An HTTP callback from an external service (Airtm, Trustless Work) to the Orchestrator. Webhooks notify the Orchestrator of events like payment confirmations or escrow state changes.
+An HTTP callback from an external service (for example Trustless Work or BlindPay) to the Orchestrator. Webhooks notify the Orchestrator of events like payment confirmations or escrow state changes.
 
 **Security:** HMAC signature verification to prevent spoofing.
 
@@ -254,7 +249,7 @@ The Orchestrator does not hold user funds in escrow. Funds are locked in Trustle
 ---
 
 ### Per-User Funds
-Balances are attributed to individual users, not pooled in a marketplace account. In crypto mode, each user has their own Stellar wallet. In Airtm mode, each user has their own Airtm sub-account.
+Balances are attributed to individual users, not pooled in a marketplace account. Each user has their own Stellar wallet.
 
 **Benefit:** Clear fund ownership and easier accounting.
 

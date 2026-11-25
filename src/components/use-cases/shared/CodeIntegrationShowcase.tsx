@@ -81,7 +81,7 @@ export function CodeIntegrationShowcase({
     <section className="px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-bg-base px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary shadow-neu-sunken mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-bg-base px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary shadow-neu-sunken mb-6">
             <Code2 size={14} aria-hidden="true" />
             Developer Hub
           </div>
@@ -100,7 +100,7 @@ export function CodeIntegrationShowcase({
 
         <div className="rounded-3xl bg-bg-elevated p-4 shadow-neu-raised sm:p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-content-secondary">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-content-secondary">
               {currentTab.description}
             </p>
             <DocTooltip href={currentTab.docHref} label={currentTab.docLabel} />
@@ -135,7 +135,7 @@ export function CodeIntegrationShowcase({
               key={item.method}
               className="rounded-2xl bg-bg-elevated p-5 shadow-neu-raised"
             >
-              <div className="mb-3 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-theme-primary">
+              <div className="mb-3 inline-flex rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-theme-primary">
                 SDK
               </div>
               <code className="mb-2 block font-mono text-xs font-semibold text-theme-primary">

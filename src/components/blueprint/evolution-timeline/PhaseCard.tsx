@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { NEU_ELEVATED, NEU_SUNKEN, statusConfig } from "./config";
@@ -86,12 +87,18 @@ export function PhaseCard({ phase, index, isLeft }: PhaseCardProps) {
               </div>
             </div>
 
-            <span
-              className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${cfg.bg} ${cfg.border} ${cfg.color}`}
+            <StatusBadge
+              variant={cfg.tone}
+              className="shrink-0"
+              icon={
+                <StatusIcon
+                  size={12}
+                  className={isInProgress ? "animate-spin motion-reduce:animate-none" : ""}
+                />
+              }
             >
-              <StatusIcon size={11} className={isInProgress ? "animate-spin" : ""} />
               {cfg.label}
-            </span>
+            </StatusBadge>
           </div>
 
           <p className="mt-3 text-sm leading-relaxed text-content-secondary">{phase.goal}</p>

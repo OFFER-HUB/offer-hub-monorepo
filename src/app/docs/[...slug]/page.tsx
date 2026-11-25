@@ -7,6 +7,7 @@ import { EditOnGitHub } from "@/components/docs/EditOnGitHub";
 import { PageActionsMenu } from "@/components/docs/PageActionsMenu";
 
 import remarkGfm from "remark-gfm";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 interface PageProps {
   params: Promise<{ slug: string[] }>;
@@ -47,16 +48,12 @@ export default async function DocPage({ params }: PageProps) {
       {/* Page header */}
       <div className="mb-8 pb-6 border-b border-theme-border/20">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 text-content-primary">
-              {doc.frontmatter.title}
-            </h1>
-            {doc.frontmatter.description && (
-              <p className="text-base leading-relaxed text-content-secondary">
-                {doc.frontmatter.description}
-              </p>
-            )}
-          </div>
+          <PageHeader
+            size="docs"
+            className="min-w-0"
+            title={doc.frontmatter.title}
+            lead={doc.frontmatter.description}
+          />
 
           <div className="flex flex-wrap items-center gap-3">
             <PageActionsMenu
