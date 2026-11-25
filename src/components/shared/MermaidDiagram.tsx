@@ -161,7 +161,7 @@ export function MermaidDiagram({
               <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_25%,transparent)]" />
               <span className="w-2.5 h-2.5 rounded-full bg-[color-mix(in_srgb,var(--color-text-muted)_15%,transparent)]" />
             </div>
-            <span className="text-xs font-bold uppercase tracking-[0.12em] font-mono text-content-secondary/80">
+            <span className="text-xs font-bold uppercase tracking-[0.12em] font-mono text-[color-mix(in_srgb,var(--color-text-secondary)_80%,transparent)]">
               Mermaid
             </span>
           </div>
