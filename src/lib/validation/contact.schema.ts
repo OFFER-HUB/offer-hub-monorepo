@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { EMAIL_REGEX, EMAIL_INVALID_MESSAGE } from "./email";
+import { honeypotField } from "./honeypot";
 
 const contactEmailField = z
   .string()
@@ -8,6 +9,7 @@ const contactEmailField = z
   .regex(EMAIL_REGEX, EMAIL_INVALID_MESSAGE);
 
 export const contactFormSchema = z.object({
+  website: honeypotField,
   company: z.string().trim().min(1, "Company name is required"),
   name: z.string().trim().min(1, "Contact name is required"),
   email: contactEmailField,

@@ -20,6 +20,7 @@
 
 ### Security
 
+- Added shared serverless-safe rate limiting via Upstash Redis across all public API routes and honeypot anti-spam protection on forms (#1684).
 - Update DOMPurify and body-parser to patched releases and move frontend and
   MCP validation to Zod 4.6.7 to resolve high-severity production dependency
   advisories without weakening the production audit gate.
