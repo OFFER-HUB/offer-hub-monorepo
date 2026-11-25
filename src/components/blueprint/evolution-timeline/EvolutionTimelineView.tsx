@@ -61,7 +61,7 @@ export function EvolutionTimelineView() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-3 text-center text-2xl md:text-[28px] font-bold tracking-tight text-content-primary"
+          className="mb-3 text-center text-2xl md:text-h2 font-bold tracking-tight text-content-primary"
         >
           Evolution Timeline
         </motion.h2>

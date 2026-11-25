@@ -23,7 +23,7 @@ export function ContactForm() {
         <div className="w-20 h-20 rounded-3xl bg-bg-elevated shadow-neu-raised flex items-center justify-center mb-8 animate-fadeInScale">
           <CheckCircle2 size={40} aria-hidden="true" className="text-theme-success" />
         </div>
-        <h2 className="text-3xl font-black text-content-primary tracking-tight mb-4">Thanks — we&apos;ll be in touch</h2>
+        <h2 className="text-3xl font-bold text-content-primary tracking-tight mb-4">Thanks — we&apos;ll be in touch</h2>
         <p className="text-content-secondary max-w-sm font-medium">A member of our enterprise team will reach out to you shortly to discuss your inquiry.</p>
       </div>
     );

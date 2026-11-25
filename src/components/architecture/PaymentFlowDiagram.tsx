@@ -10,7 +10,7 @@ export function PaymentFlowDiagram() {
       headerClassName="flex flex-col items-center text-center mb-8"
       descriptionClassName="text-content-secondary max-w-2xl text-base md:text-lg"
       infoClassName="rounded-2xl bg-bg-base shadow-neu-sunken-subtle px-5 py-4 mb-6 flex gap-3 items-start max-w-full"
-      eyebrowClassName="inline-block rounded-full bg-bg-elevated shadow-neu-raised-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
+      eyebrowClassName="inline-block rounded-full bg-bg-elevated shadow-neu-raised-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary mb-6"
       eyebrow="Payment Flow Lifecycle"
       heading="Escrow Lifecycle & Payouts"
       description="A secure, non-custodial workflow powered by Soroban smart contracts and executed via Stellar Wallets Kit."

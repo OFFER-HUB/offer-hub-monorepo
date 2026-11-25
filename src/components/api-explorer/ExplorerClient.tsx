@@ -41,7 +41,7 @@ export function ExplorerClient({ categories }: ExplorerClientProps) {
     <div className="space-y-8">
       {/* Try-it setup */}
       <div className="rounded-2xl bg-bg-base shadow-neu-raised p-5 space-y-4">
-        <h2 className="text-xs font-black uppercase tracking-widest text-theme-primary">Try-it setup</h2>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-theme-primary">Try-it setup</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
             label="Base URL"
