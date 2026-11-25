@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/architecture",
+        destination: "/product#architecture",
+        permanent: true,
+      },
+      {
+        source: "/blueprint",
+        destination: "/product#orchestrator",
+        permanent: true,
+      },
+      {
         source: "/docs/guide/deposits",
         destination: "/docs/guide/withdrawals",
         permanent: true,
