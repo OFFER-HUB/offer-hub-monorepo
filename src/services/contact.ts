@@ -1,4 +1,5 @@
 export type ContactSubmission = {
+  website?: string;
   company: string;
   name: string;
   email: string;

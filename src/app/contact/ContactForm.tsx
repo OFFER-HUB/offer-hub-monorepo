@@ -3,6 +3,7 @@
 import { Send, User, Mail, MessageSquare, Building2, CheckCircle2 } from "lucide-react";
 import { Field } from "@/components/ui/Field";
 import { Callout } from "@/components/docs/Callout";
+import { HoneypotField } from "@/components/forms/HoneypotField";
 import { useContactForm } from "@/hooks/use-contact-form";
 import { Button } from "@/components/ui/Button";
 
@@ -31,6 +32,7 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="p-6 sm:p-8 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
+      <HoneypotField id="contact-website" value={formData.website ?? ""} onChange={handleInputChange} />
       {submitError && (
         <Callout tone="danger" role="alert" label="Submission error" className="my-0 animate-fadeIn">
           {submitError}
