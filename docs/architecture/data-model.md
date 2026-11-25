@@ -35,8 +35,7 @@ interface User {
   email: string;
   name: string;
   type: 'buyer' | 'seller' | 'both';
-  airtmUserId?: string;          // For Airtm mode
-  walletId?: string;             // For crypto mode
+  walletId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -176,9 +175,9 @@ enum EscrowStatus {
 
 ---
 
-### TopUp (Airtm Mode)
+### TopUp
 
-**Purpose:** Fiat on-ramp via Airtm.
+**Purpose:** Top-up record for balance credits.
 
 **Fields:**
 ```typescript
@@ -188,7 +187,7 @@ interface TopUp {
   amount: number;
   currency: 'USD';
   status: TopUpStatus;
-  providerRef?: string;          // Airtm transaction ID
+  providerRef?: string;          // Provider transaction ID
   confirmationUrl?: string;
   createdAt: Date;
   completedAt?: Date;
@@ -207,7 +206,7 @@ enum TopUpStatus {
 
 ### Withdrawal
 
-**Purpose:** Fiat off-ramp (Airtm) or crypto send (Stellar).
+**Purpose:** Bank payout (BlindPay) or crypto send (Stellar).
 
 **Fields:**
 ```typescript
@@ -217,7 +216,7 @@ interface Withdrawal {
   amount: number;
   currency: 'USD' | 'USDC';
   status: WithdrawalStatus;
-  destination: string;           // Airtm email or Stellar address
+  destination: string;           // Bank account reference or Stellar address
   providerRef?: string;
   createdAt: Date;
   completedAt?: Date;
@@ -403,7 +402,6 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL,
-  airtm_user_id VARCHAR(255),
   wallet_id VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()

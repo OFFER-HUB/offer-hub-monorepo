@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
         destination: "/product#orchestrator",
         permanent: true,
       },
+      {
+        source: "/docs/guide/airtm",
+        destination: "/docs/guide/withdrawals",
+        permanent: true,
+      },
     ];
   },
   async headers() {

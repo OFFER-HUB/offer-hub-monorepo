@@ -1,6 +1,6 @@
 # Deposits Guide
 
-> How users add USDC to their Orchestrator balance — crypto-native (Stellar) and AirTM flows.
+> How users add USDC to their Orchestrator balance on Stellar.
 
 > **Looking for the public API guide?** This is the internal engineering reference (Orchestrator implementation detail). For the external API/SDK guide aimed at integrators, see [`content/docs/guide/deposits.mdx`](../../content/docs/guide/deposits.mdx).
 
@@ -14,7 +14,6 @@
   - [Step 2: User Sends USDC On-Chain](#step-2-user-sends-usdc-on-chain)
   - [Step 3: Auto-Credit via BlockchainMonitorService](#step-3-auto-credit-via-blockchainmonitorservice)
   - [Step 4: Listen for the Event](#step-4-listen-for-the-event)
-- [AirTM Top-Up Flow](#airtm-top-up-flow)
 - [Checking the Balance](#checking-the-balance)
 - [Deposit Considerations](#deposit-considerations)
 - [Troubleshooting](#troubleshooting)
@@ -23,12 +22,11 @@
 
 ## Overview
 
-"Deposit" is how a user adds funds to their Orchestrator balance. The method depends on the configured payment provider:
+"Deposit" is how a user adds funds to their Orchestrator balance: the user sends USDC to their Stellar deposit address.
 
 | Provider | Deposit Method | Currency |
 |----------|---------------|---------|
-| `crypto` (default) | Send USDC to a Stellar address | USDC on Stellar |
-| `airtm` | Top-up via AirTM redirect (fiat) | USD via AirTM |
+| `crypto` | Send USDC to a Stellar address | USDC on Stellar |
 
 Once deposited, funds appear as `available` balance and can be used to fund escrow orders.
 
@@ -188,91 +186,6 @@ Event payload:
 
 ---
 
-## AirTM Top-Up Flow
-
-When `PAYMENT_PROVIDER=airtm`, deposits are called "top-ups" and go through the AirTM fiat payment flow.
-
-> AirTM integration requires an Enterprise AirTM account. Contact AirTM for access.
-
-### Top-Up Flow Overview
-
-```
-1. Buyer requests top-up via your marketplace
-       ↓
-2. POST /api/v1/topups
-   { userId: "usr_...", amount: "100.00", currency: "USD" }
-       ↓
-3. Orchestrator calls AirTM API → creates payin
-   Response: { topupId, confirmationUri, status: "TOPUP_AWAITING_USER_CONFIRMATION" }
-       ↓
-4. Redirect user to confirmationUri (AirTM hosted page)
-       ↓
-5. User completes payment in AirTM (connects bank, card, etc.)
-       ↓
-6. AirTM webhook → Orchestrator: payin.succeeded
-       ↓
-7. Orchestrator credits balance
-   Event emitted: topup.succeeded + balance.credited
-```
-
-### API
-
-```bash
-# Create top-up
-POST /api/v1/topups
-Authorization: Bearer ohk_live_...
-Content-Type: application/json
-Idempotency-Key: uuid-v4
-
-{
-  "userId": "usr_abc123",
-  "amount": "100.00",
-  "currency": "USD"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "topupId": "tp_xyz789",
-    "status": "TOPUP_AWAITING_USER_CONFIRMATION",
-    "confirmationUri": "https://app.airtm.com/confirm/..."
-  }
-}
-```
-
-### Top-Up States
-
-| State | Description |
-|-------|-------------|
-| `TOPUP_CREATED` | Top-up initiated |
-| `TOPUP_AWAITING_USER_CONFIRMATION` | Confirmation URI generated, waiting for user |
-| `TOPUP_PROCESSING` | User confirmed, AirTM processing payment |
-| `TOPUP_SUCCEEDED` | Payment confirmed, balance credited |
-| `TOPUP_FAILED` | Payment rejected by AirTM |
-| `TOPUP_CANCELED` | User or system canceled |
-
-### Events to Listen
-
-| Event | When |
-|-------|------|
-| `topup.confirmation_required` | URI ready, redirect user |
-| `topup.processing` | User confirmed in AirTM |
-| `topup.succeeded` | Balance credited — notify user |
-| `topup.failed` | Show error, offer retry |
-| `topup.canceled` | Show cancellation message |
-
-### AirTM User Prerequisites
-
-Before a user can top up via AirTM:
-1. User must have an AirTM account
-2. User must link their AirTM account: `POST /users/:id/airtm-link`
-3. AirTM KYC must be completed
-
----
-
 ## Checking the Balance
 
 After a deposit, verify the updated balance:
@@ -351,14 +264,6 @@ The user must be registered via `POST /users` before requesting their deposit ad
 ### Duplicate Deposits
 
 The `BlockchainMonitorService` deduplicates by `transactionHash`. The same on-chain payment will never be credited twice.
-
-### AirTM Top-Up Stuck in PROCESSING
-
-AirTM top-ups are asynchronous. If stuck:
-1. Check AirTM webhook logs for delivery failures
-2. Verify `PUBLIC_BASE_URL` is correct and reachable by AirTM
-3. Check `AIRTM_WEBHOOK_SECRET` is configured
-4. AirTM will retry webhooks — wait up to 24 hours before escalating
 
 ---
 
