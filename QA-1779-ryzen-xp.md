@@ -9,7 +9,7 @@
 - **Recording(s):**
   - https://youtu.be/pE6a9N_-IV4
   - https://github.com/user-attachments/assets/b701134d-4600-459e-8b79-6ef8af57652c
-- **Discussion thread:** Pending URL (not included in the supplied discussion text)
+- **Discussion thread:** https://github.com/OFFER-HUB/OFFER-HUB-Frontend/discussions/612
 
 ## Step results
 
