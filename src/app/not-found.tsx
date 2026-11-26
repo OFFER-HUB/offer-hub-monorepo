@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { SearchX } from "lucide-react";
 import { ErrorCard } from "@/components/shared/ErrorCard";
+import { Button } from "@/components/ui/Button";
 
 export default function NotFound() {
   return (
@@ -10,7 +10,7 @@ export default function NotFound() {
       <ErrorCard
         icon={
           <span
-            className="text-5xl font-black tracking-tighter"
+            className="text-5xl font-bold tracking-tighter"
             style={{ color: "var(--color-primary)" }}
           >
             404
@@ -27,12 +27,9 @@ export default function NotFound() {
         heading="The transaction path was not found."
         description="The route you are trying to access has not been signed or verified on our orchestrator."
         action={
-          <Link
-            href="/"
-            className="btn-neumorphic-primary px-8 py-3 rounded-xl text-sm font-semibold"
-          >
+          <Button href="/">
             Return to Home
-          </Link>
+          </Button>
         }
       />
     </main>

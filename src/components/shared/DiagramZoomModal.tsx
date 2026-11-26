@@ -37,11 +37,11 @@ export function DiagramZoomModal({ title, isOpen, onClose, children }: Props) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.22 }}
-            className="relative w-full max-w-6xl max-h-[90vh] overflow-auto rounded-[2.5rem] bg-bg-elevated shadow-neu-raised-l2 flex flex-col p-6 md:p-8"
+            className="relative w-full max-w-6xl max-h-[90vh] overflow-auto rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col p-6 md:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6 shrink-0">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-content-muted">
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-content-muted">
                 {title}
               </span>
               <button
@@ -52,7 +52,7 @@ export function DiagramZoomModal({ title, isOpen, onClose, children }: Props) {
                 <X size={16} />
               </button>
             </div>
-            <div className="flex-1 w-full rounded-[2rem] bg-bg-base shadow-neu-sunken p-6 overflow-auto">
+            <div className="flex-1 w-full rounded-3xl bg-bg-base shadow-neu-sunken p-6 overflow-auto">
               {children}
             </div>
           </motion.div>

@@ -1,16 +1,13 @@
 /**
- * TODO: verify these are the real, current values before production.
- * Flagged in issue #1481 as placeholder content — needs confirmation from
- * whoever owns the actual company address / support email routing.
+ * TODO: verify the registered office address before production.
+ * Flagged in issue #1481 as placeholder content — no mailbox is published
+ * until confirmed; general, legal, privacy, and brand inquiries route to /contact.
  */
 export const COMPANY_INFO = {
-  name: "Offer Hub Inc.",
+  name: "OFFER-HUB Inc.",
   address: {
     line1: "123 Market Street, Suite 400",
     line2: "San Francisco, CA 94105, USA",
   },
-  emails: {
-    privacy: "privacy@offerhub.io",
-    support: "support@offerhub.io",
-  },
+  contactPath: "/contact",
 } as const;

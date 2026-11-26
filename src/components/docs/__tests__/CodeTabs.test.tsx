@@ -130,11 +130,11 @@ describe("CodeTabs", () => {
     });
     renderTabs();
 
-    await user.click(screen.getByRole("button", { name: "Copy code" }));
+    await user.click(screen.getByRole("button", { name: /copy code|copied/i }));
     expect(writeText).toHaveBeenLastCalledWith(TABS[0].code);
 
     await user.click(screen.getAllByRole("tab")[1]);
-    await user.click(screen.getByRole("button", { name: "Copy code" }));
+    await user.click(screen.getByRole("button", { name: /copy code|copied/i }));
     expect(writeText).toHaveBeenLastCalledWith(TABS[1].code);
   });
 });

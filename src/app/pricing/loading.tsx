@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function PricingCardSkeleton() {
   return (
-    <div className="rounded-[2.5rem] p-10 flex flex-col space-y-5">
+    <div className="rounded-3xl p-10 flex flex-col space-y-5">
       <Skeleton className="w-16 h-16 rounded-2xl" />
       <Skeleton className="h-7 w-36" />
       <Skeleton className="h-3 w-24" />

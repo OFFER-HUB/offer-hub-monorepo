@@ -18,10 +18,16 @@
 ```
 
 **OFFER-HUB Orchestrator** is a non-custodial escrow and payments orchestrator for marketplaces, built on Stellar. It gives your marketplace escrow-protected checkout in USDC, a user balance ledger, a structured dispute process, and an off-ramp to local bank rails — without giving you custody of anyone's funds.
+**OFFER-HUB Orchestrator** is a self-hosted payments orchestration system designed for Marketplaces. It manages a Web2-like experience (balances, deposits, payments with escrow, and withdrawals) using **Stellar** wallets, **BlindPay** for bank payouts, and **Trustless Work** for non-custodial escrows on the Stellar network.
 
 Mainnet is live, and there is a public testnet sandbox for development.
 
 ## Who it is for
+- 💰 **User Balances**: Internal management of available and reserved balances.
+- ⚡ **Deposits**: USDC deposits to each user's Stellar wallet.
+- 🤝 **Smart Escrow**: Secure checkout with non-custodial escrow via TW.
+- 💸 **Withdrawals**: USDC withdrawals to Stellar addresses and bank payouts through BlindPay.
+- 🔐 **Secure & Audited**: Native idempotency, audit logs, and modular architecture.
 
 Teams that run their own marketplace and want to add escrow payments without building a payments company. You keep your listings, accounts, messaging and UI; the Orchestrator handles the money movement and the escrow state machine.
 
@@ -100,6 +106,13 @@ cp .env.example .env
 Set `OFFERHUB_MASTER_KEY=your-master-key`, run the database migrations, start the API, then use the master key once to create the first API key with `support` scope. Create separate `read` and `write` keys for your marketplace backend and keep them server-side.
 
 ## Packages
+### Freelance Marketplace (Primary)
+Connect freelancers with clients using escrow protection:
+1. Client deposits USDC to their Stellar wallet
+2. Client pays for project → funds go to escrow (Trustless Work)
+3. Freelancer completes work
+4. Client approves → funds released instantly to freelancer
+5. Freelancer withdraws USDC or requests a bank payout through BlindPay
 
 | Package | Version | Purpose |
 |---|---|---|
@@ -154,6 +167,15 @@ We welcome contributions. Read the [contributing guide](./docs/CONTRIBUTING.md) 
 
 - [@Josue19-08](https://github.com/Josue19-08) — Project Lead & Full-Stack Developer
 - [@KevinMB0220](https://github.com/KevinMB0220) — Core Contributor & Developer
+## 🙏 Acknowledgments
+
+Built with ❤️ for the decentralized marketplace future.
+
+- [NestJS](https://nestjs.com/) - Progressive Node.js framework
+- [Prisma](https://www.prisma.io/) - Next-generation ORM
+- [BullMQ](https://docs.bullmq.io/) - Premium message queue
+- [BlindPay](https://www.blindpay.com/) - Bank payouts
+- [Trustless Work](https://trustlesswork.com/) - Non-custodial escrow on Stellar
 
 ---
 

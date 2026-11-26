@@ -38,7 +38,7 @@ export function ArchitectureSection({
     <>
       <div className={headerClassName}>
         <span className={eyebrowClassName}>{eyebrow}</span>
-        <h2 className="text-3xl md:text-4xl font-bold text-content-primary mb-4 tracking-tight">
+        <h2 className="text-2xl md:text-h2 font-bold text-content-primary mb-4 tracking-tight">
           {heading}
         </h2>
         <p className={descriptionClassName}>{description}</p>

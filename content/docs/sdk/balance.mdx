@@ -24,6 +24,7 @@ The `sdk.balance` resource exposes all nine Balance operations. Use the [Balance
 | `sdk.balance.cancelReservation(userId, request)` | `write` | [Return a specified reserved amount](/docs/api-reference/balance#cancel-reservation) |
 | `sdk.balance.deductReserved(userId, request)` | `write` | [Consume reserved funds](/docs/api-reference/balance#deduct-reserved) |
 | `sdk.balance.sync(userId)` | `write` | [Compare with provider without adjusting balances](/docs/api-reference/balance#sync) |
+| `sdk.balance.reconcile(userId, request)` | `write` | `POST /users/:userId/balance/reconcile` |
 
 ## Retries
 
@@ -31,4 +32,4 @@ For a mutation, call `sdk.withIdempotencyKey(key).balance` with a persisted UUID
 
 ## Sources
 
-The [source ledger](/docs/api-reference/balance#source-ledger) pins the controller, DTOs, service, middleware, and SDK files used to verify this reference. No SDK or backend implementation is changed by these documentation pages.
+The [source ledger](/docs/api-reference/balance#source-ledger) pins the controller, DTOs, service, middleware, and SDK files used to verify this reference. Balance API-key operations use `read` for GET requests and `write` for mutations.

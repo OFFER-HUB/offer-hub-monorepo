@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ChevronDown, Command } from "lucide-react";
 import { DetailCard, LayerKey } from "./OrchestratorShowcase.types";
+import { Eyebrow } from "@/components/shared/Eyebrow";
 
 interface OrchestratorDetailPanelProps {
   cards: DetailCard[];
@@ -20,17 +21,17 @@ function ArchitectureCard({
   const Icon = card.icon;
 
   return (
-    <article className="rounded-[2rem] bg-bg-elevated p-8 shadow-neu-raised-l2-sm overflow-visible transition-transform duration-300 hover:-translate-y-1 blueprint-layer">
+    <article className="rounded-2xl bg-bg-elevated p-6 sm:p-8 shadow-neu-raised overflow-visible transition-transform duration-300 hover:-translate-y-1 blueprint-layer">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="rounded-[1.25rem] bg-bg-base p-3 shadow-neu-sunken-subtle">
+          <div className="rounded-xl bg-bg-base p-3 shadow-neu-sunken-subtle">
             <Icon className="h-5 w-5 text-theme-primary" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary">
+            <Eyebrow>
               {card.eyebrow}
-            </p>
-            <h3 className="mt-2 text-2xl font-semibold text-content-primary">{card.title}</h3>
+            </Eyebrow>
+            <h3 className="mt-2 text-xl md:text-2xl font-bold text-content-primary">{card.title}</h3>
           </div>
         </div>
         <button
@@ -49,7 +50,7 @@ function ArchitectureCard({
       <p className="mt-6 text-sm leading-7 text-content-secondary">{card.summary}</p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <span className="inline-flex items-center rounded-full bg-theme-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-theme-primary">
+        <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary">
           Core call: {card.method}
         </span>
         <span className="inline-flex items-center rounded-full bg-bg-base px-3 py-1 text-xs text-content-muted shadow-neu-sunken-subtle">
@@ -64,7 +65,7 @@ function ArchitectureCard({
       >
         <div className="overflow-hidden">
           {expanded ? (
-            <div className="rounded-[1.5rem] bg-bg-base p-5 shadow-neu-sunken-l2-subtle overflow-visible">
+            <div className="rounded-2xl bg-bg-base p-5 shadow-neu-sunken-subtle overflow-visible">
               <p className="text-sm leading-7 text-content-primary">{card.callout}</p>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-content-secondary">
                 {card.bullets.map((bullet) => (

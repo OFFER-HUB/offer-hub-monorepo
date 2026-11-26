@@ -1,77 +1,31 @@
 "use client";
 
-import { useState, useRef, useCallback, useId } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { useCallback, useRef, useState } from "react";
 
-export interface EscrowStep {
-  stepNumber: number;
-  label: string;
-  status: "CREATED" | "FUNDED" | "AWAITING_RELEASE" | "SUCCEEDED";
-  icon: React.FC<{ size?: number; className?: string }>;
-  apiMethod: string;
-  apiSnippet: string;
-  description: string;
-  isOnChain: boolean;
-}
+import { cn } from "@/lib/cn";
+import type { UseCaseFlowStep } from "../types";
+
+export type EscrowStep = UseCaseFlowStep;
 
 export interface EscrowFlowDiagramProps {
-  steps: EscrowStep[];
+  steps: UseCaseFlowStep[];
   className?: string;
 }
 
-const STATUS_STYLES: Record<EscrowStep["status"], string> = {
-  CREATED: "bg-content-muted/12 text-content-secondary",
-  FUNDED: "bg-theme-primary/12 text-theme-primary",
-  AWAITING_RELEASE: "bg-theme-warning/12 text-theme-warning",
-  SUCCEEDED: "bg-theme-success/12 text-theme-success",
+const STATUS_DOT: Record<UseCaseFlowStep["status"], string> = {
+  CREATED: "bg-content-muted",
+  FUNDED: "bg-theme-primary",
+  AWAITING_RELEASE: "bg-theme-warning",
+  SUCCEEDED: "bg-theme-success",
 };
-
-function HoverDetailPanel({ step }: { step: EscrowStep }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-      className="overflow-hidden"
-    >
-      <div className="pt-4 space-y-3">
-        <p className="text-xs font-medium leading-relaxed text-content-secondary">
-          {step.description}
-        </p>
-
-        <div className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl p-3 overflow-x-auto">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-content-muted mb-1">
-            API Endpoint
-          </p>
-          <code className="text-xs font-mono text-theme-primary break-words">
-            {step.apiMethod}
-          </code>
-        </div>
-
-        <div className="bg-bg-sunken shadow-neu-sunken-subtle rounded-xl p-3 overflow-x-auto">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-content-muted mb-1">
-            SDK
-          </p>
-          <code className="text-xs font-mono text-content-primary break-words">
-            {step.apiSnippet}
-          </code>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
 function StepCard({
   step,
-  index,
   isActive,
   onActivate,
   onDeactivate,
 }: {
-  step: EscrowStep;
-  index: number;
+  step: UseCaseFlowStep;
   isActive: boolean;
   onActivate: () => void;
   onDeactivate: () => void;
@@ -80,10 +34,10 @@ function StepCard({
   const Icon = step.icon;
 
   const handleBlur = useCallback(
-    (e: React.FocusEvent) => {
+    (event: React.FocusEvent) => {
       if (
         cardRef.current &&
-        !cardRef.current.contains(e.relatedTarget as Node)
+        !cardRef.current.contains(event.relatedTarget as Node)
       ) {
         onDeactivate();
       }
@@ -98,151 +52,68 @@ function StepCard({
       aria-expanded={isActive}
       aria-label={`Step ${step.stepNumber}: ${step.label}`}
       className={cn(
-        "flex flex-col p-5 md:p-6 rounded-[1.5rem] bg-bg-elevated transition-all duration-300 ease-out cursor-pointer select-none",
-        "w-full min-w-0",
-        isActive ? "md:flex-[2.2]" : "md:flex-1",
-        "animate-fadeInUp",
+        "flex w-full min-w-0 min-h-11 flex-col rounded-2xl bg-bg-base p-4 text-left",
+        "transition-shadow duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-elevated",
         isActive
-          ? "shadow-neu-raised-hover"
-          : "shadow-neu-raised hover:shadow-neu-raised-hover",
+          ? "shadow-neu-sunken"
+          : "shadow-neu-sunken-subtle hover:shadow-neu-sunken",
       )}
-      style={{ animationDelay: `${index * 150}ms` }}
+      onClick={() => (isActive ? onDeactivate() : onActivate())}
       onMouseEnter={onActivate}
       onMouseLeave={onDeactivate}
-      onClick={() => (isActive ? onDeactivate() : onActivate())}
       onFocus={onActivate}
       onBlur={handleBlur}
     >
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl shadow-neu-sunken-subtle bg-bg-base flex items-center justify-center flex-shrink-0 text-theme-primary">
-          <Icon size={20} />
-        </div>
+      <span className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bg-elevated text-theme-primary shadow-neu-raised-sm">
+          <Icon size={18} />
+        </span>
 
-        <div className="flex flex-col min-w-0">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-content-muted">
+        <span className="flex min-w-0 flex-col">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
             Step {step.stepNumber}
           </span>
-          <h4 className="text-sm md:text-base font-bold text-content-primary">
+          <span className="break-words text-sm font-bold text-content-primary">
             {step.label}
-          </h4>
-        </div>
-      </div>
+          </span>
+        </span>
+      </span>
 
-      <div className="flex flex-nowrap items-center gap-2 mb-1">
-        <span
-          className={cn(
-            "inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-medium shadow-neu-raised-sm",
-            STATUS_STYLES[step.status],
-          )}
-        >
+      <span className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-content-primary">
+          <span
+            className={cn("h-2 w-2 rounded-full", STATUS_DOT[step.status])}
+            aria-hidden="true"
+          />
           {step.status.replace(/_/g, " ")}
         </span>
         {step.isOnChain && (
-          <span className="whitespace-nowrap text-[10px] font-bold text-theme-primary opacity-70">
+          <span className="text-xs font-medium text-content-primary">
             On-chain
           </span>
         )}
-      </div>
+      </span>
 
-      <AnimatePresence>
-        {isActive && <HoverDetailPanel step={step} />}
-      </AnimatePresence>
-    </button>
-  );
-}
-
-function ConnectorLine() {
-  return (
-    <>
-      <div className="flex md:hidden justify-center py-1">
-        <svg width="2" height="32" className="overflow-visible">
-          <line
-            x1="1"
-            y1="0"
-            x2="1"
-            y2="32"
-            stroke="var(--color-primary)"
-            strokeWidth="2"
-            strokeDasharray="6 6"
-            strokeOpacity="0.4"
-            className="animate-connectorDash"
-          />
-        </svg>
-      </div>
-
-      <div className="hidden md:flex items-center justify-center flex-shrink-0 w-8 lg:w-12">
-        <svg width="100%" height="2" className="overflow-visible">
-          <line
-            x1="0"
-            y1="1"
-            x2="100%"
-            y2="1"
-            stroke="var(--color-primary)"
-            strokeWidth="2"
-            strokeDasharray="6 6"
-            strokeOpacity="0.4"
-            className="animate-connectorDash"
-          />
-        </svg>
-      </div>
-    </>
-  );
-}
-
-function BlockchainPulse({ active }: { active: boolean }) {
-  const gradientId = useId();
-
-  return (
-    <div
-      className={cn(
-        "hidden md:block absolute inset-0 pointer-events-none transition-opacity duration-500",
-        active ? "opacity-100" : "opacity-0",
+      {isActive && (
+        <span className="mt-3 block rounded-xl bg-bg-elevated p-3 shadow-neu-sunken-subtle">
+          <span className="block text-xs leading-relaxed text-content-primary">
+            {step.description}
+          </span>
+          <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
+            API endpoint
+          </span>
+          <code className="mt-1 block break-words font-mono text-xs text-content-primary">
+            {step.apiMethod}
+          </code>
+          <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.12em] text-content-primary">
+            SDK
+          </span>
+          <code className="mt-1 block break-words font-mono text-xs text-content-primary">
+            {step.apiSnippet}
+          </code>
+        </span>
       )}
-    >
-      <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox="0 0 800 500"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <defs>
-          <radialGradient id={gradientId} cx="50%" cy="50%" r="50%">
-            <stop
-              offset="0%"
-              stopColor="var(--color-primary)"
-              stopOpacity="0.08"
-            />
-            <stop
-              offset="100%"
-              stopColor="var(--color-primary)"
-              stopOpacity="0"
-            />
-          </radialGradient>
-        </defs>
-        <circle
-          cx="400"
-          cy="250"
-          r="200"
-          fill={`url(#${gradientId})`}
-          className="animate-blockchainPulse"
-        />
-        <circle
-          cx="400"
-          cy="250"
-          r="300"
-          fill={`url(#${gradientId})`}
-          className="animate-blockchainPulse"
-          style={{ animationDelay: "0.4s" }}
-        />
-        <circle
-          cx="400"
-          cy="250"
-          r="400"
-          fill={`url(#${gradientId})`}
-          className="animate-blockchainPulse"
-          style={{ animationDelay: "0.8s" }}
-        />
-      </svg>
-    </div>
+    </button>
   );
 }
 
@@ -252,32 +123,25 @@ export function EscrowFlowDiagram({
 }: EscrowFlowDiagramProps) {
   const [activeStep, setActiveStep] = useState<number | null>(null);
 
-  const isOnChainActive =
-    activeStep !== null && steps[activeStep - 1]?.isOnChain;
-
   return (
     <div
       className={cn(
-        "relative rounded-[3rem] shadow-neu-sunken w-full max-w-7xl mx-auto bg-bg-base p-6 md:p-12 animate-fadeInScale overflow-hidden",
+        "w-full min-w-0",
         className,
       )}
     >
-      <BlockchainPulse active={!!isOnChainActive} />
-
-      <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-3 h-full">
-        {steps.map((step, i) => (
-          <div key={step.stepNumber} className="contents">
-            {i > 0 && <ConnectorLine />}
+      <ol className="flex flex-col gap-3">
+        {steps.map((step) => (
+          <li key={step.stepNumber} className="flex flex-col">
             <StepCard
               step={step}
-              index={i}
               isActive={activeStep === step.stepNumber}
               onActivate={() => setActiveStep(step.stepNumber)}
               onDeactivate={() => setActiveStep(null)}
             />
-          </div>
+          </li>
         ))}
-      </div>
+      </ol>
     </div>
   );
 }

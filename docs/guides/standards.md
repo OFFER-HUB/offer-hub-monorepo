@@ -232,7 +232,7 @@ All enum values in request bodies must be **UPPERCASE**:
 | `requestedBy` (release/refund) | `"BUYER"` \| `"SELLER"` |
 | `canceledBy` (cancel) | `"BUYER"` \| `"SELLER"` \| `"ADMIN"` |
 | `decision` (resolve dispute) | `"FULL_RELEASE"` \| `"FULL_REFUND"` \| `"SPLIT"` |
-| `destinationType` (withdrawal) | `"stellar"` \| `"airtm"` |
+| `destinationType` (withdrawal) | `"stellar"` \| `"bank"` |
 
 Sending lowercase enum values returns `400 VALIDATION_ERROR`.
 

@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { emailField } from "./email";
+import { honeypotField } from "./honeypot";
 
 export const waitlistFormSchema = z.object({
+  website: honeypotField,
   name: z
     .string()
     .trim()
@@ -11,7 +13,7 @@ export const waitlistFormSchema = z.object({
   purpose: z
     .string()
     .trim()
-    .min(1, "Please tell us how you would use Offer Hub")
+    .min(1, "Please tell us how you would use OFFER-HUB")
     .max(500, "Purpose must be 500 characters or fewer"),
   referral: z
     .string()

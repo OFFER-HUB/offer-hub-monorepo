@@ -94,7 +94,6 @@ export const PHASES: Phase[] = [
     deliverables: [
       { id: "3.1.1", label: "PaymentProvider interface (Strategy Pattern)", done: true },
       { id: "3.1.2", label: "Crypto-native provider (Stellar wallets, USDC)", done: true },
-      { id: "3.1.3", label: "Airtm provider (fiat on/off ramp, optional)", done: true },
       { id: "3.2.1", label: "Stellar wallet logic (Balance projection)", done: true },
       { id: "3.2.2", label: "Escrow contract creation client", done: true },
       { id: "3.2.3", label: "Partial Release / Partial Refund logic", done: true },

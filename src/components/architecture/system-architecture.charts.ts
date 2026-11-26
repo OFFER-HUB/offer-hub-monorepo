@@ -11,7 +11,7 @@ flowchart TD
     API["NestJS API<br/><small>Auth · Orders · Escrow · Payments · Webhooks · Off-ramp</small>"]:::backend
     Data["Data Layer<br/><small>PostgreSQL · Redis · BullMQ</small>"]:::subtle
     Stellar["Stellar<br/><small>Soroban Contracts · TrustlessWork · USDC</small>"]:::subtle
-    Offramp["Off-ramp<br/><small>BlindPay (7 corridors)</small>"]:::highlight
+    Offramp["Off-ramp<br/><small>BlindPay (4 corridors)</small>"]:::highlight
 
     Client -->|HTTPS / REST| API
     Client -->|Client-side Soroban signing| Wallet

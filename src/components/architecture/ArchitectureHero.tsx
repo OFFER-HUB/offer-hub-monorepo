@@ -21,7 +21,7 @@ export function ArchitectureHero() {
       paragraph="Complete system design for a non-custodial freelance marketplace on Stellar — from client-side Soroban signing to fiat settlement across 7 LATAM markets."
     >
       {/* Mini 3-layer diagram */}
-      <div className="rounded-[2rem] bg-bg-elevated p-8 md:p-10 shadow-neu-raised">
+      <div className="rounded-3xl bg-bg-elevated p-8 md:p-10 shadow-neu-raised">
         <div className="flex flex-col items-center gap-0">
           {layers.map((layer, i) => (
             <div key={layer.label} className="w-full flex flex-col items-center">
@@ -52,7 +52,7 @@ export function ArchitectureHero() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-content-secondary text-center">
+        <p className="mt-6 text-xs font-medium uppercase tracking-[0.12em] text-content-secondary text-center">
           Non-custodial · On-chain · LATAM-native
         </p>
       </div>

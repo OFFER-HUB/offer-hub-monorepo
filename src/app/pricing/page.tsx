@@ -8,6 +8,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { buildPageMetadata } from "@/lib/seo";
 import { GITHUB_REPO_URL } from "@/constants/github";
+import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
@@ -98,39 +100,29 @@ export default function PricingPage() {
 
       <main className="flex-grow pt-28 pb-20">
         <section className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto flex flex-col items-center">
-            <div className="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8 bg-bg-base shadow-neu-raised text-theme-primary">
-              Pricing
-            </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-8 text-content-primary">
-              Open by default. <br className="hidden md:block" /> Scalable by design.
-            </h1>
-            <p className="text-lg md:text-xl font-medium leading-relaxed text-content-secondary">
-              OFFER-HUB keeps core access free for builders and lets teams self-host without
-              licensing fees. If you need enterprise-level support, our team can tailor a
-              support model around your rollout.
-            </p>
-          </div>
+          <PageHeader
+            align="center"
+            className="mx-auto max-w-3xl"
+            eyebrow="Pricing"
+            title={<>Open by default. <br className="hidden md:block" /> Scalable by design.</>}
+            lead="OFFER-HUB keeps core access free for builders and lets teams self-host without licensing fees. If you need enterprise-level support, our team can tailor a support model around your rollout."
+          />
 
           <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tiers.map((tier) => {
               const Icon = tier.icon;
-              const ctaClassName =
-                tier.ctaStyle === "primary"
-                  ? "btn-neumorphic-primary"
-                  : "bg-bg-base shadow-neu-raised text-theme-primary";
 
               return (
                 <article
                   key={tier.name}
-                  className="bg-bg-elevated shadow-neu-raised rounded-[2.5rem] p-10 hover:shadow-neu-raised-hover transition-shadow duration-[400ms] ease-out flex flex-col group"
+                  className="bg-bg-elevated shadow-neu-raised rounded-3xl p-10 hover:shadow-neu-raised-hover transition-shadow duration-[400ms] ease-out flex flex-col group"
                 >
                   <div className="w-16 h-16 rounded-2xl bg-bg-base shadow-neu-sunken-subtle flex items-center justify-center mb-2 group-hover:shadow-neu-sunken transition-shadow duration-300">
                     <Icon className="w-7 h-7 text-theme-primary" />
                   </div>
 
                   <h2 className="mt-5 text-2xl font-bold text-content-primary">{tier.name}</h2>
-                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.22em] text-theme-primary">
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-theme-primary">
                     {tier.priceLabel}
                   </p>
                   <p className="mt-4 text-sm leading-relaxed text-content-secondary">{tier.description}</p>
@@ -144,15 +136,16 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <Link
+                  <Button
                     href={tier.ctaHref}
                     target={tier.external ? "_blank" : undefined}
                     rel={tier.external ? "noopener noreferrer" : undefined}
-                    className={`mt-8 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold ${ctaClassName}`}
+                    variant={tier.ctaStyle === "primary" ? "primary" : "secondary"}
+                    className="mt-8 w-full"
                   >
                     <span>{tier.ctaLabel}</span>
                     <ArrowUpRight className="w-4 h-4" />
-                  </Link>
+                  </Button>
                 </article>
               );
             })}

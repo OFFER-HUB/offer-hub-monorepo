@@ -3,7 +3,9 @@
 import React from "react";
 import { ShieldCheck, Trash2, Download } from "lucide-react";
 import { useDataRightsForm } from "@/hooks/use-data-rights-form";
-import { Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Field";
+import { Callout } from "@/components/docs/Callout";
+import { Button } from "@/components/ui/Button";
 
 const iconMap = {
   ShieldCheck,
@@ -35,16 +37,16 @@ export function DataRightsForm({
   const Icon = iconMap[iconName] || ShieldCheck;
 
   return (
-    <div className="p-8 sm:p-10 rounded-[2.5rem] bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
+    <div className="p-8 sm:p-10 rounded-3xl bg-bg-elevated shadow-neu-raised flex flex-col gap-6">
       <div className="w-14 h-14 rounded-2xl shadow-neu-sunken-subtle flex items-center justify-center shrink-0 bg-bg-elevated">
         <Icon size={24} className="text-theme-primary" />
       </div>
       <div>
-        <h3 className="text-xl font-black tracking-tight mb-2 text-content-primary">{title}</h3>
+        <h3 className="text-xl font-semibold tracking-tight mb-2 text-content-primary">{title}</h3>
         <p className="text-sm font-medium leading-relaxed text-content-secondary">{description}</p>
       </div>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-        <Input
+        <Field
           id={`data-rights-email-${endpoint}`}
           label="Email address"
           type="email"
@@ -55,24 +57,24 @@ export function DataRightsForm({
           error={errors.email}
           disabled={loading}
         />
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-colors disabled:opacity-50 ${
-            destructive
-              ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-              : "bg-theme-primary text-white hover:bg-theme-primary-hover shadow-lg"
-          }`}
+          loading={loading}
+          variant={destructive ? "danger" : "primary"}
+          className="w-full"
         >
           {loading ? "Processing…" : buttonLabel}
-        </button>
+        </Button>
         {status && (
-          <p
+          <Callout
+            tone={status.ok ? "tip" : "danger"}
             role="alert"
-            className={`text-xs font-medium ${status.ok ? "text-theme-primary" : "text-red-500"}`}
+            label={status.ok ? "Request received" : "Request failed"}
+            className="my-0 text-xs font-medium"
           >
             {status.message}
-          </p>
+          </Callout>
         )}
       </form>
     </div>

@@ -310,7 +310,6 @@ The documentation site (`github.com/OFFER-HUB/offer-hub-monorepo`) is a Next.js 
 | `MAIL_FROM` | No | none | Sender address for the confirmation email. Required together with `RESEND_API_KEY`. | `src/lib/mailer.ts` |
 | `NEXT_PUBLIC_API_BASE_URL` | No | `'http://localhost:4000/api/v1'` | Base URL for the interactive API explorer widget. Also added to the CSP `connect-src` allowlist. | `src/components/api-explorer/EndpointPanel.tsx`, `config/security-headers.ts` |
 | `NEXT_PUBLIC_API_URL` | No | none | Added to the CSP `connect-src` allowlist only. Not read anywhere else. | `config/security-headers.ts` |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | none | Cloudflare Turnstile site key. If absent, the waitlist form renders without CAPTCHA and submits without token verification. | `src/hooks/use-waitlist-form.ts` |
 
 <Callout type="note">
   `NEXT_PUBLIC_*` variables are embedded into the browser bundle at build time. Never put secrets in them. `NEXT_PUBLIC_SUPABASE_ANON_KEY` is the Supabase **anonymous** (public) key — it is safe to expose client-side, with row-level security enforcing access control in the database.

@@ -2,6 +2,7 @@
 
 import { useState, memo } from "react";
 import { Users, GitCommit, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/community/SectionHeading";
 import Image from "next/image";
 import type { ContributorData } from "@/types/community";
@@ -32,15 +33,15 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
         )}
 
         <div className="min-w-0 w-full max-w-full">
-          <h3 className="text-base font-black text-content-primary truncate tracking-tight">
+          <h3 className="text-base font-bold text-content-primary truncate tracking-tight">
             {person.name || person.username}
           </h3>
-          <p className="text-[11px] font-black uppercase tracking-widest text-theme-primary mt-1 truncate">
+          <p className="text-xs font-bold uppercase tracking-widest text-theme-primary mt-1 truncate">
             @{person.username}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-base shadow-neu-sunken-subtle text-[10px] font-bold uppercase tracking-wider text-content-secondary">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-base shadow-neu-sunken-subtle text-xs font-bold uppercase tracking-wider text-content-secondary">
           <GitCommit size={14} className="text-theme-primary/60" />
           <span>{person.commits} commits</span>
         </div>
@@ -50,7 +51,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
             href={person.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-[10px] font-black uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow max-w-full overflow-hidden truncate flex items-center min-h-11"
+            className="mt-1 p-2 rounded-xl bg-bg-base shadow-neu-raised-sm text-xs font-bold uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow max-w-full overflow-hidden truncate flex items-center min-h-11"
           >
             Profile
           </a>
@@ -92,7 +93,7 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
           </div>
         ) : (
           <div className="mt-12 rounded-3xl bg-bg-base p-8 shadow-neu-raised">
-            <p className="text-sm font-black uppercase tracking-widest text-content-primary">
+            <p className="text-sm font-bold uppercase tracking-widest text-content-primary">
               Contributors temporarily unavailable
             </p>
             <p className="mt-3 text-sm text-content-secondary">
@@ -103,14 +104,14 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
 
         {hasMore && (
           <div className="mt-16 text-center">
-            <button
+            <Button
               onClick={handleLoadMore}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-[background-color,box-shadow,transform] duration-300 btn-neumorphic-primary group"
+              size="lg"
             >
               Show more creators
-              <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />
-            </button>
-            <p className="mt-6 text-[10px] font-bold uppercase tracking-widest text-content-muted">
+              <ChevronDown size={14} />
+            </Button>
+            <p className="mt-6 text-xs font-bold uppercase tracking-widest text-content-muted">
               Displaying {displayCount} of {totalContributors} contributors
             </p>
           </div>
@@ -119,5 +120,4 @@ export const ContributorsSection = ({ contributors }: ContributorsSectionProps) 
     </section>
   );
 };
-
 
