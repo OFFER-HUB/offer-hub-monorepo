@@ -161,7 +161,7 @@ We welcome contributions. Read the [contributing guide](./docs/CONTRIBUTING.md) 
 
 - Documentation: [offer-hub.tech/docs](https://offer-hub.tech/docs)
 - Issues: [GitHub Issues](https://github.com/OFFER-HUB/offer-hub-monorepo/issues)
-- Community: [Discord](https://discord.gg/offerhub)
+- Community: [Discord](https://discord.gg/yH4vBNWwc)
 
 ## Maintainers
 
