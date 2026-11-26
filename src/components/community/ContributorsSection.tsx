@@ -41,8 +41,8 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-base shadow-neu-sunken-subtle text-xs font-bold uppercase tracking-wider text-content-secondary">
-          <GitCommit size={14} className="text-[color-mix(in_srgb,var(--color-primary)_60%,transparent)]" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-base shadow-neu-sunken-subtle text-xs font-bold uppercase tracking-wider text-content-secondary">
+          <GitCommit size={14} className="text-theme-primary/60" />
           <span>{person.commits} commits</span>
         </div>
 
@@ -51,7 +51,7 @@ const ContributorCard = memo(function ContributorCard({ person }: { person: Cont
             href={person.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 p-2 rounded-lg bg-bg-base shadow-neu-raised-sm text-xs font-bold uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow max-w-full overflow-hidden truncate flex items-center min-h-11"
+            className="mt-1 p-2 rounded-xl bg-bg-base shadow-neu-raised-sm text-xs font-bold uppercase tracking-widest text-theme-primary hover:shadow-neu-sunken-subtle active:shadow-neu-sunken transition-shadow max-w-full overflow-hidden truncate flex items-center min-h-11"
           >
             Profile
           </a>

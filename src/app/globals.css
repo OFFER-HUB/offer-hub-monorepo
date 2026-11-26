@@ -141,13 +141,8 @@ body {
     display: none;
   }
 
-  /* ── Neumorphic Level-2 (L2) shadow system — Blueprint deep-nesting support ──
-     L2 tokens provide higher offsets and blurs for elements that sit closer to
-     the user ("raised-l2") or hold complex technical data ("sunken-l2").
-     Light source: 135° (top-left). Shadow colors derived from bg-base:
-       Dark shadow  → L - 8%  (--shadow-dark)
-       Light shadow → L + 5%  (--shadow-light)
-  */
+  /* Shadow geometry is defined once in tailwind.config.ts.
+     L2 depth is reserved for the nested Blueprint orchestrator showcase. */
 
   /* Blueprint performance layer — promotes to GPU compositor for Safari/Mobile.
      Apply to any container with ≥ 3 concurrent box-shadows to avoid repaints. */
@@ -167,31 +162,23 @@ body {
 
   .neu-btn {
     background: var(--color-bg-base);
-    box-shadow:
-      6px 6px 12px var(--shadow-dark),
-      -6px -6px 12px var(--shadow-light);
+    @apply shadow-neu-raised;
     transition: box-shadow 0.2s ease;
   }
 
   .neu-btn:active {
-    box-shadow:
-      inset 4px 4px 8px var(--shadow-dark),
-      inset -4px -4px 8px var(--shadow-light);
+    @apply shadow-neu-sunken;
   }
 
   .neu-circle {
     background: var(--color-bg-base);
-    border-radius: 9999px;
-    box-shadow:
-      6px 6px 12px var(--shadow-dark),
-      -6px -6px 12px var(--shadow-light);
+    @apply rounded-full;
+    @apply shadow-neu-raised;
     transition: box-shadow 0.2s ease;
   }
 
   .neu-circle:active {
-    box-shadow:
-      inset 4px 4px 8px var(--shadow-dark),
-      inset -4px -4px 8px var(--shadow-light);
+    @apply shadow-neu-sunken;
   }
 
   /* ── Neumorphic Tables ── */
@@ -199,21 +186,17 @@ body {
   /* Outer wrapper — raised card, SOLID background blocks the dot grid */
   .neu-table-wrap {
     background: var(--color-bg-base);
-    border-radius: 20px;
+    @apply rounded-2xl;
     overflow: hidden;
     position: relative;
     z-index: 1;
-    box-shadow:
-      6px 6px 14px var(--shadow-dark),
-      -6px -6px 14px var(--shadow-light);
+    @apply shadow-neu-raised;
   }
 
   /* Header — sunken look */
   .neu-table-head {
     background: var(--color-bg-sunken);
-    box-shadow:
-      inset 3px 3px 6px var(--shadow-dark),
-      inset -3px -3px 6px var(--shadow-light);
+    @apply shadow-neu-sunken-subtle;
   }
 
   /* Body — solid to block dot grid from showing through */

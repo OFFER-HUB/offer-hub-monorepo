@@ -113,7 +113,7 @@ function BusinessView() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-lg p-2 text-center bg-bg-base shadow-neu-raised-sm"
+              className="rounded-2xl p-2 text-center bg-bg-base shadow-neu-raised-sm"
             >
               <p className="text-lg font-bold font-mono text-content-primary">{stat.value}</p>
               <p className="text-xs text-content-muted leading-tight">{stat.label}</p>

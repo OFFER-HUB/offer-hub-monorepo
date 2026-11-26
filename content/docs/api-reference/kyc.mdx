@@ -1,0 +1,47 @@
+---
+title: KYC Endpoints
+description: KYC receiver and terms-of-service endpoints for BlindPay bank payouts.
+order: 55
+section: API Reference
+---
+
+These endpoints manage the current user's BlindPay receiver and terms-of-service consent. All require the user's session JWT. A user session JWT is valid for seven days.
+
+## Endpoints
+
+| Method | Path | Auth | Idempotency |
+| --- | --- | --- | --- |
+| `GET` | `/users/me/kyc` | User session JWT | Not applicable |
+| `POST` | `/users/me/kyc` | User session JWT | Not stated |
+| `POST` | `/users/me/kyc/tos-url` | User session JWT | Not stated |
+| `POST` | `/users/me/kyc/tos-accept` | User session JWT | Not stated |
+
+## GET /users/me/kyc
+
+<Endpoint method="GET" path="/api/v1/users/me/kyc" />
+
+Retrieves the authenticated user's KYC/receiver information.
+
+## POST /users/me/kyc
+
+<Endpoint method="POST" path="/api/v1/users/me/kyc" />
+
+Creates or updates the authenticated user's KYC/receiver information.
+
+## POST /users/me/kyc/tos-url
+
+<Endpoint method="POST" path="/api/v1/users/me/kyc/tos-url" />
+
+Requests a terms-of-service URL for the authenticated user.
+
+## POST /users/me/kyc/tos-accept
+
+<Endpoint method="POST" path="/api/v1/users/me/kyc/tos-accept" />
+
+Records the authenticated user's acceptance of the terms.
+
+## Related
+
+- [Seller Bank Payouts guide](/docs/guide/withdrawals) — KYC, bank accounts, and payout steps.
+- [Bank accounts endpoints](/docs/api-reference/bank-accounts) — manage seller payout accounts.
+- [Payouts endpoints](/docs/api-reference/payouts) — prepare, submit, track, and retry payouts.

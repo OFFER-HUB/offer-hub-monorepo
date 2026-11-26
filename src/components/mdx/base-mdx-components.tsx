@@ -48,7 +48,7 @@ export const BASE_MDX_COMPONENTS: MDXComponents = {
   ),
 
   code: ({ children }) => (
-    <code className="px-2 py-0.5 rounded-lg text-[0.9em] font-mono font-semibold bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary">
+    <code className="px-2 py-0.5 rounded-xl text-[0.9em] font-mono font-semibold bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-theme-primary">
       {children}
     </code>
   ),

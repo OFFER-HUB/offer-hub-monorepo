@@ -38,18 +38,19 @@ This creates:
 
 ## Elevation States
 
-OFFER-HUB uses two primary elevation states:
+OFFER-HUB uses three surface levels, two interaction states, and one Blueprint-only L2 token.
+See [Shadow Utilities](#shadow-utilities) for the complete scale.
 
 ### 1. Raised (Elevated) Surface
 
-**Used for:** Cards, primary buttons, status badges, panels
+**Used for:** Cards, controls, and panels. Status badges use tinted pills without shadows.
 
 The element appears to **protrude from** the background.
 
 #### Light Theme Physics
 
 ```css
-box-shadow: 
+box-shadow:
   6px 6px 12px #d1d5db,    /* Dark shadow (bottom-right) */
   -6px -6px 12px #ffffff;  /* Light highlight (top-left) */
 ```
@@ -62,11 +63,11 @@ box-shadow:
 
 ```css
 box-shadow:
-  6px 6px 12px #1a1a26,    /* Dark shadow (bottom-right) */
-  -6px -6px 12px #2e2e3f;  /* Light highlight (top-left) */
+  6px 6px 12px var(--shadow-dark),
+  -6px -6px 12px var(--shadow-light);
 ```
 
-**Note:** Dark theme shadows use the `--shadow-dark` (`#1a1a26`) and `--shadow-light` (`#2e2e3f`) tokens from `src/app/globals.css`.
+**Note:** Dark mode changes the shadow colors through theme variables, not the geometry.
 
 ---
 
@@ -93,8 +94,8 @@ box-shadow:
 
 ```css
 box-shadow:
-  inset 4px 4px 8px #1a1a26,
-  inset -4px -4px 8px #2e2e3f;
+  inset 4px 4px 8px var(--shadow-dark),
+  inset -4px -4px 8px var(--shadow-light);
 ```
 
 ---
@@ -219,10 +220,10 @@ For accessibility, ensure text on neumorphic surfaces maintains at least:
 />
 ```
 
-### Status Badge (Raised)
+### Status Badge (Pill)
 
 ```tsx
-<span className="inline-flex items-center bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-theme-success rounded-full px-3 py-1 text-sm font-medium shadow-neu-raised-sm">
+<span className="inline-flex items-center bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-theme-success rounded-full px-3 py-1 text-sm font-medium">
   Active
 </span>
 ```
@@ -231,23 +232,23 @@ For accessibility, ensure text on neumorphic surfaces maintains at least:
 
 ## Shadow Utilities
 
-The shadow utilities are `boxShadow` tokens in `tailwind.config.ts` — use the `shadow-neu-*` classes, never arbitrary `shadow-[...]` values or inline `boxShadow`:
+The only elevation tokens are defined in `tailwind.config.ts`. Their colors come
+from `--shadow-dark` and `--shadow-light`, so geometry is identical in both themes.
 
-| Utility | Value |
-|:--------|:------|
-| `shadow-neu-raised` | `6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)` |
-| `shadow-neu-raised-sm` | `3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)` |
-| `shadow-neu-raised-hover` | `2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light)` |
-| `shadow-neu-sunken` | `inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)` |
-| `shadow-neu-sunken-subtle` | `inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)` |
-| `shadow-neu-raised-l2` | `12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light)` (nested product diagram only) |
+| Token | Offset / blur | Role |
+| --- | --- | --- |
+| `shadow-neu-raised` | 6 / 12px | Raised cards and panels |
+| `shadow-neu-raised-sm` | 3 / 6px | Small raised controls and surfaces |
+| `shadow-neu-sunken` | inset 4 / 8px | Input wells and recessed surfaces |
+| `shadow-neu-raised-hover` | 2 / 4px | Compressed hover state |
+| `shadow-neu-sunken-subtle` | inset 2 / 4px | Subtle pressed/selected state |
+| `shadow-neu-raised-l2` | 12 / 24px | Nested Blueprint orchestrator showcase only |
 
-**Usage:**
-```tsx
-<div className="shadow-neu-raised hover:shadow-neu-raised-hover transition-shadow duration-200">
-  Content
-</div>
-```
+Badges are tinted pills without shadows. Do not introduce Tailwind drop shadows,
+arbitrary shadows, inline `boxShadow`, or additional elevation tokens. The
+`.neu-table-*`, `.neu-btn`, and `.neu-circle` utilities compose these
+same tokens with `@apply`. The separately maintained `.btn-neumorphic-*` button
+styles are outside this surface-token migration.
 
 ---
 
@@ -367,12 +368,9 @@ When implementing dark mode:
 2. **Shadow colors:** Dark shadow `#1a1a26`, light highlight `#2e2e3f` (the `--shadow-dark` / `--shadow-light` tokens)
 3. **Test contrast:** Ensure text remains readable
 
-**Example Dark Theme:**
-```css
-.shadow-neu-raised {
-  box-shadow: 6px 6px 12px #1a1a26, -6px -6px 12px #2e2e3f;
-}
-```
+Both themes use the same `shadow-neu-*` classes. The `.dark` rule in
+`src/app/globals.css` supplies `--shadow-dark` and `--shadow-light`; do not
+redefine shadow geometry in components or media queries.
 
 ---
 

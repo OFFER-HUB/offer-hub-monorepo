@@ -91,7 +91,7 @@ export function CodeIntegrationShowcase({
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-content-secondary">
             The{" "}
-            <code className="rounded-md bg-bg-sunken px-1.5 py-0.5 font-mono text-[0.85em] text-theme-primary">
+            <code className="rounded-xl bg-bg-sunken px-1.5 py-0.5 font-mono text-[0.85em] text-theme-primary">
               @offerhub/sdk
             </code>{" "}
             {description}

@@ -48,6 +48,9 @@ describe("POST /api/waitlist — input validation", () => {
     ["a missing body key", { email: "jane@acme.com" }],
     ["an invalid email", { ...VALID, email: "a@@b.co" }],
     ["a multi-@ email", { ...VALID, email: "a@b@c.co" }],
+    ["a filled honeypot", { ...VALID, website: "https://spam.example" }],
+    ["a whitespace honeypot", { ...VALID, website: " " }],
+    ["a non-string honeypot", { ...VALID, website: false }],
   ])("rejects %s with 400 field errors", async (_label, body) => {
     const res = await POST(request(body));
 
@@ -66,6 +69,12 @@ describe("POST /api/waitlist — input validation", () => {
 });
 
 describe("POST /api/waitlist — persistence", () => {
+  it("accepts an empty honeypot without storing it", async () => {
+    const res = await POST(request({ ...VALID, website: "" }));
+    expect(res.status).toBe(200);
+    expect(insert).toHaveBeenCalledWith([VALID]);
+  });
+
   it("inserts a valid entry and returns ok", async () => {
     const res = await POST(request(VALID));
 

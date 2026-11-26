@@ -22,6 +22,15 @@ function fillField(container: HTMLElement, id: string, value: string) {
 }
 
 describe("ContactForm", () => {
+  it("keeps the honeypot outside the tab order and accessibility tree", () => {
+    const { container } = render(<ContactForm />);
+    const field = container.querySelector<HTMLInputElement>('[name="website"]')!;
+    expect(field).toHaveAttribute("tabindex", "-1");
+    expect(field).toHaveAttribute("autocomplete", "off");
+    expect(field.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.queryByRole("textbox", { name: /leave this field empty/i })).toBeNull();
+  });
+
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubGlobal("fetch", vi.fn());

@@ -1,4 +1,5 @@
 export type WaitlistSubmission = {
+  website?: string;
   email: string;
   name: string;
   purpose: string;
