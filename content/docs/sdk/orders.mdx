@@ -1,5 +1,5 @@
----
-title: SDK â€” Orders
+--
+title: SDK — Orders
 description: Order management methods in @offerhub/sdk 3.0.0.
 order: 101
 section: SDK
@@ -48,9 +48,9 @@ const order = await sdk.asUser(token).orders.create(
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `offerId` | `string` | âœ“ | ID of the offer being purchased |
-| `amount` | `{ value: string; currency: string }` | âœ“ | Order total |
-| `milestones` | `Milestone[]` | â€” | Optional milestone breakdown (percentages must sum to 100) |
+| `offerId` | `string` | ✓ | ID of the offer being purchased |
+| `amount` | `{ value: string; currency: string }` | ✓ | Order total |
+| `milestones` | `Milestone[]` | — | Optional milestone breakdown (percentages must sum to 100) |
 
 **Returns:** `Order`
 
@@ -106,7 +106,7 @@ await sdk.asUser(token).orders.cancel(orderId);
 
 Cancels the order and transitions it to `CLOSED`.
 
-> **Important:** An order can only be cancelled from the `ORDER_CREATED` or `FUNDS_RESERVED` status. Attempting to cancel from any other status will return an error. There is no `CANCELLED` status â€” the terminal state is `CLOSED`.
+> **Important:** An order can only be cancelled from the `ORDER_CREATED` or `FUNDS_RESERVED` status. Attempting to cancel from any other status will return an error. There is no `CANCELLED` status — the terminal state is `CLOSED`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -183,7 +183,7 @@ Initiates a payout to the seller after the buyer has accepted delivery.
 
 ## Escrow
 
-Escrow operations follow a **prepare â†’ sign â†’ submit** flow. The prepare step returns an unsigned XDR transaction that your client signs with the user's key before submitting.
+Escrow operations follow a **prepare → sign → submit** flow. The prepare step returns an unsigned XDR transaction that your client signs with the user's key before submitting.
 
 ### Prepare escrow creation
 
@@ -312,9 +312,9 @@ await sdk.asUser(token).resolution.dispute("order_xyz789", {
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `reason` | `"NOT_DELIVERED" \| "QUALITY_ISSUE" \| "OTHER"` | âœ“ | Reason for the dispute |
-| `signedXdr` | `string` | âœ“ | Signed XDR from `disputePrepare` |
-| `description` | `string` | â€” | Optional free-text description |
+| `reason` | `"NOT_DELIVERED" \| "QUALITY_ISSUE" \| "OTHER"` | ✓ | Reason for the dispute |
+| `signedXdr` | `string` | ✓ | Signed XDR from `disputePrepare` |
+| `description` | `string` | — | Optional free-text description |
 
 **Returns:** `Dispute`
 
@@ -355,7 +355,7 @@ async function placeAndFundOrder(token: string) {
     idempotencyKey: "escrow-fund-abc123",
   });
 
-  // 4. Reserve funds â€” order transitions to FUNDS_RESERVED
+  // 4. Reserve funds — order transitions to FUNDS_RESERVED
   await user.orders.reserve(order.id);
 
   return order;

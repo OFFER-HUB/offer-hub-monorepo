@@ -1,4 +1,4 @@
----
+--
 title: Resolution API
 description: Prepare and submit escrow release, refund and dispute transactions.
 order: 203
@@ -7,7 +7,7 @@ section: API Reference
 
 ## Overview
 
-The Resolution API handles the end-of-order escrow settlement flows: releasing funds to the seller, refunding the buyer, and opening a dispute. Each path follows a prepareâ†’signâ†’submit pattern â€” the server returns an unsigned XDR transaction, the client signs it with their private key, and the signed transaction is submitted through the relevant submit endpoint.
+The Resolution API handles the end-of-order escrow settlement flows: releasing funds to the seller, refunding the buyer, and opening a dispute. Each path follows a prepare → sign → submit pattern — the server returns an unsigned XDR transaction, the client signs it with their private key, and the signed transaction is submitted through the relevant submit endpoint.
 
 Every endpoint requires a valid JWT (user session token) in the `Authorization` header.
 
@@ -84,7 +84,7 @@ Prepare an unsigned dispute transaction. This initiates the dispute flow on-chai
 |----------|-------|
 | **Auth** | JWT (Bearer) |
 
-Either the buyer or seller may open a dispute. The order must be in `ESCROW_FUNDED` or `IN_PROGRESS` or `DELIVERED` status.
+Either the buyer or seller may open a dispute. The order must be in `ESCROW_FUNDED`, `IN_PROGRESS`, or `DELIVERED` status.
 
 **Response** `200 OK`
 
@@ -146,11 +146,11 @@ The order status moves to `DISPUTED` after a successful submission.
 
 ## Resolution flow summary
 
-| Goal              | Step 1 â€” Prepare                                   | Step 2 â€” Sign        | Step 3 â€” Submit |
-|-------------------|----------------------------------------------------|----------------------|-----------------|
-| Release to seller | `POST â€¦/resolution/release/prepare`                | Sign XDR client-side | Submit to Stellar / Trustless Work |
-| Refund to buyer   | `POST â€¦/resolution/refund/prepare`                 | Sign XDR client-side | Submit to Stellar / Trustless Work |
-| Open dispute      | `POST â€¦/resolution/dispute/prepare`                | Sign XDR client-side | `POST â€¦/resolution/dispute` |
+| Goal              | Step 1 — Prepare                              | Step 2 — Sign        | Step 3 — Submit |
+|-------------------|-----------------------------------------------|----------------------|-----------------|
+| Release to seller | `POST …/resolution/release/prepare`           | Sign XDR client-side | Submit to Stellar / Trustless Work |
+| Refund to buyer   | `POST …/resolution/refund/prepare`            | Sign XDR client-side | Submit to Stellar / Trustless Work |
+| Open dispute      | `POST …/resolution/dispute/prepare`           | Sign XDR client-side | `POST …/resolution/dispute` |
 
 ---
 
@@ -158,7 +158,7 @@ The order status moves to `DISPUTED` after a successful submission.
 
 | Action           | Required status(es)                              | Resulting status   |
 |------------------|--------------------------------------------------|--------------------|
-| Release prepare  | `DELIVERED`, `RELEASE_REQUESTED`                 | â€” (no change yet)  |
-| Refund prepare   | `REFUND_REQUESTED`                               | â€” (no change yet)  |
-| Dispute prepare  | `ESCROW_FUNDED`, `IN_PROGRESS`, `DELIVERED`      | â€” (no change yet)  |
+| Release prepare  | `DELIVERED`, `RELEASE_REQUESTED`                 | — (no change yet)  |
+| Refund prepare   | `REFUND_REQUESTED`                               | — (no change yet)  |
+| Dispute prepare  | `ESCROW_FUNDED`, `IN_PROGRESS`, `DELIVERED`      | — (no change yet)  |
 | Dispute submit   | `ESCROW_FUNDED`, `IN_PROGRESS`, `DELIVERED`      | `DISPUTED`         |

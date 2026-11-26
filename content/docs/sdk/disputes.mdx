@@ -1,5 +1,5 @@
----
-title: SDK â€” Disputes
+--
+title: SDK — Disputes
 description: Dispute methods in @offerhub/sdk 3.0.0.
 order: 102
 section: SDK
@@ -139,13 +139,13 @@ The `reason` field must be one of `NOT_DELIVERED`, `QUALITY_ISSUE`, or `OTHER`. 
 ## Dispute lifecycle
 
 ```
-OPEN  â†’  UNDER_REVIEW  â†’  RESOLVED
-  â†“
-(cancelled by opener while OPEN â†’ dispute closed, order returns to previous state)
+OPEN → UNDER_REVIEW → RESOLVED
+  ↓
+(cancelled by opener while OPEN — dispute closed, order returns to previous state)
 ```
 
 | Transition | Trigger |
 |------------|---------|
-| `OPEN` â†’ `UNDER_REVIEW` | Admin picks up the dispute |
-| `UNDER_REVIEW` â†’ `RESOLVED` | Admin records an outcome (`FULL_RELEASE`, `FULL_REFUND`, or `SPLIT`) |
-| `OPEN` â†’ closed | Opener calls `disputes.cancel(disputeId)` |
+| `OPEN` → `UNDER_REVIEW` | Admin picks up the dispute |
+| `UNDER_REVIEW` → `RESOLVED` | Admin records an outcome (`FULL_RELEASE`, `FULL_REFUND`, or `SPLIT`) |
+| `OPEN` → closed | Opener calls `disputes.cancel(disputeId)` |

@@ -1,14 +1,13 @@
-﻿---
+-
 title: Escrow Overview
 description: How Trustless Work Soroban escrows work in OFFER-HUB.
 order: 17
 section: Guides
 ---
 
-
 ## What Is Trustless Work Escrow?
 
-OFFER-HUB uses [Trustless Work](https://trustlesswork.com) Soroban smart contracts on Stellar to hold order funds in USDC. Each milestone in an order maps to a dedicated escrow contract. Funds never pass through OFFER-HUB servers â€” the contracts enforce release, refund, and dispute rules on-chain.
+OFFER-HUB uses [Trustless Work](https://trustlesswork.com) Soroban smart contracts on Stellar to hold order funds in USDC. Each milestone in an order maps to a dedicated escrow contract. Funds never pass through OFFER-HUB servers — the contracts enforce release, refund, and dispute rules on-chain.
 
 ## Non-Custodial Design
 
@@ -18,17 +17,17 @@ OFFER-HUB uses [Trustless Work](https://trustlesswork.com) Soroban smart contrac
 
 The flow for every escrow operation is:
 
-1. **Prepare** â€” The client calls a `/prepare` endpoint. The Orchestrator builds the transaction and returns an unsigned XDR envelope.
-2. **Sign** â€” The client signs the XDR locally with Stellar Wallets Kit (no key ever leaves the client).
-3. **Submit** â€” The client posts the signed XDR back to the corresponding `/submit` endpoint. The Orchestrator submits it to the Stellar network and updates the order status.
+1. **Prepare** — The client calls a `/prepare` endpoint. The Orchestrator builds the transaction and returns an unsigned XDR envelope.
+2. **Sign** — The client signs the XDR locally with Stellar Wallets Kit (no key ever leaves the client).
+3. **Submit** — The client posts the signed XDR back to the corresponding `/submit` endpoint. The Orchestrator submits it to the Stellar network and updates the order status.
 
 ## Escrow Operations
 
 | Operation | Description |
 |---|---|
-| **Create** | Deploys a new Soroban escrow contract for the milestone. Order moves to `ESCROW_CREATING` â†’ `ESCROW_FUNDING`. |
-| **Fund** | Transfers USDC into the deployed contract. Order moves to `ESCROW_FUNDED` â†’ `IN_PROGRESS`. |
-| **Release** | Releases escrowed USDC to the seller after buyer approval. Order moves through `RELEASE_REQUESTED` â†’ `RELEASED` â†’ `CLOSED`. |
+| **Create** | Deploys a new Soroban escrow contract for the milestone. Order moves to `ESCROW_CREATING` → `ESCROW_FUNDING`. |
+| **Fund** | Transfers USDC into the deployed contract. Order moves to `ESCROW_FUNDED` → `IN_PROGRESS`. |
+| **Release** | Releases escrowed USDC to the seller after buyer approval. Order moves through `RELEASE_REQUESTED` → `RELEASED` → `CLOSED`. |
 | **Refund / Dispute** | Returns USDC to the buyer or splits it according to a dispute resolution outcome. Order moves to `REFUNDED` or resolves the `DISPUTED` state. |
 
 See [Escrow Flows](/docs/guide/escrow-flows) for the full sequence diagrams of each operation.

@@ -1,4 +1,4 @@
----
+--
 title: State Machines
 description: Valid status transitions for Dispute, Top-up, Withdrawal and Milestone — plus links to the Order and Escrow machines.
 order: 16
@@ -42,7 +42,7 @@ Cross-links: [Disputes API](/docs/api-reference/disputes#dispute), [Resolution A
 
 ## Top-up
 
-A top-up is a fiat on-ramp operation. The transition map is defined in `TOPUP_TRANSITIONS` in the orchestrator's `packages/shared/src/enums`. See [wallet-topups API](/docs/api-reference/wallet-topups#top-up) and [SDK top-ups](/docs/sdk/topups#top-up) for endpoint details.
+A top-up is a fiat on-ramp operation. A top-up moves forward only after the user confirms the payment on the provider side; while awaiting that confirmation it can still be canceled, and once the provider is processing it either succeeds or fails terminally. See [wallet-topups API](/docs/api-reference/wallet-topups#top-up) and [SDK top-ups](/docs/sdk/topups#top-up) for endpoint details.
 
 <MermaidDiagram caption="Top-up state machine" chart={`
 stateDiagram-v2
@@ -68,7 +68,7 @@ stateDiagram-v2
 
 ## Withdrawal
 
-A withdrawal is an outbound funds transfer. The transition map is defined in `WITHDRAWAL_TRANSITIONS` in the orchestrator's `packages/shared/src/enums`. See [Withdrawals guide](/docs/guide/withdrawals#withdrawal) and [SDK withdrawals](/docs/sdk/withdrawals#withdrawal) for endpoint details.
+A withdrawal is an outbound funds transfer. A withdrawal must be committed to the payment provider before anything else can happen; until it is committed it can be canceled. After commitment it is pending settlement, either completing, failing, or pausing for a required user action before returning to pending. See [Withdrawals guide](/docs/guide/withdrawals#withdrawal) and [SDK withdrawals](/docs/sdk/withdrawals#withdrawal) for endpoint details.
 
 <MermaidDiagram caption="Withdrawal state machine" chart={`
 stateDiagram-v2

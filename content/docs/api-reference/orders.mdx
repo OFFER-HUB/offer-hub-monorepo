@@ -1,4 +1,4 @@
----
+--
 title: Orders API
 description: REST endpoints for creating, managing and settling orders.
 order: 202
@@ -9,7 +9,7 @@ section: API Reference
 
 The Orders API covers the full order lifecycle: creating an order, reserving funds, setting up escrow, tracking milestones, completing delivery, and attaching notes or files. Every endpoint requires a valid JWT (user session token) in the `Authorization` header.
 
-For background on order states and transitions, see [State Machines](/docs/guide/state-machines). For the escrow prepare-sign-submit flow, see [Escrow Flows](/docs/guide/escrow-flows). For the milestone transition guard, see the [Milestone state machine](/docs/guide/state-machines#milestone).
+For background on order states and transitions, see [State Machines](/docs/guide/state-machines). For the escrow prepare → sign → submit flow, see [Escrow Flows](/docs/guide/escrow-flows). For the milestone transition guard, see the [Milestone state machine](/docs/guide/state-machines#milestone).
 
 ---
 
@@ -95,7 +95,7 @@ List orders where the authenticated user is the buyer.
 
 Supports the same `status`, `page`, and `limit` query parameters as `GET /orders`.
 
-**Response** `200 OK` â€” same shape as `GET /orders`.
+**Response** `200 OK` — same shape as `GET /orders`.
 
 ---
 
@@ -153,7 +153,7 @@ Cancel an order. **Only allowed when the order is in `ORDER_CREATED` or `FUNDS_R
 | **Auth** | JWT (Bearer) |
 
 <Callout type="warning">
-  Cancellation is not available after escrow has been initiated. Attempting to cancel an order in any status other than `ORDER_CREATED` or `FUNDS_RESERVED` returns `409 Conflict`. There is no `CANCELLED` status â€” cancelled orders move to `CLOSED`.
+  Cancellation is not available after escrow has been initiated. Attempting to cancel an order in any status other than `ORDER_CREATED` or `FUNDS_RESERVED` returns `409 Conflict`. There is no `CANCELLED` status — cancelled orders move to `CLOSED`.
 </Callout>
 
 **Response** `200 OK`
@@ -313,7 +313,7 @@ Add a file attachment to an order.
 |----------|-------|
 | **Auth** | JWT (Bearer) |
 
-**Request** â€” `multipart/form-data`
+**Request** — `multipart/form-data`
 
 | Field  | Type | Description |
 |--------|------|-------------|
@@ -362,7 +362,7 @@ Add a note to an order. Notes are visible to both buyer and seller.
 
 ```json
 {
-  "body": "Revised scope agreed â€” delivery extended by 2 days."
+  "body": "Revised scope agreed — delivery extended by 2 days."
 }
 ```
 
@@ -371,7 +371,7 @@ Add a note to an order. Notes are visible to both buyer and seller.
 ```json
 {
   "success": true,
-  "data": { "noteId": "nte_...", "body": "Revised scope agreed â€” delivery extended by 2 days.", "createdAt": "2026-11-21T09:00:00.000Z" }
+  "data": { "noteId": "nte_...", "body": "Revised scope agreed — delivery extended by 2 days.", "createdAt": "2026-11-21T09:00:00.000Z" }
 }
 ```
 
