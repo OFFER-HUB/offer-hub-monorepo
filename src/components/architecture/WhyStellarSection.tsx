@@ -1,84 +1,76 @@
-import { ArchitectureSection } from "@/components/shared/ArchitectureSection";
 import { DollarSign, Zap, Shield, Lock, Globe, Users } from "lucide-react";
 
 export function WhyStellarSection() {
+  const points = [
+    {
+      icon: DollarSign,
+      title: "USDC on Stellar",
+      desc: "Stellar's native USDC support means freelancers receive payment in a stable, internationally liquid asset — no wrapping, no bridge risk, no slippage. Every escrow is denominated in USDC, eliminating currency volatility from the payment contract.",
+    },
+    {
+      icon: Zap,
+      title: "Sub-second finality, ~$0.0001/tx",
+      desc: "Stellar confirms transactions in 3–5 seconds with fees under a fraction of a cent. For a marketplace processing hundreds of escrow releases weekly, this makes on-chain payment settlement economically viable at any order size — including micro-orders under $10.",
+    },
+    {
+      icon: Shield,
+      title: "Soroban smart contracts (TrustlessWork)",
+      desc: "Soroban enables programmable, audited escrow logic on Stellar. OfferHub integrates TrustlessWork's open-source Soroban contracts rather than building from scratch — leveraging already-audited code and contributing to Stellar's composable DeFi layer.",
+    },
+    {
+      icon: Lock,
+      title: "Non-custodial by design",
+      desc: "Stellar Wallets Kit allows client-side transaction signing. Funds never pass through OfferHub's servers. This is the correct model for a marketplace handling freelancer payments at scale — OfferHub cannot freeze, redirect, or lose user funds.",
+    },
+    {
+      icon: Globe,
+      title: "LATAM off-ramp coverage",
+      desc: "BlindPay covers 7 payout corridors across 6 LATAM countries — all settled from on-chain USDC. This makes Stellar the settlement layer for a population where 47% of the workforce is unbanked and traditional payment rails are unreliable or inaccessible.",
+    },
+    {
+      icon: Users,
+      title: "Ecosystem value OfferHub adds",
+      desc: "OfferHub brings real freelance transaction volume to Stellar mainnet. Every completed order is an on-chain USDC escrow release followed by a fiat settlement via a Stellar anchor. Open-sourcing the SWK + BlindPay adapters in T3 creates reusable building blocks for any future Stellar marketplace.",
+    },
+  ];
+
   return (
-    <ArchitectureSection
-      id="why-stellar"
-      sectionClassName="px-6 py-24 bg-transparent"
-      eyebrowClassName="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
-      eyebrow="Why Stellar"
-      heading="The case for Stellar"
-      description="What Stellar uniquely enables for OfferHub that no other chain or payment rail provides."
-      infoText={
-        <>
-          This section answers the SCF panel&apos;s core question: why is Stellar the right foundation for OfferHub, and what value does this integration bring to the Stellar ecosystem?
-        </>
-      }
-    >
-        <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
-          
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
-            <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
-              <DollarSign size={24} className="text-theme-primary" />
-            </div>
-            <h3 className="text-base font-bold text-content-primary">USDC on Stellar</h3>
-            <p className="text-sm text-content-secondary leading-relaxed">
-              Stellar&apos;s native USDC support means freelancers receive payment in a stable, internationally liquid asset — no wrapping, no bridge risk, no slippage. Every escrow is denominated in USDC, eliminating currency volatility from the payment contract.
-            </p>
-          </div>
+    <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-8 flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary w-fit">
+          Why Stellar
+        </span>
+        <h2 className="text-xl md:text-2xl font-bold text-content-primary">
+          The case for Stellar
+        </h2>
+        <p className="text-xs md:text-sm text-content-secondary leading-relaxed">
+          What Stellar uniquely enables for OFFER-HUB that no other chain or payment rail provides.
+        </p>
+      </div>
 
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
-            <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
-              <Zap size={24} className="text-theme-primary" />
+      <div className="flex flex-col gap-4">
+        {points.map((pt) => {
+          const Icon = pt.icon;
+          return (
+            <div
+              key={pt.title}
+              className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 flex flex-col gap-2.5 transition-shadow hover:shadow-neu-raised"
+            >
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl p-2.5 shadow-neu-sunken-subtle bg-bg-base shrink-0">
+                  <Icon size={18} className="text-theme-primary" />
+                </div>
+                <h3 className="text-sm font-bold text-content-primary leading-snug">
+                  {pt.title}
+                </h3>
+              </div>
+              <p className="text-xs text-content-secondary leading-relaxed pl-1">
+                {pt.desc}
+              </p>
             </div>
-            <h3 className="text-base font-bold text-content-primary">Sub-second finality, ~$0.0001/tx</h3>
-            <p className="text-sm text-content-secondary leading-relaxed">
-              Stellar confirms transactions in 3–5 seconds with fees under a fraction of a cent. For a marketplace processing hundreds of escrow releases weekly, this makes on-chain payment settlement economically viable at any order size — including micro-orders under $10.
-            </p>
-          </div>
-
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
-            <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
-              <Shield size={24} className="text-[var(--color-secondary)]" />
-            </div>
-            <h3 className="text-base font-bold text-content-primary">Soroban smart contracts (TrustlessWork)</h3>
-            <p className="text-sm text-content-secondary leading-relaxed">
-              Soroban enables programmable, audited escrow logic on Stellar. OfferHub integrates TrustlessWork&apos;s open-source Soroban contracts rather than building from scratch — leveraging already-audited code and contributing to Stellar&apos;s composable DeFi layer.
-            </p>
-          </div>
-
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
-            <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
-              <Lock size={24} className="text-theme-primary" />
-            </div>
-            <h3 className="text-base font-bold text-content-primary">Non-custodial by design</h3>
-            <p className="text-sm text-content-secondary leading-relaxed">
-              Stellar Wallets Kit allows client-side transaction signing. Funds never pass through OfferHub&apos;s servers. This is the correct model for a marketplace handling freelancer payments at scale — OfferHub cannot freeze, redirect, or lose user funds.
-            </p>
-          </div>
-
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
-            <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
-              <Globe size={24} className="text-theme-primary" />
-            </div>
-            <h3 className="text-base font-bold text-content-primary">LATAM off-ramp coverage</h3>
-            <p className="text-sm text-content-secondary leading-relaxed">
-              BlindPay covers 7 payout corridors across 6 LATAM countries — all settled from on-chain USDC. This makes Stellar the settlement layer for a population where 47% of the workforce is unbanked and traditional payment rails are unreliable or inaccessible.
-            </p>
-          </div>
-
-          <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised-l2-sm p-7 flex flex-col gap-4">
-            <div className="rounded-2xl p-3 shadow-neu-sunken-subtle bg-bg-base w-fit">
-              <Users size={24} className="text-[var(--color-secondary)]" />
-            </div>
-            <h3 className="text-base font-bold text-content-primary">Ecosystem value OfferHub adds</h3>
-            <p className="text-sm text-content-secondary leading-relaxed">
-              OfferHub brings real freelance transaction volume to Stellar mainnet. Every completed order is an on-chain USDC escrow release followed by a fiat settlement via a Stellar anchor. Open-sourcing the SWK + BlindPay adapters in T3 creates reusable building blocks for any future Stellar marketplace.
-            </p>
-          </div>
-
-        </div>
-    </ArchitectureSection>
+          );
+        })}
+      </div>
+    </div>
   );
 }

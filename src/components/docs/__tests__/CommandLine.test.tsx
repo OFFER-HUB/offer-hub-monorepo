@@ -21,12 +21,11 @@ describe("CommandLine", () => {
     render(<CommandLine command="git status" />);
 
     const region = screen.getByRole("region", {
-      name: /command line, scrollable horizontally/i,
+      name: /terminal \(bash\) code sample, scrollable horizontally/i,
     });
     expect(region).toBeInTheDocument();
     expect(region).toHaveAttribute("tabindex", "0");
-    expect(screen.getByText("git status")).toBeInTheDocument();
-    expect(screen.getByText("$")).toBeInTheDocument();
+    expect(region).toHaveTextContent("$ git status");
   });
 
   it("renders custom title or label in header", () => {
@@ -44,7 +43,7 @@ describe("CommandLine", () => {
       </CommandLine>,
     );
 
-    expect(screen.getByText("curl -X GET https://api.example.com")).toBeInTheDocument();
+    expect(screen.getByText("$ curl -X GET https://api.example.com")).toBeInTheDocument();
   });
 
   it("copies command to clipboard and announces via polite live region", async () => {
@@ -54,11 +53,11 @@ describe("CommandLine", () => {
 
     render(<CommandLine command="npm run build" />);
 
-    const copyBtn = screen.getByRole("button", { name: /copy command/i });
+    const copyBtn = screen.getByRole("button", { name: /copy code/i });
     await user.click(copyBtn);
 
     expect(writeTextMock).toHaveBeenCalledWith("npm run build");
-    expect(screen.getByText("Command copied to clipboard")).toHaveAttribute("aria-live", "polite");
+    expect(screen.getByText("Code copied to clipboard")).toHaveAttribute("aria-live", "polite");
 
     await waitFor(
       () => {
@@ -75,9 +74,9 @@ describe("CommandLine", () => {
 
     render(<CommandLine command="failed-command" />);
 
-    const copyBtn = screen.getByRole("button", { name: /copy command/i });
+    const copyBtn = screen.getByRole("button", { name: /copy code/i });
     await user.click(copyBtn);
 
-    expect(screen.getByText("Failed to copy command to clipboard")).toBeInTheDocument();
+    expect(screen.getByText("Failed to copy code to clipboard")).toBeInTheDocument();
   });
 });

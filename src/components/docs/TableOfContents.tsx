@@ -52,7 +52,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   return (
     <nav className="w-full">
       <div className="flex flex-col">
-        <p className="text-xs font-bold uppercase tracking-[0.15em] mb-6 px-4 text-content-secondary/70">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] mb-6 px-4 text-content-secondary/70">
           On this page
         </p>
         <ul className="flex flex-col gap-1">
@@ -65,7 +65,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 href={`#${heading.id}`}
                 onClick={(e) => handleClick(e, heading.id)}
                 className={cn(
-                  "text-[13px] transition-[color,background-color,box-shadow] duration-200 flex items-center min-h-11 py-1.5 px-4 rounded-lg font-medium",
+                  "text-[13px] transition-[color,background-color,box-shadow] duration-200 flex items-center min-h-11 py-1.5 px-4 rounded-xl font-medium",
                   activeId === heading.id
                     ? "text-theme-primary bg-bg-sunken shadow-neu-sunken-subtle"
                     : "text-content-secondary hover:text-content-primary hover:bg-bg-elevated"

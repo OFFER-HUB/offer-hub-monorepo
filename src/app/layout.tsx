@@ -5,11 +5,11 @@ import "./globals.css";
 import { Analytics } from "@/components/Analytics";
 import { ClientBackground } from "@/components/layout/ClientBackground";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
-import { FloatingCTA } from "@/components/ui/FloatingCTA";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { SITE_URL_FALLBACK, SITE_NAME } from "@/constants/site";
 import { THEME_STORAGE_KEY } from "@/constants/storage";
+import { Button } from "@/components/ui/Button";
 
 const themeInitScript = `(function () {
   try {
@@ -69,26 +69,35 @@ export const metadata: Metadata = {
   // ── Favicon & icon variants ──────────────────────────────────────────────
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      {
+        url: "/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-dark-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+      {
+        url: "/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-dark-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-    other: [
-      {
-        rel: "android-chrome",
-        url: "/android-chrome-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-      },
-      {
-        rel: "android-chrome",
-        url: "/android-chrome-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-      },
     ],
   },
 
@@ -155,12 +164,13 @@ export default function RootLayout({
             This site requires JavaScript to function. Please enable JavaScript in your browser settings.
           </div>
         </noscript>
-        <a
+        <Button
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-6 focus:left-6  focus:z-[9999] px-8 py-10 rounded-full text-sm font-semibold btn-neumorphic-primary outline-none transition-none"
+          size="lg"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-6 focus:left-6 focus:z-[9999]"
         >
           Skip to main content
-        </a>
+        </Button>
         <ThemeProvider>
           <Suspense fallback={null}>
             <NavigationProgress />
@@ -170,7 +180,6 @@ export default function RootLayout({
           <div id="main-content" className="w-full max-w-full min-w-0 overflow-x-clip">
             {children}
           </div>
-          <FloatingCTA />
           <CookieConsentBanner />
         </ThemeProvider>
       </body>

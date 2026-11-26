@@ -33,7 +33,7 @@ export default function UseCasesLoading() {
                   <Skeleton className="h-12 w-36 rounded-xl" />
                 </div>
               </div>
-              <Skeleton className="rounded-[2rem] h-64 w-full" />
+              <Skeleton className="rounded-3xl h-64 w-full" />
             </div>
           </div>
         </section>
@@ -42,7 +42,7 @@ export default function UseCasesLoading() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex flex-col items-center text-center p-10 rounded-[2rem] space-y-4">
+                <div key={i} className="flex flex-col items-center text-center p-10 rounded-3xl space-y-4">
                   <Skeleton className="w-16 h-16 rounded-2xl" />
                   <Skeleton className="h-6 w-36" />
                   <Skeleton className="h-4 w-full" />

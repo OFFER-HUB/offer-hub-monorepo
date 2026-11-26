@@ -13,11 +13,11 @@ export default function ConfirmDataRequestPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow pt-28 pb-20 px-4 sm:px-8">
+      <div className="flex-grow">
         <Suspense fallback={null}>
           <ConfirmDataRequest />
         </Suspense>
-      </main>
+      </div>
       <Footer />
     </div>
   );

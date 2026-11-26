@@ -1,60 +1,76 @@
 import { Info, AlertTriangle, Lightbulb, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-type CalloutType = "note" | "warning" | "tip" | "danger";
+export type CalloutTone = "note" | "tip" | "warning" | "danger";
 
 interface CalloutProps {
-  type?: CalloutType;
+  tone?: CalloutTone;
+  /** Kept as an alias for the MDX `<Callout type="warning">` API. */
+  type?: CalloutTone;
+  label?: string;
+  className?: string;
   children: React.ReactNode;
+  role?: "note" | "alert";
 }
 
 const VARIANTS: Record<
-  CalloutType,
-  { icon: React.ReactNode; bgColor: string; iconColor: string; label: string }
+  CalloutTone,
+  { icon: React.ReactNode; background: string; accent: string; label: string }
 > = {
   note: {
-    icon: <Info size={16} />,
-    bgColor: "var(--color-callout-note-bg)",
-    iconColor: "var(--color-primary)",
+    icon: <Info size={16} aria-hidden="true" />,
+    background: "bg-[var(--color-callout-note-bg)]",
+    accent: "text-theme-primary",
     label: "Note",
   },
   tip: {
-    icon: <Lightbulb size={16} />,
-    bgColor: "var(--color-callout-tip-bg)",
-    iconColor: "var(--color-success)",
+    icon: <Lightbulb size={16} aria-hidden="true" />,
+    background: "bg-[var(--color-callout-tip-bg)]",
+    accent: "text-theme-success",
     label: "Tip",
   },
   warning: {
-    icon: <AlertTriangle size={16} />,
-    bgColor: "var(--color-callout-warning-bg)",
-    iconColor: "var(--color-warning)",
+    icon: <AlertTriangle size={16} aria-hidden="true" />,
+    background: "bg-[var(--color-callout-warning-bg)]",
+    accent: "text-theme-warning",
     label: "Warning",
   },
   danger: {
-    icon: <AlertOctagon size={16} />,
-    bgColor: "var(--color-callout-danger-bg)",
-    iconColor: "var(--color-error)",
+    icon: <AlertOctagon size={16} aria-hidden="true" />,
+    background: "bg-[var(--color-callout-danger-bg)]",
+    accent: "text-theme-error",
     label: "Danger",
   },
 };
 
-export function Callout({ type = "note", children }: CalloutProps) {
-  const config = VARIANTS[type];
+/** One theme-aware callout for docs, forms and marketing notices. */
+export function Callout({
+  tone,
+  type,
+  label,
+  className,
+  children,
+  role = "note",
+}: CalloutProps) {
+  const variant = VARIANTS[tone ?? type ?? "note"];
 
   return (
     <div
-      role="note"
-      className={cn("rounded-xl px-4 py-3 my-5 shadow-neu-raised-sm")}
-      style={{
-        background: config.bgColor,
-      }}
+      role={role}
+      className={cn(
+        "my-5 w-full min-w-0 rounded-2xl px-4 py-3 shadow-neu-raised-sm",
+        variant.background,
+        className,
+      )}
     >
       <div
-        className="flex items-center gap-2 mb-1.5 text-sm font-semibold"
-        style={{ color: config.iconColor }}
+        className={cn(
+          "mb-1.5 flex items-center gap-2 text-sm font-semibold",
+          variant.accent,
+        )}
       >
-        {config.icon}
-        {config.label}
+        {variant.icon}
+        {label ?? variant.label}
       </div>
       <div className="text-sm leading-relaxed text-content-primary">
         {children}

@@ -63,13 +63,13 @@ export const CommunityChannelsSection = () => {
                 <div className="w-12 h-12 rounded-xl bg-bg-base shadow-neu-sunken-subtle flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Icon size={20} className="text-theme-primary" />
                 </div>
-                <h3 className="text-xl font-black text-content-primary tracking-tight">
+                <h3 className="text-xl font-bold text-content-primary tracking-tight">
                   {channel.name}
                 </h3>
                 <p className="mt-4 text-sm font-medium leading-relaxed text-content-secondary">
                   {channel.description}
                 </p>
-                <span className="mt-8 pt-6 border-t border-theme-border/10 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-theme-primary group-hover:gap-3 transition-[gap]">
+                <span className="mt-8 pt-6 border-t border-theme-border/10 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-theme-primary group-hover:gap-3 transition-[gap]">
                   Join channel <ArrowUpRight size={14} />
                 </span>
               </a>

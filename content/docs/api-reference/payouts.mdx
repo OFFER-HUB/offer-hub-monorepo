@@ -1,0 +1,62 @@
+---
+title: Payouts Endpoints
+description: Prepare, submit, track, and retry BlindPay bank payouts for released orders.
+order: 54
+section: API Reference
+---
+
+Order payouts send USDC to a seller's local bank account through BlindPay. Every route below uses the seller's session JWT. The corridor follows the seller's country and is limited to Brazil (`BR`), Mexico (`MX`), Argentina (`AR`), and Colombia (`CO`). A seller in an unsupported country or without a bank account for that corridor receives an error.
+
+## Endpoints
+
+| Method | Path | Auth | Idempotency | Confirmed fields |
+| --- | --- | --- | --- | --- |
+| `GET` | `/orders/:id/payout` | User session JWT | Not applicable | `id` path parameter |
+| `POST` | `/orders/:orderId/payout/prepare` | User session JWT | Not stated | `orderId` path parameter |
+| `POST` | `/orders/:orderId/payout/submit` | User session JWT | Required `Idempotency-Key` | `orderId` path parameter; seller-signed transaction |
+| `POST` | `/orders/:orderId/payout/retry` | User session JWT | Not stated | `orderId` path parameter |
+
+## GET /orders/:id/payout
+
+<Endpoint method="GET" path="/api/v1/orders/:id/payout" />
+
+Returns the payout associated with an order. The order `id` is supplied in the path. Integrators can read the payout status from this endpoint.
+
+## POST /orders/:orderId/payout/prepare
+
+<Endpoint method="POST" path="/api/v1/orders/:orderId/payout/prepare" />
+
+Prepare a payout for a released order. The response provides an unsigned transaction for the seller to sign in their client-side wallet. The server never signs for a user.
+
+The seller must have completed KYC and have a bank account for the corridor selected by the seller's country. Unsupported countries and missing corridor bank accounts return an error.
+
+## POST /orders/:orderId/payout/submit
+
+<Endpoint method="POST" path="/api/v1/orders/:orderId/payout/submit" idempotent />
+
+Submit the seller-signed transaction. Send the required `Idempotency-Key` header and reuse the same key only when retrying the identical submission.
+
+## POST /orders/:orderId/payout/retry
+
+<Endpoint method="POST" path="/api/v1/orders/:orderId/payout/retry" />
+
+Retry a payout for the order. A retry may use another bank account in the same corridor. If a payout failed, the funds are returned and can be retried.
+
+## Payout statuses
+
+`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `REFUNDED`, `ON_HOLD`, `AWAITING_SIGNATURE`.
+
+BlindPay events handled by the Orchestrator are `payout.new`, `payout.update`, `payout.complete`, `payout.completed`, `payout.failed`, `payout.on_hold`, and `payout.refunded`. They update the payout status. Integrators read status from `GET /orders/:id/payout` or the event feed. Self-hosters must register the Orchestrator's BlindPay webhook in their BlindPay dashboard.
+
+## Limits and fees
+
+Bank-account quotes have a minimum of **5.00 USD**. Some payment rails have a higher minimum and reject a payout with `PAYOUTS_AMOUNT_BELOW_MINIMUM`. Each receiver has a transaction volume limit; exceeding it returns `LIMITS_VOLUME_EXCEEDED`. A higher limit can be requested through BlindPay's limit-increase process.
+
+See [BlindPay's API documentation](https://docs.blindpay.com/) for current limits. Fees are set by the operator's BlindPay agreement; fee amounts are not published here. See [BlindPay pricing and documentation](https://docs.blindpay.com/).
+
+## Related
+
+- [Seller Bank Payouts guide](/docs/guide/withdrawals) — complete KYC-to-retry flow.
+- [KYC endpoints](/docs/api-reference/kyc) — receiver and terms-of-service operations.
+- [Bank accounts endpoints](/docs/api-reference/bank-accounts) — account management.
+- [Payouts SDK](/docs/sdk/payouts) — methods in `@offerhub/sdk` 3.0.0.

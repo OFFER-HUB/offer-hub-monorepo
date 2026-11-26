@@ -13,8 +13,7 @@ Expected files (1200×630 PNG each):
 
 | Route           | File                     |
 | --------------- | ------------------------ |
-| `/architecture` | `og/architecture.png`    |
-| `/blueprint`    | `og/blueprint.png`       |
+| `/product`      | `og/product.png`         |
 | `/changelog`    | `og/changelog.png`       |
 | `/community`    | `og/community.png`       |
 | `/contact`      | `og/contact.png`         |

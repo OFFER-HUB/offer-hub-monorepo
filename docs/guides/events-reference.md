@@ -234,7 +234,6 @@ async function waitForEscrowFunded(orderId: string, maxAttempts = 30): Promise<v
 | Event | `aggregateType` | When | Payload |
 |-------|----------------|------|---------|
 | `user.created` | `User` | User account created via `POST /users` | `{ userId, externalUserId, email, status }` |
-| `user.airtm_linked` | `User` | User linked their AirTM account | `{ userId, airtmUserId, linkedAt }` |
 | `user.stellar_linked` | `User` | User linked a Stellar address | `{ userId, stellarAddress, linkedAt }` |
 
 ### Wallet Events
@@ -262,17 +261,6 @@ async function waitForEscrowFunded(orderId: string, maxAttempts = 30): Promise<v
 | `dispute_resolution` | Funds distributed after dispute |
 | `withdrawal_failed` | Failed withdrawal rolled back |
 | `manual_credit` | Admin credit |
-
-### Top-up Events (AirTM path)
-
-| Event | `aggregateType` | When | Payload |
-|-------|----------------|------|---------|
-| `topup.created` | `TopUp` | Top-up initiated | `{ userId, amount, currency }` |
-| `topup.confirmation_required` | `TopUp` | AirTM returned confirmation URI | `{ topupId, confirmationUri }` |
-| `topup.processing` | `TopUp` | User confirmed in AirTM | `{ topupId, airtmPayinId }` |
-| `topup.succeeded` | `TopUp` | AirTM confirmed payment, balance credited | `{ topupId, userId, amount, newBalance }` |
-| `topup.failed` | `TopUp` | AirTM rejected payment | `{ topupId, reason, errorCode }` |
-| `topup.canceled` | `TopUp` | User or system canceled | `{ topupId, canceledBy }` |
 
 ### Order Events
 
@@ -317,8 +305,6 @@ async function waitForEscrowFunded(orderId: string, maxAttempts = 30): Promise<v
 |-------|----------------|------|---------|
 | `withdrawal.created` | `Withdrawal` | `POST /withdrawals` | `{ withdrawalId, userId, amount, destinationType }` |
 | `withdrawal.committed` | `Withdrawal` | Balance debited (commit step) | `{ withdrawalId, userId, amount, committedBalance }` |
-| `withdrawal.pending` | `Withdrawal` | AirTM processing (AirTM path) | `{ withdrawalId, airtmPayoutId }` |
-| `withdrawal.pending_user_action` | `Withdrawal` | User action needed in AirTM | `{ withdrawalId, actionRequired }` |
 | `withdrawal.completed` | `Withdrawal` | Funds delivered to destination | `{ withdrawalId, userId, amount, completedAt }` |
 | `withdrawal.failed` | `Withdrawal` | Withdrawal failed, balance restored | `{ withdrawalId, reason, errorCode }` |
 | `withdrawal.canceled` | `Withdrawal` | Withdrawal canceled | `{ withdrawalId, canceledBy, refundedToBalance }` |

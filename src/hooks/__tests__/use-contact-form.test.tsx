@@ -51,6 +51,14 @@ beforeEach(() => {
 });
 
 describe("useContactForm", () => {
+  it("preserves the honeypot and blocks a bot-filled form", async () => {
+    const { result } = renderHook(() => useContactForm());
+    fill(result, { ...VALID, website: "https://spam.example" });
+    await submit(result);
+    expect(result.current.formData.website).toBe("https://spam.example");
+    expect(submitContactInquiry).not.toHaveBeenCalled();
+  });
+
   it("starts with an empty form and no errors", () => {
     const { result } = renderHook(() => useContactForm());
 

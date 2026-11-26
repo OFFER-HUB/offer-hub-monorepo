@@ -36,7 +36,7 @@ Copy `.env.example` to `.env` and fill in these values:
 | `DIRECT_URL` | Yes | `postgresql://...` | Same as DATABASE_URL for Prisma migrations |
 | `REDIS_URL` | Yes | `redis://:pass@host:6379` | Redis connection |
 | `OFFERHUB_MASTER_KEY` | Yes | `a-long-random-secret` | Bootstrap key for API key creation |
-| `PAYMENT_PROVIDER` | Yes | `crypto` or `airtm` | Active payment provider |
+| `PAYMENT_PROVIDER` | Yes | `crypto` | Active payment provider |
 | `WALLET_ENCRYPTION_KEY` | crypto only | 32-byte hex | AES-256-GCM key for wallet encryption |
 | `TRUSTLESS_API_KEY` | Yes | `tw_live_...` | Trustless Work API key |
 | `STELLAR_NETWORK` | Yes | `testnet` or `mainnet` | Stellar network |
@@ -45,8 +45,6 @@ Copy `.env.example` to `.env` and fill in these values:
 | `STELLAR_USDC_ISSUER` | Yes | `GBBD47...` | USDC issuer address |
 | `PLATFORM_USER_ID` | Yes | `usr_platform_...` | Internal platform user ID for escrow operations |
 | `PUBLIC_BASE_URL` | Yes | `https://api.yourapp.com` | Your Orchestrator's public URL |
-| `AIRTM_API_KEY` | airtm only | `...` | AirTM API key |
-| `AIRTM_API_SECRET` | airtm only | `...` | AirTM API secret |
 
 > **Supabase note:** Always use the **direct connection URL** (port 5432) for both `DATABASE_URL` and `DIRECT_URL`. The pooler (port 6543) does not support Prisma migrations.
 
@@ -201,16 +199,11 @@ RELEASE_REQUESTED   REFUND_REQUESTED   DISPUTED
 
 See [State Machines](../architecture/state-machines.md) for the complete diagram.
 
-### Payment Providers
+### Payment Rail
 
-Set `PAYMENT_PROVIDER` in your `.env` to switch:
+The Orchestrator uses the crypto-native rail: users send USDC to their Stellar address, and withdrawals are direct on-chain transfers. Bank payouts are handled through BlindPay in supported corridors.
 
-| `PAYMENT_PROVIDER` | Deposits | Withdrawals | Wallets |
-|-------------------|----------|-------------|---------|
-| `crypto` | User sends USDC to Stellar address | Instant, on-chain | Invisible server-side Stellar keypairs |
-| `airtm` | AirTM payin flow | Async, two-step | AirTM accounts |
-
-### Invisible Wallets (crypto mode)
+### Invisible Wallets
 
 When `PAYMENT_PROVIDER=crypto`, every user gets a Stellar keypair created and managed server-side. The private key is AES-256-GCM encrypted in the database. Users never see or interact with the wallet — it's fully invisible to them.
 
@@ -394,26 +387,6 @@ Show the `address` (and optionally a QR code) to the buyer. They send USDC from 
 
 **Testnet USDC:** On testnet, USDC issuer is `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`. Use [Stellar Laboratory](https://laboratory.stellar.org/) to send test USDC.
 
-#### AirTM path (`PAYMENT_PROVIDER=airtm`)
-
-```bash
-curl -X POST http://localhost:4000/api/v1/topups \
-  -H "Authorization: Bearer ohk_live_..." \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: $(uuidgen)" \
-  -d '{
-    "user_id": "usr_...",
-    "amount": "50.00",
-    "currency": "USD",
-    "return_url": "https://yourapp.com/wallet/success",
-    "cancel_url": "https://yourapp.com/wallet/cancel"
-  }'
-```
-
-Redirect the buyer to `confirmation_uri`. Listen to `topup.completed` SSE event or poll `GET /topups/:id`.
-
----
-
 ### 8. Withdrawal — Move Funds Out
 
 #### Crypto path (`PAYMENT_PROVIDER=crypto`)
@@ -438,28 +411,6 @@ Response: `{ "data": { "status": "WITHDRAWAL_COMPLETED" } }` — funds sent on-c
 - `destinationRef` is a Stellar public key (starts with `G`)
 - No commit step, no webhook, no polling needed
 
-#### AirTM path (`destinationType: "bank"` or `"airtm_balance"`)
-
-Two-step process:
-
-```bash
-# Step 1: Create
-curl -X POST http://localhost:4000/api/v1/withdrawals \
-  -H "Authorization: Bearer ohk_live_..." \
-  -H "Content-Type: application/json" \
-  -d '{"userId": "usr_...", "amount": "80.00", "destinationType": "bank", "destinationRef": "bank_ref"}'
-# → status: WITHDRAWAL_CREATED
-
-# Step 2: Commit
-curl -X POST "http://localhost:4000/api/v1/withdrawals/wd_.../commit?userId=usr_..." \
-  -H "Authorization: Bearer ohk_live_..."
-# → status: WITHDRAWAL_COMMITTED
-```
-
-Or pass `"commit": true` in the creation call to skip the separate commit step.
-
----
-
 ## API Reference
 
 Full endpoint documentation:
@@ -474,7 +425,6 @@ Full endpoint documentation:
 | Release / Refund | [release-refund.md](../api/endpoints/release-refund.md) |
 | Disputes | [disputes.md](../api/endpoints/disputes.md) |
 | Deposit (crypto) | [wallet.md](../api/endpoints/wallet.md) |
-| Deposit (AirTM) | [topups.md](../api/endpoints/topups.md) |
 | Withdrawals | [withdrawals.md](../api/endpoints/withdrawals.md) |
 | Events (SSE) | [events.md](../api/endpoints/events.md) |
 

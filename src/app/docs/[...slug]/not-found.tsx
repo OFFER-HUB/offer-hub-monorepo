@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, FileText, Home, SearchX } from "lucide-react";
 import { DocsSearchBar } from "@/components/docs/DocsSearchBar";
+import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 const recommendedDocs = [
   {
@@ -28,36 +30,28 @@ export default function DocsNotFound() {
           <SearchX size={42} strokeWidth={1.7} />
         </div>
 
-        <p className="mb-4 text-xs font-black uppercase tracking-[0.28em] text-theme-primary">
-          Documentation 404
-        </p>
-        <h1 className="mx-auto mb-4 max-w-2xl text-3xl font-black leading-tight text-content-primary md:text-5xl">
-          This documentation page was not found.
-        </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-content-secondary">
-          The docs path may have moved, been renamed, or never existed. Search the
-          documentation or return to the docs index to continue.
-        </p>
+        <PageHeader
+          align="center"
+          size="docs"
+          className="mb-8"
+          eyebrow="Documentation 404"
+          title="This documentation page was not found."
+          lead="The docs path may have moved, been renamed, or never existed. Search the documentation or return to the docs index to continue."
+        />
 
         <div className="mx-auto mb-8 max-w-xl">
           <DocsSearchBar />
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/docs"
-            className="btn-neumorphic-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold"
-          >
+          <Button href="/docs">
             <Home size={17} />
             Back to Docs
-          </Link>
-          <Link
-            href="/"
-            className="btn-neumorphic-secondary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-content-primary"
-          >
+          </Button>
+          <Button href="/" variant="secondary">
             <BookOpen size={17} />
             Home
-          </Link>
+          </Button>
         </div>
       </div>
 
@@ -71,13 +65,13 @@ export default function DocsNotFound() {
             <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-bg-sunken text-theme-primary shadow-neu-sunken-subtle">
               <FileText size={20} />
             </div>
-            <h2 className="mb-2 text-lg font-black leading-tight text-content-primary transition-colors group-hover:text-theme-primary">
+            <h2 className="mb-2 text-lg font-bold leading-tight text-content-primary transition-colors group-hover:text-theme-primary">
               {doc.title}
             </h2>
             <p className="mb-5 text-sm leading-relaxed text-content-secondary">
               {doc.description}
             </p>
-            <span className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-theme-primary">
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-theme-primary">
               Open
               <ArrowRight size={14} />
             </span>

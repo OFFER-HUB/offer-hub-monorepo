@@ -8,10 +8,30 @@ import { SITE_URL_FALLBACK } from "@/constants/site";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL_FALLBACK;
 
-function formatSegment(segment: string): string {
+/**
+ * Words that must keep a fixed spelling instead of naive title case
+ * ("sdk" -> "SDK", not "Sdk"). Keys are lowercase slug words.
+ */
+export const BREADCRUMB_WORD_LABELS: Readonly<Record<string, string>> = {
+  api: "API",
+  sdk: "SDK",
+  mcp: "MCP",
+  cli: "CLI",
+  usdc: "USDC",
+  json: "JSON",
+  openapi: "OpenAPI",
+  airtm: "Airtm",
+};
+
+export function formatSegment(segment: string): string {
   return decodeURIComponent(segment)
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .split("-")
+    .filter(Boolean)
+    .map((word) => {
+      const lower = word.toLowerCase();
+      return BREADCRUMB_WORD_LABELS[lower] ?? lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
 }
 
 export function Breadcrumb() {
@@ -55,10 +75,10 @@ export function Breadcrumb() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="flex items-center gap-2 text-[14px] whitespace-nowrap overflow-x-auto no-scrollbar py-1">
+      <div className="flex items-center gap-2 text-sm whitespace-nowrap overflow-x-auto no-scrollbar py-1">
         <Link
           href="/docs"
-          className="text-theme-primary hover:text-theme-primary/80 transition-colors font-medium inline-flex items-center gap-1.5 min-h-11"
+          className="text-theme-primary hover:text-theme-primary-hover transition-colors font-medium inline-flex items-center gap-1.5 min-h-11"
         >
           <Home size={15} />
           Docs
@@ -68,7 +88,7 @@ export function Breadcrumb() {
           const isLast = index === pathSegments.length - 1;
           return (
             <span key={`${segment}-${index}`} className="flex items-center gap-2">
-              <ChevronRight size={14} className="text-content-secondary/30" />
+              <ChevronRight size={14} aria-hidden="true" className="text-content-muted" />
               {isLast ? (
                 <span className="text-content-primary font-medium">
                   {formatSegment(segment)}

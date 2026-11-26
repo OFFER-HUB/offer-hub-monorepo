@@ -86,7 +86,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 ref={menuButtonRef}
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
+                className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-xl text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
                 aria-label="Open docs navigation"
                 aria-expanded={isDrawerOpen}
                 aria-controls="docs-mobile-drawer"
@@ -94,11 +94,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 <Menu size={20} aria-hidden="true" />
               </button>
 
-              {isHub ? (
-                <span className="text-content-primary font-bold tracking-tight opacity-70 italic text-[14px]">Documentation Index</span>
-              ) : (
-                <Breadcrumb />
-              )}
+              {!isHub && <Breadcrumb />}
             </nav>
           </div>
         </div>
@@ -153,7 +149,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Documentation navigation"
-            className="relative h-full w-80 max-w-[85vw] p-8 bg-bg-base shadow-neu-raised rounded-r-[30px] print:hidden"
+            className="relative h-full w-80 max-w-[85vw] p-8 bg-bg-base shadow-neu-raised rounded-r-3xl print:hidden"
           >
             <div className="mb-8 flex items-center justify-between pb-4 border-b border-theme-border/40">
               <p className="text-sm font-bold uppercase tracking-widest text-theme-primary">
@@ -162,7 +158,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(false)}
-                className="inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-lg text-content-secondary hover:bg-bg-elevated hover:text-content-primary transition-colors"
+                className="inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-xl text-content-secondary hover:bg-bg-elevated hover:text-content-primary transition-colors"
                 aria-label="Close docs navigation"
               >
                 <X size={20} aria-hidden="true" />

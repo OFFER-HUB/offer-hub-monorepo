@@ -15,7 +15,7 @@
 
 ```
 Development:  http://localhost:4000/api
-Production:   https://api.offerhub.com/api (planned)
+Production:   https://api.offer-hub.tech/api (planned)
 ```
 
 ### API Versioning

@@ -23,7 +23,7 @@ OFFER-HUB is a decentralized-friendly marketplace platform that connects **Clien
 
 - A discovery layer for posting and finding service opportunities.
 - Escrow-based payment protection powered by the Stellar blockchain network through Trustless Work.
-- Balance management and fund handling via Airtm integration.
+- Balance management and fund handling through Stellar wallets and BlindPay.
 - Messaging, contract management, and project tracking tools.
 - Analytics and reporting for marketplace activity.
 
@@ -40,7 +40,7 @@ To access most features of the Platform, you must create an account. You agree t
 - Provide accurate, complete, and current information during registration.
 - Keep your account information up to date at all times.
 - Maintain the security and confidentiality of your credentials (password, wallet keys, or third-party authentication tokens).
-- Immediately notify us at **support@offerhub.io** of any unauthorized access or suspected breach of your account.
+- Immediately notify us via the [contact form](/contact) of any unauthorized access or suspected breach of your account.
 
 ### 3.2 Account Responsibility
 
@@ -126,7 +126,7 @@ OFFER-HUB charges service fees for facilitating transactions. Current fee struct
 
 ### 6.3 Currency and Conversion
 
-Transactions on OFFER-HUB may involve digital assets and fiat currencies. Conversion rates and associated costs are determined by integrated service providers (e.g., Airtm). OFFER-HUB is not responsible for exchange rate fluctuations or third-party conversion fees.
+Transactions on OFFER-HUB may involve digital assets and fiat currencies. Conversion rates and associated costs are determined by integrated service providers (e.g., BlindPay). OFFER-HUB is not responsible for exchange rate fluctuations or third-party conversion fees.
 
 ### 6.4 Taxes
 
@@ -169,7 +169,7 @@ Unless otherwise agreed in writing between Client and Freelancer:
 
 ### 8.4 DMCA / Copyright Infringement
 
-If you believe that content on the Platform infringes your copyright, please notify us at **legal@offerhub.io** with the following information:
+If you believe that content on the Platform infringes your copyright, please notify us via the **[contact form](/contact)** with the following information:
 
 - A description of the copyrighted work.
 - The URL or location of the allegedly infringing content.
@@ -259,7 +259,7 @@ These Terms are governed by and construed in accordance with the laws of the Sta
 
 - GDPR applies to EU users and their rights under Articles 15–22 are preserved.
 - EU users may lodge complaints with their national Data Protection Authority.
-- The platform's Data Protection contact is legal@offerhub.io.
+- Data protection inquiries can be submitted through the [contact form](/contact).
 - EU users have the right to withdraw consent for data processing at any time.
 
 ### 12.5 Jurisdiction
@@ -287,7 +287,7 @@ The Platform integrates with third-party services to provide essential functiona
 - **Supabase:** For database storage, user authentication, and application infrastructure.
 - **ipapi.co:** For IP-based geolocation to provide regional content and security monitoring.
 - **GitHub:** via public APIs to integrate contributor and repository metadata.
-- **Airtm:** For fiat-to-crypto payment processing, currency conversion, and balance management.
+- **BlindPay:** For bank payouts and currency conversion.
 - **Trustless Work / Stellar:** For executing and settling blockchain-based escrow transactions on the Stellar network.
 
 Your use of these third-party services is subject to their respective terms of service and privacy policies. OFFER-HUB is not responsible for the practices, data handling, or content of any third-party service. For a detailed list of data shared and purposes, please refer to our [Privacy Policy](https://offer-hub.tech/privacy).
@@ -327,8 +327,8 @@ These Terms, together with the Privacy Policy and any additional agreements you 
 
 For questions, concerns, or legal notices regarding these Terms, please contact us:
 
-- **General Support:** support@offerhub.io
-- **Legal & Compliance:** legal@offerhub.io
+- **General Support:** [Contact form](/contact)
+- **Legal & Compliance:** [Contact form](/contact)
 - **Website:** https://offer-hub.tech
 
 ---

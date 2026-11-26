@@ -21,7 +21,9 @@
     "generate:openapi": "npx tsx scripts/generate-openapi.ts",
     "validate:openapi": "npx tsx scripts/generate-openapi.ts --check",
     "docs:index": "npx tsx scripts/generate-docs-index.ts",
-    "diagrams": "python scripts/diagrams/generate_all.py"
+    "docs:tokens": "npx tsx scripts/generate-token-docs.ts",
+    "diagrams": "python scripts/diagrams/generate_all.py",
+    "brand": "python3 scripts/brand/generate_brand_assets.py"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",

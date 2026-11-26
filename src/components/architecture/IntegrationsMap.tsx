@@ -1,117 +1,105 @@
-import { ArchitectureSection } from "@/components/shared/ArchitectureSection";
-
 export function IntegrationsMap() {
+  const swkWallets = ["Freighter", "Lobstr", "xBull"];
+  const corridors = ["MX/SPEI", "BR/Pix", "CO/PSE", "AR/Transfer 3.0", "PE", "CL", "CR"];
+
   return (
-    <ArchitectureSection
-      id="integrations"
-      sectionClassName="px-6 py-24 bg-transparent"
-      eyebrowClassName="inline-block rounded-full bg-bg-base shadow-neu-sunken px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-theme-primary mb-6"
-      eyebrow="Ecosystem Integrations"
-      heading="Hub and Spoke Architecture"
-      description="OfferHub acts as the orchestrator, integrating best-in-class solutions for wallet management, escrow, and global fiat off-ramps."
-      infoText="OfferHub uses two building blocks from the official SCF Integration List. Stellar Wallets Kit handles non-custodial wallet connection and client-side Soroban signing. BlindPay routes USDC to bank accounts across 7 LATAM corridors via SPEI, Pix, PSE, and Transfer 3.0. The NestJS orchestrator selects the corridor automatically based on freelancer country and payout preference."
-    >
-      {/* Desktop Hub & Spoke / Mobile Stack */}
-        <div className="relative w-full max-w-5xl mx-auto flex flex-col md:block min-h-[600px] gap-8">
-          
-          {/* Animated SVG Lines (Desktop Only) */}
-          <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
-            <style>
-              {`
-                @keyframes dash-flow-left {
-                  to { stroke-dashoffset: -20; }
-                }
-                @keyframes dash-flow-right {
-                  to { stroke-dashoffset: 20; }
-                }
-                .anim-line-left { stroke-dasharray: 10; animation: dash-flow-left 1s linear infinite; }
-                .anim-line-right { stroke-dasharray: 10; animation: dash-flow-right 1s linear infinite; }
-              `}
-            </style>
-            
-            {/* Hub to SWK (Left) */}
-            <path d="M 500 300 Q 350 300 250 300" fill="none" stroke="var(--color-primary)" strokeWidth="2" opacity="0.4" className="anim-line-left" />
-            
-            {/* Hub to BlindPay (Right) */}
-            <path d="M 500 300 Q 650 300 750 300" fill="none" stroke="var(--color-primary)" strokeWidth="2" opacity="0.4" className="anim-line-right" />
-          </svg>
+    <div className="rounded-3xl bg-bg-elevated shadow-neu-raised p-6 md:p-8 flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <span className="inline-block rounded-full bg-bg-base shadow-neu-sunken px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-theme-primary w-fit">
+          Ecosystem Integrations
+        </span>
+        <h2 className="text-xl md:text-2xl font-bold text-content-primary">
+          Hub and Spoke Architecture
+        </h2>
+        <p className="text-xs md:text-sm text-content-secondary leading-relaxed">
+          OFFER-HUB acts as the orchestrator, integrating best-in-class solutions for wallet management, escrow, and global fiat off-ramps.
+        </p>
+      </div>
 
-          {/* Mobile Connectors */}
-          <div className="md:hidden absolute inset-0 w-full h-full flex justify-center pointer-events-none z-0">
-             <div className="w-px h-full border-l-2 border-dashed border-[var(--color-primary)] opacity-40"></div>
-          </div>
-
-          {/* Center Hub: OfferHub */}
-          <div className="relative z-10 w-full md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[220px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 flex flex-col items-center text-center border border-[var(--color-border)]">
-              <div className="w-4 h-4 rounded-full bg-theme-primary animate-pulse mb-3 shadow-neu-raised-sm"></div>
-              <h3 className="text-xl font-bold text-content-primary">OfferHub</h3>
-              <p className="text-sm text-theme-primary font-medium mt-1 mb-3">NestJS Orchestrator</p>
-              <div className="rounded-xl bg-bg-base shadow-neu-sunken-subtle p-3 w-full">
-                <p className="text-xs text-content-secondary">Routes USDC based on freelancer country</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Left Spoke: SWK */}
-          <div className="relative z-10 w-full md:absolute md:left-[5%] md:top-1/2 md:-translate-y-1/2 md:w-[320px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-content-primary">Stellar Wallets Kit</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-base shadow-neu-sunken px-2 py-1 rounded-full text-theme-primary">SCF Integration #1</span>
-              </div>
-              <p className="text-sm text-content-secondary mb-4">Non-custodial signing</p>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                {['Freighter', 'Lobstr', 'xBull'].map(w => (
-                  <span key={w} className="text-xs bg-bg-base shadow-neu-raised-sm px-3 py-1 rounded-full text-content-primary">{w}</span>
-                ))}
-              </div>
-              
-              <div className="rounded-xl bg-bg-base shadow-neu-sunken p-4">
-                <ul className="text-xs font-mono text-content-secondary space-y-2">
-                  <li>• create_escrow</li>
-                  <li>• release_escrow</li>
-                  <li>• refund_escrow</li>
-                  <li>• resolve_dispute</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Spoke: BlindPay */}
-          <div className="relative z-10 w-full md:absolute md:right-[5%] md:top-1/2 md:-translate-y-1/2 md:w-[340px]">
-            <div className="rounded-[2rem] bg-bg-elevated shadow-neu-raised p-6 border border-[var(--color-border)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-content-primary">BlindPay</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-bg-base shadow-neu-sunken px-2 py-1 rounded-full text-theme-primary">SCF Integration #2</span>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="text-[10px] bg-bg-base shadow-neu-sunken-subtle px-2 py-1 rounded-md text-content-muted">FinCEN MSB</span>
-                <span className="text-[10px] bg-bg-base shadow-neu-sunken-subtle px-2 py-1 rounded-md text-content-muted">YC-backed</span>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-2">
-                {['MX/SPEI', 'BR/Pix', 'CO/PSE', 'AR/Transfer 3.0', 'PE', 'CL', 'CR'].map(c => (
-                  <div key={c} className="text-[10px] font-medium text-center bg-bg-base shadow-neu-raised-sm rounded-lg py-2 text-content-primary px-1">
-                    {c}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Stats Strip */}
-        <div className="mt-16 flex justify-center">
-          <div className="rounded-2xl bg-bg-elevated shadow-neu-raised-sm border border-[var(--color-border)] px-8 py-4 inline-flex flex-wrap justify-center items-center gap-4 text-sm font-medium text-content-secondary">
-            <span>2 SCF Integrations</span>
-            <span className="text-[var(--color-border)]">•</span>
-            <span className="text-theme-primary font-bold">7 BlindPay Corridors</span>
+      {/* Stacked hub & spokes layout (fits both desktop side column and mobile 390px) */}
+      <div className="flex flex-col gap-4">
+        {/* Center Hub: OFFER-HUB */}
+        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 flex flex-col items-center text-center border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]">
+          <div className="w-3.5 h-3.5 rounded-full bg-theme-primary animate-pulse mb-2 shadow-neu-raised-sm" />
+          <h3 className="text-base font-bold text-content-primary">OFFER-HUB</h3>
+          <p className="text-xs text-theme-primary font-medium mt-0.5 mb-2">NestJS Orchestrator</p>
+          <div className="rounded-xl bg-bg-sunken shadow-neu-sunken-subtle p-2.5 w-full">
+            <p className="text-xs text-content-secondary">
+              Routes USDC based on freelancer country and payout preferences
+            </p>
           </div>
         </div>
-    </ArchitectureSection>
+
+        {/* Spoke 1: SWK */}
+        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-bold text-content-primary">Stellar Wallets Kit</h3>
+            <span className="text-xs font-bold uppercase tracking-wider bg-bg-sunken shadow-neu-sunken px-2 py-0.5 rounded-full text-theme-primary">
+              SCF Integration #1
+            </span>
+          </div>
+          <p className="text-xs text-content-secondary">
+            Non-custodial client-side signing for Soroban smart contracts
+          </p>
+
+          <div className="flex flex-wrap gap-1.5">
+            {swkWallets.map((w) => (
+              <span
+                key={w}
+                className="text-xs bg-bg-elevated shadow-neu-raised-sm px-2.5 py-0.5 rounded-full text-content-primary font-medium"
+              >
+                {w}
+              </span>
+            ))}
+          </div>
+
+          <div className="rounded-xl bg-bg-sunken shadow-neu-sunken-subtle p-3">
+            <ul className="text-xs font-mono text-content-secondary space-y-1">
+              <li>• create_escrow</li>
+              <li>• release_escrow</li>
+              <li>• refund_escrow</li>
+              <li>• resolve_dispute</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Spoke 2: BlindPay */}
+        <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm p-5 border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-bold text-content-primary">BlindPay</h3>
+            <span className="text-xs font-bold uppercase tracking-wider bg-bg-sunken shadow-neu-sunken px-2 py-0.5 rounded-full text-theme-primary">
+              SCF Integration #2
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-full text-content-muted">
+              FinCEN MSB
+            </span>
+            <span className="text-xs bg-bg-sunken shadow-neu-sunken-subtle px-2 py-0.5 rounded-full text-content-muted">
+              YC-backed
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 pt-1">
+            {corridors.map((c) => (
+              <div
+                key={c}
+                className="text-xs font-medium text-center bg-bg-elevated shadow-neu-raised-sm rounded-xl py-1.5 text-content-primary px-1"
+              >
+                {c}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Strip */}
+      <div className="rounded-2xl bg-bg-base shadow-neu-raised-sm border border-[color-mix(in_srgb,var(--color-border)_40%,transparent)] px-4 py-3 flex items-center justify-center gap-3 text-xs font-medium text-content-secondary">
+        <span>2 SCF Integrations</span>
+        <span className="text-content-muted">•</span>
+        <span className="text-theme-primary font-bold">7 BlindPay Corridors</span>
+      </div>
+    </div>
   );
 }

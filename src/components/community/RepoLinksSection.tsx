@@ -21,7 +21,8 @@ const repos = [
 
 export function RepoLinksSection() {
     return (
-        <section id="repo-links" className="py-12 bg-transparent w-full min-w-0 max-w-full overflow-hidden">
+        <section id="repo-links" aria-labelledby="repo-links-title" className="py-12 bg-transparent w-full min-w-0 max-w-full overflow-hidden">
+            <h2 id="repo-links-title" className="sr-only">Repositories</h2>
             <div className="mx-auto max-w-7xl w-full min-w-0 px-6 lg:px-8">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-1 rounded-full bg-theme-primary/20 mb-12" />
@@ -40,11 +41,11 @@ export function RepoLinksSection() {
                                 </div>
 
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-content-primary flex min-w-0 max-w-full flex-wrap items-center gap-2">
+                                    <h3 className="text-sm font-bold uppercase tracking-widest text-content-primary flex min-w-0 max-w-full flex-wrap items-center gap-2">
                                         <span className="truncate break-all">{repo.name}</span>
                                         <FolderGit2 size={12} className="text-content-secondary/40" />
                                     </h3>
-                                    <p className="text-[11px] font-medium text-content-secondary mt-1 truncate">
+                                    <p className="text-xs font-medium text-content-secondary mt-1 truncate">
                                         {repo.description}
                                     </p>
                                 </div>

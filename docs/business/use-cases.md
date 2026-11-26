@@ -364,6 +364,24 @@ POST /resolution/refund
 
 ---
 
+## Use-Cases Page (Frontend)
+
+The marketing page is a single `UseCaseLayout` template rendered from typed data
+files, one per vertical:
+
+| Vertical | URL | Data file |
+| --- | --- | --- |
+| Freelance | `/use-cases/freelance` | `src/components/use-cases/freelance/data.ts` |
+| eCommerce | `/use-cases/ecommerce` | `src/components/use-cases/ecommerce/data.ts` |
+| DAO Payroll | `/use-cases/dao-payroll` | `src/components/use-cases/dao-payroll/data.ts` |
+| Real Estate | `/use-cases/real-estate` | `src/components/use-cases/real-estate/data.ts` |
+| Service Platforms | `/use-cases/service-platforms` | `src/components/use-cases/service-platforms/data.ts` |
+
+`/use-cases` opens the first vertical (Freelance). Legacy `?vertical=<id>` links
+are upgraded to the matching path URL. Metrics are only rendered when every
+metric cites a public source in its `source` field; otherwise the metrics card
+is omitted.
+
 ## Integration Examples
 
 ### SDK Usage
