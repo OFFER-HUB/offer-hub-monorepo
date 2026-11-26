@@ -53,8 +53,8 @@ export default function PricingPage() {
 
               return (
                 <article
-                  key={tier.id}
-                  className="bg-bg-elevated shadow-neu-raised rounded-3xl p-8 md:p-10 hover:shadow-neu-raised-hover transition-shadow duration-200 flex flex-col group"
+                  key={tier.name}
+                  className="bg-bg-elevated shadow-neu-raised rounded-3xl p-10 hover:shadow-neu-raised-hover transition-shadow duration-[400ms] ease-out flex flex-col group"
                 >
                   <div className="w-14 h-14 rounded-2xl bg-bg-base shadow-neu-sunken-subtle flex items-center justify-center mb-6 group-hover:shadow-neu-sunken transition-shadow duration-200">
                     <Icon className="w-7 h-7 text-theme-primary" aria-hidden="true" />

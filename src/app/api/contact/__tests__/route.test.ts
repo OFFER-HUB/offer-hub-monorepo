@@ -49,6 +49,9 @@ describe("POST /api/contact — input validation", () => {
     ["an empty company", { ...VALID, company: "" }],
     ["an invalid email", { ...VALID, email: "a@@b.co" }],
     ["a multi-@ email", { ...VALID, email: "a@b@c.co" }],
+    ["a filled honeypot", { ...VALID, website: "https://spam.example" }],
+    ["a whitespace honeypot", { ...VALID, website: " " }],
+    ["a non-string honeypot", { ...VALID, website: null }],
   ])("rejects %s with 400 field errors", async (_label, body) => {
     const res = await POST(request(body));
 
@@ -67,6 +70,12 @@ describe("POST /api/contact — input validation", () => {
 });
 
 describe("POST /api/contact — persistence", () => {
+  it("accepts an empty honeypot without storing it", async () => {
+    const res = await POST(request({ ...VALID, website: "" }));
+    expect(res.status).toBe(200);
+    expect(insert.mock.calls[0][0][0]).not.toHaveProperty("website");
+  });
+
   it("inserts a valid inquiry and returns ok", async () => {
     const res = await POST(request(VALID));
 

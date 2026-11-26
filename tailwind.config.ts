@@ -76,20 +76,15 @@ const config: Config = {
         shimmer: "shimmer 1.5s ease-in-out infinite",
       },
       boxShadow: {
-        // Theme-aware neumorphic shadows (use these for dark mode support)
+        // Three surface levels and two interaction states; colors follow the active theme.
         "neu-raised": "6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light)",
-        "neu-raised-scrolled":
-          "8px 8px 18px var(--shadow-dark), -7px -7px 16px var(--shadow-light)",
         "neu-raised-sm": "3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light)",
         "neu-raised-hover": "2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light)",
         "neu-sunken": "inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)",
         "neu-sunken-subtle": "inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)",
 
-        // Level-2 (L2) — elevated depth for Blueprint nested layouts (Issue 1168)
+        // Level-2 is reserved for the nested Blueprint orchestrator showcase.
         "neu-raised-l2": "12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light)",
-        "neu-raised-l2-sm": "8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light)",
-        "neu-sunken-l2": "inset 8px 8px 16px var(--shadow-dark), inset -8px -8px 16px var(--shadow-light)",
-        "neu-sunken-l2-subtle": "inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light)",
       },
     },
   },

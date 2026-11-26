@@ -49,4 +49,12 @@ describe("StatusBadge", () => {
 
     expect(screen.getByText("GET")).toHaveClass("font-mono", "rounded-full");
   });
+
+  it("lets callers override the shape", () => {
+    render(<StatusBadge className="rounded-2xl">custom shape</StatusBadge>);
+
+    const badge = screen.getByText("custom shape");
+    expect(badge).toHaveClass("rounded-2xl");
+    expect(badge).not.toHaveClass("rounded-full");
+  });
 });

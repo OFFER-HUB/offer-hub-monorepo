@@ -1,0 +1,47 @@
+---
+title: Payouts and Seller Accounts SDK
+description: BlindPay payout, KYC, bank-account, withdrawal-history, and balance SDK resources in version 3.0.0.
+order: 34
+section: SDK
+---
+
+This reference describes `@offerhub/sdk` **3.0.0**. Order payouts use the seller's user session JWT; withdrawal history and balance operations use an API key. The server does not sign user transactions.
+
+## Payout resource
+
+The payout resource exposes `sdk.payouts.get`, `sdk.payouts.prepare`, `sdk.payouts.submit`, and `sdk.payouts.retry`.
+
+| Method | Operation | Authentication | Idempotency |
+| --- | --- | --- | --- |
+| `sdk.payouts.get` | Read payout for an order | User session JWT | Not applicable |
+| `sdk.payouts.prepare` | Prepare an unsigned transaction for a released order | User session JWT | Not stated |
+| `sdk.payouts.submit` | Submit the seller-signed transaction | User session JWT | Required `Idempotency-Key` |
+| `sdk.payouts.retry` | Retry a failed payout, optionally selecting another bank account in the same corridor | User session JWT | Not stated |
+
+Method argument and result property names are defined by the SDK 3.0.0 types. For the HTTP routes and confirmed fields, see the [Payouts API reference](/docs/api-reference/payouts).
+
+## KYC and bank accounts
+
+The SDK provides the `kyc` and `bankAccounts` resources for the current authenticated user. Use them to complete KYC/terms acceptance and manage local payout accounts. The corresponding API references list the confirmed routes:
+
+- [KYC endpoints](/docs/api-reference/kyc)
+- [Bank account endpoints](/docs/api-reference/bank-accounts)
+
+Use the SDK 3.0.0 types for the argument and result shapes of these resources.
+
+## Corridor, limits, and status
+
+The corridor follows the seller's country and is exactly one of Brazil (`BR`), Mexico (`MX`), Argentina (`AR`), or Colombia (`CO`). Unsupported countries and missing bank accounts for a corridor cause an error.
+
+Bank-account quotes have a **5.00 USD** minimum. Some rails have higher minimums and may return `PAYOUTS_AMOUNT_BELOW_MINIMUM`. Receiver transaction volume limits may return `LIMITS_VOLUME_EXCEEDED`; higher limits are requested through BlindPay's limit-increase process. See [BlindPay's API documentation](https://docs.blindpay.com/) for current limits.
+
+Payout statuses are `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`, `REFUNDED`, `ON_HOLD`, and `AWAITING_SIGNATURE`. A failed payout returns funds and can be retried.
+
+## Related SDK resources
+
+| Resource | Purpose | Reference |
+| --- | --- | --- |
+| `sdk.withdrawals` | Read withdrawal history | [Withdrawals SDK](/docs/sdk/withdrawals) |
+| `sdk.balance` | Read and manage the ledger balance | [Balance SDK](/docs/sdk/balance) |
+
+BlindPay fees are set by the operator's BlindPay agreement; no fee amounts are published. See [BlindPay pricing and documentation](https://docs.blindpay.com/).

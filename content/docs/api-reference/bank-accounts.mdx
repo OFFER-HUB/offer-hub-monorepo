@@ -1,0 +1,47 @@
+---
+title: Bank Account Endpoints
+description: Manage the current user's local bank accounts for BlindPay payouts.
+order: 56
+section: API Reference
+---
+
+Bank accounts are managed by the authenticated user and used for BlindPay payouts. All endpoints require the user's session JWT. Accounts must match the payout corridor selected from the seller's country.
+
+## Endpoints
+
+| Method | Path | Auth | Idempotency |
+| --- | --- | --- | --- |
+| `GET` | `/users/me/bank-accounts` | User session JWT | Not applicable |
+| `POST` | `/users/me/bank-accounts` | User session JWT | Not stated |
+| `PATCH` | `/users/me/bank-accounts/:id/default` | User session JWT | Not stated |
+| `DELETE` | `/users/me/bank-accounts/:id` | User session JWT | Not applicable |
+
+## GET /users/me/bank-accounts
+
+<Endpoint method="GET" path="/api/v1/users/me/bank-accounts" />
+
+Lists bank accounts belonging to the authenticated user.
+
+## POST /users/me/bank-accounts
+
+<Endpoint method="POST" path="/api/v1/users/me/bank-accounts" />
+
+Creates a bank account for the authenticated user.
+
+## PATCH /users/me/bank-accounts/:id/default
+
+<Endpoint method="PATCH" path="/api/v1/users/me/bank-accounts/:id/default" />
+
+Sets the account identified by `id` as the user's default bank account.
+
+## DELETE /users/me/bank-accounts/:id
+
+<Endpoint method="DELETE" path="/api/v1/users/me/bank-accounts/:id" />
+
+Deletes the account identified by `id`.
+
+## Related
+
+- [Seller Bank Payouts guide](/docs/guide/withdrawals) — complete seller payout flow.
+- [KYC endpoints](/docs/api-reference/kyc) — receiver and terms-of-service operations.
+- [Payouts endpoints](/docs/api-reference/payouts) — order payout lifecycle.

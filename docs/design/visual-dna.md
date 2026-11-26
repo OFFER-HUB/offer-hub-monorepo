@@ -154,8 +154,8 @@ Only these four radii are allowed. No arbitrary radii.
 ### Radius Rules
 
 **DO:**
-- Use 16px for all major containers
-- Use 12px for all interactive elements
+- Use 24px for section cards and 16px for inner surfaces
+- Use 12px for controls and pill radii for badges and avatars
 - Match radius to component hierarchy
 - Keep radius consistent within component families
 
@@ -280,7 +280,7 @@ When creating new components, ensure:
 - [ ] Colors use CSS variables from the palette
 - [ ] Typography follows the type scale
 - [ ] Spacing uses 8px grid multiples
-- [ ] Border radius is 16px (containers) or 12px (interactive)
+- [ ] Radius follows the 12 / 16 / 24 / pill role hierarchy
 - [ ] Shadows follow neumorphic physics (see `neumorphism.md`)
 - [ ] Animations use defined keyframes (see `motion.md`)
 - [ ] Hover states provide clear feedback

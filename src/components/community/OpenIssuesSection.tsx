@@ -31,7 +31,7 @@ const IssueCard = memo(function IssueCard({ issue }: { issue: IssueData }) {
             #{issue.number}
           </div>
           {isGoodFirstIssue && (
-            <span className="text-[10px] font-black text-theme-primary uppercase tracking-widest bg-theme-primary/10 px-2 py-1 rounded-lg shadow-sm">
+            <span className="text-[10px] font-black text-theme-primary uppercase tracking-widest bg-theme-primary/10 px-2 py-1 rounded-full">
               Starter
             </span>
           )}

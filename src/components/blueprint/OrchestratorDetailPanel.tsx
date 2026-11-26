@@ -21,7 +21,7 @@ function ArchitectureCard({
   const Icon = card.icon;
 
   return (
-    <article className="rounded-2xl bg-bg-elevated p-6 sm:p-8 shadow-neu-raised-l2-sm overflow-visible transition-transform duration-300 hover:-translate-y-1 blueprint-layer">
+    <article className="rounded-2xl bg-bg-elevated p-6 sm:p-8 shadow-neu-raised overflow-visible transition-transform duration-300 hover:-translate-y-1 blueprint-layer">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
           <div className="rounded-xl bg-bg-base p-3 shadow-neu-sunken-subtle">
@@ -65,7 +65,7 @@ function ArchitectureCard({
       >
         <div className="overflow-hidden">
           {expanded ? (
-            <div className="rounded-2xl bg-bg-base p-5 shadow-neu-sunken-l2-subtle overflow-visible">
+            <div className="rounded-2xl bg-bg-base p-5 shadow-neu-sunken-subtle overflow-visible">
               <p className="text-sm leading-7 text-content-primary">{card.callout}</p>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-content-secondary">
                 {card.bullets.map((bullet) => (
