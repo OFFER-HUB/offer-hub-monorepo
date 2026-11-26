@@ -51,13 +51,11 @@ export const PRICING_TIERS: PricingTier[] = [
     name: "Enterprise Support",
     priceLabel: "Custom",
     description:
-      "For organizations that require dedicated implementation advisory, comprehensive architecture reviews, and prioritized escalation channels.",
+      "For organizations that need a custom support scope tailored to their requirements.",
     features: [
-      "Implementation advisory and onboarding guidance",
-      "Architecture and custom integration review",
-      "Priority escalation channel and response",
-      "Custom support scope tailored to your needs",
-      "Direct coordination with core engineering",
+      "Full open-source core",
+      "Custom support scope agreed with the team",
+      "Contact us to discuss your requirements",
     ],
     primaryCta: {
       label: "Talk to sales",
@@ -78,22 +76,22 @@ export const COMPARISON_FEATURES: ComparisonFeature[] = [
   {
     name: "Core platform",
     openSource: "Full open-source core (contracts, API, client SDK)",
-    enterprise: "Full core + custom extension advisory",
+    enterprise: "Full open-source core",
   },
   {
     name: "Deployment & updates",
     openSource: "Self-managed on your infrastructure",
-    enterprise: "Coordinated rollout & deployment guidance",
+    enterprise: "Agreed per engagement",
   },
   {
     name: "Support level",
     openSource: "Community support (GitHub & public channels)",
-    enterprise: "Priority escalation channel & direct response",
+    enterprise: "Agreed per engagement",
   },
   {
     name: "Architecture review",
     openSource: "Community documentation & reference guides",
-    enterprise: "Dedicated architecture & integration review",
+    enterprise: "Agreed per engagement",
   },
 ];
 
@@ -121,7 +119,7 @@ export const PRICING_FAQS: FaqItem[] = [
   {
     question: "What is included with Enterprise Support?",
     answer:
-      "Enterprise support provides dedicated implementation advisory, custom architecture and security integration reviews, priority escalation channels, and guidance tailored to your organizational deployment schedule.",
+      "Enterprise support is scoped case by case. Contact us to discuss what your organization needs.",
   },
 ];
 
