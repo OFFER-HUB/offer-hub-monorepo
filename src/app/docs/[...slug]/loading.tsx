@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function DocHeaderSkeleton() {
   return (
-    <div className="mb-8 pb-6 border-b border-theme-border/40">
+    <div className="mb-8 pb-6 border-b border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]">
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div className="flex-1">
           {/* h1 */}

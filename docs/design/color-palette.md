@@ -161,6 +161,13 @@ Use these opacity values for consistency:
 
 **Common Pattern:** `bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]` = success color at 10% opacity
 
+> ⚠️ **Important:** When the color is a CSS variable (all theme tokens), Tailwind 3 **cannot** emit CSS for opacity modifiers. `bg-theme-success/10` produces **no CSS at all**.
+> Use `color-mix()` arbitrary-value syntax instead:
+> ```
+> bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]
+> ```
+> `npm run lint:classes` will fail with a pointed error if the broken pattern is added.
+
 ---
 
 ## Color Usage Guidelines

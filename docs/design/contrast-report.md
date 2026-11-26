@@ -128,8 +128,8 @@ Note: `text-xs font-semibold` (12px bold ≈ 9pt bold) does not qualify as large
 
 | Element | Light ratio | Dark ratio | Result |
 |---|---|---|---|
-| Language label — `text-content-secondary/70` | ~2.88:1 (decorative label) | ~5.80:1 | ✅ |
-| Fallback code text — `text-content-secondary/70` | ~2.88:1 | ~5.80:1 | ✅ |
+| Language label — `text-[color-mix(in_srgb,var(--color-text-secondary)_60%,transparent)]` | ~2.88:1 (decorative label) | ~5.80:1 | ✅ |
+| Fallback code text — `text-[color-mix(in_srgb,var(--color-text-secondary)_70%,transparent)]` | ~2.88:1 | ~5.80:1 | ✅ |
 | Shiki `<pre>` background | `bg-bg-elevated` `#ffffff` shows through | `bg-bg-elevated` `#2e2e3f` shows through | ✅ |
 | Shiki token colors (github-light / github-dark) | Handled by Shiki themes | Handled by Shiki themes | ✅ |
 

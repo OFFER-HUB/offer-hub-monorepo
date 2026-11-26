@@ -86,7 +86,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 ref={menuButtonRef}
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-xl text-content-secondary hover:bg-theme-primary/5 hover:text-theme-primary transition-colors"
+                className="lg:hidden inline-flex items-center justify-center min-w-11 min-h-11 p-2 rounded-xl text-content-secondary hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] hover:text-theme-primary transition-colors"
                 aria-label="Open docs navigation"
                 aria-expanded={isDrawerOpen}
                 aria-controls="docs-mobile-drawer"
@@ -115,7 +115,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
                 </div>
 
                 {headings.length > 0 && (
-                  <div className="xl:hidden mt-20 pt-10 border-t border-theme-border/20 print:hidden">
+                  <div className="xl:hidden mt-20 pt-10 border-t border-[color-mix(in_srgb,var(--color-border)_20%,transparent)] print:hidden">
                     <TableOfContents headings={headings} />
                   </div>
                 )}
@@ -151,7 +151,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
             aria-label="Documentation navigation"
             className="relative h-full w-80 max-w-[85vw] p-8 bg-bg-base shadow-neu-raised rounded-r-3xl print:hidden"
           >
-            <div className="mb-8 flex items-center justify-between pb-4 border-b border-theme-border/40">
+            <div className="mb-8 flex items-center justify-between pb-4 border-b border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]">
               <p className="text-sm font-bold uppercase tracking-widest text-theme-primary">
                 Navigation
               </p>
