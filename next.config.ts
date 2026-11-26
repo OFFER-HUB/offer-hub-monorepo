@@ -57,6 +57,21 @@ const nextConfig: NextConfig = {
         destination: "/docs/guide/withdrawals",
         permanent: true,
       },
+      {
+        source: "/docs/sdk/resources",
+        destination: "/docs/sdk/quick-start",
+        permanent: true,
+      },
+      {
+        source: "/docs/guide/events",
+        destination: "/docs/api-reference/events",
+        permanent: true,
+      },
+      {
+        source: "/docs/guide/errors",
+        destination: "/docs/sdk/errors",
+        permanent: true,
+      },
     ];
   },
   async headers() {

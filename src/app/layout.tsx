@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Analytics } from "@/components/Analytics";
@@ -21,18 +20,6 @@ const themeInitScript = `(function () {
     document.documentElement.classList.add(theme);
   } catch (e) {}
 })();`;
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "900"],
-  variable: "--font-inter",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-jetbrains-mono",
-});
 
 export const viewport = {
   themeColor: [
@@ -140,11 +127,11 @@ export default function RootLayout({
     // suppressHydrationWarning is required because the blocking theme script below
     // mutates documentElement's class before React hydrates, which React would
     // otherwise flag as a class-attribute mismatch on <html>.
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={`${inter.className} antialiased relative min-h-screen`}>
+      <body className="font-sans antialiased relative min-h-screen">
         <noscript>
           <div
             style={{

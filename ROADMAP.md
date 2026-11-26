@@ -1,77 +1,76 @@
-# Master Roadmap: OFFER-HUB (100% Granular)
+# OFFER-HUB Roadmap
 
-This roadmap is the definitive guide to building OFFER-HUB. It maps 100% of the requirements from `/docs` into atomic, testable units of work.
+This roadmap lists what the OFFER-HUB Orchestrator does today and what is still being worked on. It replaces the earlier phase-by-phase plan that described the original orchestrator design.
 
----
+Everything under **Shipped** is available in the current product. Items under **Coming soon** are in progress and have no committed date. If you need a capability that is not listed here, open an issue and describe your use case.
 
-## Phase 0: Project Foundation (COMPLETED)
-- [x] Initial monorepo scaffolding (Apps, Packages).
-- [x] Professional Documentation & English Translation.
-- [x] Workflow improvements (Concurrent execution, Docker, Scripts).
-- [x] Root configuration (.gitignore, tsconfig.json, docker-compose.yml).
-- [x] AI Development Standards (`ai-context.md`).
+## Shipped
 
----
+### Payments and balances
 
-## Phase 1: Shared Domain & Types (COMPLETED)
-*Goal: Define the schema and common logic used by both API and Worker.*
+- [x] Non-custodial escrow on Stellar, in USDC, through Trustless Work Soroban contracts.
+- [x] Mainnet deployment, plus a public testnet sandbox for development.
+- [x] Stellar RPC connectivity with operator-selectable network.
+- [x] Internal available/reserved balance ledger with atomic updates.
+- [x] Prefixed resource IDs and structured response envelopes.
 
-- [x] **Issue 1.1: Database Schema (Prisma)**
-    - [x] 1.1.1: Core Identity: `User`, `ApiKey`, `Balance`.
-    - [x] 1.1.2: Financials: `TopUp`, `Order`, `Escrow`, `Withdrawal`.
-    - [x] 1.1.3: Details: `Milestone`, `Dispute`, `AuditLog`, `IdempotencyKey`.
-    - [x] 1.1.4: Infrastructure: `WebhookEvent` (deduplication).
-    - [x] 1.1.5: Performance: Add composite indexes for `user_id`, `status`, `external_id`.
+### Orders and escrow
 
-- [x] **Issue 1.2: Domain Constants & Enums**
-    - [x] 1.2.1: Enums: Implement all status enums from `docs/architecture/state-machines.md`.
-    - [x] 1.2.2: ID Prefixes: Implement `usr_`, `ord_`, `topup_`, `esc_`, `dsp_`, `wd_`, `evt_`, `aud_`.
-    - [x] 1.2.3: Error Codes: Implement full catalog from `docs/api/errors.md` with HTTP mappings.
+- [x] Full order state machine: `ORDER_CREATED`, `FUNDS_RESERVED`, `ESCROW_CREATING`, `ESCROW_FUNDING`, `ESCROW_FUNDED`, `IN_PROGRESS`, `DELIVERED`, `RELEASE_REQUESTED`, `RELEASED`, `REFUND_REQUESTED`, `REFUNDED`, `DISPUTED`, `CLOSED`.
+- [x] Milestones on a single order, sharing one escrow.
+- [x] Client-side transaction signing: the Orchestrator prepares unsigned transactions, the user's wallet signs and submits them.
+- [x] Idempotency keys on order creation, escrow submission and payout submission.
 
-- [x] **Issue 1.4: Logic Helpers**
-    - [x] 1.4.1: Prefixed NanoID generator.
-    - [x] 1.4.2: Financial arithmetic library integration (`Big.js` or `Decimal.js`).
-    - [x] 1.4.3: Amount validator (`^\d+\.\d{2}$`).
-    - [x] 1.4.4: State machine validator engine (enforcing `ORDER_TRANSITIONS`).
+### Disputes and resolution
 
----
+- [x] Buyer- or seller-opened disputes.
+- [x] Reasons: not delivered, quality issue, other.
+- [x] Review lifecycle from open to resolved.
+- [x] Outcomes: full release, full refund, split.
 
-## Phase 2: Security & Infrastructure (COMPLETED)
-*Goal: Build the protective shell and the core request handlers.*
+### Withdrawals and off-ramp
 
-- [x] **Issue 2.1: Auth System**
-    - [x] 2.1.1: API Key hashing logic (SHA-256 + salt).
-    - [x] 2.1.2: `ApiKeyGuard` (Authenticates `ohk_` keys).
-    - [x] 2.1.3: `ScopeGuard` (Enforces `read`, `write`, `support`).
-    - [x] 2.1.4: Short-lived token logic (`ohk_tok_`) for frontend use.
+- [x] Withdrawals to an external Stellar address.
+- [x] BlindPay off-ramp to Brazil, Mexico, Argentina and Colombia.
+- [x] Bank-account and KYC resources for payout onboarding.
 
-- [x] **Issue 2.2: Idempotency System (Redis)**
-    - [x] 2.2.1: `IdempotencyGuard`: Intercepts `Idempotency-Key` headers.
-    - [x] 2.2.2: In-progress locking: Prevents concurrent requests with the same key.
-    - [x] 2.2.3: Comparison logic: Ensures request hash matches the stored key body.
-    - [x] 2.2.4: TTL Logic: 24h for payouts/topups, 7 days for orders, indefinite for disputes.
+### Authentication and security
 
-- [x] **Issue 2.3: Request/Response Pipeline**
-    - [x] 2.3.1: Global Error Filter: Transform all exceptions to `docs/api/errors.md` format.
-    - [x] 2.3.2: Standard Response Interceptor: Wrap all success responses.
-    - [x] 2.3.3: Correlation ID Middleware: Handle `X-Request-ID` headers.
-    - [x] 2.3.4: Global Rate Limiter: Implement Redis-based rate limiting (100 req/min general).
+- [x] Marketplace API keys with `read`, `write` and `support` scopes.
+- [x] One-hour scoped tokens exchanged from an API key for browser use.
+- [x] User sessions from either wallet sign-in or email/password, sharing one JWT.
+- [x] Master-key bootstrap for the operator's first API key.
+- [x] Audit log and request correlation IDs.
 
----
+### Developer experience
 
-## Phase 3: External Providers (COMPLETED)
-*Goal: Implement the "Dialects" to talk to external services.*
+- [x] `@offerhub/sdk` TypeScript client.
+- [x] `@offerhub/cli` for API-key and maintenance operations.
+- [x] `create-offer-hub-orchestrator` interactive installer.
+- [x] Self-hosting documentation and the public starter-shell repository.
+- [x] Authenticated SSE event stream and inbound provider webhooks.
 
+## Coming soon
 - [x] **Issue 3.1: Payment Provider Abstraction**
     - [x] 3.1.1: `PaymentProvider` interface (Strategy Pattern)
     - [x] 3.1.2: Crypto-native provider (Stellar wallets, USDC)
 
-- [x] **Issue 3.2: Trustless Work Integration**
-    - [x] 3.2.1: Stellar wallet logic (Balance projection).
-    - [x] 3.2.2: Escrow contract creation client.
-    - [x] 3.2.3: Partial Release / Partial Refund logic.
-    - [x] 3.2.4: HMAC Signature verification logic for TW webhooks.
+These items are in progress. No dates are committed and nothing here should be treated as available yet.
 
+- [ ] Publishing `@offerhub/sdk` 3.0.0 to npm. The registry currently serves 1.0.0; the documentation targets the 3.0.0 surface.
+- [ ] Invisible Stellar wallets and the 90-day "Claim your wallet" flow outside the testnet sandbox.
+- [ ] Broader operator tooling around reconciliation and incident review.
+
+## Not planned
+
+- Custodial user wallets or server-side signing for users on mainnet.
+- A fiat on-ramp inside the Orchestrator.
+- Marketplace features beyond payments: listings, messaging, accounts and reviews belong to your product.
+
+## Following along
+
+- Product documentation: [offer-hub.tech/docs](https://offer-hub.tech/docs)
+- Issues and feature requests: [GitHub Issues](https://github.com/OFFER-HUB/offer-hub-monorepo/issues)
 ---
 
 ## Phase 4: Core Services (Business Logic) (COMPLETED)
