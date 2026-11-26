@@ -3,7 +3,7 @@
 - **Tester (GitHub user):** @ryzen-xp (Sandeep Chauhan)
 - **Issue:** #1779
 - **Date:** 2026-11-25
-- **Device, OS and browser:** Not recorded
+- **Device, OS and browser:** MSI PC; Ubuntu 24; Brave.
 - **Wallet (only if used):** A wallet was connected during the session; wallet type not recorded. No wallet address included.
 - **Order ids:** Not applicable (no orders with money)
 - **Recording(s):**
