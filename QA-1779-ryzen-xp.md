@@ -4,7 +4,7 @@
 - **Issue:** #1779
 - **Date:** 2026-11-25
 - **Device, OS and browser:** MSI PC; Ubuntu 24; Brave.
-- **Wallet (only if used):** A wallet was connected during the session; wallet type not recorded. No wallet address included.
+- **Wallet (only if used):** None. No cryptocurrency wallet was connected; GitHub authentication was used to sign in.
 - **Order ids:** Not applicable (no orders with money)
 - **Recording(s):**
   - https://youtu.be/pE6a9N_-IV4
