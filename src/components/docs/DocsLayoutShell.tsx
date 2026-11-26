@@ -201,7 +201,7 @@ export function DocsLayoutShell({ nav, children }: DocsLayoutShellProps) {
             aria-label="Documentation navigation"
             className="relative h-full w-80 max-w-[85vw] p-8 bg-bg-base shadow-neu-raised rounded-r-[30px] print:hidden"
           >
-            <div className="mb-8 flex items-center justify-between pb-4 border-b border-theme-border/40">
+            <div className="mb-8 flex items-center justify-between pb-4 border-b border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]">
               <p className="text-sm font-bold uppercase tracking-widest text-theme-primary">
                 Navigation
               </p>
