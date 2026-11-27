@@ -29,16 +29,17 @@ const navLinks = [
  * Returns true when a nav link should render in its active/selected state.
  *
  * Rules (evaluated in order):
- *  1. Hash links (e.g. /#features, /#how-it-works) are active only on the
- *     home page — `pathname.startsWith("/")` would otherwise match every route.
+ *  1. Hash links (e.g. /#features, /#how-it-works) are never active, so they
+ *     do not light up alongside "Home" on the home page.
  *  2. Non-root full-path links (e.g. /docs, /community) are active when the
  *     current pathname begins with that href (covers nested routes like
  *     /docs/getting-started).
  *  3. Exact "/" matches only the home route.
  */
 export function isLinkActive(href: string, pathname: string): boolean {
-  // Rule 1: hash anchors belong to the home page only
-  if (href.includes("#")) return pathname === "/";
+  // Rule 1: hash anchors are in-page jumps; the Home link owns the active
+  // state on "/", so exactly one item is active at a time.
+  if (href.includes("#")) return false;
 
   // Rule 2 & 3: prefix match for full-path links, exact match for "/"
   if (href.startsWith("/") && href.length > 1) return pathname.startsWith(href);
@@ -78,7 +79,7 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16">
 
             {/* ── Logo ── */}
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 min-h-11 min-w-11">
               <Logo height={40} />
             </Link>
 
@@ -87,7 +88,7 @@ export function Navbar() {
               <Link
                 href="/"
                 className={cn(
-                  "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
+                  "inline-flex items-center min-h-11 px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
                   "transition-[color,box-shadow] duration-300 ease-out bg-bg-base",
                   isLinkActive("/", pathname)
                     ? "text-content-primary shadow-neu-sunken-subtle"
@@ -101,7 +102,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
+                    "inline-flex items-center min-h-11 px-3 py-2 rounded-full text-[13px] xl:text-sm font-medium",
                     "transition-[color,box-shadow] duration-300 ease-out bg-bg-base",
                     isLinkActive(link.href, pathname)
                       ? "text-content-primary shadow-neu-sunken-subtle"

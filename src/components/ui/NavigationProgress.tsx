@@ -102,7 +102,7 @@ export function NavigationProgress() {
       className="pointer-events-none"
       progress={progress / 100}
       opacity={isLoading ? 1 : 0}
-      transition={progress === 100 ? "transform 0.1s ease-out" : "transform 0.4s ease"}
+      transition={progress === 100 ? "transform 0.1s ease-out" : "transform 0.3s ease"}
       glow
     />
   );

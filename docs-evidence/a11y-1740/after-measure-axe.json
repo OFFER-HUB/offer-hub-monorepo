@@ -1,0 +1,48 @@
+{
+ "/": {},
+ "/::axe": [
+  "color-contrast:20",
+  "heading-order:1"
+ ],
+ "/architecture": {},
+ "/architecture::axe": [
+  "color-contrast:18",
+  "scrollable-region-focusable:1"
+ ],
+ "/use-cases": {},
+ "/use-cases::axe": [
+  "color-contrast:55",
+  "heading-order:3"
+ ],
+ "/community": {},
+ "/community::axe": [
+  "color-contrast:199",
+  "heading-order:2"
+ ],
+ "/docs": {},
+ "/docs::axe": [
+  "color-contrast:17",
+  "heading-order:1"
+ ],
+ "/docs/guide/style-guide": {},
+ "/docs/guide/style-guide::axe": [
+  "color-contrast:328",
+  "landmark-unique:4"
+ ],
+ "/docs/api-reference/interactive": {},
+ "/docs/api-reference/interactive::axe": [
+  "color-contrast:53",
+  "heading-order:13",
+  "scrollable-region-focusable:51"
+ ],
+ "/privacy": {},
+ "/privacy::axe": [
+  "color-contrast:19",
+  "heading-order:1"
+ ],
+ "/terms": {},
+ "/terms::axe": [
+  "color-contrast:66",
+  "heading-order:1"
+ ]
+}

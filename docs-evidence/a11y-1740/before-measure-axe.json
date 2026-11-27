@@ -1,0 +1,120 @@
+{
+ "/": {
+  "a.flex.items-center.gap-2.5 262x36": 1,
+  "a.inline-flex.items-center.min-h-11 39x44": 1,
+  "a.inline-flex.items-center.min-h-11 34x44": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/::axe": [
+  "color-contrast:20",
+  "heading-order:1"
+ ],
+ "/architecture": {
+  "a.relative.px-4.sm:px-5 99x40": 1,
+  "a.relative.px-4.sm:px-5 88x40": 1,
+  "a.relative.px-4.sm:px-5 133x40": 1,
+  "a.relative.px-4.sm:px-5 121x40": 1,
+  "a.relative.px-4.sm:px-5 101x40": 1,
+  "a.relative.px-4.sm:px-5 115x40": 1,
+  "a.relative.px-4.sm:px-5 93x40": 1,
+  "button.absolute.top-4.right-4 31x31": 4,
+  "a.flex.items-center.gap-2.5 262x36": 1,
+  "a.inline-flex.items-center.min-h-11 39x44": 1,
+  "a.inline-flex.items-center.min-h-11 34x44": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/architecture::axe": [
+  "color-contrast:18",
+  "scrollable-region-focusable:1"
+ ],
+ "/use-cases": {
+  "button.relative.flex.min-w-0 162x32": 1,
+  "button.relative.flex.min-w-0 159x32": 1,
+  "button.jsx-11cf277bb605f06a.flex.items-center 123x33": 2,
+  "a.flex.items-center.gap-2.5 262x36": 1,
+  "a.inline-flex.items-center.min-h-11 39x44": 1,
+  "a.inline-flex.items-center.min-h-11 34x44": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/use-cases::axe": [
+  "color-contrast:55",
+  "heading-order:3"
+ ],
+ "/community": {
+  "a.text-sm.font-black.text-content-primary 150x24": 60,
+  "a.block.text-base.font-black 294x40": 3,
+  "a.flex.items-center.gap-2.5 262x36": 1,
+  "a.inline-flex.items-center.min-h-11 39x44": 1,
+  "a.inline-flex.items-center.min-h-11 34x44": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/community::axe": [
+  "color-contrast:200",
+  "heading-order:2"
+ ],
+ "/docs": {
+  "input.bg-transparent.flex-1.min-h-6 180x24": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/docs::axe": [
+  "color-contrast:17",
+  "heading-order:1"
+ ],
+ "/docs/guide/style-guide": {
+  "a.text-content-secondary.hover:text-content-primary.transition-colors 42x44": 1,
+  "button.neu-circle.h-10.flex 154x40": 1,
+  "button.mt-0.5.shrink-0.rounded 19x19": 2,
+  "button.inline-flex.min-h-10.items-center 79x40": 1,
+  "a.inline-flex.items-center.gap-1.5 178x20": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/docs/guide/style-guide::axe": [
+  "color-contrast:328",
+  "landmark-unique:4"
+ ],
+ "/docs/api-reference/interactive": {
+  "input.bg-transparent.flex-1.min-h-6 272x24": 1,
+  "button.text-xs.font-semibold.text-theme-primary 60x16": 30,
+  "button.inline-flex.items-center.gap-2 100x40": 51,
+  "button.px-3.py-1.rounded-lg 101x24": 29,
+  "button.px-3.py-1.rounded-lg 191x40": 63,
+  "button.flex.items-center.gap-1.5 71x24": 52,
+  "input.w-full.rounded-xl.bg-bg-sunken 294x42": 63,
+  "button.px-3.py-1.rounded-lg 66x24": 18,
+  "select.w-full.rounded-xl.px-3 294x41": 4,
+  "button.px-3.py-1.rounded-lg 227x40": 5,
+  "button.px-3.py-1.rounded-lg 213x40": 2,
+  "button.px-3.py-1.rounded-lg 206x40": 2,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/docs/api-reference/interactive::axe": [
+  "color-contrast:53",
+  "heading-order:13",
+  "scrollable-region-focusable:51"
+ ],
+ "/privacy": {
+  "a.text-xs.font-bold.text-theme-primary 106x16": 3,
+  "a.text-xs.font-bold.text-theme-primary 88x32": 1,
+  "button.py-3.rounded-xl.text-xs 294x40": 2,
+  "a.flex.items-center.gap-2.5 262x36": 1,
+  "a.inline-flex.items-center.min-h-11 39x44": 1,
+  "a.inline-flex.items-center.min-h-11 34x44": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/privacy::axe": [
+  "color-contrast:19",
+  "heading-order:1"
+ ],
+ "/terms": {
+  "a.font-bold.text-theme-primary.hover:text-content-primary 151x17": 1,
+  "a.font-bold.text-theme-primary.hover:text-content-primary 144x20": 1,
+  "a.flex.items-center.gap-2.5 262x36": 1,
+  "a.inline-flex.items-center.min-h-11 39x44": 1,
+  "a.inline-flex.items-center.min-h-11 34x44": 1,
+  "a.inline-flex.items-center.min-h-6 101x24": 1
+ },
+ "/terms::axe": [
+  "color-contrast:66",
+  "heading-order:1"
+ ]
+}

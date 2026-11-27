@@ -217,11 +217,17 @@ body {
 
 }
 
+/* Global keyboard focus ring: 2px brand outline on every focusable control */
+:where(a, button, input, select, textarea, summary, [role="button"], [role="tab"], [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* CSS-only fade-in-up animation (replaces framer-motion whileInView) */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(12px);
   }
 
   to {
@@ -232,7 +238,7 @@ body {
 
 @keyframes fadeIn {
   from {
-    opacity: 0;
+    opacity: 0.4;
   }
 
   to {
@@ -253,15 +259,15 @@ body {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.6s ease-out both;
+  animation: fadeIn 0.3s ease-out both;
 }
 
 .animate-fadeInUp {
-  animation: fadeInUp 0.6s ease-out both;
+  animation: fadeInUp 0.3s ease-out both;
 }
 
 .animate-fadeInScale {
-  animation: fadeInScale 0.6s ease-out both;
+  animation: fadeInScale 0.3s ease-out both;
 }
 
 @keyframes dropdownIn {
@@ -292,6 +298,20 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .animate-fadeIn,
+  .animate-fadeInUp,
+  .animate-fadeInScale {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }
 

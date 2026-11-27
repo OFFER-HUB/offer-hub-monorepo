@@ -138,7 +138,7 @@ export function EndpointPanel({ operation, baseUrl, bearerToken }: EndpointPanel
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center gap-3 px-5 py-4 text-left transition-[background-color,box-shadow] duration-200",
+          "w-full min-h-11 flex items-center gap-3 px-5 py-4 text-left transition-[background-color,box-shadow] duration-200",
           isOpen
             ? "bg-bg-sunken shadow-neu-sunken-subtle"
             : "bg-bg-base hover:bg-[color-mix(in_srgb,var(--color-bg-sunken)_50%,var(--color-bg-base))]",

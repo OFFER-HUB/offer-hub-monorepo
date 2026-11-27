@@ -94,6 +94,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       Math.max(y, window.innerHeight - y)
     );
 
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      flushSync(() => {
+        setTheme(nextTheme);
+      });
+      return;
+    }
+
     const transition = document.startViewTransition(() => {
       // Use flushSync to ensure React updates the DOM immediately
       flushSync(() => {
@@ -110,7 +118,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           ],
         },
         {
-          duration: 600,
+          duration: 500,
           easing: "cubic-bezier(0.16, 1, 0.3, 1)",
           pseudoElement: "::view-transition-new(root)",
         }
