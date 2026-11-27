@@ -5,6 +5,7 @@ import { Search, FileText, ChevronRight, X } from "lucide-react";
 import Fuse, { type FuseResult, type FuseResultMatch } from "fuse.js";
 import { useRouter } from "next/navigation";
 import docsIndex from "@/data/docs-index.json";
+import { Field } from "@/components/ui/Field";
 import { useDebounce } from "@/hooks/useDebounce";
 
 interface SearchResult {
@@ -108,7 +109,7 @@ export function DocsSearchBar() {
         indices.forEach(([start, end]: [number, number]) => {
             parts.push(text.slice(lastIndex, start));
             parts.push(
-                <span key={`${key}-${start}-${end}`} className="bg-theme-primary/15 text-theme-primary rounded px-0.5">
+                <span key={`${key}-${start}-${end}`} className="bg-theme-primary/15 text-theme-primary rounded-xl px-0.5">
                     {text.slice(start, end + 1)}
                 </span>
             );
@@ -122,48 +123,48 @@ export function DocsSearchBar() {
     return (
         <div className="relative w-full max-w-2xl mx-auto" ref={searchRef}>
             <div className="relative w-full">
-                <div className="neu-input rounded-xl p-4 flex items-center gap-3">
-                    <Search className="text-content-secondary" size={18} />
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        placeholder="Ask or search..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        onFocus={() => setInputFocused(true)}
-                        onBlur={() => setInputFocused(false)}
-                        role="combobox"
-                        aria-expanded={isOpen && results.length > 0}
-                        aria-haspopup="listbox"
-                        aria-controls="docs-search-results"
-                        aria-label="Documentation search"
-                        aria-autocomplete="list"
-                        aria-activedescendant={activeIndex >= 0 ? `result-item-${results[activeIndex]?.item.id}` : undefined}
-                        className="bg-transparent flex-1 min-h-11 text-content-primary placeholder:text-content-secondary w-full rounded-md focus-visible:outline-2 focus-visible:outline-theme-primary focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-theme-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-sunken"
-                    />
-                    {query ? (
-                        <button
-                            onClick={() => { setQuery(""); setResults([]); setIsOpen(false); }}
-                            className="text-content-secondary hover:text-content-primary transition-colors inline-flex items-center justify-center min-w-11 min-h-11 px-1"
-                        >
-                            <X size={18} />
-                        </button>
-                    ) : !inputFocused && isMac !== null ? (
-                        <div className="flex items-center gap-1 pointer-events-none text-content-secondary px-2 py-1 rounded-md bg-bg-base shadow-neu-raised-sm">
-                            <span className="text-xs font-medium text-content-secondary">
+                <Field
+                    ref={inputRef}
+                    type="text"
+                    label="Documentation search"
+                    hideLabel
+                    leadingIcon={<Search size={18} />}
+                    placeholder="Ask or search..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    role="combobox"
+                    aria-expanded={isOpen && results.length > 0}
+                    aria-haspopup="listbox"
+                    aria-controls="docs-search-results"
+                    aria-autocomplete="list"
+                    aria-activedescendant={activeIndex >= 0 ? `result-item-${results[activeIndex]?.item.id}` : undefined}
+                    trailing={
+                        query ? (
+                            <button
+                                type="button"
+                                onClick={() => { setQuery(""); setResults([]); setIsOpen(false); }}
+                                aria-label="Clear search"
+                                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-content-secondary transition-colors duration-200 hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+                            >
+                                <X size={18} aria-hidden="true" />
+                            </button>
+                        ) : !inputFocused && isMac !== null ? (
+                            <kbd className="pointer-events-none mr-2 rounded-xl bg-bg-base px-2 py-1 font-sans text-xs font-medium text-content-secondary shadow-neu-raised-sm">
                                 {isMac ? '⌘K' : 'Ctrl K'}
-                            </span>
-                        </div>
-                    ) : null}
-                </div>
+                            </kbd>
+                        ) : undefined
+                    }
+                />
             </div>
 
             {isOpen && results.length > 0 && (
                 <div 
                     id="docs-search-results"
                     role="listbox"
-                    className="absolute top-full left-0 mt-3 w-full rounded-2xl z-[150] animate-dropdownIn bg-bg-elevated border border-theme-border/40 shadow-2xl shadow-black/10 backdrop-blur-md"
+                    className="absolute top-full left-0 mt-3 w-full rounded-2xl z-[150] animate-dropdownIn bg-bg-elevated border border-theme-border/40 shadow-neu-raised backdrop-blur-md"
                 >
                     <div className="max-h-[480px] overflow-y-auto scrollbar-thin">
                         {results.map((result, idx) => (
@@ -183,7 +184,7 @@ export function DocsSearchBar() {
                                     activeIndex === idx ? "bg-theme-primary/10" : "bg-transparent"
                                 }`}
                             >
-                                <div className={`mt-1 p-2 rounded-lg ${activeIndex === idx ? "bg-theme-primary/10 shadow-neu-sunken-subtle" : "bg-bg-base shadow-neu-raised-sm"}`}>
+                                <div className={`mt-1 p-2 rounded-xl ${activeIndex === idx ? "bg-theme-primary/10 shadow-neu-sunken-subtle" : "bg-bg-base shadow-neu-raised-sm"}`}>
                                     <FileText size={18} className={activeIndex === idx ? "text-theme-primary" : "text-content-secondary"} />
                                 </div>
                                 <div className="flex-1">
@@ -207,10 +208,10 @@ export function DocsSearchBar() {
                         <span>{results.length} results found</span>
                         <div className="flex gap-3">
                             <span className="flex items-center gap-1">
-                                <kbd className="px-1 py-0.5 rounded bg-bg-base border border-theme-border/40 text-content-primary">↑↓</kbd> Navigate
+                                <kbd className="px-1 py-0.5 rounded-xl bg-bg-base border border-theme-border/40 text-content-primary">↑↓</kbd> Navigate
                             </span>
                             <span className="flex items-center gap-1">
-                                <kbd className="px-1 py-0.5 rounded bg-bg-base border border-theme-border/40 text-content-primary">↵</kbd> Select
+                                <kbd className="px-1 py-0.5 rounded-xl bg-bg-base border border-theme-border/40 text-content-primary">↵</kbd> Select
                             </span>
                         </div>
                     </div>

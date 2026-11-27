@@ -12,6 +12,8 @@ describe("isLinkActive", () => {
   });
 
   it("matches full-path links by prefix (nested routes)", () => {
+    expect(isLinkActive("/product", "/product")).toBe(true);
+    expect(isLinkActive("/product", "/")).toBe(false);
     expect(isLinkActive("/docs", "/docs")).toBe(true);
     expect(isLinkActive("/docs", "/docs/getting-started")).toBe(true);
     expect(isLinkActive("/community", "/docs")).toBe(false);
