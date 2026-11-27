@@ -176,7 +176,7 @@ Fiat on-ramp record (Airtm mode). Async flow driven by Airtm webhooks — see [D
 
 <Badge variant="primary">orders</Badge>
 
-The lifecycle root of a marketplace transaction. Funds move from the buyer's `available` balance into `reserved`, then on-chain via an escrow.
+The lifecycle root of a marketplace transaction. Funds move from the buyer's `available` balance into `reserved`, then on-chain via an escrow. Cancelling an order moves it to `CLOSED` — there is no separate `CANCELLED` status.
 
 | Field | Column | Type | Description |
 |-------|--------|------|-------------|
@@ -346,6 +346,14 @@ The schema defines these enums. Request bodies and webhook payloads use `UPPER_S
 | `WalletProvider` | `STELLAR` |
 | `WebhookStatus` | `RECEIVED`, `PROCESSED`, `FAILED`, `IGNORED` |
 | `IdempotencyStatus` | `PROCESSING`, `COMPLETED`, `FAILED` |
+
+## Order and Cancellation Behaviour
+
+Cancelling an order does **not** introduce a `CANCELLED` status. The cancel action transitions the order directly to `CLOSED`, which is the single terminal state for both successful completions and cancellations. This keeps the state machine minimal and avoids ambiguity in downstream query logic.
+
+## Escrow and Dispute Interaction
+
+When a dispute is opened, the linked escrow transitions to `DISPUTED` and the order moves to `DISPUTED`. Funds remain on-chain until the platform issues a `ResolutionDecision` (`FULL_RELEASE`, `FULL_REFUND`, or `SPLIT`), after which the escrow transitions to `RELEASED` or `REFUNDED` and the order moves to `CLOSED`.
 
 ## Migrations, Seeds, and Debugging
 
