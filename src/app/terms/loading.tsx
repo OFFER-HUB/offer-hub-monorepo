@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function LegalSectionSkeleton() {
   return (
-    <div className="p-8 md:p-12 rounded-[2.5rem] space-y-4">
+    <div className="p-8 md:p-12 rounded-3xl space-y-4">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-5/6" />
@@ -36,7 +36,7 @@ export default function TermsLoading() {
               <LegalSectionSkeleton key={i} />
             ))}
 
-            <div className="p-8 md:p-10 rounded-[2.5rem] space-y-3">
+            <div className="p-8 md:p-10 rounded-3xl space-y-3">
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-3/4" />
               <Skeleton className="h-3 w-full" />

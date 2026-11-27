@@ -5,23 +5,23 @@ order: 53
 section: API Reference
 ---
 
-Two endpoints need no credential and exist for clients and load balancers. `GET /config` lives in `ConfigController` (`apps/api/src/modules/config/config.controller.ts`). The basic health route lives in `HealthController` (`apps/api/src/modules/health/health.controller.ts`) and `HealthService` (`health.service.ts`). With the global `/api/v1` prefix from `apps/api/src/main.ts`, the paths below are the full routes.
+Two endpoints need no credential and exist for clients and load balancers. `GET /config` provides platform defaults and capability flags. `GET /health` provides a basic health probe. With the global `/api/v1` prefix, the paths below are the full routes.
 
-| Method | Path | Scope | Success status | Controller handler |
-| --- | --- | --- | --- | --- |
-| <Badge variant="success">GET</Badge> | `/api/v1/config` | none (public) | `200 OK` | `ConfigController.getConfig` |
-| <Badge variant="success">GET</Badge> | `/api/v1/health` | none (public) | `200 OK` | `HealthController.getHealth` |
+| Method | Path | Scope | Success status |
+| --- | --- | --- | --- |
+| <Badge variant="success">GET</Badge> | `/api/v1/config` | none (public) | `200 OK` |
+| <Badge variant="success">GET</Badge> | `/api/v1/health` | none (public) | `200 OK` |
 
 <Callout type="note">
-  The TypeScript SDK (`packages/sdk`) has no resource for these routes, so the TypeScript examples use plain `fetch`. Both handlers are marked `@Public()`, which makes `ApiKeyGuard` skip them, so no `Authorization` header is needed.
+  Both endpoints are public and require no `Authorization` header.
 </Callout>
 
 ## Common behavior
 
-- **No scope and no request body.** Neither of these routes reads a body or declares `@Scopes`.
-- **No idempotency.** Both are `GET` routes; the global idempotency guard only acts on `POST`, `PUT` and `PATCH`.
-- **Rate limiting still applies.** The global `RateLimitGuard` allows 100 requests per 60 seconds, counted per IP for requests without a key. Poll health sparingly; a load balancer probe every 10 seconds is well within the limit.
-- **Envelope differs per route.** `ResponseInterceptor` leaves a single-key `{ data: ... }` payload untouched and wraps everything else in `{ data, meta }`. So `GET /config` returns `{ "data": { ... } }` with **no `meta`**, while `GET /health` is wrapped as `{ "data": { ... }, "meta": { "requestId", "timestamp" } }`.
+- **No scope and no request body.** Neither of these routes requires a request body or authentication scope.
+- **No idempotency.** Both are `GET` routes; idempotency headers are not required on read-only endpoints.
+- **Rate limiting still applies.** The standard rate limiter allows 100 requests per 60 seconds, counted per IP for unauthenticated requests. Poll health sparingly; a load balancer probe every 10 seconds is well within the limit.
+- **Envelope differs per route.** Single-key payloads returning `{ "data": ... }` are returned directly without an outer `meta` wrapper, while other endpoints include `{ data, meta }`. So `GET /config` returns `{ "data": { ... } }` with **no `meta`**, while `GET /health` is wrapped as `{ "data": { ... }, "meta": { "requestId", "timestamp" } }`.
 - **Errors** use `{ "error": { "code", "message" } }`. The only error these routes can realistically return is `429 RATE_LIMITED`; see [Error Codes](/docs/api-reference/errors).
 
 ## GET /api/v1/config
@@ -29,7 +29,7 @@ Two endpoints need no credential and exist for clients and load balancers. `GET 
 Returns platform configuration for clients that want to inspect active features, supported currencies, and configured provider integrations.
 
 <Callout type="warning">
-  **The limits and provider names in the controller reflect platform defaults.** Treat this response as documentation of system capability, and confirm real limits on the specific endpoint you call.
+  **The limits and provider names reflect platform defaults.** Treat this response as documentation of system capability, and confirm real limits on the specific endpoint you call.
 </Callout>
 
 What is fixed and what is computed:
@@ -44,7 +44,7 @@ What is fixed and what is computed:
 | `features.blindpay`, `features.trustlessWork` | `true` when provider integrations are enabled |
 | `providers.fiat`, `providers.escrow` | `"blindpay"` and `"trustless_work"` |
 | `network` | `"mainnet"` for live deployment, `"testnet"` for sandbox |
-| `version` | `npm_package_version` when available, otherwise `"1.0.0"` |
+| `version` | Orchestrator semantic version |
 
 <ResponseSchema
   label="Platform configuration response (200 OK)"
@@ -110,7 +110,7 @@ The basic check. It answers immediately without blocking I/O, confirming the API
 <ResponseSchema
   label="Basic health response (200 OK)"
   fields={[
-    { name: "data.status", type: "string", required: true, description: "Service status (ok).", enum: ["ok"] },
+    { name: "data.status", type: "string", required: true, description: "Server status (ok).", enum: ["ok"] },
     { name: "data.timestamp", type: "string", required: true, description: "ISO 8601 time of the check." },
     { name: "meta", type: "object", required: true, description: "requestId (when sent) and timestamp." }
   ]}
@@ -122,7 +122,7 @@ The basic check. It answers immediately without blocking I/O, confirming the API
 
 | Status | `error.code` | When |
 | --- | --- | --- |
-| `503` | `SERVICE_UNAVAILABLE` | Service is down or in maintenance |
+| `503` | `SERVICE_UNAVAILABLE` | System is temporarily unavailable or in maintenance |
 
 <CodeTabs
   label="Basic health examples"

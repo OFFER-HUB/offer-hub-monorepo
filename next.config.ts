@@ -38,7 +38,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-      {
         source: "/docs/api-reference/webhooks",
         destination: "/docs/api-reference/events",
         permanent: true,
@@ -49,10 +48,23 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/docs/guide/airtm",
+        source: "/docs/guide/deposits",
         destination: "/docs/guide/withdrawals",
         permanent: true,
       },
+      {
+        source: "/docs/api-reference/wallet-topups",
+        destination: "/docs/api-reference/payouts",
+        permanent: true,
+      },
+      {
+        source: "/docs/sdk/topups",
+        destination: "/docs/sdk/payouts",
+        permanent: true,
+      },
+      {
+        source: "/docs/guide/airtm",
+        destination: "/docs/guide/withdrawals",
         permanent: true,
       },
     ];

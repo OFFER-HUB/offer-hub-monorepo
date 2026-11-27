@@ -21,7 +21,7 @@ Authenticate with a valid API key in the `Authorization` header:
 Authorization: Bearer ohk_live_...
 ```
 
-The route is protected by `ApiKeyGuard` with `read` scope. `EventsController.streamEvents` in the Orchestrator (`apps/api/src/modules/events/events.controller.ts`) verifies the credential and streams events scoped to the caller's marketplace.
+The route requires an API key with `read` scope in the `Authorization` header. The Orchestrator verifies the credential and streams events scoped to the caller's marketplace.
 
 ```bash
 curl -N \
@@ -34,7 +34,7 @@ curl -N \
 
 ### Marketplace isolation
 
-Events are scoped to the marketplace bound to your API key. The controller reads `apiKey.marketplaceId` and `SseService.getEventStream` drops every event whose `metadata.marketplaceId` does not match (`apps/api/src/modules/events/sse.service.ts`). Each marketplace only ever receives its own events: even with a replay request.
+Events are scoped to the marketplace bound to your API key. The server verifies your API key and only delivers events matching your marketplace identifier. Each marketplace only ever receives its own events: even with a replay request.
 
 ### Filter the stream
 
@@ -58,7 +58,7 @@ curl -N \
 
 ## Event envelope
 
-Every event is a `DomainEvent`. `payload` varies by `eventType`; the remaining fields use the same shape for every event (`apps/api/src/modules/events/types/domain-event.ts`).
+Every event is a `DomainEvent`. `payload` varies by `eventType`; the remaining fields use the same shape for every event.
 
 ```typescript
 interface DomainEvent<T = unknown> {
@@ -98,7 +98,7 @@ data: {"eventId":"evt_102030405060708090a0b0c0d0e0f010","eventType":"order.escro
 
 ### Heartbeat
 
-The server sends a `ping` event every **30 seconds** (`interval(30000)` in `EventsController`) to keep an idle connection alive:
+The server sends a `ping` event every **30 seconds** to keep an idle connection alive:
 
 ```text
 event: ping
@@ -109,7 +109,7 @@ The ping has no `eventId`: ignore it rather than treating it as a domain event.
 
 ### Reconnect and replay
 
-Missed events are replayed from a Redis sorted set (`events:log`) scored by `occurredAt`, **capped at the last 1,000 events** (`SseService.MAX_EVENTS`, `apps/api/src/modules/events/sse.service.ts`). To resume after a disconnect, send the `id` of the last event you received in the standard `Last-Event-ID` header. This header takes precedence over the `since` query parameter:
+Missed events are replayed from a Redis sorted set (`events:log`) scored by `occurredAt`, **capped at the last 1,000 events**. To resume after a disconnect, send the `id` of the last event you received in the standard `Last-Event-ID` header. This header takes precedence over the `since` query parameter:
 
 ```bash
 curl -N \

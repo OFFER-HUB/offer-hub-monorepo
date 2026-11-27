@@ -98,7 +98,7 @@ Resource identifiers in OFFER-HUB are formatted as an entity prefix followed by 
 
 ## Response Format and Envelopes
 
-Every JSON response passes through global interceptors:
+Every JSON response follows a consistent envelope format:
 
 - **Success Responses:** Wrapped in `{ "data": ..., "meta"?: { "requestId", "timestamp" } }`.
 - **Error Responses:** Standardized as `{ "error": { "code", "message", "details"? } }`.

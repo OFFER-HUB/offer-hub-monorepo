@@ -60,7 +60,7 @@ export function SectionNav({
         <div
           className={cn(
             "pointer-events-auto flex items-center p-2 rounded-2xl transition-shadow duration-500 bg-bg-base",
-            isNavPinned ? "shadow-neu-raised-scrolled" : "shadow-neu-raised"
+            isNavPinned ? "shadow-neu-raised" : "shadow-neu-raised-sm"
           )}
         >
           <LayoutGroup id={layoutId}>

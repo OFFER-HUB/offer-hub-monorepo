@@ -131,7 +131,7 @@ function FieldRows({
                   {hasChildren ? (
                     <button
                       type="button"
-                      className="mt-0.5 shrink-0 rounded p-0.5 text-content-secondary hover:text-theme-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
+                      className="mt-0.5 shrink-0 rounded-full p-0.5 text-content-secondary hover:text-theme-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
                       aria-label={`${isOpen ? "Collapse" : "Expand"} ${field.name}`}
                       aria-expanded={isOpen}
                       onClick={() =>

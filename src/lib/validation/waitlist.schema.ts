@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { emailField } from "./email";
+import { honeypotField } from "./honeypot";
 
 export const waitlistFormSchema = z.object({
+  website: honeypotField,
   name: z
     .string()
     .trim()
