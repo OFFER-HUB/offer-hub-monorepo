@@ -38,6 +38,16 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/docs/api-reference/webhooks",
+        destination: "/docs/api-reference/events",
+        permanent: true,
+      },
+      {
+        source: "/docs/api-reference/audit-logs",
+        destination: "/docs/api-reference/overview",
+        permanent: true,
+      },
+      {
         source: "/docs/guide/deposits",
         destination: "/docs/guide/withdrawals",
         permanent: true,
